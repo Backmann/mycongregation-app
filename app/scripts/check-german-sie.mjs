@@ -29,7 +29,14 @@ const walk = (o, path) => {
     return;
   }
   if (o && typeof o === 'object') {
-    for (const [k, v] of Object.entries(o)) walk(v, path ? `${path}.${k}` : k);
+    for (const [k, v] of Object.entries(o)) {
+      const key = path ? `${path}.${k}` : k;
+      // The coordinator's ready messages are one brother writing to another
+      // (25 October 2026) — «du», as brothers write; not the app speaking,
+      // like the publication titles above.
+      if (key === 'talkCoordinator.msgText') continue;
+      walk(v, key);
+    }
   }
 };
 walk(de, '');

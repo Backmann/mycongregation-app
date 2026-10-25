@@ -701,6 +701,22 @@ export default function SpeakersScreen() {
           <Text style={styles.saveText}>{t("common.save")}</Text>
         </Pressable>
       </View>
+      {/* Deleting lives in the card's own editor, not beside the pencil in
+          every row, where it was under the thumb in passing (25 October 2026). */}
+      {key !== "new" ? (
+        <Pressable
+          style={styles.deleteLink}
+          disabled={pending}
+          onPress={() => {
+            const sp = (listQuery.data ?? []).find((x) => x.id === key);
+            if (sp) void confirmDelete(sp);
+          }}
+          accessibilityRole="button"
+        >
+          <Ionicons name="trash-outline" size={15} color="#dc2626" />
+          <Text style={styles.deleteLinkText}>{t("talkCoordinator.speakers.deleteAction")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 
@@ -966,15 +982,7 @@ export default function SpeakersScreen() {
                     style={styles.iconBtn}
                     disabled={pending}
                   >
-                    <Ionicons name="create-outline" size={20} color="#0369a1" />
-                  </Pressable>
-                  <Pressable
-                    hitSlop={8}
-                    onPress={() => confirmDelete(s)}
-                    style={styles.iconBtn}
-                    disabled={pending}
-                  >
-                    <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                    <Ionicons name="create-outline" size={19} color="#94a3b8" />
                   </Pressable>
                 </View>
               </View>
@@ -987,6 +995,15 @@ export default function SpeakersScreen() {
 }
 
 const styles = StyleSheet.create({
+  deleteLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    alignSelf: "center",
+    marginTop: 12,
+    paddingVertical: 6,
+  },
+  deleteLinkText: { fontFamily: "Manrope_600SemiBold", fontSize: 13.5, color: "#dc2626" },
   sectionHeading: {
     fontSize: 12,
     color: "#0369a1",

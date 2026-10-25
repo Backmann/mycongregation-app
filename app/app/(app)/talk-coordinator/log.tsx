@@ -12,7 +12,6 @@ import {
   Text,
   TextInput,
   View,
- useWindowDimensions,
 } from "react-native";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -62,6 +61,27 @@ import { effectiveVersionFor } from "../../../lib/meeting-schedule";
 import { notify } from "../../../lib/error-bus";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 import { failsScreen } from "../../../lib/screen-failure";
+import { SegmentedControl } from "../../../components/SegmentedControl";
+import { MessagePanel } from "../../../components/talk-log/MessagePanel";
+import {
+  guestInvitation,
+  guestReminder,
+  lunchBagMessage,
+} from "../../../lib/talk-messages";
+import type { VisitFacts } from "../../../lib/talk-messages";
+import { useSongsMap } from "../../../lib/songs";
+import { useMyPublisher } from "../../../lib/useMyPublisher";
+import { usePermissions } from "../../../lib/permissions";
+import {
+  AttentionList,
+  WeekCards,
+  WeekTable,
+} from "../../../components/talk-log/JournalWeeks";
+import type {
+  AttentionRow,
+  Line,
+  WeekModel,
+} from "../../../components/talk-log/JournalWeeks";
 
 const QK = ["talk-exchange"] as const;
 
@@ -87,6 +107,7 @@ type WeekRow = {
   address: string | null;
 };
 type MonthBlock = { key: string; title: string; rows: WeekRow[] };
+type JournalView = "ahead" | "past" | "attention";
 type SlotState = {
   incoming?: TalkExchange;
   /**
@@ -141,19 +162,14 @@ function confirmReplace(
 }
 
 export default function TalkExchangeYearScreen() {
-  // The one-line empty week is drawn tighter on a narrow phone and keeps its
-  // buttons beside the date on a wide screen (see `bare` below).
-  const { width: screenWidth } = useWindowDimensions();
-  const bareTight = screenWidth < 360;
-  const bareWide = screenWidth >= 700;
   const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const qc = useQueryClient();
 
-  const scrollRef = useRef<ScrollView>(null);
-  const monthOffsets = useRef<Record<string, number>>({});
-  const weekOffsets = useRef<Record<string, number>>({});
-  const didInitialScroll = useRef(false);
+  /** «Впереди» opens on this week; the past and «Внимание» are a tap away. */
+  const [view, setView] = useState<JournalView>("ahead");
+  /** A table from this width; cards below it. */
+  const [contentWidth, setContentWidth] = useState(0);
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<TalkExchange | null>(null);
@@ -189,6 +205,18 @@ export default function TalkExchangeYearScreen() {
     null,
   );
   const [note, setNote] = useState("");
+  /** The guest's opening song as typed — a number, or empty. */
+  const [openingSong, setOpeningSong] = useState("");
+  /** A ready message shown in place of the form (25 October 2026). */
+  const [msg, setMsg] = useState<null | "invite" | "remind" | "lunch">(null);
+  const songTitles = useSongsMap();
+  const { myPublisher } = useMyPublisher();
+  const { responsibilities } = usePermissions();
+  /** The Watchtower study's songs of the weekends ahead, by week. */
+  const weekSongsQuery = useQuery({
+    queryKey: [...QK, "week-songs"],
+    queryFn: () => talkExchangeApi.weekSongs(),
+  });
 
   const listQuery = useQuery({
     throwOnError: failsScreen,
@@ -203,6 +231,14 @@ export default function TalkExchangeYearScreen() {
   const attentionQuery = useQuery({
     queryKey: [...QK, "attention"],
     queryFn: () => talkExchangeApi.attention(),
+  });
+  /**
+   * Our own weekends that need somebody (25 October 2026): nobody booked, no
+   * lunch bag for the guest, his song sung at the study.
+   */
+  const incomingAttnQuery = useQuery({
+    queryKey: [...QK, "attention", "incoming"],
+    queryFn: () => talkExchangeApi.incomingAttention(),
   });
   /**
    * Guests a circuit visit set aside (25 October 2026): shown under the
@@ -676,133 +712,13 @@ export default function TalkExchangeYearScreen() {
     }));
   }, [settingsQuery.data, i18n.language]);
 
-  /**
-   * Первая неделя, которая ещё впереди — у неё и ставится черта.
-   *
-   * Считается один раз по всему списку, а не в каждой карточке: иначе черта
-   * появлялась бы в каждом месяце заново. День берётся здесь же: этот расчёт
-   * стоит выше, чем `todayISO`, а переносить объявления ради одной строки —
-   * лишний повод что-нибудь сдвинуть.
-   */
-  const firstUpcomingWeek = useMemo(() => {
-    const today = dayjs().format("YYYY-MM-DD");
-    for (const m of months)
-      for (const w of m.rows) if (w.date >= today) return w.monday;
-    return null;
-  }, [months]);
-
   // Плоский список недель для модалки «Заменить докладчика».
   const weeksFlat = useMemo<WeekRow[]>(
     () => months.flatMap((mb) => mb.rows),
     [months],
   );
 
-  const currentMonthKey = dayjs().format("YYYY-MM");
-  /**
-   * The month the reader is actually looking at.
-   *
-   * The bar used to highlight the CALENDAR month for ever, so it said «Авг.
-   * 26» while November was on the screen — and pressing the highlighted chip
-   * appeared to do nothing, since it was not where you were.
-   */
-  const [visibleMonth, setVisibleMonth] = useState(currentMonthKey);
-  const monthBarRef = useRef<ScrollView>(null);
-  const chipOffsets = useRef<Record<string, number>>({});
-
-  /** Bring a month's chip into view, a little in from the left edge. */
-  const showChip = (key: string) => {
-    const x = chipOffsets.current[key];
-    if (x == null) return;
-    monthBarRef.current?.scrollTo({ x: Math.max(x - 16, 0), animated: false });
-  };
   const currentWeekMonday = mondayISO(dayjs().format("YYYY-MM-DD"));
-
-  /**
-   * Open on the current week.
-   *
-   * The catch is WHEN to stop trying. The weeks are built from the meeting
-   * settings, so they lay out at once — while the entries are still on their
-   * way. Scroll then, mark it done, and every row above the current week
-   * afterwards grows a card taller: the page ends up somewhere in the past and
-   * never corrects itself. On the web the entries usually arrive first, which
-   * is why this only ever showed on Android.
-   *
-   * So the position is fixed on every content-size change until the data is
-   * actually in, and only then locked.
-   */
-  /**
-   * Put the current week at the very top, and keep it there while the page
-   * settles.
-   *
-   * Two things move underneath this. The rows are laid out before the entries
-   * arrive, so every card that gains a speaker grows and pushes the week down;
-   * and `onLayout` for those rows fires AFTER `onContentSizeChange`, so the
-   * offsets are one beat stale exactly when we read them. One scroll, however
-   * well timed, therefore lands a week or two early — which is what Android
-   * kept showing.
-   *
-   * So it is not one scroll: it repeats while the page settles, each time with
-   * fresher offsets.
-   *
-   * ОТКУДА БРАЛСЯ ПРОМАХ НА ANDROID. Прежде оно останавливалось, когда два
-   * прохода подряд давали одно и то же место. Записи чаще всего лежат в
-   * памяти, поэтому «данные пришли» становится правдой мгновенно, и два ранних
-   * прохода совпадали ДО того, как карточки выросли: замок защёлкивался на
-   * стылом месте и больше не открывался. В браузере записи успевали
-   * отрисоваться раньше — там и промаха не было.
-   *
-   * Теперь останавливает не совпадение, а ЧЕЛОВЕК: как только он тронул
-   * список, положение принадлежит ему. Плюс общий срок в три секунды, чтобы
-   * страница не подпрыгивала вечно, если что-то продолжает шевелиться.
-   */
-  const lastTarget = useRef<number>(-1);
-
-  /** Когда экран открылся — по этому судим, не пора ли перестать поправлять. */
-  const openedAt = useRef<number>(Date.now());
-
-  const placeCurrentWeek = () => {
-    if (didInitialScroll.current) return;
-    // Три секунды на укладку — дальше страница живёт сама.
-    if (Date.now() - openedAt.current > 3000) {
-      didInitialScroll.current = true;
-      return;
-    }
-    const week = weekOffsets.current[currentWeekMonday];
-    if (week == null) {
-      const month = monthOffsets.current[currentMonthKey];
-      if (month != null) {
-        scrollRef.current?.scrollTo({
-          y: Math.max(month - 8, 0),
-          animated: false,
-        });
-      }
-      return;
-    }
-
-    const target = Math.max(week - 8, 0);
-    scrollRef.current?.scrollTo({ y: target, animated: false });
-    setVisibleMonth(currentMonthKey);
-    showChip(currentMonthKey);
-
-    lastTarget.current = target;
-  };
-
-  const scrollToCurrentWeek = () => {
-    placeCurrentWeek();
-    // A few more passes as the cards fill out; cheap, and they stop as soon as
-    // two land identically.
-    // Проходы гуще и дольше: на телефоне карточки дорастают позже, чем в
-    // браузере, и последний проход должен прийтись уже на выросшие.
-    [0, 60, 200, 500, 900, 1500, 2500].forEach((ms) =>
-      setTimeout(placeCurrentWeek, ms),
-    );
-  };
-
-  const scrollToMonth = (key: string) => {
-    const off = monthOffsets.current[key];
-    if (off != null)
-      scrollRef.current?.scrollTo({ y: Math.max(off - 8, 0), animated: true });
-  };
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: QK });
@@ -1018,6 +934,8 @@ export default function TalkExchangeYearScreen() {
     );
     setHostCongregationId(entry?.hostCongregationId ?? null);
     setNote(entry?.note ?? "");
+    setOpeningSong(entry?.openingSong ? String(entry.openingSong) : "");
+    setMsg(null);
     setSpeakerSearch("");
     setPubSearch("");
     setShowAllSpeakers(false);
@@ -1027,7 +945,15 @@ export default function TalkExchangeYearScreen() {
 
   // Opened from the programme («Открыть запись»): the entry comes up at once
   // (23 October 2026). Once per visit of the screen.
-  const params = useLocalSearchParams<{ entry?: string }>();
+  const params = useLocalSearchParams<{
+    entry?: string;
+    view?: string;
+    msg?: string;
+  }>();
+  // From the desk's counters: straight to «Внимание».
+  useEffect(() => {
+    if (params.view === "attention") setView("attention");
+  }, [params.view]);
   const openedFromParam = useRef<string | null>(null);
   useEffect(() => {
     const id = typeof params.entry === "string" ? params.entry : null;
@@ -1039,6 +965,8 @@ export default function TalkExchangeYearScreen() {
     if (!w) return;
     openedFromParam.current = id;
     openSlot(w, entry.direction, entry);
+    // From the desk: straight to the message for the guest.
+    if (params.msg === "invite" || params.msg === "remind") setMsg(params.msg);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.entry, listQuery.data, weeksFlat]);
 
@@ -1067,13 +995,21 @@ export default function TalkExchangeYearScreen() {
   };
 
   const themeGiven = special && specialTheme.trim().length > 0;
+  // The opening song as a number 1–999, or nothing.
+  const songNumber = (() => {
+    const n = Number(openingSong.trim());
+    return Number.isInteger(n) && n >= 1 && n <= 999 ? n : null;
+  })();
+  const songTyped = openingSong.trim().length > 0;
+  const songBad = songTyped && songNumber === null;
   /**
    * Специальную речь можно записать без докладчика: тему филиал сообщает
    * заранее, а кто её скажет, решается позже. Так было со специальной речью
    * 14 марта 2027 года — и программы той недели ещё нет вовсе.
    */
-  const canSave =
-    direction === "incoming"
+  const canSave = songBad
+    ? false
+    : direction === "incoming"
       ? special && !themeGiven
         ? false
         : themeGiven ||
@@ -1119,6 +1055,7 @@ export default function TalkExchangeYearScreen() {
           ? publisherId
           : null,
       hostCongregationId: direction === "outgoing" ? hostCongregationId : null,
+      ...(direction === "incoming" ? { openingSong: songNumber } : {}),
     };
     const saved = editing
       ? await updateMutation.mutateAsync({ id: editing.id, input })
@@ -1305,6 +1242,54 @@ export default function TalkExchangeYearScreen() {
   const fmtHist = (d: string) =>
     dayjs(d).locale(i18n.language).format("D MMM YYYY");
 
+  // ---- The visit's facts for a ready message (25 October 2026) ----------
+  const tr = (key: string, vars?: Record<string, string | number>) =>
+    String(t(key, vars));
+  const studySongs = week
+    ? ((weekSongsQuery.data ?? []).find((x) => x.weekStartDate === week.monday)
+        ?.study ?? [])
+    : [];
+  const songRepeats = songNumber !== null && studySongs.includes(songNumber);
+  const guestFull =
+    incomingMode === "invited" ? speakerNameInput.trim() || null : null;
+  const guestFirst = selSpeaker?.firstName?.trim() || guestFull?.split(/\s+/)[0] || null;
+  const chosenTalk = publicTalkId ? talkById.get(publicTalkId) : undefined;
+  const bringer = hospitalityPublisherId
+    ? (publishersQuery.data?.data ?? []).find((p) => p.id === hospitalityPublisherId)
+    : undefined;
+  const facts: VisitFacts = {
+    date: date || week?.date || todayISO,
+    today: todayISO,
+    time: week?.time ?? null,
+    address: week?.address ?? null,
+    guestFirstName: guestFirst,
+    guestFullName: guestFull,
+    guestCongregation: incomingMode === "invited" ? speakerCongInput.trim() || null : null,
+    talkNumber: special ? null : (chosenTalk?.number ?? null),
+    talkTitle: special ? null : (chosenTalk?.title ?? null),
+    specialTheme: special ? specialTheme.trim() || null : null,
+    openingSong: songNumber,
+    studySongs,
+    lunchArranged: !!hospitalityPublisherId,
+    senderName: myPublisher?.firstName?.trim() || null,
+    senderIsCoordinator:
+      responsibilities.has("public_talk_coordinator") ||
+      responsibilities.has("public_talk_coordinator_assistant"),
+  };
+  const messageText =
+    msg === "invite"
+      ? guestInvitation(tr, facts)
+      : msg === "remind"
+        ? guestReminder(tr, facts)
+        : msg === "lunch"
+          ? lunchBagMessage(tr, facts, {
+              firstName: bringer?.firstName ?? null,
+              sister: bringer?.gender === "sister",
+            })
+          : "";
+  const messagePhone =
+    msg === "lunch" ? null : (selSpeaker?.phone ?? null);
+
   const renderBrotherPicker = () => (
     <>
       <Text style={styles.fieldLabel}>
@@ -1405,575 +1390,317 @@ export default function TalkExchangeYearScreen() {
     </>
   );
 
+  // ---------------------------------------------------------------------
+  // THE WEEKS, AS LINES (Lionel, 25 October 2026). The layout itself is in
+  // components/talk-log/JournalWeeks.tsx; here each week says what it holds.
+  // ---------------------------------------------------------------------
+  const daysTo = (iso: string) =>
+    Math.round(
+      (new Date(`${iso}T00:00:00`).getTime() -
+        new Date(`${todayISO}T00:00:00`).getTime()) /
+        86_400_000,
+    );
+  const leftWords = (iso: string): string => {
+    const d = daysTo(iso);
+    if (d < 7) return t("talkCoordinator.journal.thisWeek");
+    return t("talkCoordinator.journal.left", { count: Math.round(d / 7) });
+  };
+  const songWord = (n: number) => t("talkCoordinator.journal.song", { n });
+  const repeatsByWeek = new Set(
+    (incomingAttnQuery.data ?? [])
+      .filter((a) => a.reason === "song_repeat")
+      .map((a) => a.weekStartDate),
+  );
+  const weekLines = (w: WeekRow, past: boolean): Line[] => {
+    const slot = byWeek.get(w.monday) ?? { missed: [], outgoing: [] };
+    const events = eventsForWeekend(w.monday);
+    const lines: Line[] = [];
+    if (events.length > 0) {
+      const slotOf = talkSlotByWeek.get(w.monday);
+      const who = slotOf
+        ? (slotOf.speakerName ??
+          (slotOf.publisherId ? (pubById.get(slotOf.publisherId) ?? null) : null))
+        : null;
+      const theme = slotOf
+        ? talkLabel(slotOf.publicTalkId) || slotOf.partTitle || null
+        : null;
+      lines.push({
+        kind: "event",
+        title: events
+          .map((ev) =>
+            t(`specialEvents.types.${ev.type}`, {
+              defaultValue: ev.title ?? ev.type ?? "",
+            }),
+          )
+          .join(" · "),
+        who,
+        theme,
+        aside: (asideByWeek.get(w.monday) ?? []).map((g) => ({
+          id: g.id,
+          name: g.name ?? t("talkCoordinator.log.unknownSpeaker"),
+          sub:
+            [incomingCong(g), talkLabel(g.publicTalkId)]
+              .filter(Boolean)
+              .join(" · ") || null,
+          ours: !!g.publisherId,
+          onMove: past ? undefined : () => setMoveEntry(g),
+        })),
+      });
+    } else {
+      const inc = slot.incoming;
+      if (inc) {
+        const guest = !inc.publisherId && !inc.circuitVisitId;
+        lines.push({
+          kind: "in",
+          name: incomingName(inc) ?? t("talkCoordinator.log.unknownSpeaker"),
+          cong: incomingCong(inc),
+          talk: inc.specialTheme?.trim() || talkLabel(inc.publicTalkId),
+          special: !!inc.specialTheme?.trim(),
+          song: inc.openingSong ? songWord(inc.openingSong) : null,
+          songRepeats: !past && repeatsByWeek.has(w.monday),
+          // A lunch bag is arranged ahead; a past week is only its record.
+          lunch: guest && !past
+            ? inc.hospitalityPublisherId
+              ? (pubById.get(inc.hospitalityPublisherId) ?? "—")
+              : null
+            : undefined,
+          restriction: talkRestriction(inc.publicTalkId, inc.date),
+          cancelled: !!inc.meetingCancelled,
+          ourBrother: !!inc.publisherId,
+          onPress: () => openSlot(w, "incoming", inc),
+          onSwap: past ? undefined : () => openSwap(w),
+          onMove: !past && inc.meetingCancelled ? () => setMoveEntry(inc) : undefined,
+          onNotHeld:
+            !past && inc.meetingCancelled ? () => void askNotHeld(inc) : undefined,
+        });
+      } else {
+        lines.push({
+          kind: "inEmpty",
+          left: past ? null : leftWords(w.date),
+          urgent: !past && daysTo(w.date) <= 28,
+          onPress: () => openSlot(w, "incoming", undefined),
+          onSwap: () => openSwap(w),
+        });
+      }
+      for (const mv of slot.missed) {
+        lines.push({
+          kind: "missed",
+          id: mv.id,
+          name: incomingName(mv) ?? t("talkCoordinator.log.unknownSpeaker"),
+          note: mv.note,
+          onUndo: () => void askUndo(mv),
+        });
+      }
+    }
+    for (const o of slot.outgoing) {
+      const att = attentionById.get(o.id);
+      lines.push({
+        kind: "out",
+        id: o.id,
+        who: o.publisherId ? (pubById.get(o.publisherId) ?? "—") : null,
+        host: o.hostCongregationId
+          ? (breakable(congById.get(o.hostCongregationId)?.name) ?? null)
+          : null,
+        day: o.date !== w.date ? fmtDay(o.date) : null,
+        talk: talkLabel(o.publicTalkId),
+        restriction: talkRestriction(o.publicTalkId, o.date),
+        needsBrother: att?.reason === "needs_brother" || !o.publisherId,
+        risk:
+          att && att.reason !== "needs_brother"
+            ? {
+                text: t(`talkCoordinator.log.risk.${att.reason}`),
+                acking: ackMutation.isPending,
+                onAck: () =>
+                  ackMutation.mutate({
+                    id: o.id,
+                    reason: att.reason as "absence" | "departed",
+                  }),
+              }
+            : null,
+        onPress: () => openSlot(w, "outgoing", o),
+      });
+    }
+    if (events.length === 0) {
+      lines.push({ kind: "outAdd", onPress: () => openSlot(w, "outgoing", undefined) });
+    }
+    return lines;
+  };
+  const weekModel = (w: WeekRow, past: boolean): WeekModel => {
+    const d = dayjs(w.date).locale(i18n.language);
+    return {
+      monday: w.monday,
+      dayNum: d.format("D"),
+      weekday: d.format("dd"),
+      dayLabel: fmtDay(w.date),
+      monthKey: w.date.slice(0, 7),
+      monthTitle: capitalizeFirst(d.format("MMMM YYYY")),
+      current: w.monday === currentWeekMonday,
+      past,
+      lines: weekLines(w, past),
+    };
+  };
+  const aheadWeeks = weeksFlat
+    .filter((w) => w.monday >= currentWeekMonday)
+    .map((w) => weekModel(w, false));
+  // The past is a record: only the weeks that hold something.
+  const pastWeeks = weeksFlat
+    .filter((w) => w.monday < currentWeekMonday)
+    .reverse()
+    .map((w) => weekModel(w, true))
+    .filter((m) => m.lines.some((l) => l.kind !== "inEmpty" && l.kind !== "outAdd"));
+
+  // «Внимание»: everything that waits for somebody, by date.
+  const weekOf = (iso: string) =>
+    weeksFlat.find((x) => x.monday === mondayISO(iso.slice(0, 10)));
+  const attnRows: (AttentionRow & { date: string })[] = [];
+  for (const a of incomingAttnQuery.data ?? []) {
+    const w = weekOf(a.date);
+    if (!w) continue;
+    const entry = a.entryId
+      ? (listQuery.data ?? []).find((e) => e.id === a.entryId)
+      : undefined;
+    const guest = a.guest ?? t("talkCoordinator.journal.attn.theGuest");
+    if (a.reason === "needs_guest") {
+      attnRows.push({
+        key: `g-${a.weekStartDate}`,
+        date: a.date,
+        tone: daysTo(a.date) <= 28 ? "urgent" : "warn",
+        icon: "alert-circle-outline",
+        title: t("talkCoordinator.journal.attn.needsGuest", { day: fmtDay(a.date) }),
+        sub: `${leftWords(a.date)} · ${t("talkCoordinator.journal.attn.invite")}`,
+        onPress: () => openSlot(w, "incoming", undefined),
+      });
+    } else if (a.reason === "no_lunch") {
+      attnRows.push({
+        key: `l-${a.weekStartDate}`,
+        date: a.date,
+        tone: "lunch",
+        icon: "bag-handle-outline",
+        title: t("talkCoordinator.journal.attn.noLunch", { day: fmtDay(a.date) }),
+        sub: `${guest} · ${t("talkCoordinator.journal.attn.chooseLunch")}`,
+        onPress: () => openSlot(w, "incoming", entry),
+      });
+    } else {
+      attnRows.push({
+        key: `s-${a.weekStartDate}`,
+        date: a.date,
+        tone: "song",
+        icon: "musical-notes-outline",
+        title: t("talkCoordinator.journal.attn.song", {
+          day: fmtDay(a.date),
+          song: a.song ?? "",
+        }),
+        sub: `${guest} · ${t("talkCoordinator.journal.attn.askAnother")}`,
+        onPress: () => openSlot(w, "incoming", entry),
+      });
+    }
+  }
+  for (const a of attentionQuery.data ?? []) {
+    const w = weekOf(a.date);
+    const entry = (listQuery.data ?? []).find((e) => e.id === a.id);
+    if (!w || !entry) continue;
+    const host =
+      congById.get(a.hostCongregationId ?? "")?.name ??
+      t("talkCoordinator.log.outChoice.otherCongregation");
+    attnRows.push({
+      key: `o-${a.id}`,
+      date: a.date,
+      tone: a.reason === "needs_brother" ? "urgent" : "warn",
+      icon: a.reason === "needs_brother" ? "person-add-outline" : "help-circle-outline",
+      title:
+        a.reason === "needs_brother"
+          ? t("talkCoordinator.journal.attn.needsBrother", { day: fmtDay(a.date), host })
+          : t("talkCoordinator.journal.attn.trip", {
+              day: fmtDay(a.date),
+              who: a.publisherId ? (pubById.get(a.publisherId) ?? "—") : "—",
+              host,
+            }),
+      sub:
+        a.reason === "needs_brother"
+          ? t("talkCoordinator.log.needsBrotherHint")
+          : t(`talkCoordinator.log.risk.${a.reason}`),
+      onPress: () => openSlot(w, "outgoing", entry),
+    });
+  }
+  for (const g of asideQuery.data ?? []) {
+    const date = String(g.date).slice(0, 10);
+    if (date < todayISO) continue;
+    attnRows.push({
+      key: `a-${g.id}`,
+      date,
+      tone: "warn",
+      icon: "pause-circle-outline",
+      title: t("talkCoordinator.journal.attn.aside", {
+        day: fmtDay(date),
+        name: g.name ?? t("talkCoordinator.log.unknownSpeaker"),
+      }),
+      sub: t("talkCoordinator.journal.attn.asideHint"),
+      onPress: () => setMoveEntry(g),
+    });
+  }
+  for (const e of listQuery.data ?? []) {
+    if (
+      e.direction !== "incoming" ||
+      !e.meetingCancelled ||
+      e.status === "did_not_happen" ||
+      e.date.slice(0, 10) < todayISO
+    )
+      continue;
+    attnRows.push({
+      key: `c-${e.id}`,
+      date: e.date.slice(0, 10),
+      tone: "warn",
+      icon: "calendar-clear-outline",
+      title: t("talkCoordinator.journal.attn.cancelled", {
+        day: fmtDay(e.date),
+        name: incomingName(e) ?? t("talkCoordinator.log.unknownSpeaker"),
+      }),
+      sub: t("talkCoordinator.cancelled.hint"),
+      onPress: () => setMoveEntry(e),
+    });
+  }
+  attnRows.sort((a, b) => a.date.localeCompare(b.date));
+
+  const wideJournal = contentWidth >= 860;
+  const shown = view === "past" ? pastWeeks : aheadWeeks;
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
-      {(attentionQuery.data?.length ?? 0) > 0 ? (
-        <Pressable
-          style={styles.attnBanner}
-          onPress={() => {
-            const first = attentionQuery.data![0];
-            scrollToMonth(first.date.slice(0, 7));
-          }}
-          accessibilityRole="button"
-        >
-          <Text style={styles.attnCount}>{attentionQuery.data!.length}</Text>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.attnTitle}>
-              {t("talkCoordinator.log.attention.title")}
-            </Text>
-            <Text style={styles.attnSub}>
-              {[
-                (() => {
-                  const n = attentionQuery.data!.filter(
-                    (a) => a.reason === "needs_brother",
-                  ).length;
-                  return n ? t("talkCoordinator.log.attention.needs", { count: n }) : null;
-                })(),
-                (() => {
-                  const n = attentionQuery.data!.filter(
-                    (a) => a.reason !== "needs_brother",
-                  ).length;
-                  return n ? t("talkCoordinator.log.attention.risk", { count: n }) : null;
-                })(),
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color="#9a3412" />
-        </Pressable>
-      ) : null}
-      <View style={styles.monthBar}>
-        {/* The bar scrolls itself. It never did — so on opening it sat on
-            «Янв. 26» while August was on screen, and the highlighted chip was
-            off to the left where nobody would look for it. */}
-        <ScrollView
-          ref={monthBarRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.monthBarInner}
-        >
-          {months.map((m) => (
-            <Pressable
-              key={m.key}
-              onLayout={(e) => {
-                chipOffsets.current[m.key] = e.nativeEvent.layout.x;
-                if (m.key === visibleMonth) showChip(m.key);
-              }}
-              style={[
-                styles.monthChip,
-                m.key === visibleMonth && styles.monthChipCurrent,
-              ]}
-              onPress={() => scrollToMonth(m.key)}
-            >
-              <Text
-                style={[
-                  styles.monthChipText,
-                  m.key === visibleMonth && styles.monthChipTextCurrent,
-                ]}
-              >
-                {/* The year in full: «Окт. 26» read as the 26th of October
-                    (Lionel, 30 September 2026). */}
-                {dayjs(`${m.key}-01`).locale(i18n.language).format("MMM YYYY")}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
-
       <ScrollView
-        ref={scrollRef}
-        {...{
-          /**
-           * Тронул список — значит место выбрал он.
-           *
-           * Это и есть замок: не догадка о том, что вёрстка улеглась, а
-           * действие человека. Пока он не притронулся, экран вправе поправлять
-           * себя; как только притронулся — молчит.
-           */
-          onScrollBeginDrag: () => {
-            didInitialScroll.current = true;
-          },
-        }}
-        contentContainerStyle={styles.container}
-        onContentSizeChange={scrollToCurrentWeek}
-        scrollEventThrottle={64}
-        onScroll={(e) => {
-          const y = e.nativeEvent.contentOffset.y + 12;
-          let seen = visibleMonth;
-          for (const [key, off] of Object.entries(monthOffsets.current)) {
-            if (off <= y) seen = key;
-          }
-          if (seen !== visibleMonth) {
-            setVisibleMonth(seen);
-            showChip(seen);
-          }
-        }}
+        contentContainerStyle={styles.journal}
+        onLayout={(e) => setContentWidth(e.nativeEvent.layout.width)}
       >
-        {months.map((m) => (
-          <Fragment key={m.key}>
-            <Text
-              style={styles.monthHeader}
-              onLayout={(e) => {
-                monthOffsets.current[m.key] = e.nativeEvent.layout.y;
-              }}
-            >
-              {m.title}
-            </Text>
-            {m.rows.map((w) => {
-              const slot = byWeek.get(w.monday) ?? { missed: [], outgoing: [] };
-              const upcoming = w.date >= todayISO;
-              const events = eventsForWeekend(w.monday);
-              /**
-               * Где кончается прошлое.
-               *
-               * Приглушение было, но при беглом взгляде прошлая неделя от
-               * будущей почти не отличалась — а смысл разный: прошлую менять
-               * нельзя, будущую надо заполнять. Черта ставится один раз, у
-               * первой будущей недели, и только если выше неё что-то было.
-               */
-              const firstUpcoming = upcoming && w.monday === firstUpcomingWeek;
-              /**
-               * Неделя без докладчика — работа, а не ошибка.
-               *
-               * «К нам» без записи это дыра в программе: неделя есть, речи
-               * нет, и кто-то должен её закрыть. «От нас» без записи — обычное
-               * дело, наши братья ездят не каждую неделю. Обе половины
-               * показывались одинаковым бледным «+ Добавить», и глаз не
-               * отличал недоделанное от нормального.
-               *
-               * Только для БУДУЩИХ недель и только там, где неделю не накрыло
-               * событие: в прошлом пометка бессмысленна — его не исправляют, а
-               * под событием речи и не должно быть.
-               */
-              // A special talk recorded with its theme alone still needs a
-              // speaker: the week is not arranged until somebody says it.
-              const inc = byWeek.get(w.monday)?.incoming;
-              const needsSpeaker =
-                upcoming &&
-                events.length === 0 &&
-                (!inc || !incomingName(inc));
-              // AN EMPTY WEEK IS ONE LINE (5 October 2026). A week with nobody
-              // coming and nobody going drew the same two boxes as a full
-              // one, each holding only «+ Добавить»: half a year of them made
-              // the journal nineteen screens long, and the weeks that DO hold
-              // something were lost among them. The line keeps everything the
-              // boxes did — add «к нам», add «от нас», move a speaker here —
-              // and the amber edge that says a speaker is still to be found.
-              const bare =
-                events.length === 0 &&
-                !slot.incoming &&
-                slot.outgoing.length === 0 &&
-                slot.missed.length === 0;
-              return (
-                <Fragment key={w.monday}>
-                  {firstUpcoming ? (
-                    <View style={styles.pastLine}>
-                      <View style={styles.pastRule} />
-                      <Text style={styles.pastLabel}>
-                        {t("talkCoordinator.log.upcomingFrom")}
-                      </Text>
-                      <View style={styles.pastRule} />
-                    </View>
-                  ) : null}
-                  <View
-                    style={[
-                      styles.weekendRow,
-                      !upcoming && styles.weekendPast,
-                      needsSpeaker && styles.weekendNeeds,
-                    ]}
-                    onLayout={(e) => {
-                      weekOffsets.current[w.monday] = e.nativeEvent.layout.y;
-                      // The row's own layout is the freshest word on where it
-                      // is; every time it moves, put it back at the top.
-                      if (w.monday === currentWeekMonday) placeCurrentWeek();
-                    }}
-                  >
-                    {bare ? (
-                      // Nothing arranged either way: one line, with the same
-                      // three doors the two empty boxes had.
-                      <View style={[styles.bareRow, bareTight && styles.bareRowTight]}>
-                        <Text style={[styles.bareDate, bareWide && styles.bareDateWide]} numberOfLines={1}>
-                          {fmtDay(w.date)}
-                        </Text>
-                        <Pressable
-                          style={({ pressed }) => [styles.bareBtn, bareTight && styles.bareBtnTight, styles.bareIn, pressed && { opacity: 0.6 }]}
-                          onPress={() => openSlot(w, "incoming", undefined)}
-                          hitSlop={6}
-                          accessibilityRole="button"
-                        >
-                          <Ionicons name="add" size={14} color="#0369a1" />
-                          <Text style={[styles.bareBtnText, { color: "#0369a1" }]}>
-                            {t("talkCoordinator.log.filter.incoming")}
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => openSwap(w)}
-                          hitSlop={8}
-                          accessibilityRole="button"
-                          accessibilityLabel={t("talkCoordinator.swap.action")}
-                          style={styles.bareSwap}
-                        >
-                          <Ionicons name="swap-horizontal" size={16} color="#0369a1" />
-                        </Pressable>
-                        <Pressable
-                          style={({ pressed }) => [styles.bareBtn, bareTight && styles.bareBtnTight, styles.bareOut, pressed && { opacity: 0.6 }]}
-                          onPress={() => openSlot(w, "outgoing", undefined)}
-                          hitSlop={6}
-                          accessibilityRole="button"
-                        >
-                          <Ionicons name="add" size={14} color="#b45309" />
-                          <Text style={[styles.bareBtnText, { color: "#b45309" }]}>
-                            {t("talkCoordinator.log.filter.outgoing")}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    ) : (
-                    <>
-                    <Text style={styles.weekendDate}>{fmtDay(w.date)}</Text>
-                    <View style={styles.slots}>
-                      {events.length > 0 ? (
-                        <View style={[styles.slot, styles.eventSlot]}>
-                          <Text style={styles.eventLabel}>
-                            {t("talkCoordinator.log.event")}
-                          </Text>
-                          <Text style={styles.eventTitle} numberOfLines={2}>
-                            {events
-                              .map((ev) =>
-                                t(`specialEvents.types.${ev.type}`, {
-                                  defaultValue: ev.title ?? ev.type ?? "",
-                                }),
-                              )
-                              .join(" · ")}
-                          </Text>
-                          {/*
-                          Речь недели под событием (визит районного старейшины):
-                          у неё есть тема и докладчик, и координатору они нужны
-                          так же, как в обычную неделю. Берётся из программы
-                          встречи — там она и назначается.
-                        */}
-                          {(() => {
-                            const slotOf = talkSlotByWeek.get(w.monday);
-                            if (!slotOf) return null;
-                            const who =
-                              slotOf.speakerName ??
-                              (slotOf.publisherId
-                                ? (pubById.get(slotOf.publisherId) ?? null)
-                                : null);
-                            const theme =
-                              talkLabel(slotOf.publicTalkId) ||
-                              slotOf.partTitle ||
-                              null;
-                            if (!who && !theme) return null;
-                            return (
-                              <>
-                                {who ? (
-                                  <Text style={styles.eventWho}>{who}</Text>
-                                ) : null}
-                                {theme ? (
-                                  <Text
-                                    style={styles.eventTheme}
-                                    numberOfLines={2}
-                                  >
-                                    {theme}
-                                  </Text>
-                                ) : null}
-                              </>
-                            );
-                          })()}
-                          {/*
-                            Whoever the visit set aside (25 October 2026): not
-                            gone without a word — he may still be on his way.
-                          */}
-                          {(asideByWeek.get(w.monday) ?? []).map((g) => (
-                            <View key={g.id} style={styles.asideBox}>
-                              <View style={styles.asideHead}>
-                                <Ionicons
-                                  name="pause-circle-outline"
-                                  size={14}
-                                  color="#b45309"
-                                />
-                                <Text style={styles.asideLabel}>
-                                  {t("talkCoordinator.aside.badge")}
-                                </Text>
-                              </View>
-                              <Text style={styles.asideName}>
-                                {g.name ?? t("talkCoordinator.log.unknownSpeaker")}
-                              </Text>
-                              {incomingCong(g) || talkLabel(g.publicTalkId) ? (
-                                <Text style={styles.asideSub} numberOfLines={2}>
-                                  {[incomingCong(g), talkLabel(g.publicTalkId)]
-                                    .filter(Boolean)
-                                    .join(" · ")}
-                                </Text>
-                              ) : null}
-                              {upcoming ? (
-                                <>
-                                  <Text style={styles.asideHint}>
-                                    {g.publisherId
-                                      ? t("talkCoordinator.aside.hintOurs")
-                                      : t("talkCoordinator.aside.hint")}
-                                  </Text>
-                                  <Pressable
-                                    style={({ pressed }) => [
-                                      styles.asideMove,
-                                      pressed && { opacity: 0.7 },
-                                    ]}
-                                    onPress={() => setMoveEntry(g)}
-                                    accessibilityRole="button"
-                                  >
-                                    <Text style={styles.asideMoveText}>
-                                      {t("talkCoordinator.aside.move")}
-                                    </Text>
-                                  </Pressable>
-                                </>
-                              ) : null}
-                            </View>
-                          ))}
-                        </View>
-                      ) : (
-                        // One column: the speakers who did not come stand
-                        // above the entry. Loose in the row, they became a
-                        // third column and squeezed «От нас» to a letter
-                        // wide (seen on the stand, 24 October 2026).
-                        <View style={styles.inSide}>
-                          {slot.missed.length > 0 ? (
-                            <View style={styles.missedBox}>
-                              {slot.missed.map((mv) => (
-                                <View key={mv.id} style={styles.missedRow}>
-                                  <Ionicons
-                                    name="close-circle-outline"
-                                    size={13}
-                                    color="#b45309"
-                                  />
-                                  <Text style={styles.missedText}>
-                                    {t("talkCoordinator.log.didNotCome", {
-                                      name:
-                                        incomingName(mv) ??
-                                        t("talkCoordinator.log.unknownSpeaker"),
-                                    })}
-                                    {mv.note ? ` · ${mv.note}` : ""}
-                                  </Text>
-                                  {/* Отметка «не приехал» верна ровно пока она
-                                  правда. Замену делают в спешке перед
-                                  встречей, и ошибиться легко — а стереть
-                                  ложное пятно было нечем. */}
-                                  <Pressable
-                                    hitSlop={8}
-                                    disabled={undoMutation.isPending}
-                                    onPress={() => askUndo(mv)}
-                                  >
-                                    <Text style={styles.missedUndo}>
-                                      {t("talkCoordinator.log.undoReplacement")}
-                                    </Text>
-                                  </Pressable>
-                                </View>
-                              ))}
-                            </View>
-                          ) : null}
-                          <Slot
-                            label={t("talkCoordinator.log.filter.incoming")}
-                            accent="#0369a1"
-                            bg="#e0f2fe"
-                            entry={slot.incoming}
-                            onPress={() =>
-                              openSlot(w, "incoming", slot.incoming)
-                            }
-                            onSwap={() => openSwap(w)}
-                            swapHint={t("talkCoordinator.swap.action")}
-                          >
-                            {slot.incoming ? (
-                              <>
-                                <Text style={styles.slotMain}>
-                                  {incomingName(slot.incoming) ??
-                                    t("talkCoordinator.log.unknownSpeaker")}
-                                </Text>
-                                {!!incomingCong(slot.incoming) && (
-                                  <Text style={styles.slotCong}>
-                                    {incomingCong(slot.incoming)}
-                                  </Text>
-                                )}
-                                {!!incomingPhone(slot.incoming) && (
-                                  <Text style={styles.slotCong}>
-                                    {t("talkCoordinator.log.phone")}:{" "}
-                                    {incomingPhone(slot.incoming)}
-                                  </Text>
-                                )}
-                                {slot.incoming.specialTheme ? (
-                                  <>
-                                    <View style={styles.specialChip}>
-                                      <Text style={styles.specialChipText}>
-                                        {t("talkCoordinator.log.specialTalk")}
-                                      </Text>
-                                    </View>
-                                    <Text style={styles.slotSub}>
-                                      {slot.incoming.specialTheme}
-                                    </Text>
-                                  </>
-                                ) : null}
-                                {!!talkLabel(slot.incoming.publicTalkId) && (
-                                  <Text style={styles.slotSub}>
-                                    {talkLabel(slot.incoming.publicTalkId)}
-                                  </Text>
-                                )}
-                                <RestrictionBadge
-                                  id={slot.incoming.publicTalkId}
-                                  date={slot.incoming.date}
-                                />
-                                {slot.incoming.meetingCancelled ? (
-                                  <View style={styles.cancelledBox}>
-                                    <Text style={styles.cancelledBadge}>
-                                      {t("talkCoordinator.cancelled.badge")}
-                                    </Text>
-                                    <Text style={styles.cancelledHint}>
-                                      {t("talkCoordinator.cancelled.hint")}
-                                    </Text>
-                                    <View style={styles.cancelledActions}>
-                                      <Pressable
-                                        style={styles.cancelledMove}
-                                        onPress={() => setMoveEntry(slot.incoming!)}
-                                        accessibilityRole="button"
-                                      >
-                                        <Text style={styles.cancelledMoveText}>
-                                          {t("talkCoordinator.cancelled.move")}
-                                        </Text>
-                                      </Pressable>
-                                      <Pressable
-                                        style={styles.cancelledNot}
-                                        onPress={() => void askNotHeld(slot.incoming!)}
-                                        accessibilityRole="button"
-                                      >
-                                        <Text style={styles.cancelledNotText}>
-                                          {t("talkCoordinator.cancelled.notHeld")}
-                                        </Text>
-                                      </Pressable>
-                                    </View>
-                                  </View>
-                                ) : null}
-                              </>
-                            ) : null}
-                          </Slot>
-                        </View>
-                      )}
-                      <View style={styles.outCol}>
-                        <Text
-                          style={[
-                            styles.slotLabel,
-                            { color: "#b45309", marginBottom: 4 },
-                          ]}
-                        >
-                          {t("talkCoordinator.log.filter.outgoing")}
-                        </Text>
-                        {slot.outgoing.map((o) => {
-                          const att = attentionById.get(o.id);
-                          if (att?.reason === "needs_brother") {
-                            return (
-                              <Pressable
-                                key={o.id}
-                                style={styles.needBrother}
-                                onPress={() => openSlot(w, "outgoing", o)}
-                              >
-                                <Text style={styles.needBrotherLabel}>
-                                  {t("talkCoordinator.log.needsBrother")}
-                                </Text>
-                                <Text style={styles.outMain}>
-                                  {`→ ${breakable(congById.get(o.hostCongregationId ?? "")?.name) ?? "—"}`}
-                                  {o.date !== w.date ? ` · ${fmtDay(o.date)}` : ""}
-                                </Text>
-                                <Text style={styles.needBrotherHint}>
-                                  {t("talkCoordinator.log.needsBrotherHint")}
-                                </Text>
-                                <Text style={styles.needBrotherCta}>
-                                  {t("talkCoordinator.log.assignBrother")}
-                                </Text>
-                              </Pressable>
-                            );
-                          }
-                          return (
-                          <Pressable
-                            key={o.id}
-                            style={[styles.outItem, att ? styles.outItemRisk : null]}
-                            onPress={() => openSlot(w, "outgoing", o)}
-                          >
-                            <Text style={styles.outMain}>
-                              {o.publisherId
-                                ? (pubById.get(o.publisherId) ?? "—")
-                                : "—"}
-                              {o.hostCongregationId
-                                ? ` → ${breakable(congById.get(o.hostCongregationId)?.name) ?? ""}`
-                                : ""}
-                            </Text>
-                            <Text style={styles.outSub}>
-                              {o.date !== w.date ? `${fmtDay(o.date)}` : ""}
-                              {o.date !== w.date && talkLabel(o.publicTalkId)
-                                ? " · "
-                                : ""}
-                              {talkLabel(o.publicTalkId) ?? ""}
-                            </Text>
-                            {/* Our own brother travelling with it — the case
-                              that costs a telephone call if it is missed. */}
-                            <RestrictionBadge id={o.publicTalkId} date={o.date} />
-                            {!o.publicTalkId && (
-                              <Text style={styles.outHint}>
-                                {t("talkCoordinator.log.noTalk")}
-                              </Text>
-                            )}
-                            {att ? (
-                              <View style={styles.riskBlock}>
-                                <Text style={styles.riskBadge}>
-                                  {t("talkCoordinator.log.inQuestion")}
-                                </Text>
-                                <Text style={styles.riskText}>
-                                  {t(`talkCoordinator.log.risk.${att.reason}`)}
-                                </Text>
-                                <View style={styles.riskActions}>
-                                  <Pressable
-                                    style={styles.riskBtn}
-                                    disabled={ackMutation.isPending}
-                                    onPress={() =>
-                                      ackMutation.mutate({
-                                        id: o.id,
-                                        reason: att.reason as "absence" | "departed",
-                                      })
-                                    }
-                                  >
-                                    <Text style={styles.riskBtnText}>
-                                      {t("talkCoordinator.log.heGoes")}
-                                    </Text>
-                                  </Pressable>
-                                  <Pressable
-                                    style={[styles.riskBtn, styles.riskBtnMain]}
-                                    onPress={() => openSlot(w, "outgoing", o)}
-                                  >
-                                    <Text style={styles.riskBtnMainText}>
-                                      {t("talkCoordinator.log.findReplacement")}
-                                    </Text>
-                                  </Pressable>
-                                </View>
-                              </View>
-                            ) : null}
-                          </Pressable>
-                          );
-                        })}
-                        <Pressable
-                          style={styles.outAdd}
-                          onPress={() => openSlot(w, "outgoing", undefined)}
-                        >
-                          <Ionicons name="add" size={14} color="#b45309" />
-                          <Text style={styles.outAddText}>
-                            {t("talkCoordinator.log.addSlot")}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                    </>
-                    )}
-                  </View>
-                </Fragment>
-              );
-            })}
-          </Fragment>
-        ))}
+        <View style={[styles.journalInner, !wideJournal && styles.journalNarrow]}>
+          <SegmentedControl<JournalView>
+            segments={[
+              { key: "ahead", label: t("talkCoordinator.journal.ahead") },
+              { key: "past", label: t("talkCoordinator.journal.past") },
+              {
+                key: "attention",
+                label:
+                  attnRows.length > 0
+                    ? t("talkCoordinator.journal.attentionN", { n: attnRows.length })
+                    : t("talkCoordinator.journal.attention"),
+                dot: attnRows.length > 0 ? "#ea580c" : undefined,
+              },
+            ]}
+            value={view}
+            onChange={setView}
+          />
+          {view === "attention" ? (
+            <AttentionList
+              rows={attnRows}
+              emptyText={t("talkCoordinator.journal.allGood")}
+            />
+          ) : wideJournal ? (
+            <WeekTable weeks={shown} />
+          ) : (
+            <WeekCards weeks={shown} />
+          )}
+          {view === "past" && shown.length === 0 ? (
+            <Text style={styles.journalEmpty}>{t("talkCoordinator.journal.noPast")}</Text>
+          ) : null}
+        </View>
       </ScrollView>
 
       {/* «Заменить докладчика»: обмен/перенос содержимого слота между неделями */}
@@ -2163,7 +1890,7 @@ export default function TalkExchangeYearScreen() {
         onClose={() => setOpen(false)}
         closeLabel={t("common.cancel")}
         footer={
-          outChoice && editing ? (
+          msg ? undefined : outChoice && editing ? (
             <View style={styles.outChoice}>
               <Text style={styles.outChoiceTitle}>
                 {t("talkCoordinator.log.outChoice.title", {
@@ -2261,7 +1988,14 @@ export default function TalkExchangeYearScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.editorBody}
         >
-          {direction === "incoming" ? (
+          {msg ? (
+            <MessagePanel
+              title={t(`talkCoordinator.message.title.${msg}`)}
+              text={messageText}
+              phone={messagePhone}
+              onBack={() => setMsg(null)}
+            />
+          ) : direction === "incoming" ? (
             <>
               {week && (week.time || week.address) ? (
                 <Text style={styles.infoLine}>
@@ -2269,8 +2003,8 @@ export default function TalkExchangeYearScreen() {
                 </Text>
               ) : null}
 
-              <Text style={styles.fieldLabel}>
-                {t("talkCoordinator.log.speakerSource")}
+              <Text style={styles.sectionOver}>
+                {t("talkCoordinator.visit.speaker")}
               </Text>
               <View style={styles.chipWrap}>
                 <Pressable
@@ -2601,7 +2335,10 @@ export default function TalkExchangeYearScreen() {
                 </>
               )}
 
-              {/* Лист 2: что и кем сопровождается — речь, приём, заметка. */}
+              {/* Лист 2: речь. */}
+              <Text style={styles.sectionOver}>
+                {t("talkCoordinator.visit.talk")}
+              </Text>
               <View style={styles.formCard}>
                 {/*
                   Речь из каталога или специальная.
@@ -2661,34 +2398,124 @@ export default function TalkExchangeYearScreen() {
                     />
                   </View>
                 )}
+                {/* When the talk was last heard here — in words, not a counter
+                    dressed as a button (25 October 2026). */}
                 {!special && publicTalkId ? (
-                  <View style={styles.histBox}>
-                    <Text style={styles.histCount}>
-                      {t("talkCoordinator.log.givenTimes", {
-                        n: talkOccs.length,
-                      })}
+                  <View style={styles.histLine}>
+                    <Text style={styles.histText}>
+                      {talkOccs.length === 0
+                        ? t("talkCoordinator.visit.neverHere")
+                        : t("talkCoordinator.visit.heardHere", {
+                            list: talkOccs
+                              .slice(-3)
+                              .map(
+                                (o) =>
+                                  `${fmtHist(o.date)} · ${
+                                    incomingName(o) ??
+                                    t("talkCoordinator.log.unknownSpeaker")
+                                  }`,
+                              )
+                              .join("; "),
+                          })}
                     </Text>
-                    {talkOccs.map((o) => (
-                      <Text
-                        key={o.id}
-                        style={styles.histItem}
-                        numberOfLines={1}
-                      >
-                        {fmtHist(o.date)} ·{" "}
-                        {incomingName(o) ??
-                          t("talkCoordinator.log.unknownSpeaker")}
-                      </Text>
-                    ))}
                   </View>
                 ) : null}
-                <View style={{ marginTop: 10 }}>
-                  <PublisherSelector
-                    label={t("talkCoordinator.log.hospitality")}
-                    value={hospitalityPublisherId}
-                    onChange={setHospitalityPublisherId}
-                  />
-                </View>
               </View>
+
+              {/* Лист 3: вступительная песня — гость выбирает её сам. */}
+              <Text style={styles.sectionOver}>
+                {t("talkCoordinator.visit.song")}
+              </Text>
+              <View style={styles.formCard}>
+                <View style={styles.songRow}>
+                  <Text style={styles.songNo}>№</Text>
+                  <TextInput
+                    style={[styles.songInput, (songBad || songRepeats) && styles.songInputBad]}
+                    value={openingSong}
+                    onChangeText={(v) => setOpeningSong(v.replace(/[^\d]/g, "").slice(0, 3))}
+                    keyboardType="number-pad"
+                    inputMode="numeric"
+                    placeholder="—"
+                    placeholderTextColor="#94a3b8"
+                    accessibilityLabel={t("talkCoordinator.visit.song")}
+                  />
+                  <Text style={styles.songTitle} numberOfLines={2}>
+                    {songNumber !== null ? (songTitles.get(songNumber) ?? "") : t("talkCoordinator.visit.songUnknown")}
+                  </Text>
+                </View>
+                {songRepeats ? (
+                  <Text style={styles.songWarn}>
+                    {t("talkCoordinator.visit.songRepeats", { n: songNumber })}
+                  </Text>
+                ) : studySongs.length > 0 ? (
+                  <Text style={styles.songHint}>
+                    {t("talkCoordinator.visit.studySongs", { list: studySongs.join(", ") })}
+                  </Text>
+                ) : (
+                  <Text style={styles.songHint}>{t("talkCoordinator.visit.studyUnknown")}</Text>
+                )}
+              </View>
+
+              {/* Лист 4: ланч-пакет — сестра или брат приносит его в зал. */}
+              <Text style={styles.sectionOver}>
+                {t("talkCoordinator.visit.lunch")}
+              </Text>
+              <View style={styles.formCard}>
+                <PublisherSelector
+                  label={t("talkCoordinator.visit.lunchBy")}
+                  value={hospitalityPublisherId}
+                  onChange={setHospitalityPublisherId}
+                />
+              </View>
+
+              {/* Лист 5: готовые сообщения — гостю и тому, кто несёт пакет. */}
+              {incomingMode === "invited" ? (
+                <>
+                  <Text style={styles.sectionOver}>
+                    {t("talkCoordinator.visit.messages")}
+                  </Text>
+                  <View style={styles.msgRow}>
+                    <Pressable
+                      style={({ pressed }) => [styles.msgBtn, styles.msgBtnMain, pressed && { opacity: 0.8 }]}
+                      onPress={() => setMsg("invite")}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="chatbubble-ellipses-outline" size={16} color="#ffffff" />
+                      <Text style={styles.msgBtnMainText}>{t("talkCoordinator.visit.msgInvite")}</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [styles.msgBtn, pressed && { opacity: 0.8 }]}
+                      onPress={() => setMsg("remind")}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="alarm-outline" size={16} color="#0f4c5a" />
+                      <Text style={styles.msgBtnText}>{t("talkCoordinator.visit.msgRemind")}</Text>
+                    </Pressable>
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.msgBtn,
+                        !hospitalityPublisherId && styles.msgBtnOff,
+                        pressed && { opacity: 0.8 },
+                      ]}
+                      disabled={!hospitalityPublisherId}
+                      onPress={() => setMsg("lunch")}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons
+                        name="bag-handle-outline"
+                        size={16}
+                        color={hospitalityPublisherId ? "#0f4c5a" : "#94a3b8"}
+                      />
+                      <Text style={[styles.msgBtnText, !hospitalityPublisherId && { color: "#94a3b8" }]}>
+                        {t("talkCoordinator.visit.msgLunch")}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  {!hospitalityPublisherId ? (
+                    <Text style={styles.songHint}>{t("talkCoordinator.visit.msgLunchOff")}</Text>
+                  ) : null}
+                </>
+              ) : null}
             </>
           ) : (
             <>
@@ -2765,7 +2592,7 @@ export default function TalkExchangeYearScreen() {
                           sel && styles.pickChipTextActive,
                         ]}
                       >
-                        {dayjs(d).locale(i18n.language).format("dddd, D MMM")}
+                        {capitalizeFirst(dayjs(d).locale(i18n.language).format("dddd, D MMM"))}
                       </Text>
                     </Pressable>
                   );
@@ -2782,68 +2609,80 @@ export default function TalkExchangeYearScreen() {
             </>
           )}
 
-          <Text style={styles.fieldLabel}>{t("talkCoordinator.log.note")}</Text>
-          <TextInput
-            style={styles.input}
-            value={note}
-            onChangeText={setNote}
-            multiline
-            placeholderTextColor="#94a3b8"
-          />
+          {msg ? null : (
+            <>
+              <Text style={styles.fieldLabel}>{t("talkCoordinator.log.note")}</Text>
+              <TextInput
+                style={styles.input}
+                value={note}
+                onChangeText={setNote}
+                multiline
+                placeholderTextColor="#94a3b8"
+              />
+            </>
+          )}
         </ScrollView>
       </Sheet>
     </SafeAreaView>
   );
 }
 
-function Slot({
-  label,
-  accent,
-  bg,
-  entry,
-  onPress,
-  onSwap,
-  swapHint,
-  children,
-}: {
-  label: string;
-  accent: string;
-  bg: string;
-  entry?: TalkExchange;
-  onPress: () => void;
-  onSwap?: () => void;
-  swapHint?: string;
-  children?: React.ReactNode;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Pressable
-      style={[styles.slot, entry ? { backgroundColor: bg } : styles.slotEmpty]}
-      onPress={onPress}
-    >
-      <View style={styles.slotLabelRow}>
-        <Text style={[styles.slotLabel, { color: accent }]}>{label}</Text>
-        {onSwap ? (
-          <Pressable
-            onPress={onSwap}
-            hitSlop={10}
-            accessibilityLabel={swapHint}
-            style={styles.slotSwapBtn}
-          >
-            <Ionicons name="swap-horizontal" size={15} color={accent} />
-          </Pressable>
-        ) : null}
-      </View>
-      {entry ? (
-        <View>{children}</View>
-      ) : (
-        <Text style={styles.slotAdd}>+ {t("talkCoordinator.log.addSlot")}</Text>
-      )}
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
+  journal: { padding: 12, paddingBottom: 48 },
+  sectionOver: {
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 11,
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+    color: "#64748b",
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  histLine: { marginTop: 8 },
+  histText: { fontFamily: "Manrope_400Regular", fontSize: 12.5, lineHeight: 17, color: "#475569" },
+  songRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  songNo: { fontFamily: "Manrope_700Bold", fontSize: 16, color: "#64748b" },
+  songInput: {
+    width: 76,
+    fontFamily: "Manrope_700Bold",
+    fontSize: 18,
+    color: "#0f172a",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: "#ffffff",
+    textAlign: "center",
+  },
+  songInputBad: { borderColor: "#f97316", backgroundColor: "#fff7ed" },
+  songTitle: { flex: 1, fontFamily: "Manrope_500Medium", fontSize: 13.5, color: "#334155" },
+  songHint: { fontFamily: "Manrope_400Regular", fontSize: 12, lineHeight: 16, color: "#64748b", marginTop: 8 },
+  songWarn: { fontFamily: "Manrope_700Bold", fontSize: 12.5, lineHeight: 17, color: "#c2410c", marginTop: 8 },
+  msgRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  msgBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 44,
+    backgroundColor: "#e6f2f4",
+  },
+  msgBtnMain: { backgroundColor: "#0f4c5a" },
+  msgBtnOff: { backgroundColor: "#f1f5f9" },
+  msgBtnText: { fontFamily: "Manrope_700Bold", fontSize: 13.5, color: "#0f4c5a" },
+  msgBtnMainText: { fontFamily: "Manrope_700Bold", fontSize: 13.5, color: "#ffffff" },
+  journalInner: { gap: 10, width: "100%", alignSelf: "center" },
+  journalNarrow: { maxWidth: 720 },
+  journalEmpty: {
+    fontFamily: "Manrope_500Medium",
+    fontSize: 14,
+    color: "#64748b",
+    textAlign: "center",
+    paddingVertical: 24,
+  },
   /* Amber, boxed and with a mark: this is the one line on the screen that has
      to stop the reader before he telephones anybody. */
   restrictBadge: {
@@ -3513,7 +3352,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   pickChipActive: { backgroundColor: "#e0f2fe", borderColor: "#0ea5e9" },
-  pickChipText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", textTransform: "capitalize" },
+  pickChipText: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   pickChipTextActive: {
     color: "#0369a1",
     fontFamily: "Manrope_600SemiBold",

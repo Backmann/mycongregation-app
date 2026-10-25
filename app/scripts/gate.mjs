@@ -80,6 +80,8 @@ const STEPS = [
   // отсюда часы, режим ведения — обратный отсчёт; сдвиг на минуту менял бы
   // и то и другое молча.
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
+  // The coordinator's ready messages, agreed word for word (25.10.2026).
+  ['Готовые сообщения координатора речей', 'node', ['scripts/check-talk-messages.mjs']],
   // The chairman's run as kept on the device: every shape it was ever written
   // in, and a programme that changes under a running meeting (15.10.2026).
   ['Запись хода встречи', 'node', ['scripts/check-conduct-record.mjs']],
