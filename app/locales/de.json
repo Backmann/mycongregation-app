@@ -4468,6 +4468,16 @@
       "body": "Ablauf und Ergebnis dieser Zusammenkunft werden gelöscht – auf diesem Gerät und auf dem Server. Die Zusammenkunft kann von vorn geführt werden. Nach ihrem Tag wird das Ergebnis nicht mehr gelöscht.",
       "confirm": "Löschen",
       "failed": "Löschen nicht möglich"
+    },
+    "results": {
+      "title": "Ablauf der Zusammenkünfte",
+      "menuSub": "Wie die Zusammenkünfte liefen – 7 Tage aufbewahrt",
+      "lead": "Ergebnisse der Zusammenkünfte unter der Woche und am Wochenende der letzten 7 Tage. Danach werden sie von selbst gelöscht.",
+      "none": "Keine Ergebnisse: Sie werden 7 Tage nach der Zusammenkunft aufbewahrt – wenn sie bis zum Ende in der App geführt wurde.",
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Zusammenkunft am Wochenende",
+      "keep": "aufbewahrt bis {{day}}",
+      "who": "Die Ergebnisse sehen die Administratoren und die Brüder, die für diese Zusammenkünfte verantwortlich sind."
     }
   },
   "serviceHub": {

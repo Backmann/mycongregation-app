@@ -13,10 +13,17 @@ import { HeaderMenu } from '../../../components/HeaderMenu';
 import { usePermissions } from '../../../lib/permissions';
 import { useMayOpen } from '../../../lib/useMayOpen';
 import { screenGate } from '../../../components/ScreenGate';
+import { useAuth } from '../../../lib/auth';
+import { isConductOverseer } from '../../../lib/conduct-live';
 
 export default function ScheduleLayout() {
   const { t } = useTranslation();
-  const { canOpenProgrammeEditor } = usePermissions();
+  const { canOpenProgrammeEditor, responsibilities } = usePermissions();
+  const { user } = useAuth();
+  // «Итоги встреч» for whoever may read a result of either meeting.
+  const readsResults =
+    isConductOverseer(user?.role, responsibilities, 'midweek') ||
+    isConductOverseer(user?.role, responsibilities, 'weekend');
   // The rows of «…» stand for whoever their screens let in (lib/screen-access).
   const mayOpen = useMayOpen();
   // «Составление программы» is offered to exactly those the screen itself
@@ -60,6 +67,19 @@ export default function ScheduleLayout() {
   };
   const feedMenu = [
     events,
+    ...(readsResults
+      ? [
+          {
+            key: 'results',
+            icon: 'stats-chart-outline' as const,
+            title: t('conduct.results.title'),
+            subtitle: t('conduct.results.menuSub'),
+            tint: '#0369a1',
+            tintBg: '#e0f2fe',
+            onPress: () => router.push('/schedule/results' as any),
+          },
+        ]
+      : []),
     ...(plans
       ? [
           {
@@ -186,6 +206,13 @@ export default function ScheduleLayout() {
         name="conduct"
         options={{
           title: t('conduct.title'),
+          headerLeft: () => <BackButton fallback="/schedule" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="results"
+        options={{
+          title: t('conduct.results.title'),
           headerLeft: () => <BackButton fallback="/schedule" toParent />,
         }}
       />

@@ -4468,6 +4468,16 @@
       "body": "The run and the result of this meeting will be deleted — on this device and on the server. The meeting can then be run from the start. After the meeting’s day the result is no longer deleted.",
       "confirm": "Wipe",
       "failed": "Could not wipe"
+    },
+    "results": {
+      "title": "Meeting results",
+      "menuSub": "How the meetings ran — kept for 7 days",
+      "lead": "Results of the midweek and weekend meetings of the last 7 days. After that they are deleted by themselves.",
+      "none": "No results: they are kept for 7 days after a meeting — if it was run in the app to the end.",
+      "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting",
+      "keep": "kept until {{day}}",
+      "who": "Meeting results are seen by the admins and the brothers responsible for these meetings."
     }
   },
   "serviceHub": {
