@@ -4402,15 +4402,18 @@
     },
     "pausedSince": "Pause seit {{time}}",
     "weekendRun": {
-      "opening": "Beginn · Lied und Gebet",
+      "opening": "Lied, Gebet und Vorstellung des Redners",
       "prayerBy": "Gebet: {{name}}",
-      "openingSong": "Beginn · {{song}} und Gebet",
+      "openingSong": "{{song}}, Gebet und Vorstellung des Redners",
       "between": "Dank für den Vortrag · Bekanntmachungen",
       "closing": "Schlusslied und Gebet",
       "announcedBy": "kündigt an: {{name}}",
       "closingSong": "Schluss: {{song}} und Gebet",
       "songNo": "Lied {{n}}",
-      "song": "Lied"
+      "song": "Lied",
+      "publicTalk": "Öffentlicher Vortrag",
+      "watchtower": "Wachtturm-Studium",
+      "coTalk": "Schlussvortrag des Kreisaufsehers"
     },
     "hanging": {
       "title": "Zusammenkunft nicht beendet",
@@ -4425,9 +4428,9 @@
     "entrance": {
       "overline": "WECHSEL · KOMMT NACH VORN",
       "note": "Der Wechsel zählt nicht zur Zeit des Programmpunkts. Punkt: {{minutes}} Min.",
-      "begin": "Begonnen · Zeit {{time}} läuft",
+      "begin": "Hat begonnen — {{time}} starten",
       "beginSong": "Lied hat begonnen",
-      "autoIn": "Startet von selbst in {{sec}} s",
+      "autoIn": "startet von selbst in {{sec}} s",
       "callsUp": "Kommt nach vorn: {{who}}",
       "noteSong": "Der Wechsel zählt nicht zum Lied. Lied: etwa {{minutes}} Min."
     },
@@ -4445,7 +4448,23 @@
       "again": "Noch einmal tippen — bei {{time}} beenden",
       "hint": "Weniger als ein Drittel von {{minutes}} Min. ist vergangen"
     },
-    "undoLoud": "Versehentlich getippt? Zurück"
+    "undoLoud": "Versehentlich getippt? Zurück",
+    "done": {
+      "part": "Fertig",
+      "chairman": "Vorsitzender fertig",
+      "song": "Lied zu Ende",
+      "prayer": "Gebet zu Ende",
+      "prayerSub": "die Zusammenkunft wird beendet"
+    },
+    "startSub": "tippen, wenn der Vorsitzende vorn ist",
+    "countAfterStart": "Die Zeit läuft nach „Zusammenkunft beginnen“",
+    "startsIn": "Beginn um {{time}} · {{in}}",
+    "startsAt": "Beginn um {{time}}",
+    "startsLate": "Beginn um {{time}} · {{m}} Min. verspätet",
+    "inMinutes": "in {{m}} Min.",
+    "inHours": "in {{h}} Std. {{m}} Min.",
+    "first": "Beginn der Zusammenkunft",
+    "comesOutWho": "es kommt {{who}}"
   },
   "serviceHub": {
     "sections": {

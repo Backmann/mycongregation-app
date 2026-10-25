@@ -269,15 +269,16 @@ for (const c of CASES) {
   // 19 October 2026: the chairman's thanks and announcements 2, then the
   // conductor's song 3 — one person on the stage per line.
   const want =
-    'weekend_opening_prayer:4 weekend_opening_words:1 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:60 weekend_closing_prayer:5';
+    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:60 weekend_closing_prayer:5';
   if (minutes(plain) !== want) fails.push(`weekend: ${minutes(plain)}\n    want ${want}`);
   if (totalRunMinutes(plain) !== 105) fails.push(`weekend total ${totalRunMinutes(plain)}, want 105`);
   if (plain.find((x) => x.key === 'weekend_song').showInterval !== false) fails.push('weekend song carries no range');
   if (plain.some((x) => x.counselMin !== 0)) fails.push('no counsel on the weekend');
   // Variant A (22 October 2026): the chairman's opening words, a step of his own.
-  const words = plain.find((x) => x.key === 'weekend_opening_words');
-  if (!words?.chairmanWords || words.showInterval !== false || words.assignmentId !== 'weekend_chairman')
-    fails.push("weekend opening words: the chairman's row, no range");
+  // One opening step (25 October 2026): song, prayer and the speaker introduced.
+  if (plain.some((x) => x.key === 'weekend_opening_words')) fails.push('weekend opening is one step');
+  const opening = plain.find((x) => x.key === 'weekend_opening_prayer');
+  if (!opening?.soft || opening.minutes !== 5) fails.push('weekend opening: 5 min, counted up like a song');
   const co = buildWeekendRunOrder([
     row('weekend_opening_prayer'),
     row('public_talk_speaker'),
@@ -286,7 +287,7 @@ for (const c of CASES) {
     row('weekend_closing_prayer'),
   ]);
   const wantCo =
-    'weekend_opening_prayer:4 weekend_opening_words:1 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
+    'weekend_opening_prayer:5 public_talk_speaker:30 weekend_announcements:2 weekend_song:3 watchtower_conductor:30 co_concluding_talk:30 weekend_closing_prayer:5';
   if (minutes(co) !== wantCo) fails.push(`CO week: ${minutes(co)}\n    want ${wantCo}`);
   // A visit week with two songs (19 October 2026): the earlier is the one
   // before the study; the later, the closing song after the overseer's talk,

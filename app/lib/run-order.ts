@@ -180,12 +180,15 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
 }
 
 /**
- * Song and prayer (4), then the chairman's opening words — he welcomes and
- * introduces the speaker (1). Two steps since 22 October 2026 (Lionel,
- * variant A), like the midweek; together the programme's five minutes.
+ * The opening of the weekend meeting is ONE step (Lionel, 25 October 2026):
+ * the chairman welcomes, announces the song, the prayer is said — by him or
+ * by another brother — and he introduces the speaker. The programme has it as
+ * one span, 13:00–13:05, and the chairman stays at the lectern through it, so
+ * a tap in the middle measured nothing (the 22 October split into 4 + 1 was
+ * the midweek's shape, where the workbook prints the opening words apart).
+ * A song is in it, so it counts up, never amber or red.
  */
-const WEEKEND_OPENING_MIN = 4;
-const WEEKEND_OPENING_WORDS_MIN = 1;
+const WEEKEND_OPENING_MIN = 5;
 const PUBLIC_TALK_MIN = 30;
 /**
  * After the talk (Lionel, 19 October 2026): the chairman thanks the speaker,
@@ -206,8 +209,9 @@ const WEEKEND_CLOSING_MIN = 5;
 /**
  * THE WEEKEND MEETING, in the order it is held (18 October 2026) — the same
  * minutes as the schedule sheet (lib/parts.ts buildWeekendPartTimes):
- * song and prayer 4 and the chairman's opening words 1, public talk 30, the chairman's thanks and
- * announcements 2, the song 3, Watchtower study 60, closing 5.
+ * the opening — song, prayer, the speaker introduced — 5, public talk 30, the
+ * chairman's thanks and announcements 2, the song 3, Watchtower study 60,
+ * closing 5.
  *
  * In the week of the circuit overseer's visit (Lionel, 18 October 2026):
  * public talk 30, the study 30 without a reader, then his concluding talk
@@ -230,7 +234,6 @@ export function buildWeekendRunOrder(items: RunItem[]): RunSegment[] {
   };
   const coTalk = first('co_concluding_talk');
   push(first('weekend_opening_prayer'), 'weekend_opening_prayer', WEEKEND_OPENING_MIN, true, { soft: true });
-  push(first('weekend_chairman'), 'weekend_opening_words', WEEKEND_OPENING_WORDS_MIN, false, { chairmanWords: true });
   push(first('public_talk_speaker'), 'public_talk_speaker', dur(first('public_talk_speaker'), PUBLIC_TALK_MIN));
   // The song before the study. A visit week may carry a second one, the
   // closing song after the overseer's talk (schedule/edit.tsx): the earlier
