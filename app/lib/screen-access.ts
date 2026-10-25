@@ -104,6 +104,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // For the chairman of that very meeting and the administrator; which
   // meeting — only the screen knows.
   '/schedule/conduct': 'self',
+  '/schedule/results': 'self', // who may read is the screen's own rule
   // One part of the programme, opened to be changed; read-only or refused by
   // what the part is — the screen and the server know.
   '/schedule/[id]': 'self',
