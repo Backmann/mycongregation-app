@@ -4402,15 +4402,18 @@
     },
     "pausedSince": "Paused since {{time}}",
     "weekendRun": {
-      "opening": "Opening · song and prayer",
+      "opening": "Song, prayer and the speaker introduced",
       "prayerBy": "prayer: {{name}}",
-      "openingSong": "Opening · {{song}} and prayer",
+      "openingSong": "{{song}}, prayer and the speaker introduced",
       "between": "Thanks for the talk · announcements",
       "closing": "Closing song and prayer",
       "announcedBy": "announced by {{name}}",
       "closingSong": "Closing {{song}} and prayer",
       "songNo": "song {{n}}",
-      "song": "Song"
+      "song": "Song",
+      "publicTalk": "Public talk",
+      "watchtower": "Watchtower Study",
+      "coTalk": "The circuit overseer’s concluding talk"
     },
     "hanging": {
       "title": "Meeting not finished",
@@ -4425,9 +4428,9 @@
     "entrance": {
       "overline": "CHANGEOVER · COMING UP",
       "note": "The changeover does not count toward the part. Part: {{minutes}} min",
-      "begin": "Started · countdown {{time}}",
+      "begin": "Started — run {{time}}",
       "beginSong": "Song started",
-      "autoIn": "Starts automatically in {{sec}} s",
+      "autoIn": "starts by itself in {{sec}} s",
       "callsUp": "Coming up: {{who}}",
       "noteSong": "The changeover does not count toward the song. Song: about {{minutes}} min"
     },
@@ -4445,7 +4448,23 @@
       "again": "Tap again to end at {{time}}",
       "hint": "Less than a third of {{minutes}} min has passed"
     },
-    "undoLoud": "Tapped by mistake? Undo"
+    "undoLoud": "Tapped by mistake? Undo",
+    "done": {
+      "part": "Finished",
+      "chairman": "Chairman finished",
+      "song": "Song ended",
+      "prayer": "Prayer ended",
+      "prayerSub": "the meeting will be closed"
+    },
+    "startSub": "tap when the chairman is at the lectern",
+    "countAfterStart": "The time runs after “Start the meeting”",
+    "startsIn": "Starts at {{time}} · {{in}}",
+    "startsAt": "Starts at {{time}}",
+    "startsLate": "Starts at {{time}} · {{m}} min late",
+    "inMinutes": "in {{m}} min",
+    "inHours": "in {{h}} h {{m}} min",
+    "first": "Opening of the meeting",
+    "comesOutWho": "{{who}} comes up"
   },
   "serviceHub": {
     "sections": {

@@ -1282,6 +1282,17 @@ export default function ConductScreen({
         song: null,
       };
     }
+    // The talk, the study, the overseer's talk: what it is on top, its theme
+    // under it (25 October 2026) — the bare theme said nothing of the part.
+    const named: Record<string, string> = {
+      public_talk_speaker: 'conduct.weekendRun.publicTalk',
+      watchtower_conductor: 'conduct.weekendRun.watchtower',
+      co_concluding_talk: 'conduct.weekendRun.coTalk',
+    };
+    if (named[seg.key]) {
+      const theme = row?.partTitle?.trim() ? d.label : null;
+      return { label: t(named[seg.key]), subtitle: null, person, song: null, theme };
+    }
     return { label: d.label, subtitle: d.subtitle ?? null, person, song: null };
   };
   /**
@@ -1308,6 +1319,8 @@ export default function ConductScreen({
   const keyLabel = (key: string) => {
     const seg = segments.find((s) => s.key === key);
     if (seg) return runView(seg).label;
+    // A result saved while the weekend opening was two steps (22–25 October).
+    if (key === 'weekend_opening_words') return t('conduct.midweekRun.openingWords');
     return partDisplay(key, null).label;
   };
   /** Who a part shows when its card names nobody (the result's table, the weekend). */
@@ -1669,8 +1682,33 @@ export default function ConductScreen({
   // only the small «Продолжить» said that it was not counting.
   const pausedText = started && !counselling && run.pausedAt !== null ? t('conduct.pausedSince', { time: clockOf(new Date(run.pausedAt)) }) : null;
 
+  // BEFORE THE START (25 October 2026): not «Сейчас · 0:00» over a meeting
+  // nothing of which is on yet, but when it begins and how soon.
+  const untilStart = !started ? untilStartSec(meetingTime, meetingDay, now) : null;
+  const startLine = (() => {
+    if (started || !meetingTime) return null;
+    if (untilStart !== null && untilStart > 0 && untilStart <= 6 * 3600) {
+      const m = Math.ceil(untilStart / 60);
+      const inText =
+        m >= 60
+          ? t('conduct.inHours', { h: Math.floor(m / 60), m: String(m % 60).padStart(2, '0') })
+          : t('conduct.inMinutes', { m });
+      return t('conduct.startsIn', { time: meetingTime, in: inText });
+    }
+    if (untilStart !== null && untilStart <= 0 && untilStart > -2 * 3600) {
+      return t('conduct.startsLate', { time: meetingTime, m: Math.floor(-untilStart / 60) });
+    }
+    return t('conduct.startsAt', { time: meetingTime });
+  })();
+
   const nowCard = current ? (
-    counselling ? (
+    !started ? (
+      <View style={styles.nowCard}>
+        <Text style={styles.overline}>{startLine ?? t('conduct.first')}</Text>
+        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
+        <Text style={[styles.planned, { marginTop: 14 }]}>{t('conduct.countAfterStart')}</Text>
+      </View>
+    ) : counselling ? (
       <View style={[styles.nowCard, styles.counselCard]}>
         <Text style={styles.overline}>
           {t('conduct.counsel.title', { part: keyLabel(current.key) })}
@@ -1689,7 +1727,7 @@ export default function ConductScreen({
       // way; his minutes begin with «Начал», or by themselves after 30 s.
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{t('conduct.entrance.overline')}</Text>
-        <SegmentHeadline view={headView(current)} big />
+        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
         <Text style={[...big, styles.countdownPaused]}>{mmss(entranceElapsed)}</Text>
         {unsureLine}
         <Text style={styles.planned}>
@@ -1700,7 +1738,7 @@ export default function ConductScreen({
       // A SONG: up from zero, no amber, no red (Lionel, 22 October 2026).
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{t('conduct.now')}</Text>
-        <SegmentHeadline view={headView(current)} big />
+        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
         <Text style={[...big, styles.countdownPaused]}>{mmss(currentElapsed)}</Text>
         {unsureLine}
         <Text style={styles.planned}>{t('conduct.soft.note', { minutes: current.partMin })}</Text>
@@ -1708,7 +1746,7 @@ export default function ConductScreen({
     ) : (
       <View style={styles.nowCard}>
         <Text style={styles.overline}>{isStudent ? t('conduct.nowStudent') : t('conduct.now')}</Text>
-        <SegmentHeadline view={headView(current)} big />
+        <SegmentHeadline view={headView(current)} big whatFirst={weekend} />
         <Text
           style={[
             ...big,
@@ -1746,7 +1784,7 @@ export default function ConductScreen({
   // What the big button does now, and whom it calls next.
   const last = run.index === segments.length - 1;
   const primaryBase: { label: string; sub: string | null; onPress: () => void } = !started
-    ? { label: t('conduct.start'), sub: null, onPress: start }
+    ? { label: t('conduct.start'), sub: t('conduct.startSub'), onPress: start }
     : entering && current
       ? {
           label: current.soft
@@ -1760,6 +1798,21 @@ export default function ConductScreen({
         }
     : isStudent && !counselling
       ? { label: t('conduct.partDone'), sub: null, onPress: finishPart }
+      : weekend && current
+        ? // THE WEEKEND (Lionel, 25 October 2026): the button says what has
+          // just happened in the hall — «Закончил», «Песня закончилась»,
+          // «Молитва закончилась». What comes next is said once, under it.
+          {
+            label: last
+              ? t('conduct.done.prayer')
+              : current.key === 'weekend_opening_prayer' || current.chairmanWords
+                ? t('conduct.done.chairman')
+                : current.soft
+                  ? t('conduct.done.song')
+                  : t('conduct.done.part'),
+            sub: last ? t('conduct.done.prayerSub') : null,
+            onPress: advance,
+          }
       : last
         ? { label: t('conduct.finish'), sub: null, onPress: advance }
         : {
@@ -1798,7 +1851,13 @@ export default function ConductScreen({
         takeButton
       ) : (
       <Pressable
-        style={[styles.primaryBtn, armed && styles.primaryBtnArmed, locked && !armed && styles.primaryBtnLocked]}
+        style={[
+          styles.primaryBtn,
+          weekend && (!started || entering) && styles.primaryBtnBegin,
+          weekend && started && !entering && last && styles.primaryBtnEnd,
+          armed && styles.primaryBtnArmed,
+          locked && !armed && styles.primaryBtnLocked,
+        ]}
         onPress={pressPrimary}
         accessibilityRole="button"
       >
@@ -1852,7 +1911,11 @@ export default function ConductScreen({
   const upNext = upcoming ? (
     <View style={styles.nextCard}>
       <Text style={styles.overline}>{counselling ? t('conduct.then') : t('conduct.next')}</Text>
-      <SegmentHeadline view={headView(upcoming)} />
+      <SegmentHeadline
+        view={headView(upcoming)}
+        whatFirst={weekend}
+        comesOut={weekend && !counselling && !!entranceAt[run.index + 1]}
+      />
     </View>
   ) : null;
 
@@ -1878,6 +1941,9 @@ export default function ConductScreen({
                   <Text style={styles.sheetCounselNow}>{` · ${t('conduct.counsel.short')}`}</Text>
                 ) : null}
               </Text>
+              {/* Every song by its number AND its name (25 October 2026). */}
+              {v.song ? <Text style={styles.sheetSong}>{t('common.quoted', { text: v.song })}</Text> : null}
+              {v.theme ? <Text style={styles.sheetSong}>{t('common.quoted', { text: v.theme })}</Text> : null}
               {person ? <Text style={styles.sheetPerson}>{person}</Text> : null}
               {s.key === 'public_talk_speaker' && mayReplaceSpeaker ? (
                 <Pressable
@@ -1945,7 +2011,8 @@ export default function ConductScreen({
       section:
         seg.key !== 'weekend_announcements' && sub !== 'closing' && SUBSECTIONS[sub] ? t(SUBSECTIONS[sub].i18nKey) : null,
       sectionColor: STAGE_SECTION_COLORS[sub] ?? '#94a3b8',
-      title: v.label,
+      // The chairman announces the theme: it stays the title there.
+      title: v.theme ?? v.label,
       person,
       minutes: seg.partMin,
       soft: !!seg.soft,
@@ -2171,10 +2238,42 @@ interface SegView {
   person: string | null;
   /** A song step: the song's name from the catalog. */
   song: string | null;
+  /** The weekend talk's or study's own theme, under the part's name. */
+  theme?: string | null;
 }
 
-function SegmentHeadline({ view, big }: { view: SegView; big?: boolean }) {
+function SegmentHeadline({
+  view,
+  big,
+  whatFirst,
+  comesOut,
+}: {
+  view: SegView;
+  big?: boolean;
+  /**
+   * The weekend (Lionel, 25 October 2026): what is on, then who — on every
+   * step the same, so the eye does not look for it anew.
+   */
+  whatFirst?: boolean;
+  /** «выходит …» before the name: another brother goes to the lectern. */
+  comesOut?: boolean;
+}) {
   const { t } = useTranslation();
+  if (whatFirst) {
+    return (
+      <View>
+        <Text style={big ? styles.whatBig : styles.whatSmall}>{view.label}</Text>
+        {view.theme ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.theme })}</Text> : null}
+        {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.song })}</Text> : null}
+        {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
+        {view.person ? (
+          <Text style={big ? styles.whoBig : styles.whoSmall}>
+            {comesOut ? t('conduct.comesOutWho', { who: view.person }) : view.person}
+          </Text>
+        ) : null}
+      </View>
+    );
+  }
   return (
     <View>
       {view.person ? <Text style={big ? styles.personBig : styles.personSmall}>{view.person}</Text> : null}
@@ -2231,7 +2330,9 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: '#f8fafc',
   },
-  twoCol: { flexDirection: 'row', gap: 20, maxWidth: 1000, alignSelf: 'center' },
+  // Full width up to the cap: shrunk to its text, the card moved and narrowed
+  // from step to step (seen on the stand, 25 October 2026).
+  twoCol: { flexDirection: 'row', gap: 20, width: '100%', maxWidth: 1000, alignSelf: 'center' },
   colMain: { flex: 3 },
   colSide: { flex: 2 },
 
@@ -2257,6 +2358,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   personBig: { fontSize: 30, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  // The weekend's headline: the part, then the brother in blue.
+  whatBig: { fontSize: 28, lineHeight: 34, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  whatSmall: { fontSize: 18, lineHeight: 23, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
+  whoBig: { fontSize: 22, lineHeight: 28, fontFamily: 'Manrope_600SemiBold', color: '#0369a1', marginTop: 6 },
+  whoSmall: { fontSize: 15, lineHeight: 20, fontFamily: 'Manrope_600SemiBold', color: '#0369a1', marginTop: 3 },
   personSmall: { fontSize: 20, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   partBig: { fontFamily: 'Manrope_400Regular', fontSize: 26, color: '#334155', marginTop: 4 },
   partSmall: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', marginTop: 2 },
@@ -2312,6 +2418,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryBtnText: { color: '#ffffff', fontSize: 22, fontFamily: 'Manrope_700Bold' },
+  // Something begins (the meeting, «Начал»): green; the meeting's end: violet.
+  primaryBtnBegin: { backgroundColor: '#0f766e' },
+  primaryBtnEnd: { backgroundColor: '#7c3aed' },
   primaryBtnSub: {
     color: '#ffffff',
     fontSize: 15,
@@ -2371,6 +2480,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   sheetLabel: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
+  sheetSong: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#475569', marginTop: 1 },
   sheetPerson: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
   replaceBtn: {
     flexDirection: 'row',
