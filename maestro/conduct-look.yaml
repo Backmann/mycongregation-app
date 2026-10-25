@@ -24,10 +24,16 @@ name: Ведение встречи — только смотреть
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
 - takeScreenshot: 02-conduct-midweek
-- scrollUntilVisible:
-    element: "Ход встречи|ХОД ВСТРЕЧИ|Run sheet|RUN SHEET|Ablauf|ABLAUF"
-    direction: DOWN
-    timeout: 10000
+# After the meeting's day the screen is its result, which has no run sheet
+# (25 October 2026): scrolled only while the meeting is still to come.
+- runFlow:
+    when:
+      notVisible: "Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Ergebnis|ERGEBNIS"
+    commands:
+      - scrollUntilVisible:
+          element: "Ход встречи|ХОД ВСТРЕЧИ|Run sheet|RUN SHEET|Ablauf|ABLAUF"
+          direction: DOWN
+          timeout: 10000
 - takeScreenshot: 03-conduct-midweek-sheet
 - openLink: mycongregation://schedule/conduct?week=2026-10-19&kind=weekend
 - extendedWaitUntil:
@@ -35,10 +41,21 @@ name: Ведение встречи — только смотреть
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
 - takeScreenshot: 04-conduct-weekend
-- scrollUntilVisible:
-    element: "Заключительная.*|Closing.*|Schluss.*"
-    direction: DOWN
-    timeout: 10000
+- runFlow:
+    when:
+      notVisible: "Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Ergebnis|ERGEBNIS"
+    commands:
+      - scrollUntilVisible:
+          element: "Заключительная.*|Closing.*|Schluss.*"
+          direction: DOWN
+          timeout: 10000
 - takeScreenshot: 05-conduct-weekend-sheet
+# «Итоги встреч» (25 October 2026): the one place the results are found.
+- openLink: mycongregation://schedule/results
+- extendedWaitUntil:
+    visible: "Итоги встреч|Meeting results|Ablauf der Zusammenkünfte"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+- takeScreenshot: 07-results
 - pressKey: back
 - takeScreenshot: 06-after-back
