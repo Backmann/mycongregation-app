@@ -5723,6 +5723,16 @@ export interface ConductRun {
 }
 
 export const conductRunsApi = {
+  /**
+   * «Это была проба»: the result and the run of that week go, on the server,
+   * until the meeting's day is over (25 October 2026).
+   */
+  async drop(week: string, kind: ConductKindWire = "midweek"): Promise<{ result: boolean; run: boolean }> {
+    const { data } = await api.delete<{ result: boolean; run: boolean }>("/conduct-runs", {
+      params: kind === "weekend" ? { week, kind } : { week },
+    });
+    return data;
+  },
   /** Null when there is none, or it is older than seven days. */
   async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductRun | null> {
     const { data } = await api.get<{ run: ConductRun | null }>("/conduct-runs", {

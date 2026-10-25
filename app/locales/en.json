@@ -4217,7 +4217,6 @@
     "behind": "{{minutes}} min behind",
     "undo": "Undo",
     "againTitle": "Start over?",
-    "againBody": "The times of every part of this meeting will be erased on this device.",
     "counselNote": "+1 — a minute of counsel after a student part. The part itself is timed exactly according to the program.",
     "nowStudent": "Now · student part",
     "partDone": "Done",
@@ -4461,7 +4460,15 @@
     "inMinutes": "in {{m}} min",
     "inHours": "in {{h}} h {{m}} min",
     "first": "Opening of the meeting",
-    "comesOutWho": "{{who}} comes up"
+    "comesOutWho": "{{who}} comes up",
+    "wipe": {
+      "menu": "Wipe the run and start over",
+      "hint": "For example after a trial: the run and the result of this meeting are deleted — here and on the server",
+      "title": "Wipe the run?",
+      "body": "The run and the result of this meeting will be deleted — on this device and on the server. The meeting can then be run from the start. After the meeting’s day the result is no longer deleted.",
+      "confirm": "Wipe",
+      "failed": "Could not wipe"
+    }
   },
   "serviceHub": {
     "sections": {
