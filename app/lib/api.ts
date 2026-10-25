@@ -1778,6 +1778,10 @@ export interface TalkExchange {
   meetingCancelled?: boolean;
   /** Who made it: a person in the journal, or the app from a typed name. */
   origin?: 'journal' | 'programme';
+  /** The circuit visit this is the overseer's own entry of (25 October 2026). */
+  circuitVisitId?: string | null;
+  /** The circuit visit that set this guest aside (25 October 2026). */
+  setAsideBy?: string | null;
   /** Transient: set on create/update when an occupied program slot was not overwritten. */
   programConflict?: boolean;
   /**
@@ -1786,6 +1790,9 @@ export interface TalkExchange {
    */
   programmeFrozen?: boolean;
 }
+
+/** A guest set aside by a circuit visit, with his name as the journal gives it. */
+export type SetAsideGuest = TalkExchange & { name: string | null };
 
 export interface TalkExchangeInput {
   direction: TalkExchangeDirection;
@@ -1819,6 +1826,19 @@ export const talkExchangeApi = {
   },
   async attention(): Promise<TalkAttentionItem[]> {
     const { data } = await api.get<TalkAttentionItem[]>('/talk-exchange/attention');
+    return data;
+  },
+  /** Guests set aside by circuit visits still standing (25 October 2026). */
+  async setAside(): Promise<SetAsideGuest[]> {
+    const { data } = await api.get<SetAsideGuest[]>('/talk-exchange/set-aside');
+    return data;
+  },
+  /** «Перенести»: a guest set aside by a visit goes to another weekend. */
+  async moveAside(id: string, weekStartDate: string): Promise<TalkExchange> {
+    const { data } = await api.post<TalkExchange>(
+      `/talk-exchange/${id}/move-aside`,
+      { weekStartDate },
+    );
     return data;
   },
   async attentionAck(id: string, reason: 'absence' | 'departed'): Promise<void> {
@@ -3456,6 +3476,11 @@ export interface SpecialEvent {
   address: string | null;
   mapUrl: string | null;
   programUrl: string | null;
+  /**
+   * What a circuit visit has actually done to each meeting of its week
+   * (25 October 2026). null for a visit saved before this was kept.
+   */
+  programmeApplied?: { midweek: boolean; weekend: boolean } | null;
   note: string | null;
   coFirstName: string | null;
   coLastName: string | null;
