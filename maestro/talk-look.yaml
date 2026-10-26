@@ -1,0 +1,67 @@
+# Координатор речей (26 октября 2026) — на телефоне, на живых данных, ТОЛЬКО
+# СМОТРИТ: главная раздела, журнал, «Внимание», «Договорился» и «Заполнить по
+# одной» открываются и закрываются БЕЗ записи («Отмена» / «Готово» до
+# первого «Записать»). Готовое сообщение гостю открывается, но не уходит.
+# Как и conduct-look: приложение открыто и разблокировано заранее.
+appId: com.backmann.mycongregation
+name: Координатор речей — только смотреть
+---
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: { id: "tab-home" }
+    timeout: 30000
+# The desk: «Договорился» first, then the next meeting.
+- openLink: mycongregation://talk-coordinator
+- extendedWaitUntil:
+    visible: { id: "desk-quick" }
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Нет доступа).*"
+- takeScreenshot: 01-desk
+# The journal ahead, and Attention.
+- openLink: mycongregation://talk-coordinator/log
+- extendedWaitUntil:
+    visible: "Впереди|Ahead|Bevorstehend"
+    timeout: 30000
+- assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
+- takeScreenshot: 02-journal
+- openLink: mycongregation://talk-coordinator/log?view=attention
+- extendedWaitUntil:
+    visible: ".*(Внимание|Attention|Achtung).*"
+    timeout: 30000
+- takeScreenshot: 03-attention
+# «Договорился»: opened and cancelled, nothing written.
+- openLink: mycongregation://talk-coordinator/log?quick=in
+- extendedWaitUntil:
+    visible: ".*(Договорился|Just arranged|Vereinbart).*"
+    timeout: 30000
+- takeScreenshot: 04-quick
+- tapOn: "Отмена|Cancel|Abbrechen"
+# «Заполнить по одной»: the first week shown, closed before any save.
+- openLink: mycongregation://talk-coordinator/log?quick=series
+- extendedWaitUntil:
+    visible: ".*(Заполнить пустые недели|Fill empty weeks|Leere Wochen füllen).*"
+    timeout: 30000
+- takeScreenshot: 05-series
+- tapOn: "Готово|Done|Fertig"
+# The ready message to this weekend's guest, when there is one — shown only.
+- openLink: mycongregation://talk-coordinator
+- extendedWaitUntil:
+    visible: { id: "desk-quick" }
+    timeout: 30000
+- runFlow:
+    when:
+      visible: "Сообщение гостю|Message to the guest|Gast anschreiben"
+    commands:
+      - tapOn: "Сообщение гостю|Message to the guest|Gast anschreiben"
+      - extendedWaitUntil:
+          visible: ".*(К визиту|Back to the visit|Zum Besuch).*"
+          timeout: 30000
+      - takeScreenshot: 06-message
+      - tapOn: "Отмена|Cancel|Abbrechen"
+- pressKey: back
+- takeScreenshot: 07-after-back
