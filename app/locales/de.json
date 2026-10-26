@@ -942,7 +942,6 @@
   },
   "schedule": {
     "title": {
-      "detail": "Zuteilung",
       "new": "Neue Zuteilung",
       "import": "Programm-Import",
       "rules": "Versammlungsregeln"
@@ -960,7 +959,6 @@
     "unassigned": "Nicht zugeteilt",
     "createEmptyMidweek": "Leere Zusammenkunft unter der Woche erstellen",
     "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen",
-    "removedBanner": "Diese Zuteilung wurde entfernt",
     "import": {
       "title": "Programm (EPUB) importieren",
       "subtitle": "Laden Sie das Arbeitsheft für die Zusammenkunft (mwb_*.epub) oder das Wachtturm-Studium (w_*.epub) hoch, um das Wochenprogramm automatisch zu erstellen. Leere Plätze werden mit offiziellen Titeln gefüllt; Zuteilungen mit Verkündigern bleiben erhalten.",
@@ -1026,8 +1024,6 @@
     "unassign": {
       "button": "Zuteilung aufheben",
       "unassigning": "Wird aufgehoben…",
-      "confirmTitle": "Zuteilung aufheben",
-      "confirmBody": "Der Programmpunkt bleibt im Programm erhalten.",
       "confirmWebMessage": "Zuteilung des Verkündigers aufheben? Der Programmpunkt bleibt erhalten."
     },
     "weekNav": {
@@ -1046,7 +1042,6 @@
       "concludingTalk": "Schlussvortrag"
     },
     "songHint": "Nummer wählen",
-    "readOnlyBanner": "Nur Ansicht — Sie dürfen diesen Teil nicht bearbeiten",
     "publish": {
       "button": "Veröffentlichen"
     },

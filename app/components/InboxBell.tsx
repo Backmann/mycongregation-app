@@ -41,6 +41,9 @@ export function InboxBell() {
       accessibilityLabel={
         unread ? t('inbox.bellUnread') : t('inbox.bell')
       }
+      // A fixed handle for the phone checks: the label changes with unread
+      // messages and with the language (26 October 2026).
+      testID="inbox-bell"
     >
       <Ionicons
         name={unread ? 'notifications' : 'notifications-outline'}

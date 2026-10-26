@@ -7,6 +7,10 @@
 # PIN телефона (своя блокировка, components/AppLock.tsx), и дальше сценарий
 # пройти не может. Перед запуском приложение открывают и разблокируют сами;
 # сценарий работает в уже открытом.
+# МЕТКИ, А НЕ ТЕКСТ (26 октября 2026): колокольчик, стрелка «Назад» и вкладки
+# ищутся по постоянным меткам (testID: inbox-bell, header-back, tab-…). Подпись
+# колокольчика менялась с новыми сообщениями («— есть новые») и с языком, и
+# сценарий не находил его.
 appId: com.backmann.mycongregation
 name: Назад ведёт туда, откуда пришли
 ---
@@ -17,38 +21,38 @@ name: Назад ведёт туда, откуда пришли
     commands:
       - tapOn: "Позже|Later|Später"
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: { id: "inbox-bell" }
     timeout: 30000
-- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- assertNotVisible: { id: "header-back" }
 - takeScreenshot: 01-home
 
 # 1. Уведомления → системная «Назад» → Главная, без стрелки
-- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- tapOn: { id: "inbox-bell" }
 - extendedWaitUntil:
-    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    visible: { id: "header-back" }
     timeout: 15000
 - takeScreenshot: 02-inbox
 - pressKey: back
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: { id: "inbox-bell" }
     timeout: 15000
-- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- assertNotVisible: { id: "header-back" }
 - takeScreenshot: 03-home-after-system-back
 
 # 2. Уведомления → стрелка в шапке → Главная, без стрелки
-- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- tapOn: { id: "inbox-bell" }
 - extendedWaitUntil:
-    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    visible: { id: "header-back" }
     timeout: 15000
-- tapOn: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- tapOn: { id: "header-back" }
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: { id: "inbox-bell" }
     timeout: 15000
-- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- assertNotVisible: { id: "header-back" }
 - takeScreenshot: 04-home-after-arrow
 
 # 3. Программа → События → системная «Назад» → Программа
-- tapOn: "Программа|Programme|Programm"
+- tapOn: { id: "tab-schedule" }
 - extendedWaitUntil:
     visible: "Все|All|Alle"
     timeout: 20000
@@ -60,25 +64,25 @@ name: Назад ведёт туда, откуда пришли
       - tapOn: "Ещё|More|Mehr"
 - tapOn: "События|Events|Ereignisse|Veranstaltungen"
 - extendedWaitUntil:
-    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    visible: { id: "header-back" }
     timeout: 15000
 - takeScreenshot: 06-events
 - pressKey: back
 - extendedWaitUntil:
     visible: "Все|All|Alle"
     timeout: 15000
-- assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+- assertNotVisible: { id: "header-back" }
 - takeScreenshot: 07-schedule-again
 
 # 4. Программа → системная «Назад» → туда, где был до неё (Главная)
 - pressKey: back
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: { id: "inbox-bell" }
     timeout: 15000
 - takeScreenshot: 08-home-from-schedule
 
 # 5. Профиль → свой экран сохраняется при уходе через вкладки
-- tapOn: "Профиль|Profile|Profil"
+- tapOn: { id: "tab-profile" }
 - extendedWaitUntil:
     visible: "Профиль|Profile|Profil"
     timeout: 15000
@@ -88,17 +92,17 @@ name: Назад ведёт туда, откуда пришли
     timeout: 20000
 - tapOn: "Сменить пароль|Change password|Passwort ändern"
 - extendedWaitUntil:
-    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    visible: { id: "header-back" }
     timeout: 15000
 - takeScreenshot: 09-change-password
-- tapOn: "Главная|Home|Start"
-- tapOn: "Профиль|Profile|Profil"
+- tapOn: { id: "tab-home" }
+- tapOn: { id: "tab-profile" }
 - extendedWaitUntil:
-    visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    visible: { id: "header-back" }
     timeout: 15000
 - takeScreenshot: 10-change-password-kept
 - pressKey: back
 - extendedWaitUntil:
-    notVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
+    notVisible: { id: "header-back" }
     timeout: 15000
 - takeScreenshot: 11-profile

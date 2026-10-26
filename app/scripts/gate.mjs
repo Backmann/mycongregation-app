@@ -82,6 +82,8 @@ const STEPS = [
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
   // The coordinator's ready messages, agreed word for word (25.10.2026).
   ['Готовые сообщения координатора речей', 'node', ['scripts/check-talk-messages.mjs']],
+  // A screen nothing leads to (26.10.2026): `/schedule/[id]` lived on unseen.
+  ['Экраны без входа', 'node', ['scripts/check-orphan-screens.mjs']],
   // The chairman's run as kept on the device: every shape it was ever written
   // in, and a programme that changes under a running meeting (15.10.2026).
   ['Запись хода встречи', 'node', ['scripts/check-conduct-record.mjs']],

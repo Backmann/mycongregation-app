@@ -37,6 +37,7 @@ export function BackButton({
       // presses THIS back, not the browser's, which follows tab history.
       accessibilityRole="button"
       accessibilityLabel={t('common.back')}
+      testID="header-back"
       onPress={() => {
         // One step back in where the person has been (lib/nav-history.ts):
         // within a section it closes the screen; from a screen opened from

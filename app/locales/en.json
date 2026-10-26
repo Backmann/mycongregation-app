@@ -942,7 +942,6 @@
   },
   "schedule": {
     "title": {
-      "detail": "Assignment",
       "new": "New assignment",
       "import": "Program import",
       "rules": "Congregation rules"
@@ -960,7 +959,6 @@
     "unassigned": "Unassigned",
     "createEmptyMidweek": "Create an empty midweek meeting",
     "createEmptyWeekend": "Create an empty weekend meeting",
-    "removedBanner": "This assignment is removed",
     "import": {
       "title": "Import schedule EPUB",
       "subtitle": "Upload the Meeting Workbook (mwb_*.epub) or the Watchtower study edition (w_*.epub) to create the weekly program automatically. Existing empty slots are filled with the official titles; assignments with publishers are kept.",
@@ -1026,8 +1024,6 @@
     "unassign": {
       "button": "Unassign publisher",
       "unassigning": "Unassigning…",
-      "confirmTitle": "Unassign publisher",
-      "confirmBody": "The program part will remain in the schedule.",
       "confirmWebMessage": "Unassign the publisher from this part? The program part will remain."
     },
     "weekNav": {
@@ -1046,7 +1042,6 @@
       "concludingTalk": "Concluding talk"
     },
     "songHint": "Choose number",
-    "readOnlyBanner": "Read-only — you don't have permission to edit this part",
     "publish": {
       "button": "Publish"
     },

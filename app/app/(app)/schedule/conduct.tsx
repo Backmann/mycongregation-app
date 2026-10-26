@@ -1646,7 +1646,12 @@ export default function ConductScreen({
     }
     if (!remote) return <Notice text={t('conduct.result.none')} />;
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        key={`${week}-${kind}`}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+        <View testID="conduct-top" style={styles.topMark} />
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.result.title')}</Text>
           <ConductReport data={remote} titleOf={titleOf} keyLabelOf={weekend ? keyLabel : undefined} keyPersonOf={weekend ? keyPerson : undefined} noteKey={weekend ? 'conduct.report.noteWeekend' : undefined} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
@@ -1672,7 +1677,12 @@ export default function ConductScreen({
 
   if (showLocal && local) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        key={`${week}-${kind}`}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
+        <View testID="conduct-top" style={styles.topMark} />
         <View style={styles.resultWrap}>
           {practiceNote}
           {liveStrip}
@@ -2227,10 +2237,17 @@ export default function ConductScreen({
   }
 
   return (
+    // A key per meeting (26 October 2026): the same screen opened by a link
+    // for another meeting is reused, and kept the place it was scrolled to —
+    // the new meeting opened halfway down.
     <ScrollView
+      key={`${week}-${kind}`}
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {/* The top of the screen, for the phone check that a meeting opened by
+          a link starts here (maestro/conduct-switch.yaml). */}
+      <View testID="conduct-top" style={styles.topMark} />
       {practiceNote}
       {liveStrip}
       {fromKept && kept ? (
@@ -2377,6 +2394,7 @@ function driftStyle(sec: number) {
 }
 
 const styles = StyleSheet.create({
+  topMark: { height: 1, marginBottom: -1 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 48 },
   center: {
