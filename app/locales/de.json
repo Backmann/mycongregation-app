@@ -1300,7 +1300,7 @@
       "backToCatalogue": "Zurück zum Katalog",
       "source": {
         "programme": "Im Wochenendprogramm",
-        "incoming": "Auswärtiger Redner — Protokoll „Zu uns“",
+        "incoming": "Auswärtiger Redner – Vortragsplan „Zu uns“",
         "outgoing": "Ein Bruder von uns hält ihn — Protokoll „Von uns“"
       },
       "untilLabel": "Bis wann (nur wenn vorübergehend)",
@@ -1341,7 +1341,7 @@
       "outgoingNoName": "Unser Redner fährt am {{date}} nach {{where}}",
       "incoming": "Zu uns am {{date}}: {{name}}",
       "programme": "Programm, {{date}}",
-      "openLog": "Protokoll „Zu uns / Von uns“ öffnen",
+      "openLog": "Vortragsplan „Zu uns / Von uns“ öffnen",
       "badge": "Vortrag Nr. {{n}} ist an diesem Datum abgesetzt"
     }
   },
@@ -1488,7 +1488,7 @@
     "thisMeeting": "Diese Zusammenkunft:"
   },
   "fieldService": {
-    "title": "Zusammenkünfte für den Predigtdienst",
+    "title": "Predigtdienst-Zusammenkünfte",
     "empty": "Diese Woche keine Zusammenkünfte",
     "addEntry": "Zusammenkunft hinzufügen",
     "unassigned": "nicht zugeteilt",
@@ -2466,7 +2466,7 @@
         "branch_representative_visit": "Die Zusammenkunft findet meist mit Änderungen statt — welche, geben Sie im nächsten Schritt an",
         "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn Sie es angeben"
       },
-      "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein — im Protokoll „Zu uns / Von uns“, mit dem Redner.",
+      "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein – im Vortragsplan unter „Zu uns“, mit dem Redner.",
       "openLog": "Protokoll öffnen ›"
     },
     "page": {
@@ -3049,7 +3049,7 @@
       "undoTitle": "Er ist doch gekommen?",
       "undoBody": "{{name}} ist wieder der Redner dieser Woche: der Vermerk „nicht gekommen“ verschwindet, der Plan kehrt zu ihm zurück, und der Eintrag des Ersatzredners wird entfernt.",
       "didNotCome": "{{name}} — war eingeplant, kam nicht",
-      "title": "Protokoll „Zu uns / Von uns“",
+      "title": "Vortragsplan „Zu uns / Von uns“",
       "note": "Notiz",
       "talk": "Vortrag",
       "ourBrother": "Unser Bruder",
@@ -3118,7 +3118,7 @@
         "swap": "Tauschen",
         "move": "Verschieben"
       },
-      "visitWeek": "In dieser Woche ist der Kreisaufseherbesuch – sein Vortrag wird nicht getauscht. Um die Woche zu ändern, verlegen Sie den Besuch selbst. Einen vom Besuch zurückgestellten Gast tragen Sie im Protokoll „Zu uns“ für eine andere Woche ein."
+      "visitWeek": "In dieser Woche ist der Kreisaufseherbesuch – sein Vortrag wird nicht getauscht. Um die Woche zu ändern, verlegen Sie den Besuch selbst. Einen vom Besuch zurückgestellten Gast tragen Sie im Vortragsplan unter „Zu uns“ für eine andere Woche ein."
     },
     "congregationProfile": {
       "title": "Versammlung",
@@ -3133,7 +3133,7 @@
       "move": "Verschieben",
       "notHeld": "Findet nicht statt",
       "moveTitle": "Auf welche Woche verschieben?",
-      "noWeeks": "Vorne ist keine Woche frei – bitte zuerst im Vortragsplan eine Woche freimachen.",
+      "noWeeks": "In den kommenden Wochen ist keine frei – bitte zuerst im Vortragsplan eine Woche freimachen.",
       "notHeldTitle": "Findet der Besuch nicht statt?",
       "notHeldBody": "Der Besuch von {{name}} bleibt im Verlauf als nicht stattgefunden."
     },
@@ -3192,15 +3192,15 @@
       "congress": "An diesen Tagen hat die Versammlung keine eigene Zusammenkunft.",
       "emptyWeeks_one": "leere Woche in den nächsten 2 Monaten",
       "emptyWeeks_other": "leere Wochen in den nächsten 2 Monaten",
-      "waiting_one": "Sache wartet auf eine Entscheidung",
-      "waiting_other": "Sachen warten auf eine Entscheidung",
+      "waiting_one": "offener Punkt",
+      "waiting_other": "offene Punkte",
       "journalSub": "Das ganze Jahr nach Wochen: wer zu uns, wer von uns",
       "guestsSub_one": "{{count}} Redner · wer lange nicht da war",
       "guestsSub_other": "{{count}} Redner · wer lange nicht da war",
       "oursSub": "Unsere Brüder und ihre Reisen · wer an der Reihe ist",
       "congsSub_one": "{{count}} Versammlung · Adressen und Zeiten",
       "congsSub_other": "{{count}} Versammlungen · Adressen und Zeiten",
-      "msgGuest": "Nachricht an den Gastredner"
+      "msgGuest": "Gast anschreiben"
     },
     "visit": {
       "speaker": "Redner",
@@ -3225,7 +3225,7 @@
     "message": {
       "back": "Zum Besuch",
       "hint": "Der Text lässt sich vor dem Senden ändern. Nichts wird vermerkt — es ist nur eine fertige Nachricht.",
-      "whatsapp": "Mit WhatsApp senden",
+      "whatsapp": "Per WhatsApp senden",
       "whatsappPick": "WhatsApp",
       "copy": "Kopieren",
       "share": "Teilen…",
@@ -3273,10 +3273,10 @@
         "11": "November",
         "12": "Dezember"
       },
-      "helloBrother": "Lieber Bruder {{name}}, hallo!",
-      "helloBrotherNoName": "Lieber Bruder, hallo!",
-      "helloSister": "Liebe Schwester {{name}}, hallo!",
-      "helloSisterNoName": "Liebe Schwester, hallo!",
+      "helloBrother": "Lieber {{name}},",
+      "helloBrotherNoName": "Lieber Bruder,",
+      "helloSister": "Liebe {{name}},",
+      "helloSisterNoName": "Liebe Schwester,",
       "waitTalk": "Wir erwarten dich zum öffentlichen Vortrag {{when}}.",
       "startAddress": "Beginn um {{time}} Uhr, Adresse: {{address}}.",
       "startOnly": "Beginn um {{time}} Uhr.",
@@ -3330,8 +3330,8 @@
       "neverWent": "noch nie unterwegs",
       "notFor": "seit {{span}} nicht bei uns",
       "notOutFor": "seit {{span}} nicht unterwegs",
-      "nextOn": "schon eingetragen für {{day}}",
-      "bookedOn": "schon eingetragen für {{day}}",
+      "nextOn": "schon eingetragen am {{day}}",
+      "bookedOn": "schon eingetragen am {{day}}",
       "lessMonth": "weniger als einem Monat",
       "months": "{{n}} Mon.",
       "years": "{{y}} J.",
@@ -3351,12 +3351,12 @@
       "typeTalk": "Nr. — anderer Vortrag",
       "noSuchTalk": "Keinen Vortrag mit dieser Nummer",
       "asTheme": "Wird als Thema eines Sondervortrags eingetragen",
-      "dupIn": "{{name}} ist schon für {{day}} bei uns eingetragen. Zusätzlich {{date}} eintragen?",
-      "dupOut": "{{name}} fährt schon am {{day}}. Zusätzlich {{date}} eintragen?",
+      "dupIn": "{{name}} ist schon am {{day}} bei uns eingetragen. Zusätzlich am {{date}} eintragen?",
+      "dupOut": "{{name}} fährt schon am {{day}}. Zusätzlich am {{date}} eintragen?",
       "save": "Eintragen",
       "talkLater": "Der Vortrag kann später ergänzt werden — die App erinnert daran",
       "saved": "Eingetragen",
-      "savedWhere": "im Journal und im Programm",
+      "savedWhere": "im Vortragsplan und im Programm",
       "later": "Später",
       "wasAgo": "vor {{span}} bei uns",
       "wentAgo": "vor {{span}} unterwegs",
@@ -3393,7 +3393,7 @@
       "removeVisit": "Besuch entfernen",
       "whoPh": "wer kommt",
       "talkPh": "Nummer oder Thema",
-      "waitsGuest": "wartet auf den Redner",
+      "waitsGuest": "erst den Redner eintragen",
       "special": "Sondervortrag",
       "studySong": "wird beim Studium gesungen",
       "afterGuest": "nach dem Redner",
@@ -3408,7 +3408,7 @@
       "goesSong": "Lied",
       "goesLunch": "Lunchpaket ({{name}})",
       "removeQ": "Besuch entfernen: {{name}}, {{day}}?",
-      "goesWith": "Mit ihm gehen: {{list}}.",
+      "goesWith": "Damit entfällt auch: {{list}}.",
       "remove": "Entfernen",
       "keep": "Behalten",
       "conflictQ": "Im Programm steht für diese Woche schon {{who}}. {{name}} stattdessen eintragen?",
@@ -3426,7 +3426,7 @@
       "lockPast": "Die Zusammenkunft ist vorbei — im Wochenformular bearbeiten.",
       "noBrother": "kein Bruder eingeteilt",
       "coWeek": "Besuch des Kreisaufsehers",
-      "closedCongress": "Keine eigene Zusammenkunft — beide Richtungen geschlossen.",
+      "closedCongress": "Keine eigene Zusammenkunft – „Zu uns“ und „Von uns“ sind geschlossen.",
       "stale": "Die Woche wurde gerade von jemand anderem geändert — der neue Stand wird gezeigt. Bitte prüfen und erneut bearbeiten.",
       "conflictLeft": "Im Programm steht für diese Woche ein anderer Redner — Woche öffnen, um zu entscheiden.",
       "removedWhat": "Besuch entfernt: {{name}}, {{day}}",
@@ -4739,7 +4739,7 @@
     "inMinutes": "in {{m}} Min.",
     "inHours": "in {{h}} Std. {{m}} Min.",
     "first": "Beginn der Zusammenkunft",
-    "comesOutWho": "es kommt {{who}}",
+    "comesOutWho": "nach vorn: {{who}}",
     "wipe": {
       "menu": "Ablauf löschen und neu beginnen",
       "hint": "Zum Beispiel nach einem Test: Ablauf und Ergebnis dieser Zusammenkunft werden gelöscht – hier und auf dem Server",
@@ -4749,7 +4749,7 @@
       "failed": "Löschen nicht möglich"
     },
     "results": {
-      "title": "Ablauf der Zusammenkünfte",
+      "title": "Ergebnisse der Zusammenkünfte",
       "menuSub": "Wie die Zusammenkünfte liefen – 7 Tage aufbewahrt",
       "lead": "Ergebnisse der Zusammenkünfte unter der Woche und am Wochenende der letzten 7 Tage. Danach werden sie von selbst gelöscht.",
       "none": "Keine Ergebnisse: Sie werden 7 Tage nach der Zusammenkunft aufbewahrt – wenn sie bis zum Ende in der App geführt wurde.",
@@ -5306,7 +5306,7 @@
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
       "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars.",
       "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht.",
-      "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Protokoll „Zu uns“ für eine andere Woche ein.",
+      "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Vortragsplan unter „Zu uns“ für eine andere Woche ein.",
       "TALK_MOVE_VISIT_WEEK": "In die Woche des Kreisaufseherbesuchs wird kein Gastredner verlegt – bitte eine andere Woche wählen."
     }
   },
