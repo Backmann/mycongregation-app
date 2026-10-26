@@ -75,8 +75,12 @@ if (!/if \(perms\.failed\) \{[\s\S]{0,300}<LoadFailure/.test(gate)) {
   problems.push('ScreenGate: список поручений не пришёл — а показывается «Нет доступа»');
 }
 const boundary = read('components/ScreenFailure.tsx');
-if (!/if \(!isRequestError\(error\)\) throw error;/.test(boundary)) {
-  problems.push('ScreenFailure: ловит и ошибки кода — баг будет выглядеть как «нет связи»');
+// A bug is caught too since 26 October 2026 — thrown on, it took the whole
+// app down on Android — but it must be SAID as a bug: its own screen
+// (screen-crashed), never «Не удалось загрузить».
+const crashBranch = boundary.match(/if \(!isRequestError\(error\)\) \{([\s\S]*?)\n {4}\}/);
+if (!crashBranch || !/testID="screen-crashed"/.test(crashBranch[1]) || /LoadFailure/.test(crashBranch[1])) {
+  problems.push('ScreenFailure: ошибка кода не показана своим экраном — баг будет выглядеть как «нет связи» или уронит приложение');
 }
 if (!/QueryErrorResetBoundary/.test(boundary) || !/this\.props\.onReset\(\)/.test(boundary)) {
   problems.push('ScreenFailure: «Повторить» не сбрасывает неудачные запросы — экран упадёт снова, не спросив');
