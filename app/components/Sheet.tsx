@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { BRAND } from "../lib/header";
 import { Toast } from "./ErrorToast";
 
 /**
@@ -222,7 +223,21 @@ export function Sheet({
     );
   }
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+      // Android, edge to edge (26 October 2026): on Android 17 the window is
+      // drawn under the status bar whatever is asked, and the sheet's own
+      // header sat beneath the clock and the battery — «Отмена» half under
+      // the battery icon. Asked for on every Android version, so the room
+      // made below is the same everywhere; the strip carries the app's
+      // colour, the light status-bar icons read on it as on every screen.
+      statusBarTranslucent
+    >
+      {Platform.OS === "android" ? (
+        <View style={{ height: sideInsets.top, backgroundColor: BRAND }} />
+      ) : null}
       <SafeAreaView style={[styles.screen, sideRoom]}>
         <View style={styles.header}>
           <View style={styles.headerText}>
