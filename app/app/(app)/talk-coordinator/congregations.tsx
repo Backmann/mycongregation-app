@@ -220,10 +220,7 @@ export default function CongregationsScreen() {
                   ) : null}
                 </Pressable>
                 <Pressable hitSlop={8} onPress={() => openEdit(c)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="create-outline" size={20} color="#0369a1" />
-                </Pressable>
-                <Pressable hitSlop={8} onPress={() => confirmDelete(c)} style={styles.iconBtn} disabled={pending}>
-                  <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                  <Ionicons name="create-outline" size={19} color="#94a3b8" />
                 </Pressable>
               </View>
             ))
@@ -334,12 +331,37 @@ export default function CongregationsScreen() {
               </View>
             )}
 
+        {/* Deleting lives here, not in every row (25 October 2026). */}
+        {editing ? (
+          <Pressable
+            style={styles.deleteLink}
+            disabled={pending}
+            onPress={() => {
+              const c = editing;
+              setModalOpen(false);
+              void confirmDelete(c);
+            }}
+            accessibilityRole="button"
+          >
+            <Ionicons name="trash-outline" size={15} color="#dc2626" />
+            <Text style={styles.deleteLinkText}>{t('talkCoordinator.congregations.deleteAction')}</Text>
+          </Pressable>
+        ) : null}
       </Dialog>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  deleteLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginTop: 14,
+    paddingVertical: 6,
+  },
+  deleteLinkText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: '#dc2626' },
   rowPressed: { opacity: 0.6 },
   speakerCount: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#0369a1', marginTop: 4 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },

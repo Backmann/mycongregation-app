@@ -1782,6 +1782,11 @@ export interface TalkExchange {
   circuitVisitId?: string | null;
   /** The circuit visit that set this guest aside (25 October 2026). */
   setAsideBy?: string | null;
+  /**
+   * The guest's opening song (25 October 2026). The programme's opening-song
+   * line follows it, and it follows the line.
+   */
+  openingSong?: number | null;
   /** Transient: set on create/update when an occupied program slot was not overwritten. */
   programConflict?: boolean;
   /**
@@ -1807,6 +1812,7 @@ export interface TalkExchangeInput {
   publisherId?: string | null;
   hostCongregationId?: string | null;
   note?: string | null;
+  openingSong?: number | null;
   overwriteProgram?: boolean;
 }
 
@@ -1819,7 +1825,53 @@ export interface TalkAttentionItem {
   publisherId: string | null;
 }
 
+/**
+ * One of our own weekends that needs somebody (25 October 2026): nobody
+ * booked, no lunch bag for the guest, his opening song sung at the study.
+ */
+export interface IncomingAttentionItem {
+  reason: 'needs_guest' | 'no_lunch' | 'song_repeat';
+  weekStartDate: string;
+  date: string;
+  entryId: string | null;
+  guest: string | null;
+  song: number | null;
+  studySongs: number[];
+}
+
+/** The weekend songs of a week ahead, as the programme holds them. */
+export interface WeekSongs {
+  weekStartDate: string;
+  opening: number | null;
+  study: number[];
+}
+
 export const talkExchangeApi = {
+  /**
+   * Our weekends that need somebody. A server without the list yet answers
+   * 404 — then there is nothing to show, rather than a broken screen.
+   */
+  async incomingAttention(): Promise<IncomingAttentionItem[]> {
+    try {
+      const { data } = await api.get<IncomingAttentionItem[]>(
+        '/talk-exchange/attention/incoming',
+      );
+      return data;
+    } catch (e) {
+      if ((e as { response?: { status?: number } })?.response?.status === 404) return [];
+      throw e;
+    }
+  },
+  /** The Watchtower study's songs of the weekends ahead. */
+  async weekSongs(): Promise<WeekSongs[]> {
+    try {
+      const { data } = await api.get<WeekSongs[]>('/talk-exchange/week-songs');
+      return data;
+    } catch (e) {
+      if ((e as { response?: { status?: number } })?.response?.status === 404) return [];
+      throw e;
+    }
+  },
   async get(id: string): Promise<TalkExchange> {
     const { data } = await api.get<TalkExchange>(`/talk-exchange/${id}`);
     return data;

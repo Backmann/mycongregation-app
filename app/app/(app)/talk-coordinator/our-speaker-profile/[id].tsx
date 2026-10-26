@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "#f1f5f9",
   },
-  visitDateCol: { width: 96 },
+  visitDateCol: { width: 112 },
   visitDate: {
     fontSize: 14,
     fontFamily: "Manrope_600SemiBold",

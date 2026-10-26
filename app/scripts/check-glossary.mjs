@@ -54,6 +54,9 @@ for (const [lang, rules] of Object.entries(BANNED)) {
   walk(JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')), '');
   for (const [key, value] of flat) {
     for (const [re, use] of rules) {
+      // The ready messages are one brother writing to another (Lionel,
+      // 25 October 2026): «du», as brothers write — not the app speaking.
+      if (use === 'Sie-Form' && key.startsWith('talkCoordinator.msgText.')) continue;
       if (re.test(value)) {
         console.error(`✗ ${lang} ${key}: «${value.slice(0, 80)}» — ${use}`);
         bad++;
