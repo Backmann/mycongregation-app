@@ -360,6 +360,9 @@ export function EditTable({
       ? bookings
           .filter(
             (b) =>
+              // A visit with us, not a trip of ours: our brother speaking here and
+              // going elsewhere is a lawful pair (13 September 2026, 26 October).
+              b.direction === "incoming" &&
               b.personId === pid &&
               b.date !== r.date &&
               Math.abs(daysBetween(b.date, r.date)) <= DUPLICATE_DAYS,
@@ -624,6 +627,9 @@ export function EditTable({
     const dup = r.personId
       ? bookings.find(
           (b) =>
+            // A visit with us, not a trip of ours: our brother speaking here and
+            // going elsewhere is a lawful pair (13 September 2026, 26 October).
+            b.direction === "incoming" &&
             b.personId === r.personId &&
             b.date !== r.date &&
             Math.abs(daysBetween(b.date, r.date)) <= DUPLICATE_DAYS,
