@@ -1646,7 +1646,11 @@ export default function ConductScreen({
     }
     if (!remote) return <Notice text={t('conduct.result.none')} />;
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        key={`${week}-${kind}`}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.result.title')}</Text>
           <ConductReport data={remote} titleOf={titleOf} keyLabelOf={weekend ? keyLabel : undefined} keyPersonOf={weekend ? keyPerson : undefined} noteKey={weekend ? 'conduct.report.noteWeekend' : undefined} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
@@ -1672,7 +1676,11 @@ export default function ConductScreen({
 
   if (showLocal && local) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        key={`${week}-${kind}`}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+      >
         <View style={styles.resultWrap}>
           {practiceNote}
           {liveStrip}
@@ -2227,7 +2235,11 @@ export default function ConductScreen({
   }
 
   return (
+    // A key per meeting (26 October 2026): the same screen opened by a link
+    // for another meeting is reused, and kept the place it was scrolled to —
+    // the new meeting opened halfway down.
     <ScrollView
+      key={`${week}-${kind}`}
       style={styles.container}
       contentContainerStyle={styles.content}
     >

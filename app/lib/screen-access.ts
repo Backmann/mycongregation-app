@@ -107,7 +107,6 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/schedule/results': 'self', // who may read is the screen's own rule
   // One part of the programme, opened to be changed; read-only or refused by
   // what the part is — the screen and the server know.
-  '/schedule/[id]': 'self',
   '/schedule/rules': 'editsProgramme',
   '/schedule/import': 'importsProgramme',
   '/special-events': 'all',

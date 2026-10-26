@@ -7,6 +7,8 @@
 # PIN телефона (своя блокировка, components/AppLock.tsx), и дальше сценарий
 # пройти не может. Перед запуском приложение открывают и разблокируют сами;
 # сценарий работает в уже открытом.
+# КОЛОКОЛЬЧИК (26 октября 2026): с новыми сообщениями его подпись длиннее —
+# «Мои уведомления — есть новые», поэтому ищется по началу подписи.
 appId: com.backmann.mycongregation
 name: Назад ведёт туда, откуда пришли
 ---
@@ -17,32 +19,32 @@ name: Назад ведёт туда, откуда пришли
     commands:
       - tapOn: "Позже|Later|Später"
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
     timeout: 30000
 - assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
 - takeScreenshot: 01-home
 
 # 1. Уведомления → системная «Назад» → Главная, без стрелки
-- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- tapOn: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
 - extendedWaitUntil:
     visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
     timeout: 15000
 - takeScreenshot: 02-inbox
 - pressKey: back
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
     timeout: 15000
 - assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
 - takeScreenshot: 03-home-after-system-back
 
 # 2. Уведомления → стрелка в шапке → Главная, без стрелки
-- tapOn: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+- tapOn: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
 - extendedWaitUntil:
     visible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
     timeout: 15000
 - tapOn: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
     timeout: 15000
 - assertNotVisible: { text: "Назад|Back|Zurück|Go back", above: "Главная|Home|Start" }
 - takeScreenshot: 04-home-after-arrow
@@ -73,7 +75,7 @@ name: Назад ведёт туда, откуда пришли
 # 4. Программа → системная «Назад» → туда, где был до неё (Главная)
 - pressKey: back
 - extendedWaitUntil:
-    visible: "Мои уведомления|My notifications|Meine Benachrichtigungen"
+    visible: "Мои уведомления.*|My notifications.*|Meine Mitteilungen.*"
     timeout: 15000
 - takeScreenshot: 08-home-from-schedule
 
