@@ -2,8 +2,8 @@ import { goBack } from '../../../components/NavHistory';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  
   Modal,
+  Platform,
   
   Pressable,
   ScrollView,
@@ -12,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
@@ -492,6 +493,7 @@ function AddMembersModal({
   onAdd: (ids: string[]) => void;
   pending?: boolean;
 }) {
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
@@ -531,8 +533,16 @@ function AddMembersModal({
       animationType="slide"
       onRequestClose={onClose}
       transparent={false}
+      // As components/Sheet (26 October 2026): under the status bar on
+      // Android, with the room for it made here.
+      statusBarTranslucent
     >
-      <View style={styles.modal}>
+      <View
+        style={[
+          styles.modal,
+          Platform.OS === 'android' && { paddingTop: insets.top, paddingBottom: insets.bottom },
+        ]}
+      >
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>{t('serviceGroups.addMembers')}</Text>
           <Pressable onPress={onClose} hitSlop={8}>
