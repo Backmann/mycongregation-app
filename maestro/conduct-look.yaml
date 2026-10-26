@@ -65,7 +65,7 @@ name: Ведение встречи — только смотреть
 # «Итоги встреч» (25 October 2026): the one place the results are found.
 - openLink: mycongregation://schedule/results
 - extendedWaitUntil:
-    visible: "Итоги встреч|Meeting results|Ablauf der Zusammenkünfte"
+    visible: "Итоги встреч|Meeting results|Ergebnisse der Zusammenkünfte|Ablauf der Zusammenkünfte"
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route).*"
 - takeScreenshot: 07-results
