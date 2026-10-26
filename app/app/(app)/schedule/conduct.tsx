@@ -752,7 +752,8 @@ export default function ConductScreen({
       segments.slice(run.index + 1).reduce((sum, s) => sum + s.minutes * 60, 0)
     : 0;
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
-  const meetingTime = (weekend ? effectiveVersionFor(settingsQuery.data?.versions, week)?.weekendTime : effectiveVersionFor(settingsQuery.data?.versions, week)?.midweekTime) ?? null;
+  const weekVersion = week ? effectiveVersionFor(settingsQuery.data?.versions, week) : null;
+  const meetingTime = (weekend ? weekVersion?.weekendTime : weekVersion?.midweekTime) ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
   // Behind or ahead of the programme's END — a late start counts (18 October 2026).
   const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, meetingDay, driftSec);

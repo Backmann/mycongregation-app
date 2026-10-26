@@ -5455,5 +5455,11 @@
     "saveNew": "Make and book",
     "back": "Back to search",
     "fromJournalShort": "from the talk log"
+  },
+  "screenCrash": {
+    "title": "Something went wrong on this screen",
+    "body": "The rest of the app keeps working. If it happens again, send the text below to the administrator.",
+    "retry": "Try again",
+    "home": "Go to Home"
   }
 }

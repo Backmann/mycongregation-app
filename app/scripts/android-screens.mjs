@@ -117,7 +117,7 @@ const [W, H] = size ? [Number(size[1]), Number(size[2])] : [1080, 2400];
 say(`Телефон: ${adb(['shell', 'getprop', 'ro.product.model']).trim()}, экран ${W}×${H}`);
 say(`Дата: ${now.toLocaleString('ru-RU')}`);
 
-const BROKEN = /Что-то пошло не так|Something went wrong|Unmatched Route|This screen doesn't exist|Не удалось загрузить|Ошибка загрузки/i;
+const BROKEN = /Что-то пошло не так|Something went wrong|На этом экране произошла ошибка|ein Fehler aufgetreten|Unmatched Route|This screen doesn't exist|Не удалось загрузить|Ошибка загрузки/i;
 const open = (path) =>
   adb(['shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', `mycongregation:/${path}`, PKG]);
 

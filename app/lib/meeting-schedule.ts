@@ -23,6 +23,10 @@ export function effectiveVersionFor(
   anyDateOfWeekISO: string,
 ): MeetingSettingsVersion | null {
   if (!versions || versions.length === 0) return null;
+  // Not a date (26 October 2026): an empty week brought the conduct screen —
+  // and with it the whole app on Android — down with «Date value out of
+  // bounds». No date, no version.
+  if (!/^\d{4}-\d{2}-\d{2}/.test(anyDateOfWeekISO ?? '')) return null;
   const monday = mondayOfISO(anyDateOfWeekISO);
   let best: MeetingSettingsVersion | null = null;
   let earliest: MeetingSettingsVersion | null = null;

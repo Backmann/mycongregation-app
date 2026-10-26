@@ -5455,5 +5455,11 @@
     "saveNew": "Anlegen und eintragen",
     "back": "Zurück zur Suche",
     "fromJournalShort": "aus dem Vortragsplan"
+  },
+  "screenCrash": {
+    "title": "Auf diesem Bildschirm ist ein Fehler aufgetreten",
+    "body": "Der Rest der App funktioniert. Wenn der Fehler wiederkommt, senden Sie den Text unten an den Administrator.",
+    "retry": "Erneut versuchen",
+    "home": "Zur Startseite"
   }
 }
