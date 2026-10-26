@@ -65,6 +65,8 @@ const say = (s) => {
   log.push(s);
 };
 const finish = (code) => {
+  // The screen may sleep again as the person set it.
+  spawnSync(ADB, ['shell', 'svc', 'power', 'stayon', 'false']);
   writeFileSync(join(OUT, 'report.txt'), log.join('\n') + '\n');
   console.log(`\nПапка результата: ${OUT}`);
   process.exit(code);
@@ -136,10 +138,41 @@ for (let i = 0; i < 5 && !build; i++) {
 say(`Версия в приложении: ${build ?? 'не прочитана'}`);
 say('');
 
+/**
+ * THE PHONE MUST STAY AWAKE AND UNLOCKED (26 October 2026).
+ *
+ * A walk of sixty screens takes minutes; on 26 October the phone's own
+ * screen timeout locked it after the sixth, and every screen after that was
+ * reported «почти пусто» — the lock screen gives uiautomator nothing and the
+ * screenshot comes out dark. Now the screen is kept on while the cable is in,
+ * and a locked phone stops the walk with the reason instead of fifty false
+ * findings.
+ */
+spawnSync(ADB, ['shell', 'svc', 'power', 'stayon', 'usb']);
+function phoneState() {
+  const power = adb(['shell', 'dumpsys', 'power']);
+  const win = adb(['shell', 'dumpsys', 'window']);
+  return {
+    awake: /mWakefulness=Awake/.test(power),
+    locked: /(mKeyguardShowing|isKeyguardShowing|mShowingLockscreen|mDreamingLockscreen)=true/.test(win),
+  };
+}
+
 const findings = [];
 let n = 0;
 for (const path of ROUTES) {
   n += 1;
+  let st = phoneState();
+  if (!st.awake) {
+    adb(['shell', 'input', 'keyevent', 'KEYCODE_WAKEUP']);
+    await sleep(1500);
+    st = phoneState();
+  }
+  if (st.locked) {
+    say(`⛔ Телефон заблокирован перед экраном ${path} — обход остановлен, дальше были бы ложные «пусто».`);
+    say('   Разблокируйте телефон и запустите обход снова.');
+    break;
+  }
   const name = `${pad(n)}-${path.replace(/^\//, '').replace(/\//g, '_') || 'root'}`;
   open(path);
   await sleep(4500);
