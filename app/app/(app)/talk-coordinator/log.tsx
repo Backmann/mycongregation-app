@@ -70,6 +70,7 @@ import {
 } from "../../../lib/talk-messages";
 import type { VisitFacts } from "../../../lib/talk-messages";
 import { useSongsMap } from "../../../lib/songs";
+import { MEMORIAL_NOT_BAPTIZED } from "../../../lib/memorial-people";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { usePermissions } from "../../../lib/permissions";
 import {
@@ -1241,6 +1242,22 @@ export default function TalkExchangeYearScreen() {
     : [];
   const fmtHist = (d: string) =>
     dayjs(d).locale(i18n.language).format("D MMM YYYY");
+
+  /** When each sister last brought a lunch bag, from the journal itself. */
+  const lastLunchBy = new Map<string, string>();
+  for (const e of listQuery.data ?? []) {
+    if (
+      e.direction !== "incoming" ||
+      !e.hospitalityPublisherId ||
+      e.status === "did_not_happen" ||
+      e.id === editing?.id
+    )
+      continue;
+    const d = e.date.slice(0, 10);
+    if (d > todayISO) continue;
+    const was = lastLunchBy.get(e.hospitalityPublisherId);
+    if (!was || d > was) lastLunchBy.set(e.hospitalityPublisherId, d);
+  }
 
   // ---- The visit's facts for a ready message (25 October 2026) ----------
   const tr = (key: string, vars?: Record<string, string | number>) =>
@@ -2461,10 +2478,34 @@ export default function TalkExchangeYearScreen() {
                 {t("talkCoordinator.visit.lunch")}
               </Text>
               <View style={styles.formCard}>
+                {/* Baptized sisters only (Lionel, 26 October 2026); whoever
+                    brought one longest ago comes first, and one away that day
+                    is marked with her dates. */}
                 <PublisherSelector
                   label={t("talkCoordinator.visit.lunchBy")}
                   value={hospitalityPublisherId}
                   onChange={setHospitalityPublisherId}
+                  genderFilter="sister"
+                  excludeAppointments={MEMORIAL_NOT_BAPTIZED}
+                  absenceDate={date || undefined}
+                  sortRank={(id) => {
+                    const last = lastLunchBy.get(id);
+                    return last ? Number(last.replace(/-/g, "")) : 0;
+                  }}
+                  rowMeta={(id) => {
+                    const last = lastLunchBy.get(id);
+                    return last
+                      ? t("talkCoordinator.visit.lunchLast", {
+                          date: dayjs(last).locale(i18n.language).format("D MMMM YYYY"),
+                        })
+                      : t("talkCoordinator.visit.lunchNever");
+                  }}
+                  rowTone={(id) => {
+                    const last = lastLunchBy.get(id);
+                    return !last || dayjs(todayISO).diff(dayjs(last), "day") > 90
+                      ? "free"
+                      : "busy";
+                  }}
                 />
               </View>
 

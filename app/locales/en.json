@@ -2619,7 +2619,8 @@
       "field_service": "field service",
       "outgoing_talk": "talk at another congregation",
       "co_lunch": "CO lunch",
-      "co_lunch_box": "lunch box"
+      "co_lunch_box": "lunch box",
+      "guest_lunch": "lunch bag"
     },
     "dutyTypes": {
       "security": "Entrance attendant",
@@ -2735,6 +2736,12 @@
       "tasksOverdue_other": "{{count}} elders’ tasks overdue",
       "restrictedTalks_one": "{{count}} booking with a retired talk — arrange a replacement",
       "restrictedTalks_other": "{{count}} bookings with retired talks — arrange replacements"
+    },
+    "guestLunch": {
+      "title": "Lunch bag for the speaker",
+      "titleFor": "Lunch bag for Brother {{name}}",
+      "from": "{{cong}} congregation",
+      "where": "to the Kingdom Hall by the start"
     }
   },
   "halls": {
@@ -3211,7 +3218,9 @@
       "msgInvite": "To the guest",
       "msgRemind": "Remind",
       "msgLunch": "Who brings the lunch bag",
-      "msgLunchOff": "The lunch bag message — once somebody is chosen to bring it."
+      "msgLunchOff": "The lunch bag message — once somebody is chosen to bring it.",
+      "lunchLast": "last brought {{date}}",
+      "lunchNever": "not yet"
     },
     "message": {
       "back": "Back to the visit",
