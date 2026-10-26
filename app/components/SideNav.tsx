@@ -77,6 +77,7 @@ export function SideNav({
             onPress={press}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
+            testID={options.tabBarButtonTestID}
             style={(st) => [s.item, on ? s.itemOn : (st as { hovered?: boolean }).hovered ? s.itemHover : null]}
           >
             {options.tabBarIcon?.({ focused: on, color, size: 22 })}

@@ -180,6 +180,8 @@ export default function AppLayout() {
         <Tabs.Screen
           name="home"
           options={{
+            // A fixed handle for the phone checks, whatever the language.
+            tabBarButtonTestID: "tab-home",
             title: t("tabs.home"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
@@ -193,6 +195,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="schedule"
           options={{
+            tabBarButtonTestID: "tab-schedule",
             title: t("tabs.schedule"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
@@ -206,6 +209,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="publishers"
           options={{
+            tabBarButtonTestID: "tab-publishers",
             title: t("tabs.publishers"),
             // Shown to everyone: behind it are the congregation's contents, each
             // door shown by its own right. The roster stays as closed as it was.
@@ -221,6 +225,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="service-groups"
           options={{
+            tabBarButtonTestID: "tab-service-groups",
             title: t("tabs.groups"),
             href: null, // moved to the Publishers header
             tabBarIcon: ({ color, size }) => (
@@ -231,6 +236,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="cart"
           options={{
+            tabBarButtonTestID: "tab-cart",
             title: t("tabs.cart"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons
@@ -245,6 +251,7 @@ export default function AppLayout() {
         <Tabs.Screen
           name="profile"
           options={{
+            tabBarButtonTestID: "tab-profile",
             title: t("tabs.profile"),
             tabBarIcon: ({ color, size, focused }) => (
               <Ionicons

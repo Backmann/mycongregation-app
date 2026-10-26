@@ -15,7 +15,7 @@ name: Пакеты 3 и 4 — только смотреть
     commands:
       - tapOn: "Позже|Later|Später"
 - extendedWaitUntil:
-    visible: "Главная|Home|Start"
+    visible: { id: "tab-home" }
     timeout: 30000
 - takeScreenshot: 01-home
 

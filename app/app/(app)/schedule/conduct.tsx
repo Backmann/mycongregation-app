@@ -1651,6 +1651,7 @@ export default function ConductScreen({
         style={styles.container}
         contentContainerStyle={styles.content}
       >
+        <View testID="conduct-top" style={styles.topMark} />
         <View style={styles.resultWrap}>
           <Text style={styles.overline}>{t('conduct.result.title')}</Text>
           <ConductReport data={remote} titleOf={titleOf} keyLabelOf={weekend ? keyLabel : undefined} keyPersonOf={weekend ? keyPerson : undefined} noteKey={weekend ? 'conduct.report.noteWeekend' : undefined} nameOf={nameOf} chairmanName={chairmanName} counselPlannedOf={counselPlannedOf} wide={wide} />
@@ -1681,6 +1682,7 @@ export default function ConductScreen({
         style={styles.container}
         contentContainerStyle={styles.content}
       >
+        <View testID="conduct-top" style={styles.topMark} />
         <View style={styles.resultWrap}>
           {practiceNote}
           {liveStrip}
@@ -2243,6 +2245,9 @@ export default function ConductScreen({
       style={styles.container}
       contentContainerStyle={styles.content}
     >
+      {/* The top of the screen, for the phone check that a meeting opened by
+          a link starts here (maestro/conduct-switch.yaml). */}
+      <View testID="conduct-top" style={styles.topMark} />
       {practiceNote}
       {liveStrip}
       {fromKept && kept ? (
@@ -2389,6 +2394,7 @@ function driftStyle(sec: number) {
 }
 
 const styles = StyleSheet.create({
+  topMark: { height: 1, marginBottom: -1 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 48 },
   center: {

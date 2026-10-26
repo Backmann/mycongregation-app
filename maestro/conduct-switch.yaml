@@ -1,0 +1,43 @@
+# «Ведение встречи» по ссылке на другую встречу открывается СВЕРХУ (26 октября
+# 2026) — на телефоне, на живых данных, ТОЛЬКО СМОТРИТ.
+# Ошибка была такая: экран, открытый по ссылке на другую встречу, брался тот
+# же, и прокрутка оставалась на месте — новая встреча открывалась с середины.
+# Проверка: будни этой недели → прокрутить вниз → ссылка на выходную встречу
+# той же недели → верх экрана (метка conduct-top) виден без прокрутки.
+# Если экран будней короче высоты телефона, прокручивать нечего — тогда
+# проверка ничего не доказывает и говорит об этом (шаг «too-short»).
+# БЕЗ ПЕРЕЗАПУСКА ПРИЛОЖЕНИЯ: перед запуском приложение открыто и разблокировано.
+appId: com.backmann.mycongregation
+name: Ведение встречи по ссылке открывается сверху
+---
+- evalScript: ${output.week = (function () { var d = new Date(); var dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); var m = d.getMonth() + 1; var day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; })()}
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: { id: "tab-home" }
+    timeout: 30000
+- openLink: mycongregation://schedule/conduct?week=${output.week}
+- extendedWaitUntil:
+    visible: { id: "conduct-top" }
+    timeout: 30000
+- takeScreenshot: 01-midweek-top
+- swipe: { direction: UP, duration: 400 }
+- swipe: { direction: UP, duration: 400 }
+- swipe: { direction: UP, duration: 400 }
+- takeScreenshot: 02-midweek-scrolled
+- runFlow:
+    when:
+      visible: { id: "conduct-top" }
+    commands:
+      - takeScreenshot: too-short
+- openLink: mycongregation://schedule/conduct?week=${output.week}&kind=weekend
+- extendedWaitUntil:
+    visible: "Ведение встречи|Conducting the meeting|Zusammenkunft leiten"
+    timeout: 30000
+- waitForAnimationToEnd
+- assertVisible: { id: "conduct-top" }
+- takeScreenshot: 03-weekend-top

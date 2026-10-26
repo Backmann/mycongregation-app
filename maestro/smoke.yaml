@@ -23,7 +23,7 @@ name: Главные экраны открываются без ошибок
     commands:
       - tapOn: "Позже|Later|Später"
 - extendedWaitUntil:
-    visible: "Главная|Home|Start"
+    visible: { id: "tab-home" }
     timeout: 30000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Не удалось загрузить|Laden fehlgeschlagen|Could not load).*"
 - takeScreenshot: 01-home
