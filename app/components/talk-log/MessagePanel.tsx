@@ -29,12 +29,18 @@ export function MessagePanel({
   text,
   phone,
   onBack,
+  saved,
 }: {
   title: string;
   text: string;
   /** The guest's phone from his card, when it is there. */
   phone: string | null;
   onBack: () => void;
+  /**
+   * Right after «Договорился» (26 October 2026): what was written stands on
+   * top, and «Позже» closes — the invitation is offered, not pressed.
+   */
+  saved?: string;
 }) {
   const { t } = useTranslation();
   const [body, setBody] = useState(text);
@@ -90,10 +96,20 @@ export function MessagePanel({
 
   return (
     <View style={s.wrap}>
-      <Pressable onPress={onBack} hitSlop={8} style={s.back} accessibilityRole="button">
-        <Ionicons name="chevron-back" size={16} color="#0369a1" />
-        <Text style={s.backText}>{t("talkCoordinator.message.back")}</Text>
-      </Pressable>
+      {saved ? (
+        <View style={s.saved} testID="quick-saved">
+          <View style={s.savedIcon}>
+            <Ionicons name="checkmark" size={26} color="#16a34a" />
+          </View>
+          <Text style={s.savedTitle}>{t("talkCoordinator.quick.saved")}</Text>
+          <Text style={s.savedLine}>{saved}</Text>
+        </View>
+      ) : (
+        <Pressable onPress={onBack} hitSlop={8} style={s.back} accessibilityRole="button">
+          <Ionicons name="chevron-back" size={16} color="#0369a1" />
+          <Text style={s.backText}>{t("talkCoordinator.message.back")}</Text>
+        </Pressable>
+      )}
       <Text style={s.title}>{title}</Text>
       <View style={s.bubble}>
         <TextInput
@@ -153,6 +169,16 @@ export function MessagePanel({
       {!wa && phone === null ? (
         <Text style={s.hint}>{t("talkCoordinator.message.noPhone")}</Text>
       ) : null}
+      {saved ? (
+        <Pressable
+          onPress={onBack}
+          style={({ pressed }) => [s.btn, s.plain, pressed && s.pressed]}
+          accessibilityRole="button"
+          testID="quick-later"
+        >
+          <Text style={s.plainText}>{t("talkCoordinator.quick.later")}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -192,4 +218,22 @@ const s = StyleSheet.create({
   plain: { flex: 1, minWidth: 140, backgroundColor: "#f1f5f9" },
   plainText: { fontFamily: FONT.bold, fontSize: 14, color: "#0f172a" },
   pressed: { opacity: 0.75 },
+  saved: { alignItems: "center", gap: 4, paddingTop: 4, paddingBottom: 6 },
+  savedIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#dcfce7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  savedTitle: { fontFamily: FONT.extrabold, fontSize: 18, color: "#0f172a" },
+  savedLine: {
+    fontFamily: FONT.medium,
+    fontSize: 13.5,
+    lineHeight: 19,
+    color: "#475569",
+    textAlign: "center",
+  },
 });

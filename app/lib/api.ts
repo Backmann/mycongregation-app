@@ -1830,7 +1830,14 @@ export interface TalkAttentionItem {
  * booked, no lunch bag for the guest, his opening song sung at the study.
  */
 export interface IncomingAttentionItem {
-  reason: 'needs_guest' | 'no_lunch' | 'song_repeat';
+  reason:
+    | 'needs_guest'
+    | 'no_lunch'
+    | 'song_repeat'
+    /** A visit without its talk, from 4 weeks before (26 October 2026). */
+    | 'needs_talk'
+    /** A guest's opening song not known, from 2 weeks before. */
+    | 'needs_song';
   weekStartDate: string;
   date: string;
   entryId: string | null;

@@ -138,6 +138,22 @@ export default function TalkCoordinatorScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.inner}>
+          {/* «Договорился» first (26 October 2026): the moment after the
+              conversation is when the entry is made — or forgotten. */}
+          <Pressable
+            style={({ pressed }) => [styles.quick, pressed && { opacity: 0.9 }]}
+            onPress={() => openLog('?quick=in')}
+            accessibilityRole="button"
+            testID="desk-quick"
+          >
+            <View style={styles.quickPlus}>
+              <Ionicons name="add" size={22} color="#ffffff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.quickTitle}>{t('talkCoordinator.quick.title')}</Text>
+              <Text style={styles.quickSub}>{t('talkCoordinator.quick.deskSub')}</Text>
+            </View>
+          </Pressable>
           <View style={styles.hero}>
             <Text style={styles.heroOver}>
               {t('talkCoordinator.desk.thisWeekend', { day: nextLabel })}
@@ -214,7 +230,7 @@ export default function TalkCoordinatorScreen() {
                 <Text style={styles.heroTalk}>{t('talkCoordinator.desk.nobodyHint')}</Text>
                 <Pressable
                   style={({ pressed }) => [styles.heroBtn, { marginTop: 14 }, pressed && { opacity: 0.85 }]}
-                  onPress={() => openLog()}
+                  onPress={() => openLog(`?quick=in&week=${nextMonday}`)}
                   accessibilityRole="button"
                 >
                   <Text style={styles.heroBtnText}>{t('talkCoordinator.journal.invite')}</Text>
@@ -334,6 +350,25 @@ const shadow = {
 const styles = StyleSheet.create({
   container: { padding: 16, paddingBottom: 48 },
   inner: { gap: 12, width: '100%', maxWidth: 720, alignSelf: 'center' },
+  quick: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: '#155e6e',
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  quickPlus: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickTitle: { fontFamily: FONT.extrabold, fontSize: 17, color: '#ffffff' },
+  quickSub: { fontFamily: FONT.medium, fontSize: 12.5, lineHeight: 17, color: '#cdeef2', marginTop: 1 },
   hero: {
     backgroundColor: '#0f4c5a',
     borderRadius: 22,

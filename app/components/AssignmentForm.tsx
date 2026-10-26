@@ -704,6 +704,7 @@ export function AssignmentForm({
               label={t("assignments.form.field.talk")}
               value={form.publicTalkId}
               onChange={handleTalkSelect}
+              forDate={weekendOf(form.weekStartDate)}
             />
             <FormField
               label={t("assignments.form.field.talkThemeManual")}
@@ -727,6 +728,7 @@ export function AssignmentForm({
               label={t("assignments.form.field.talk")}
               value={form.publicTalkId}
               onChange={handleTalkSelect}
+              forDate={weekendOf(form.weekStartDate)}
             />
             {/*
               Тема вручную — на ЛЮБОЙ неделе, а не только при визите районного.
@@ -1346,3 +1348,14 @@ const rp = StyleSheet.create({
   },
 });
 
+/**
+ * The Sunday of a programme week — the three-year rule is judged around the
+ * meeting (lib/talk-repeat). A Saturday meeting is within the same week, and
+ * a talk from the week before is still a week away.
+ */
+function weekendOf(monday: string | undefined): string | null {
+  if (!monday) return null;
+  const d = new Date(`${monday.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 6);
+  return d.toISOString().slice(0, 10);
+}

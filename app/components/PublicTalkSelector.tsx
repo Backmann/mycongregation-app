@@ -15,26 +15,39 @@ import { PublicTalk, publicTalksApi } from "../lib/api";
 import { useTranslation } from "react-i18next";
 import i18n from "../lib/i18n";
 import { Sheet } from "./Sheet";
+import { repeatOf } from "../lib/talk-repeat";
 
 interface Props {
   label: string;
   value: string | null | undefined;
   /** Receives the full talk so caller can use number/title (or null when cleared). */
   onChange: (talk: PublicTalk | null) => void;
+  /**
+   * The day of the meeting the talk is chosen for: the three-year rule is
+   * judged around it (lib/talk-repeat). Today when not given.
+   */
+  forDate?: string | null;
+  /**
+   * False for a talk given ELSEWHERE (a trip of ours): what was heard in our
+   * hall is then only information, not a warning.
+   */
+  ruleHere?: boolean;
 }
 
-type Recency = "recent" | "caution" | "ok" | "never";
+/** The rule's context, handed down to the rows. */
+type RuleCtx = { forDate: string; ruleHere: boolean };
 
-function getRecency(lastGivenAt: string | null): Recency {
-  if (!lastGivenAt) return "never";
-  const monthsAgo =
-    (Date.now() - new Date(lastGivenAt).getTime()) / (1000 * 60 * 60 * 24 * 30);
-  if (monthsAgo < 3) return "recent";
-  if (monthsAgo < 6) return "caution";
-  return "ok";
-}
-
-export function PublicTalkSelector({ label, value, onChange }: Props) {
+export function PublicTalkSelector({
+  label,
+  value,
+  onChange,
+  forDate,
+  ruleHere = true,
+}: Props) {
+  const ctx: RuleCtx = {
+    forDate: forDate || new Date().toLocaleDateString("en-CA"),
+    ruleHere,
+  };
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -101,7 +114,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
         {selectedTalk &&
           selectedTalk.isActive &&
           (selectedTalk.lastGivenAt || selectedTalk.nextGivenAt) && (
-            <RecencyHint talk={selectedTalk} inline />
+            <RecencyHint talk={selectedTalk} ctx={ctx} inline />
           )}
       </Pressable>
 
@@ -156,6 +169,7 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
               <TalkOption
                 key={talk.id}
                 talk={talk}
+                ctx={ctx}
                 isSelected={value === talk.id}
                 onPress={() => {
                   onChange(talk);
@@ -172,10 +186,12 @@ export function PublicTalkSelector({ label, value, onChange }: Props) {
 
 function TalkOption({
   talk,
+  ctx,
   isSelected,
   onPress,
 }: {
   talk: PublicTalk;
+  ctx: RuleCtx;
   isSelected: boolean;
   onPress: () => void;
 }) {
@@ -213,7 +229,7 @@ function TalkOption({
             prevent anything. */}
         {!talk.isActive ? <RetiredHint talk={talk} /> : null}
         {talk.isActive && (talk.lastGivenAt || talk.nextGivenAt) ? (
-          <RecencyHint talk={talk} />
+          <RecencyHint talk={talk} ctx={ctx} />
         ) : null}
       </View>
       {isSelected && <Ionicons name="checkmark" size={20} color="#0ea5e9" />}
@@ -261,34 +277,46 @@ export function RetiredHint({
   );
 }
 
-function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
-  const colors: Record<Recency, string> = {
-    recent: "#dc2626",
-    caution: "#d97706",
-    ok: "#94a3b8",
-    never: "#cbd5e1",
-  };
-  const icon: Record<Recency, "warning" | "warning-outline" | "time-outline"> =
-    {
-      recent: "warning",
-      caution: "warning-outline",
-      ok: "time-outline",
-      never: "time-outline",
-    };
+function RecencyHint({
+  talk,
+  ctx,
+  inline,
+}: {
+  talk: PublicTalk;
+  ctx: RuleCtx;
+  inline?: boolean;
+}) {
   const fmt = (d: string) =>
-    new Date(d).toLocaleDateString(i18n.language, {
+    new Date(`${d.slice(0, 10)}T00:00:00`).toLocaleDateString(i18n.language, {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  const recency = getRecency(talk.lastGivenAt);
+  // The hearing that breaks the rule is the one said in red; the other line
+  // stays plain information.
+  const repeat = ctx.ruleHere
+    ? repeatOf([talk.lastGivenAt, talk.nextGivenAt], ctx.forDate)
+    : null;
+  const RED = "#dc2626";
+  const GREY = "#94a3b8";
+  const BLUE = "#0369a1";
   const rowStyle = [styles.hintRow, inline && { marginTop: 4 }];
+  const isRepeat = (d: string | null) => !!d && d.slice(0, 10) === repeat;
   return (
     <>
       {talk.nextGivenAt ? (
         <View style={rowStyle}>
-          <Ionicons name="calendar-outline" size={11} color="#0369a1" />
-          <Text style={[styles.hintText, { color: "#0369a1" }]}>
+          <Ionicons
+            name={isRepeat(talk.nextGivenAt) ? "warning" : "calendar-outline"}
+            size={11}
+            color={isRepeat(talk.nextGivenAt) ? RED : BLUE}
+          />
+          <Text
+            style={[
+              styles.hintText,
+              { color: isRepeat(talk.nextGivenAt) ? RED : BLUE },
+            ]}
+          >
             {i18n.t("pickers.upcoming", { date: fmt(talk.nextGivenAt) })}
             {talk.nextGivenBy ? ` · ${talk.nextGivenBy}` : ""}
           </Text>
@@ -296,12 +324,26 @@ function RecencyHint({ talk, inline }: { talk: PublicTalk; inline?: boolean }) {
       ) : null}
       {talk.lastGivenAt ? (
         <View style={rowStyle}>
-          <Ionicons name={icon[recency]} size={11} color={colors[recency]} />
-          <Text style={[styles.hintText, { color: colors[recency] }]}>
+          <Ionicons
+            name={isRepeat(talk.lastGivenAt) ? "warning" : "time-outline"}
+            size={11}
+            color={isRepeat(talk.lastGivenAt) ? RED : GREY}
+          />
+          <Text
+            style={[
+              styles.hintText,
+              { color: isRepeat(talk.lastGivenAt) ? RED : GREY },
+            ]}
+          >
             {i18n.t("pickers.lastGiven", { date: fmt(talk.lastGivenAt) })}
             {talk.lastGivenBy ? ` · ${talk.lastGivenBy}` : ""}
           </Text>
         </View>
+      ) : null}
+      {repeat ? (
+        <Text style={[styles.hintText, styles.repeatText]}>
+          {i18n.t("pickers.repeat3y")}
+        </Text>
       ) : null}
     </>
   );
@@ -398,6 +440,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   hintText: { fontFamily: "Manrope_400Regular", fontSize: 11 },
+  repeatText: { color: "#dc2626", fontFamily: "Manrope_600SemiBold", marginTop: 2 },
 
   empty: {
     fontFamily: "Manrope_400Regular",
