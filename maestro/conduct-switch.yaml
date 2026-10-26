@@ -10,7 +10,7 @@
 appId: com.backmann.mycongregation
 name: Ведение встречи по ссылке открывается сверху
 ---
-- evalScript: ${output.week = (function () { var d = new Date(); var dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); var m = d.getMonth() + 1; var day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; })()}
+- evalScript: "${output.week = (function () { var d = new Date(); var dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); var m = d.getMonth() + 1; var day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; })()}"
 - openLink: mycongregation://home
 - runFlow:
     when:
