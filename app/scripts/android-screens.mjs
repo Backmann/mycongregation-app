@@ -149,6 +149,15 @@ say('');
  * findings.
  */
 spawnSync(ADB, ['shell', 'svc', 'power', 'stayon', 'usb']);
+// The phone's own log from this moment, for the screens that come out empty.
+spawnSync(ADB, ['logcat', '-c']);
+/** Which window has the focus — the app, a fingerprint prompt, the lock screen. */
+function focusedWindow() {
+  const win = adb(['shell', 'dumpsys', 'window']);
+  return (win.match(/mCurrentFocus=Window\{[^}]*\}/) || win.match(/mFocusedWindow=[^\n]*/) || ['?'])[0]
+    .replace(/Window\{\S+ \S+ /, '')
+    .slice(0, 140);
+}
 function phoneState() {
   const power = adb(['shell', 'dumpsys', 'power']);
   const win = adb(['shell', 'dumpsys', 'window']);
@@ -190,7 +199,12 @@ for (const path of ROUTES) {
   const problems = [];
   const broken = texts.find((x) => BROKEN.test(x.text));
   if (broken) problems.push(`на экране: «${broken.text.slice(0, 80)}»`);
-  if (texts.length < 3) problems.push(`почти пусто (${texts.length} надписи)`);
+  if (texts.length < 3) {
+    // WHY it is empty (26 October 2026): the focused window says whether a
+    // prompt or the lock stands over the app; the log says what the app did.
+    problems.push(`почти пусто (${texts.length} надписи), окно: ${focusedWindow()}`);
+    writeFileSync(join(OUT, `${name}.logcat.txt`), adb(['logcat', '-d', '-t', '600']));
+  }
   // Only real text leaving the screen: a scroller's content legitimately
   // runs past the edge when it scrolls sideways, so its children are judged
   // by whether they are cut by the screen, not by a scroller.
