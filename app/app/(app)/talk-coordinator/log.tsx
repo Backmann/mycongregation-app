@@ -63,6 +63,16 @@ import { useAllPublishers } from "../../../lib/useAllPublishers";
 import { failsScreen } from "../../../lib/screen-failure";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MessagePanel } from "../../../components/talk-log/MessagePanel";
+import { repeatOf } from "../../../lib/talk-repeat";
+import {
+  QuickBooking,
+  QuickDirection,
+  QuickDraft,
+  QuickPerson,
+  QuickTalk,
+  QuickVisit,
+  QuickWeek,
+} from "../../../components/talk-log/QuickVisit";
 import {
   guestInvitation,
   guestReminder,
@@ -210,6 +220,21 @@ export default function TalkExchangeYearScreen() {
   const [openingSong, setOpeningSong] = useState("");
   /** A ready message shown in place of the form (25 October 2026). */
   const [msg, setMsg] = useState<null | "invite" | "remind" | "lunch">(null);
+  /** «Договорился» (26 October 2026): open, which way, which week. */
+  const [quick, setQuick] = useState<{
+    direction: QuickDirection;
+    monday?: string | null;
+  } | null>(null);
+  const [quickStart, setQuickStart] = useState<{
+    direction: QuickDirection;
+    monday?: string | null;
+  }>({ direction: "incoming" });
+  const openQuick = (direction: QuickDirection, monday?: string | null) => {
+    setQuickStart({ direction, monday: monday ?? null });
+    setQuick({ direction, monday: monday ?? null });
+  };
+  /** The line on top of the invitation right after «Договорился». */
+  const [justSaved, setJustSaved] = useState<string | null>(null);
   const songTitles = useSongsMap();
   const { myPublisher } = useMyPublisher();
   const { responsibilities } = usePermissions();
@@ -548,6 +573,73 @@ export default function TalkExchangeYearScreen() {
     ].filter((g) => g.items.length > 0);
   }, [visiblePubs, outStatsById, listQuery.data, date, today]);
 
+  // ---- «Договорился»: what the quick form chooses from -------------------
+  const quickSpeakers = useMemo<QuickPerson[]>(() => {
+    const rank = (p: QuickPerson) => (p.next ? 2 : p.last ? 0 : 1);
+    return (speakersQuery.data ?? [])
+      .filter((sp) => !sp.circuitOverseer)
+      .map((sp) => {
+        const st = statsById.get(sp.id);
+        return {
+          id: sp.id,
+          name: [sp.firstName, sp.lastName].filter(Boolean).join(" "),
+          sub: sp.externalCongregation?.name ?? null,
+          last: st?.lastVisit?.date ?? null,
+          next: st?.futureVisits?.[0]?.date ?? null,
+          talks: sp.talkNumbers ?? [],
+        };
+      })
+      .sort(
+        (a, b) =>
+          rank(a) - rank(b) ||
+          (a.last ?? "").localeCompare(b.last ?? "") ||
+          a.name.localeCompare(b.name),
+      );
+  }, [speakersQuery.data, statsById]);
+  const quickBrothers = useMemo<QuickPerson[]>(() => {
+    // Ours have no repertoire card: what each has given is his repertoire.
+    const given = new Map<string, Set<number>>();
+    for (const e of listQuery.data ?? []) {
+      if (!e.publisherId || !e.publicTalkId || e.status === "did_not_happen")
+        continue;
+      const n = talkById.get(e.publicTalkId)?.number;
+      if (!n) continue;
+      const set = given.get(e.publisherId) ?? new Set<number>();
+      set.add(n);
+      given.set(e.publisherId, set);
+    }
+    return ourPubs
+      .map((p) => {
+        const st = outStatsById.get(p.id);
+        return {
+          id: p.id,
+          name: p.displayName,
+          sub: null,
+          last: st?.lastVisit?.date ?? null,
+          next: null,
+          talks: [...(given.get(p.id) ?? [])],
+        };
+      })
+      .sort(
+        (a, b) =>
+          (a.last ? 0 : 1) - (b.last ? 0 : 1) ||
+          (a.last ?? "").localeCompare(b.last ?? "") ||
+          a.name.localeCompare(b.name),
+      );
+  }, [ourPubs, outStatsById, listQuery.data, talkById]);
+  const quickBookings = useMemo<QuickBooking[]>(
+    () =>
+      (listQuery.data ?? []).flatMap((e) => {
+        if (e.status === "did_not_happen") return [];
+        const personId =
+          e.direction === "incoming" ? e.visitingSpeakerId : e.publisherId;
+        return personId
+          ? [{ direction: e.direction, personId, date: e.date.slice(0, 10) }]
+          : [];
+      }),
+    [listQuery.data],
+  );
+
   /**
    * Rebuild the journal from the programme.
    *
@@ -667,6 +759,22 @@ export default function TalkExchangeYearScreen() {
     return m;
   }, [listQuery.data]);
 
+  const quickTalks = useMemo<QuickTalk[]>(
+    () =>
+      (talksQuery.data?.data ?? []).map((tk) => ({
+        id: tk.id,
+        number: tk.number,
+        title: tk.title,
+        isActive: tk.isActive,
+        // The journal, and the programme for the years before it.
+        heard: [
+          ...(incomingByTalk.get(tk.id) ?? []).map((e) => e.date.slice(0, 10)),
+          ...(tk.lastGivenAt ? [tk.lastGivenAt] : []),
+          ...(tk.nextGivenAt ? [tk.nextGivenAt] : []),
+        ],
+      })),
+    [talksQuery.data, incomingByTalk],
+  );
   const eventsForWeekend = useMemo(() => {
     const events = (eventsQuery.data ?? []).filter((ev) =>
       PLANNER_EVENT_TYPES.has(ev.type ?? ""),
@@ -937,6 +1045,7 @@ export default function TalkExchangeYearScreen() {
     setNote(entry?.note ?? "");
     setOpeningSong(entry?.openingSong ? String(entry.openingSong) : "");
     setMsg(null);
+    setJustSaved(null);
     setSpeakerSearch("");
     setPubSearch("");
     setShowAllSpeakers(false);
@@ -950,7 +1059,19 @@ export default function TalkExchangeYearScreen() {
     entry?: string;
     view?: string;
     msg?: string;
+    /** «Договорился» from the desk: `in` or `out`, and maybe the week. */
+    quick?: string;
+    week?: string;
   }>();
+  const quickFromParam = useRef<string | null>(null);
+  useEffect(() => {
+    const q = typeof params.quick === "string" ? params.quick : null;
+    const key = `${q}:${params.week ?? ""}`;
+    if (!q || quickFromParam.current === key) return;
+    quickFromParam.current = key;
+    openQuick(q === "out" ? "outgoing" : "incoming", params.week ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.quick, params.week]);
   // From the desk's counters: straight to «Внимание».
   useEffect(() => {
     if (params.view === "attention") setView("attention");
@@ -1061,6 +1182,15 @@ export default function TalkExchangeYearScreen() {
     const saved = editing
       ? await updateMutation.mutateAsync({ id: editing.id, input })
       : await createMutation.mutateAsync(input);
+    await afterSaved(saved, input);
+    setOpen(false);
+  };
+
+  /** What both saves say after writing: the programme's answer. */
+  const afterSaved = async (
+    saved: Awaited<ReturnType<typeof talkExchangeApi.create>>,
+    input: TalkExchangeInput,
+  ) => {
     // The journal keeps its own history; the programme of a week that is
     // already the record is not rewritten by it. Said, so the two are not
     // left to disagree in silence (13 October 2026).
@@ -1085,7 +1215,63 @@ export default function TalkExchangeYearScreen() {
         });
       }
     }
-    setOpen(false);
+  };
+
+  /**
+   * «Договорился» saves through the same path as the full form; a guest's
+   * visit then opens on its invitation, a trip simply says it is written.
+   */
+  const saveQuick = async (d: QuickDraft) => {
+    const input: TalkExchangeInput = {
+      direction: d.direction,
+      date: d.date,
+      publicTalkId: d.publicTalkId,
+      ...(d.direction === "incoming" ? { specialTheme: d.specialTheme } : {}),
+      note: null,
+      visitingSpeakerId: d.visitingSpeakerId,
+      speakerName: d.speakerName,
+      speakerCongregation: d.speakerCongregation,
+      hospitalityPublisherId: null,
+      publisherId: d.publisherId,
+      hostCongregationId: d.hostCongregationId,
+    };
+    let saved;
+    try {
+      saved = await createMutation.mutateAsync(input);
+    } catch {
+      return; // said by the mutation
+    }
+    await afterSaved(saved, input);
+    setQuick(null);
+    const w = weeksFlat.find((x) => x.monday === d.monday);
+    const dayWords = capitalizeFirst(
+      dayjs(d.date).locale(i18n.language).format("dd, D MMMM"),
+    );
+    const talk = d.publicTalkId ? talkById.get(d.publicTalkId) : undefined;
+    if (d.direction === "incoming" && w) {
+      const name =
+        d.speakerName ??
+        (d.visitingSpeakerId ? speakerById.get(d.visitingSpeakerId)?.name : null) ??
+        "";
+      openSlot(w, "incoming", saved);
+      setMsg("invite");
+      setJustSaved(
+        [
+          [dayWords, name, talk ? `№${talk.number}` : null]
+            .filter(Boolean)
+            .join(" · "),
+          t("talkCoordinator.quick.savedWhere"),
+        ].join("\n"),
+      );
+    } else {
+      notify(
+        t("talkCoordinator.quick.saved"),
+        [dayWords, d.hostCongregationId ? congById.get(d.hostCongregationId)?.name : null]
+          .filter(Boolean)
+          .join(" · "),
+        "success",
+      );
+    }
   };
 
   const del = async () => {
@@ -1495,7 +1681,10 @@ export default function TalkExchangeYearScreen() {
           kind: "inEmpty",
           left: past ? null : leftWords(w.date),
           urgent: !past && daysTo(w.date) <= 28,
-          onPress: () => openSlot(w, "incoming", undefined),
+          // An empty week ahead opens «Договорился» on it; the past one,
+          // only being recorded, the full form.
+          onPress: () =>
+            past ? openSlot(w, "incoming", undefined) : openQuick("incoming", w.monday),
           onSwap: () => openSwap(w),
         });
       }
@@ -1538,7 +1727,11 @@ export default function TalkExchangeYearScreen() {
       });
     }
     if (events.length === 0) {
-      lines.push({ kind: "outAdd", onPress: () => openSlot(w, "outgoing", undefined) });
+      lines.push({
+        kind: "outAdd",
+        onPress: () =>
+          past ? openSlot(w, "outgoing", undefined) : openQuick("outgoing", w.monday),
+      });
     }
     return lines;
   };
@@ -1566,6 +1759,21 @@ export default function TalkExchangeYearScreen() {
     .map((w) => weekModel(w, true))
     .filter((m) => m.lines.some((l) => l.kind !== "inEmpty" && l.kind !== "outAdd"));
 
+  // «Договорился»: the weeks it offers. For a guest only the free ones — not
+  // a circuit visit, a convention or an assembly, not a week the programme
+  // already has a speaker for, not a cancelled weekend.
+  const quickWeeksAll: QuickWeek[] = weeksFlat
+    .filter((w) => w.date >= todayISO)
+    .map((w) => ({ monday: w.monday, date: w.date }));
+  const quickFree: QuickWeek[] = quickWeeksAll.filter((w) => {
+    if (byWeek.get(w.monday)?.incoming) return false;
+    if (visitWeek(w.monday) || eventsForWeekend(w.monday).length > 0) return false;
+    const slot = talkSlotByWeek.get(w.monday);
+    if (slot?.status === "cancelled") return false;
+    if (slot && (slot.publisherId || slot.speakerName?.trim())) return false;
+    return true;
+  });
+
   // «Внимание»: everything that waits for somebody, by date.
   const weekOf = (iso: string) =>
     weeksFlat.find((x) => x.monday === mondayISO(iso.slice(0, 10)));
@@ -1585,7 +1793,7 @@ export default function TalkExchangeYearScreen() {
         icon: "alert-circle-outline",
         title: t("talkCoordinator.journal.attn.needsGuest", { day: fmtDay(a.date) }),
         sub: `${leftWords(a.date)} · ${t("talkCoordinator.journal.attn.invite")}`,
-        onPress: () => openSlot(w, "incoming", undefined),
+        onPress: () => openQuick("incoming", w.monday),
       });
     } else if (a.reason === "no_lunch") {
       attnRows.push({
@@ -1597,7 +1805,27 @@ export default function TalkExchangeYearScreen() {
         sub: `${guest} · ${t("talkCoordinator.journal.attn.chooseLunch")}`,
         onPress: () => openSlot(w, "incoming", entry),
       });
-    } else {
+    } else if (a.reason === "needs_talk") {
+      attnRows.push({
+        key: `t-${a.weekStartDate}`,
+        date: a.date,
+        tone: daysTo(a.date) <= 14 ? "urgent" : "warn",
+        icon: "document-text-outline",
+        title: t("talkCoordinator.journal.attn.needsTalk", { day: fmtDay(a.date) }),
+        sub: `${guest} · ${t("talkCoordinator.journal.attn.askTalk")}`,
+        onPress: () => openSlot(w, "incoming", entry),
+      });
+    } else if (a.reason === "needs_song") {
+      attnRows.push({
+        key: `n-${a.weekStartDate}`,
+        date: a.date,
+        tone: "song",
+        icon: "musical-note-outline",
+        title: t("talkCoordinator.journal.attn.needsSong", { day: fmtDay(a.date) }),
+        sub: `${guest} · ${t("talkCoordinator.journal.attn.askSong")}`,
+        onPress: () => openSlot(w, "incoming", entry),
+      });
+    } else if (a.reason === "song_repeat") {
       attnRows.push({
         key: `s-${a.weekStartDate}`,
         date: a.date,
@@ -1879,6 +2107,31 @@ export default function TalkExchangeYearScreen() {
         </View>
       </Sheet>
 
+      <QuickVisit
+        visible={!!quick}
+        start={quickStart}
+        onClose={() => setQuick(null)}
+        freeIn={quickFree}
+        allWeeks={quickWeeksAll}
+        speakers={quickSpeakers}
+        brothers={quickBrothers}
+        congregations={(congQuery.data ?? [])
+          .map((c) => ({ id: c.id, name: c.name, meetingDow: c.meetingDow ?? null }))
+          .sort((a, b) => a.name.localeCompare(b.name))}
+        talks={quickTalks}
+        bookings={quickBookings}
+        today={todayISO}
+        saving={createMutation.isPending}
+        onSave={(d) => void saveQuick(d)}
+        onFullForm={(dir, monday) => {
+          setQuick(null);
+          const w =
+            weeksFlat.find((x) => x.monday === monday) ??
+            weeksFlat.find((x) => x.date >= todayISO);
+          if (w) openSlot(w, dir, undefined);
+        }}
+      />
+
       <Sheet
         visible={open}
         title={
@@ -2010,7 +2263,13 @@ export default function TalkExchangeYearScreen() {
               title={t(`talkCoordinator.message.title.${msg}`)}
               text={messageText}
               phone={messagePhone}
-              onBack={() => setMsg(null)}
+              saved={msg === "invite" ? (justSaved ?? undefined) : undefined}
+              onBack={() => {
+                if (justSaved) {
+                  setJustSaved(null);
+                  setOpen(false);
+                } else setMsg(null);
+              }}
             />
           ) : direction === "incoming" ? (
             <>
@@ -2412,6 +2671,7 @@ export default function TalkExchangeYearScreen() {
                       label={t("talkCoordinator.log.talk")}
                       value={publicTalkId}
                       onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                      forDate={date}
                     />
                   </View>
                 )}
@@ -2419,7 +2679,13 @@ export default function TalkExchangeYearScreen() {
                     dressed as a button (25 October 2026). */}
                 {!special && publicTalkId ? (
                   <View style={styles.histLine}>
-                    <Text style={styles.histText}>
+                    <Text
+                      style={[
+                        styles.histText,
+                        repeatOf(talkOccs.map((o) => o.date), date) &&
+                          styles.histTextBad,
+                      ]}
+                    >
                       {talkOccs.length === 0
                         ? t("talkCoordinator.visit.neverHere")
                         : t("talkCoordinator.visit.heardHere", {
@@ -2434,6 +2700,9 @@ export default function TalkExchangeYearScreen() {
                               )
                               .join("; "),
                           })}
+                      {repeatOf(talkOccs.map((o) => o.date), date)
+                        ? ` — ${t("pickers.repeat3y")}`
+                        : ""}
                     </Text>
                   </View>
                 ) : null}
@@ -2645,6 +2914,7 @@ export default function TalkExchangeYearScreen() {
                   label={t("talkCoordinator.log.talk")}
                   value={publicTalkId}
                   onChange={(talk) => setPublicTalkId(talk?.id ?? null)}
+                  ruleHere={false}
                 />
               </View>
             </>
@@ -2680,6 +2950,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   histLine: { marginTop: 8 },
+  histTextBad: { color: "#b91c1c" },
   histText: { fontFamily: "Manrope_400Regular", fontSize: 12.5, lineHeight: 17, color: "#475569" },
   songRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   songNo: { fontFamily: "Manrope_700Bold", fontSize: 16, color: "#64748b" },

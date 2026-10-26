@@ -132,7 +132,11 @@ function routeForNotification(data) {
     // A trip of ours that needs a brother or came into question: the journal,
     // whose banner leads to it (23 October 2026).
     case 'talk_exchange_attention':
-      return { path: '/talk-coordinator/log', params: {} };
+      // The weekly summary opens «Внимание» (26 October 2026).
+      return {
+        path: '/talk-coordinator/log',
+        params: data.view === 'attention' ? { view: 'attention' } : {},
+      };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':
