@@ -5,9 +5,14 @@
 # PIN телефона (своя блокировка, components/AppLock.tsx), и дальше сценарий
 # пройти не может. Перед запуском приложение открывают и разблокируют сами;
 # сценарий работает в уже открытом.
+# НЕДЕЛЯ — ТЕКУЩАЯ (26 октября 2026): была вписана неделя 19 октября, и через
+# неделю сценарий проверял уже прошедшую встречу без итога. Встреча, которую
+# не вели в приложении, честно говорит «Итога этой встречи нет» — это тоже
+# законное состояние экрана.
 appId: com.backmann.mycongregation
 name: Ведение встречи — только смотреть
 ---
+- evalScript: "${output.week = (function () { var d = new Date(); var dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); var m = d.getMonth() + 1; var day = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day; })()}"
 - openLink: mycongregation://home
 - runFlow:
     when:
@@ -18,7 +23,7 @@ name: Ведение встречи — только смотреть
     visible: { id: "tab-home" }
     timeout: 30000
 - takeScreenshot: 01-home-cards
-- openLink: mycongregation://schedule/conduct?week=2026-10-19
+- openLink: mycongregation://schedule/conduct?week=${output.week}
 - extendedWaitUntil:
     visible: "Ведение встречи|Conducting the meeting|Zusammenkunft leiten"
     timeout: 30000
@@ -27,21 +32,21 @@ name: Ведение встречи — только смотреть
 # result — before the scenario asks which (25 October 2026: asked at once,
 # the result was not drawn yet and the run sheet was looked for in vain).
 - extendedWaitUntil:
-    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen).*"
+    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen|Итога этой встречи нет|There is no result|gibt es kein Ergebnis).*"
     timeout: 30000
 - takeScreenshot: 02-conduct-midweek
 # After the meeting's day the screen is its result, which has no run sheet
 # (25 October 2026): scrolled only while the meeting is still to come.
 - runFlow:
     when:
-      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took).*"
+      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took|Итога этой встречи нет|There is no result|gibt es kein Ergebnis).*"
     commands:
       - scrollUntilVisible:
           element: "Ход встречи|ХОД ВСТРЕЧИ|Run sheet|RUN SHEET|Ablauf|ABLAUF"
           direction: DOWN
           timeout: 10000
 - takeScreenshot: 03-conduct-midweek-sheet
-- openLink: mycongregation://schedule/conduct?week=2026-10-19&kind=weekend
+- openLink: mycongregation://schedule/conduct?week=${output.week}&kind=weekend
 - extendedWaitUntil:
     visible: "Ведение встречи|Conducting the meeting|Zusammenkunft leiten"
     timeout: 30000
@@ -50,12 +55,12 @@ name: Ведение встречи — только смотреть
 # result — before the scenario asks which (25 October 2026: asked at once,
 # the result was not drawn yet and the run sheet was looked for in vain).
 - extendedWaitUntil:
-    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen).*"
+    visible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|Начать встречу|Start the meeting|Zusammenkunft beginnen|Итога этой встречи нет|There is no result|gibt es kein Ergebnis).*"
     timeout: 30000
 - takeScreenshot: 04-conduct-weekend
 - runFlow:
     when:
-      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took).*"
+      notVisible: ".*(Итог встречи|ИТОГ ВСТРЕЧИ|Meeting result|MEETING RESULT|Встреча шла|Meeting took|Итога этой встречи нет|There is no result|gibt es kein Ergebnis).*"
     commands:
       - scrollUntilVisible:
           element: "Заключительная.*|Closing.*|Schluss.*"
