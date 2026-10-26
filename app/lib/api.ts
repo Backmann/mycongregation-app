@@ -3674,7 +3674,9 @@ export type MyAssignmentKind =
   | "field_service"
   | "outgoing_talk"
   | "talk_exchange_attention"
-  | "co_lunch";
+  | "co_lunch"
+  /** The lunch bag one brings for the guest speaker (26 October 2026). */
+  | "guest_lunch";
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;

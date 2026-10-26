@@ -2619,7 +2619,8 @@
       "field_service": "Predigtdienst",
       "outgoing_talk": "Vortrag in Versammlung",
       "co_lunch": "Mittagessen (Kreisaufseher)",
-      "co_lunch_box": "Lunchpaket"
+      "co_lunch_box": "Lunchpaket",
+      "guest_lunch": "Lunchpaket"
     },
     "dutyTypes": {
       "security": "Ordner am Eingang",
@@ -2735,6 +2736,12 @@
       "tasksOverdue_other": "{{count}} Aufgaben der Ältestenschaft überfällig",
       "restrictedTalks_one": "{{count}} Einplanung mit abgesetztem Vortrag — Ersatz absprechen",
       "restrictedTalks_other": "{{count}} Einplanungen mit abgesetzten Vorträgen — Ersatz absprechen"
+    },
+    "guestLunch": {
+      "title": "Lunchpaket für den Redner",
+      "titleFor": "Lunchpaket für Bruder {{name}}",
+      "from": "Versammlung {{cong}}",
+      "where": "in den Königreichssaal zum Beginn"
     }
   },
   "halls": {
@@ -3211,7 +3218,9 @@
       "msgInvite": "An den Gastredner",
       "msgRemind": "Erinnern",
       "msgLunch": "Wer das Lunchpaket bringt",
-      "msgLunchOff": "Die Nachricht zum Lunchpaket — sobald jemand ausgewählt ist."
+      "msgLunchOff": "Die Nachricht zum Lunchpaket — sobald jemand ausgewählt ist.",
+      "lunchLast": "zuletzt am {{date}}",
+      "lunchNever": "noch nie"
     },
     "message": {
       "back": "Zum Besuch",

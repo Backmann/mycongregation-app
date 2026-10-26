@@ -9,7 +9,7 @@ import {
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { SECTION_COLORS } from './section-colors';
-import { addDays, formatDateISO } from './dates';
+import { addDays, formatDateISO, startOfWeekMonday } from './dates';
 import { getPartLabel, resolveSubsection, SUBSECTIONS } from './parts';
 import { readerTitle } from './reader-titles';
 import { weekRules } from './week-rules';
@@ -48,6 +48,13 @@ export function refineMyTasks(
     let meetingTime: string | undefined;
     if (item.date) {
       dateISO = item.date;
+      // The lunch bag is brought for the meeting: its hour is the meeting's.
+      if (item.kind === 'guest_lunch') {
+        meetingTime = effectiveVersionFor(
+          versions,
+          formatDateISO(startOfWeekMonday(new Date(`${item.date}T00:00:00`))),
+        )?.weekendTime;
+      }
     } else if (
       item.kind === 'field_service' &&
       item.weekStartDate &&
@@ -221,6 +228,9 @@ export function taskVisual(
     case 'co_lunch':
       // Hospitality around the visit — its own hue, outside the four sections.
       return { color: '#7c3aed', bg: '#f5f3ff', icon: 'restaurant-outline' };
+    case 'guest_lunch':
+      // The guest speaker's lunch bag: the same hue as the visit's lunches.
+      return { color: '#7c3aed', bg: '#f5f3ff', icon: 'bag-handle-outline' };
     default:
       return {
         color: meeting.color,
@@ -359,6 +369,13 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     }
     return parts.join(' · ');
   }
+  // Whom it is for, in the title: Home often shows only the title, inside
+  // the meeting of that day (26 October 2026).
+  if (item.kind === 'guest_lunch') {
+    return item.label
+      ? t('home.guestLunch.titleFor', { name: item.label })
+      : t('home.guestLunch.title');
+  }
   if (item.kind === 'co_lunch') {
     // A lunch and a lunch box are two different things to organise; the server
     // sends which one in `label`.
@@ -405,6 +422,12 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
       r.item.eventType === 'memorial')
   ) {
     bits.push(t(`home.eventTypes.${r.item.eventType}`));
+  } else if (r.item.kind === 'guest_lunch') {
+    // Where he comes from, and where to bring it.
+    if (r.item.congregationName) {
+      bits.push(t('home.guestLunch.from', { cong: r.item.congregationName }));
+    }
+    bits.push(t('home.guestLunch.where'));
   } else if (r.item.kind === 'co_lunch') {
     bits.push(
       r.item.label === 'lunch_box'
