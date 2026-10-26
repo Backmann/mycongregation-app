@@ -30,6 +30,8 @@ export function MessagePanel({
   phone,
   onBack,
   saved,
+  onSent,
+  backLabel,
 }: {
   title: string;
   text: string;
@@ -41,6 +43,10 @@ export function MessagePanel({
    * top, and «Позже» closes — the invitation is offered, not pressed.
    */
   saved?: string;
+  /** Told when the text left — WhatsApp, a copy or the sharing sheet. */
+  onSent?: () => void;
+  /** Where «back» leads, when it is not the visit. */
+  backLabel?: string;
 }) {
   const { t } = useTranslation();
   const [body, setBody] = useState(text);
@@ -58,6 +64,7 @@ export function MessagePanel({
   const wa = whatsappNumber(phone);
 
   const openWhatsApp = () => {
+    onSent?.();
     const url = `https://wa.me/${wa ?? ""}?text=${encodeURIComponent(body)}`;
     if (Platform.OS === "web") {
       window.open(url, "_blank", "noopener");
@@ -68,6 +75,7 @@ export function MessagePanel({
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(body);
+      onSent?.();
       notify(t("talkCoordinator.message.copied"), undefined, "success");
     } catch {
       notify(t("talkCoordinator.message.copyFailed"));
@@ -79,6 +87,7 @@ export function MessagePanel({
       if (nav.share) {
         try {
           await nav.share({ text: body });
+          onSent?.();
         } catch {
           // Closed without sharing: nothing to say.
         }
@@ -87,7 +96,8 @@ export function MessagePanel({
       await copy();
       return;
     }
-    await Share.share({ message: body });
+    const r = await Share.share({ message: body });
+    if (r.action === Share.sharedAction) onSent?.();
   };
   const webShare =
     Platform.OS === "web" &&
@@ -107,7 +117,7 @@ export function MessagePanel({
       ) : (
         <Pressable onPress={onBack} hitSlop={8} style={s.back} accessibilityRole="button">
           <Ionicons name="chevron-back" size={16} color="#0369a1" />
-          <Text style={s.backText}>{t("talkCoordinator.message.back")}</Text>
+          <Text style={s.backText}>{backLabel ?? t("talkCoordinator.message.back")}</Text>
         </Pressable>
       )}
       <Text style={s.title}>{title}</Text>

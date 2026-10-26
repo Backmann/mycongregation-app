@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import { Sheet } from "../Sheet";
 import { FONT } from "../../lib/typography";
 import { monthsApart, repeatOf } from "../../lib/talk-repeat";
+import { MessagePanel } from "./MessagePanel";
 
 /**
  * «ДОГОВОРИЛСЯ» — ONE FORM FOR WHAT WAS JUST ARRANGED (Lionel, 26 October 2026).
@@ -84,6 +85,9 @@ function addDaysISO(iso: string, n: number): string {
   d.setUTCDate(d.getUTCDate() + n);
   return d.toISOString().slice(0, 10);
 }
+/** «вс, 29 ноября» → «Вс, 29 ноября». */
+const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86_400_000,
@@ -105,10 +109,16 @@ export function QuickVisit({
   saving,
   onSave,
   onFullForm,
+  seriesWeeks = [],
+  onSaveSeries,
+  invitationFor,
 }: {
   visible: boolean;
-  /** Which way and, from an empty week, which week. */
-  start: { direction: QuickDirection; monday?: string | null };
+  /**
+   * Which way and, from an empty week, which week. `series`: «по одной
+   * неделе» — the empty weeks one after another (26 October 2026).
+   */
+  start: { direction: QuickDirection; monday?: string | null; series?: boolean };
   onClose: () => void;
   /** Weekends ahead with nobody coming — no circuit visit, no convention. */
   freeIn: QuickWeek[];
@@ -123,6 +133,14 @@ export function QuickVisit({
   saving: boolean;
   onSave: (draft: QuickDraft) => void;
   onFullForm: (direction: QuickDirection, monday: string | null) => void;
+  /** The weeks a series walks through, in order. */
+  seriesWeeks?: QuickWeek[];
+  /** Saves one week of a series; the new entry's id, or null when it failed. */
+  onSaveSeries?: (draft: QuickDraft) => Promise<string | null>;
+  /** The ready invitation for a visit saved in the series. */
+  invitationFor?: (
+    entryId: string,
+  ) => { title: string; text: string; phone: string | null } | null;
 }) {
   const { t, i18n } = useTranslation();
   const [step, setStep] = useState<1 | 2>(1);
@@ -139,6 +157,20 @@ export function QuickVisit({
   const [hostSearch, setHostSearch] = useState("");
   const [talkId, setTalkId] = useState<string | null>(null);
   const [typed, setTyped] = useState("");
+  // ---- «По одной неделе» ----
+  const series = !!start.series;
+  /** The weeks as they were when the series began: saving one does not reshuffle the rest. */
+  const [walk, setWalk] = useState<QuickWeek[]>([]);
+  const [idx, setIdx] = useState(0);
+  const [phase, setPhase] = useState<"week" | "done" | "msg">("week");
+  const [saved, setSaved] = useState<
+    { entryId: string; name: string; date: string; talk: string | null }[]
+  >([]);
+  const [skipped, setSkipped] = useState(0);
+  const [msgFor, setMsgFor] = useState<string | null>(null);
+  /** Invitations sent from this summary — a mark for this window only. */
+  const [sent, setSent] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState(false);
 
   // A fresh form each time it opens.
   useEffect(() => {
@@ -157,7 +189,39 @@ export function QuickVisit({
     setHostSearch("");
     setTalkId(null);
     setTyped("");
-  }, [visible, start.direction, start.monday]);
+    if (start.series) {
+      setWalk(seriesWeeks);
+      setIdx(0);
+      setPhase("week");
+      setSaved([]);
+      setSkipped(0);
+      setMsgFor(null);
+      setSent(new Set());
+      setDir("incoming");
+      setMonday(seriesWeeks[0]?.monday ?? null);
+    }
+    // seriesWeeks is read once, when the series opens.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, start.direction, start.monday, start.series]);
+
+  /** On to the next week of the series — or to its summary. */
+  const nextWeek = () => {
+    setPersonId(null);
+    setSearch("");
+    setShowAll(false);
+    setNewGuest(false);
+    setNewName("");
+    setNewCong("");
+    setTalkId(null);
+    setTyped("");
+    const n = idx + 1;
+    if (n >= walk.length) {
+      setPhase("done");
+      return;
+    }
+    setIdx(n);
+    setMonday(walk[n].monday);
+  };
 
   const fmt = (iso: string, f = "D MMM") =>
     dayjs(iso).locale(i18n.language).format(f).replace(/\.$/, "");
@@ -324,12 +388,13 @@ export function QuickVisit({
     setPersonId(id);
     setNewGuest(false);
     // The week is known: straight on to the talk, as in the conversation.
-    if (monday && (dir === "incoming" || hostId)) setStep(2);
+    // In a series the talk is on the same screen.
+    if (!series && monday && (dir === "incoming" || hostId)) setStep(2);
   };
 
-  const save = () => {
-    if (!monday || !date) return;
-    onSave({
+  const draft = (): QuickDraft | null => {
+    if (!monday || !date) return null;
+    return {
       direction: dir,
       monday,
       date,
@@ -342,12 +407,97 @@ export function QuickVisit({
       hostCongregationId: dir === "outgoing" ? hostId : null,
       publicTalkId: typedTheme ? null : chosenTalkId,
       specialTheme: typedTheme,
-    });
+    };
+  };
+  const save = () => {
+    const d = draft();
+    if (d) onSave(d);
+  };
+  const saveAndNext = async () => {
+    const d = draft();
+    if (!d || !onSaveSeries) return;
+    setBusy(true);
+    try {
+      const id = await onSaveSeries(d);
+      if (!id) return; // the reason is said by the screen; the week stays
+      const tk = d.publicTalkId
+        ? talks.find((x) => x.id === d.publicTalkId)
+        : undefined;
+      setSaved((xs) => [
+        ...xs,
+        {
+          entryId: id,
+          name: who,
+          date: d.date,
+          talk: tk ? `№${tk.number}` : d.specialTheme,
+        },
+      ]);
+      nextWeek();
+    } finally {
+      setBusy(false);
+    }
   };
   const typedBad = typedNumber !== null && !typedTalk;
 
+  const seriesWeek = walk[idx];
+  const seriesFooter =
+    phase === "week" ? (
+      <View style={s.footer}>
+        <Pressable
+          style={({ pressed }) => [
+            s.primary,
+            (!step1Ready || busy || typedBad) && s.disabled,
+            pressed && s.pressed,
+          ]}
+          disabled={!step1Ready || busy || typedBad}
+          onPress={() => void saveAndNext()}
+          accessibilityRole="button"
+          testID="series-save"
+        >
+          {busy ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={s.primaryText}>
+              {t("talkCoordinator.quick.saveNext")}
+            </Text>
+          )}
+        </Pressable>
+        <Pressable
+          style={({ pressed }) => [s.secondary, pressed && s.pressed]}
+          onPress={() => {
+            setSkipped((n) => n + 1);
+            nextWeek();
+          }}
+          disabled={busy}
+          accessibilityRole="button"
+          testID="series-skip"
+        >
+          <Text style={s.secondaryText}>{t("talkCoordinator.quick.skipWeek")}</Text>
+        </Pressable>
+      </View>
+    ) : phase === "done" ? (
+      <View style={s.footer}>
+        <Pressable
+          style={({ pressed }) => [s.secondary, pressed && s.pressed]}
+          onPress={onClose}
+          accessibilityRole="button"
+        >
+          <Text style={s.secondaryText}>{t("talkCoordinator.quick.close")}</Text>
+        </Pressable>
+      </View>
+    ) : undefined;
+  /** «Готово» in the middle of a series: the summary, if anything was written. */
+  const closeSeries = () => {
+    if (phase === "week" && saved.length > 0) setPhase("done");
+    else onClose();
+  };
+
   const title =
-    step === 1
+    series
+      ? phase === "week"
+        ? t("talkCoordinator.quick.seriesTitle")
+        : t("talkCoordinator.quick.seriesDone")
+      : step === 1
       ? t("talkCoordinator.quick.title")
       : [who || host?.name || "", date ? fmt(date) : ""]
           .filter(Boolean)
@@ -404,19 +554,323 @@ export function QuickVisit({
       </View>
     );
 
+  const personBlock = (
+    <>
+    <Text style={s.over}>
+      {dir === "incoming"
+        ? t("talkCoordinator.quick.whoComes")
+        : t("talkCoordinator.quick.whoGoes")}
+    </Text>
+    <View style={s.search}>
+      <Ionicons name="search" size={15} color="#94a3b8" />
+      <TextInput
+        style={s.searchInput}
+        value={search}
+        onChangeText={setSearch}
+        placeholder={
+          dir === "incoming"
+            ? t("talkCoordinator.quick.guestSearch")
+            : t("talkCoordinator.quick.brotherSearch")
+        }
+        placeholderTextColor="#94a3b8"
+        testID="quick-search"
+      />
+    </View>
+    <View style={s.list}>
+      {shownPeople.map((p) => {
+        const line = personLine(p);
+        const on = p.id === personId;
+        return (
+          <Pressable
+            key={p.id}
+            style={({ pressed }) => [
+              s.person,
+              on && s.personOn,
+              pressed && s.pressed,
+            ]}
+            onPress={() => pick(p.id)}
+            accessibilityRole="button"
+            testID="quick-person"
+            accessibilityState={{ selected: on }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={s.personName}>{p.name}</Text>
+              <Text style={[s.personSub, TONE[line.tone]]}>
+                {line.text}
+              </Text>
+            </View>
+            {on ? (
+              <Ionicons name="checkmark" size={18} color="#0f4c5a" />
+            ) : (
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color="#cbd5e1"
+              />
+            )}
+          </Pressable>
+        );
+      })}
+      {matched.length === 0 ? (
+        <Text style={s.caption}>{t("pickers.noMatches")}</Text>
+      ) : null}
+    </View>
+    {!q && matched.length > SHOWN ? (
+      <Pressable onPress={() => setShowAll((v) => !v)} hitSlop={6}>
+        <Text style={s.link}>
+          {showAll
+            ? t("talkCoordinator.quick.showFewer")
+            : t("talkCoordinator.quick.showAll", {
+                count: matched.length - SHOWN,
+              })}
+        </Text>
+      </Pressable>
+    ) : null}
+    {dir === "incoming" ? (
+      newGuest ? (
+        <View style={s.newBox}>
+          <TextInput
+            style={s.input}
+            value={newName}
+            onChangeText={setNewName}
+            placeholder={t("talkCoordinator.quick.newName")}
+            placeholderTextColor="#94a3b8"
+            autoFocus
+          />
+          <TextInput
+            style={s.input}
+            value={newCong}
+            onChangeText={setNewCong}
+            placeholder={t("talkCoordinator.quick.newCong")}
+            placeholderTextColor="#94a3b8"
+          />
+          <Text style={s.caption}>
+            {t("talkCoordinator.quick.newHint")}
+          </Text>
+        </View>
+      ) : (
+        <Pressable
+          onPress={() => {
+            setNewGuest(true);
+            setPersonId(null);
+            setNewName(search.trim());
+          }}
+          hitSlop={6}
+          accessibilityRole="button"
+        >
+          <Text style={s.link}>+ {t("talkCoordinator.quick.newGuest")}</Text>
+        </Pressable>
+      )
+    ) : null}
+    </>
+  );
+
+  const talkBlock = (
+    <>
+    <Text style={s.over}>
+      {repertoire.length > 0
+        ? dir === "incoming"
+          ? t("talkCoordinator.quick.histTalks")
+          : t("talkCoordinator.quick.ourTalks")
+        : t("talkCoordinator.quick.whichTalk")}
+    </Text>
+    {repertoire.map((tk) => {
+      // A number typed in picks its row too: one choice, seen once.
+      const on = typedTrim ? typedTalk?.id === tk.id : tk.id === talkId;
+      const flag = talkFlag(tk);
+      return (
+        <Pressable
+          key={tk.id}
+          style={({ pressed }) => [
+            s.talk,
+            flag?.tone === "warn" && s.talkWarn,
+            on && s.talkOn,
+            pressed && s.pressed,
+          ]}
+          onPress={() => {
+            setTyped("");
+            setTalkId(on ? null : tk.id);
+          }}
+          accessibilityRole="button"
+          accessibilityState={{ selected: on }}
+        >
+          <Text style={s.talkNo}>№{tk.number}</Text>
+          <Text style={s.talkTitle} numberOfLines={2}>
+            {tk.title}
+          </Text>
+          {flag ? (
+            <Text style={[s.talkFlag, TONE[flag.tone]]}>{flag.text}</Text>
+          ) : null}
+        </Pressable>
+      );
+    })}
+    <TextInput
+      style={[s.input, typedBad && s.inputBad]}
+      value={typed}
+      onChangeText={setTyped}
+      placeholder={
+        dir === "incoming"
+          ? t("talkCoordinator.quick.typeTalkOrTheme")
+          : t("talkCoordinator.quick.typeTalk")
+      }
+      placeholderTextColor="#94a3b8"
+      testID="quick-talk-input"
+    />
+    {typedTalk ? (
+      <Text
+        style={[
+          s.typedLine,
+          talkFlag(typedTalk)?.tone === "warn" && TONE.warn,
+        ]}
+      >
+        №{typedTalk.number} «{typedTalk.title}»
+        {talkFlag(typedTalk) ? ` — ${talkFlag(typedTalk)!.text}` : ""}
+      </Text>
+    ) : typedBad ? (
+      <Text style={[s.typedLine, TONE.warn]}>
+        {t("talkCoordinator.quick.noSuchTalk")}
+      </Text>
+    ) : typedTheme ? (
+      <Text style={s.typedLine}>
+        {t("talkCoordinator.quick.asTheme")}
+      </Text>
+    ) : null}
+    {duplicate ? (
+      <View style={s.dup}>
+        <Text style={s.dupText}>
+          {t(
+            dir === "incoming"
+              ? "talkCoordinator.quick.dupIn"
+              : "talkCoordinator.quick.dupOut",
+            {
+              name: who,
+              day: fmt(duplicate, "D MMMM"),
+              date: date ? fmt(date, "D MMMM") : "",
+            },
+          )}
+        </Text>
+      </View>
+    ) : null}
+    </>
+  );
+
   return (
     <Sheet
       visible={visible}
       title={title}
-      onClose={onClose}
-      closeLabel={t("common.cancel")}
-      footer={footer}
+      onClose={series ? closeSeries : onClose}
+      closeLabel={
+        series
+          ? phase === "week"
+            ? t("talkCoordinator.quick.done")
+            : t("talkCoordinator.quick.close")
+          : t("common.cancel")
+      }
+      footer={series ? seriesFooter : footer}
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={s.body}
       >
-        {step === 1 ? (
+        {series ? (
+          phase === "week" ? (
+            seriesWeek ? (
+              <>
+                <View>
+                  <View style={s.bar}>
+                    <View
+                      style={[
+                        s.barFill,
+                        { width: `${Math.round(((idx + 1) / walk.length) * 100)}%` },
+                      ]}
+                    />
+                  </View>
+                  <View style={s.barLine}>
+                    <Text style={s.barText}>
+                      {t("talkCoordinator.quick.weekOf", {
+                        n: idx + 1,
+                        total: walk.length,
+                      })}
+                    </Text>
+                    <Text style={s.barText}>
+                      {t("talkCoordinator.quick.savedN", { n: saved.length })}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={s.big}>
+                  {cap(dayjs(seriesWeek.date).locale(i18n.language).format("dd, D MMMM"))}
+                </Text>
+                {personBlock}
+                {person || (newGuest && newName.trim()) ? talkBlock : null}
+              </>
+            ) : (
+              <Text style={s.caption}>{t("talkCoordinator.quick.noFree")}</Text>
+            )
+          ) : phase === "done" ? (
+            <>
+              <View style={s.sum}>
+                <View style={s.sumBox}>
+                  <Text style={s.sumNum}>{saved.length}</Text>
+                  <Text style={s.sumLabel}>{t("talkCoordinator.quick.sumSaved")}</Text>
+                </View>
+                <View style={s.sumBox}>
+                  <Text style={s.sumNum}>{skipped}</Text>
+                  <Text style={s.sumLabel}>{t("talkCoordinator.quick.sumSkipped")}</Text>
+                </View>
+              </View>
+              {saved.length > 0 ? (
+                <Text style={s.over}>{t("talkCoordinator.quick.inviteGuests")}</Text>
+              ) : null}
+              {saved.map((x) => (
+                <View key={x.entryId} style={s.inv}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.personName}>{x.name}</Text>
+                    <Text style={s.invSub}>
+                      {[
+                        cap(dayjs(x.date).locale(i18n.language).format("dd, D MMMM")),
+                        x.talk ?? t("talkCoordinator.quick.noTalkYet"),
+                      ].join(" · ")}
+                    </Text>
+                  </View>
+                  {sent.has(x.entryId) ? (
+                    <Text style={s.invDone}>✓ {t("talkCoordinator.quick.sent")}</Text>
+                  ) : (
+                    <Pressable
+                      style={({ pressed }) => [s.invBtn, pressed && s.pressed]}
+                      onPress={() => {
+                        setMsgFor(x.entryId);
+                        setPhase("msg");
+                      }}
+                      accessibilityRole="button"
+                      testID="series-invite"
+                    >
+                      <Text style={s.invBtnText}>{t("talkCoordinator.quick.message")}</Text>
+                    </Pressable>
+                  )}
+                </View>
+              ))}
+              <Text style={s.caption}>{t("talkCoordinator.quick.seriesHint")}</Text>
+            </>
+          ) : (
+            (() => {
+              const inv = msgFor && invitationFor ? invitationFor(msgFor) : null;
+              return inv ? (
+                <MessagePanel
+                  title={inv.title}
+                  text={inv.text}
+                  phone={inv.phone}
+                  onBack={() => setPhase("done")}
+                  backLabel={t("talkCoordinator.quick.backToList")}
+                  onSent={() =>
+                    setSent((xs) => new Set([...xs, msgFor as string]))
+                  }
+                />
+              ) : (
+                <Text style={s.caption}>…</Text>
+              );
+            })()
+          )
+        ) : step === 1 ? (
           <>
             <View style={s.seg}>
               {(["incoming", "outgoing"] as const).map((d) => (
@@ -517,112 +971,7 @@ export function QuickVisit({
               </>
             ) : null}
 
-            <Text style={s.over}>
-              {dir === "incoming"
-                ? t("talkCoordinator.quick.whoComes")
-                : t("talkCoordinator.quick.whoGoes")}
-            </Text>
-            <View style={s.search}>
-              <Ionicons name="search" size={15} color="#94a3b8" />
-              <TextInput
-                style={s.searchInput}
-                value={search}
-                onChangeText={setSearch}
-                placeholder={
-                  dir === "incoming"
-                    ? t("talkCoordinator.quick.guestSearch")
-                    : t("talkCoordinator.quick.brotherSearch")
-                }
-                placeholderTextColor="#94a3b8"
-                testID="quick-search"
-              />
-            </View>
-            <View style={s.list}>
-              {shownPeople.map((p) => {
-                const line = personLine(p);
-                const on = p.id === personId;
-                return (
-                  <Pressable
-                    key={p.id}
-                    style={({ pressed }) => [
-                      s.person,
-                      on && s.personOn,
-                      pressed && s.pressed,
-                    ]}
-                    onPress={() => pick(p.id)}
-                    accessibilityRole="button"
-                    testID="quick-person"
-                    accessibilityState={{ selected: on }}
-                  >
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.personName}>{p.name}</Text>
-                      <Text style={[s.personSub, TONE[line.tone]]}>
-                        {line.text}
-                      </Text>
-                    </View>
-                    {on ? (
-                      <Ionicons name="checkmark" size={18} color="#0f4c5a" />
-                    ) : (
-                      <Ionicons
-                        name="chevron-forward"
-                        size={16}
-                        color="#cbd5e1"
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
-              {matched.length === 0 ? (
-                <Text style={s.caption}>{t("pickers.noMatches")}</Text>
-              ) : null}
-            </View>
-            {!q && matched.length > SHOWN ? (
-              <Pressable onPress={() => setShowAll((v) => !v)} hitSlop={6}>
-                <Text style={s.link}>
-                  {showAll
-                    ? t("talkCoordinator.quick.showFewer")
-                    : t("talkCoordinator.quick.showAll", {
-                        count: matched.length - SHOWN,
-                      })}
-                </Text>
-              </Pressable>
-            ) : null}
-            {dir === "incoming" ? (
-              newGuest ? (
-                <View style={s.newBox}>
-                  <TextInput
-                    style={s.input}
-                    value={newName}
-                    onChangeText={setNewName}
-                    placeholder={t("talkCoordinator.quick.newName")}
-                    placeholderTextColor="#94a3b8"
-                    autoFocus
-                  />
-                  <TextInput
-                    style={s.input}
-                    value={newCong}
-                    onChangeText={setNewCong}
-                    placeholder={t("talkCoordinator.quick.newCong")}
-                    placeholderTextColor="#94a3b8"
-                  />
-                  <Text style={s.caption}>
-                    {t("talkCoordinator.quick.newHint")}
-                  </Text>
-                </View>
-              ) : (
-                <Pressable
-                  onPress={() => {
-                    setNewGuest(true);
-                    setPersonId(null);
-                    setNewName(search.trim());
-                  }}
-                  hitSlop={6}
-                  accessibilityRole="button"
-                >
-                  <Text style={s.link}>+ {t("talkCoordinator.quick.newGuest")}</Text>
-                </Pressable>
-              )
-            ) : null}
+            {personBlock}
           </>
         ) : (
           <>
@@ -635,90 +984,7 @@ export function QuickVisit({
               <Ionicons name="chevron-back" size={16} color="#0369a1" />
               <Text style={s.backText}>{t("talkCoordinator.quick.back")}</Text>
             </Pressable>
-            <Text style={s.over}>
-              {repertoire.length > 0
-                ? dir === "incoming"
-                  ? t("talkCoordinator.quick.histTalks")
-                  : t("talkCoordinator.quick.ourTalks")
-                : t("talkCoordinator.quick.whichTalk")}
-            </Text>
-            {repertoire.map((tk) => {
-              // A number typed in picks its row too: one choice, seen once.
-              const on = typedTrim ? typedTalk?.id === tk.id : tk.id === talkId;
-              const flag = talkFlag(tk);
-              return (
-                <Pressable
-                  key={tk.id}
-                  style={({ pressed }) => [
-                    s.talk,
-                    flag?.tone === "warn" && s.talkWarn,
-                    on && s.talkOn,
-                    pressed && s.pressed,
-                  ]}
-                  onPress={() => {
-                    setTyped("");
-                    setTalkId(on ? null : tk.id);
-                  }}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on }}
-                >
-                  <Text style={s.talkNo}>№{tk.number}</Text>
-                  <Text style={s.talkTitle} numberOfLines={2}>
-                    {tk.title}
-                  </Text>
-                  {flag ? (
-                    <Text style={[s.talkFlag, TONE[flag.tone]]}>{flag.text}</Text>
-                  ) : null}
-                </Pressable>
-              );
-            })}
-            <TextInput
-              style={[s.input, typedBad && s.inputBad]}
-              value={typed}
-              onChangeText={setTyped}
-              placeholder={
-                dir === "incoming"
-                  ? t("talkCoordinator.quick.typeTalkOrTheme")
-                  : t("talkCoordinator.quick.typeTalk")
-              }
-              placeholderTextColor="#94a3b8"
-              testID="quick-talk-input"
-            />
-            {typedTalk ? (
-              <Text
-                style={[
-                  s.typedLine,
-                  talkFlag(typedTalk)?.tone === "warn" && TONE.warn,
-                ]}
-              >
-                №{typedTalk.number} «{typedTalk.title}»
-                {talkFlag(typedTalk) ? ` — ${talkFlag(typedTalk)!.text}` : ""}
-              </Text>
-            ) : typedBad ? (
-              <Text style={[s.typedLine, TONE.warn]}>
-                {t("talkCoordinator.quick.noSuchTalk")}
-              </Text>
-            ) : typedTheme ? (
-              <Text style={s.typedLine}>
-                {t("talkCoordinator.quick.asTheme")}
-              </Text>
-            ) : null}
-            {duplicate ? (
-              <View style={s.dup}>
-                <Text style={s.dupText}>
-                  {t(
-                    dir === "incoming"
-                      ? "talkCoordinator.quick.dupIn"
-                      : "talkCoordinator.quick.dupOut",
-                    {
-                      name: who,
-                      day: fmt(duplicate, "D MMMM"),
-                      date: date ? fmt(date, "D MMMM") : "",
-                    },
-                  )}
-                </Text>
-              </View>
-            ) : null}
+            {talkBlock}
           </>
         )}
       </ScrollView>
@@ -878,5 +1144,33 @@ const s = StyleSheet.create({
   },
   primaryText: { fontFamily: FONT.extrabold, fontSize: 15.5, color: "#ffffff" },
   disabled: { opacity: 0.45 },
+  secondary: {
+    backgroundColor: "#f1f5f9",
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  secondaryText: { fontFamily: FONT.extrabold, fontSize: 15, color: "#0f172a" },
+  bar: { height: 5, borderRadius: 3, backgroundColor: "#e2e8f0", overflow: "hidden" },
+  barFill: { height: "100%", backgroundColor: "#0f4c5a", borderRadius: 3 },
+  barLine: { flexDirection: "row", justifyContent: "space-between", marginTop: 5 },
+  barText: { fontFamily: FONT.semibold, fontSize: 12, color: "#64748b" },
+  big: { fontFamily: FONT.extrabold, fontSize: 19, color: "#0f172a", marginTop: 4 },
+  sum: { flexDirection: "row", gap: 10 },
+  sumBox: { flex: 1, backgroundColor: "#f8fafc", borderRadius: 14, padding: 12, alignItems: "center" },
+  sumNum: { fontFamily: FONT.extrabold, fontSize: 24, color: "#0f172a" },
+  sumLabel: { fontFamily: FONT.semibold, fontSize: 12, color: "#64748b" },
+  inv: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#e2e8f0",
+  },
+  invSub: { fontFamily: FONT.medium, fontSize: 12, color: "#64748b", marginTop: 1 },
+  invBtn: { backgroundColor: "#16a34a", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 7 },
+  invBtnText: { fontFamily: FONT.extrabold, fontSize: 12.5, color: "#ffffff" },
+  invDone: { fontFamily: FONT.extrabold, fontSize: 12.5, color: "#16a34a" },
   pressed: { opacity: 0.85 },
 });

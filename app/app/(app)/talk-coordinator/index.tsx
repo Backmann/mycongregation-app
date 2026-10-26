@@ -247,6 +247,16 @@ export default function TalkCoordinatorScreen() {
             >
               <Text style={[styles.tileNum, empty > 0 && { color: '#c2410c' }]}>{empty}</Text>
               <Text style={styles.tileLabel}>{t('talkCoordinator.desk.emptyWeeks', { count: empty })}</Text>
+              {empty > 0 ? (
+                <Pressable
+                  onPress={() => openLog('?quick=series')}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  testID="desk-fill-one"
+                >
+                  <Text style={styles.tileLink}>{t('talkCoordinator.quick.fillOne')} →</Text>
+                </Pressable>
+              ) : null}
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
@@ -421,6 +431,7 @@ const styles = StyleSheet.create({
   },
   tileNum: { fontFamily: FONT.extrabold, fontSize: 28, lineHeight: 32, color: '#0f172a' },
   tileLabel: { fontFamily: FONT.medium, fontSize: 12.5, lineHeight: 17, color: '#475569', marginTop: 2 },
+  tileLink: { fontFamily: FONT.extrabold, fontSize: 12.5, color: '#0369a1', marginTop: 8 },
   sectionLabel: {
     fontFamily: FONT.extrabold,
     fontSize: 11.5,
