@@ -18,8 +18,14 @@ name: Координатор речей — только смотреть
 # The desk: «Договорился» first, then the next meeting.
 - openLink: mycongregation://talk-coordinator
 - extendedWaitUntil:
-    visible: { id: "desk-quick" }
+    visible: "Координатор речей|Talk coordinator|Vortragskoordinator"
     timeout: 30000
+# The desk may still be scrolled from an earlier visit (26 October 2026: the
+# screen walk had swiped it down, and «Договорился» was above the edge).
+- scrollUntilVisible:
+    element: { id: "desk-quick" }
+    direction: UP
+    timeout: 10000
 - assertNotVisible: ".*(Что-то пошло не так|Something went wrong|Unmatched Route|Нет доступа).*"
 - takeScreenshot: 01-desk
 # The journal ahead, and Attention.
@@ -51,8 +57,14 @@ name: Координатор речей — только смотреть
 # The ready message to this weekend's guest, when there is one — shown only.
 - openLink: mycongregation://talk-coordinator
 - extendedWaitUntil:
-    visible: { id: "desk-quick" }
+    visible: "Координатор речей|Talk coordinator|Vortragskoordinator"
     timeout: 30000
+# The desk may still be scrolled from an earlier visit (26 October 2026: the
+# screen walk had swiped it down, and «Договорился» was above the edge).
+- scrollUntilVisible:
+    element: { id: "desk-quick" }
+    direction: UP
+    timeout: 10000
 - runFlow:
     when:
       visible: "Сообщение гостю|Message to the guest|Gast anschreiben"
