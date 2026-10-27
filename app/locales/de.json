@@ -1057,9 +1057,6 @@
       "next": "Weiter →",
       "title": "Zuteilung"
     },
-    "tabs": {
-      "duties": "Dienste"
-    },
     "weekend": {
       "reader": "Leser"
     },
@@ -1496,7 +1493,6 @@
       "capability_off": "Für diesen Dienst nicht freigegeben"
     },
     "preparing": "Wird vorbereitet…",
-    "dutyColumn": "Dienst",
     "today": "Heute",
     "nextUp": "Als Nächstes",
     "past": "Vergangen",
@@ -5570,7 +5566,8 @@
     "reason": {
       "absent": "an diesem Tag abwesend",
       "duty": "schon eingeteilt: {{place}}",
-      "part": "hat einen Programmpunkt"
+      "part": "hat einen Programmpunkt",
+      "inactive": "untätiger Verkündiger"
     },
     "freeHere": "Bei dieser Zusammenkunft noch nicht eingeteilt: {{count}}",
     "fill": {
@@ -5588,6 +5585,10 @@
     },
     "programmeOf": "Programm {{assigned}}/{{total}}",
     "programmeNone": "kein Programm",
-    "clashes": "Platz und Programmpunkt beim selben Bruder: {{count}}"
+    "clashes": "Platz und Programmpunkt beim selben Bruder: {{count}}",
+    "pdf": {
+      "title": "Dienste bei den Zusammenkünften",
+      "printed": "Gedruckt am"
+    }
   }
 }
