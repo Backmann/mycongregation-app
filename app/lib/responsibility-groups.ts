@@ -111,3 +111,51 @@ for (const type of Object.keys(GROUP_OF)) {
     );
   }
 }
+
+/**
+ * A duty and its own assistant — mirrored from the server's ASSISTANT_OF
+ * (src/common/enums/responsibility-type.enum.ts). The server refuses one
+ * brother in both halves (23 October 2026); the picker says so BEFORE the
+ * tap, greying him out with the reason, instead of letting the refusal arrive
+ * after it (walk, 27 October 2026).
+ */
+export const ASSISTANT_OF: readonly (readonly [ResponsibilityType, ResponsibilityType])[] = [
+  ["body_coordinator", "body_coordinator_assistant"],
+  ["public_talk_coordinator", "public_talk_coordinator_assistant"],
+  ["service_overseer", "service_overseer_assistant"],
+  ["attendance_recorder", "attendance_recorder_assistant"],
+  ["wt_study_conductor", "wt_study_conductor_backup"],
+];
+
+/** The other half of `type`'s pair, if it has one. */
+export function pairedWith(type: ResponsibilityType): ResponsibilityType | null {
+  for (const [main, assistant] of ASSISTANT_OF) {
+    if (type === main) return assistant;
+    if (type === assistant) return main;
+  }
+  return null;
+}
+
+/**
+ * The one duty several brothers may hold at once — mirrored from the
+ * server's MULTI_HOLDER. Everywhere else a new holder REPLACES the old one.
+ */
+export const MULTI_HOLDER: ReadonlySet<ResponsibilityType> = new Set<ResponsibilityType>([
+  "wt_study_conductor_backup",
+]);
+
+/**
+ * Duties an elder usually carries. Lionel, 27 October 2026: «лучше
+ * предупреждать» — the picker warns when a ministerial servant or a publisher
+ * is chosen for one of these, and lets it through. Not a rule of the server.
+ */
+export const ELDER_USUALLY: ReadonlySet<ResponsibilityType> = new Set<ResponsibilityType>([
+  "body_coordinator",
+  "body_coordinator_assistant",
+  "secretary",
+  "service_overseer",
+  "life_ministry_overseer",
+  "wt_study_conductor",
+  "adviser",
+  "public_talk_coordinator",
+]);

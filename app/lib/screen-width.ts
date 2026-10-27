@@ -40,6 +40,8 @@ const OVERVIEW = new Set<string>([
   '/publishers/cleaning',
   '/special-events',
   '/publishers/list',
+  // A table of the duties with the picker beside it (27 October 2026).
+  '/publishers/responsibilities',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */
