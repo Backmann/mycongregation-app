@@ -20,6 +20,8 @@ import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
 import { failsScreen } from '../../../lib/screen-failure';
+import { OPTIONAL_DUTY_TYPES } from '../../../lib/duty-count';
+import { capitalizeFirst } from '../../../lib/relative-time';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -98,8 +100,9 @@ export default function DutiesScreen() {
   for (const d of dutiesQ.data ?? []) {
     // The timekeeper is a place a congregation may leave empty: counted
     // neither here nor on «Собрание» («0 из 8» there, «0/9» here — walk,
-    // 23 October 2026; server readiness OPTIONAL_DUTIES).
-    if (d.dutyType === 'timekeeper') continue;
+    // 23 October 2026; server readiness OPTIONAL_DUTIES). The meeting's own
+    // sheet counts by the same rule (lib/duty-count).
+    if (OPTIONAL_DUTY_TYPES.has(d.dutyType)) continue;
     const key = `${d.weekStartDate}|${d.eventType}`;
     const c = counts.get(key) ?? { total: 0, assigned: 0 };
     c.total += 1;
@@ -179,7 +182,12 @@ export default function DutiesScreen() {
       return out;
     }
     const c = counts.get(`${r.week}|${r.meeting}`);
-    const line = c && c.total > 0 ? t('feed.dutiesShort', { assigned: c.assigned, total: c.total }) : t('duties.noDuties');
+    // The count stands alone on its line here, so it starts with a capital like
+    // «Обязанности ещё не заполнены» below it; in the feed it follows a «·».
+    const line =
+      c && c.total > 0
+        ? capitalizeFirst(t('feed.dutiesShort', { assigned: c.assigned, total: c.total }))
+        : t('duties.noDuties');
     const isSel = wide && !!selected && selected.week === r.week && selected.meeting === r.meeting;
     const dow = day.toLocaleDateString(lang, { weekday: 'short' }).replace('.', '').toUpperCase();
     out.push(
