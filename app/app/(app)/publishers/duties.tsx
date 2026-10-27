@@ -154,18 +154,28 @@ export default function DutiesScreen() {
 
   const publishersById = new Map<string, Publisher>((rosterQ.data?.data ?? []).map((p) => [p.id, p]));
   const canPrint = perms.canEditDuties || perms.isElder || perms.isAdmin;
-  const printWeek = selected?.week ?? thisMonday;
-  const print = () =>
-    printDutiesMonth({
-      weekStart: atMidnight(printWeek),
-      meetingVersion: effectiveVersionFor(settingsQ.data?.versions, printWeek),
-      events: eventsQ.data ?? [],
-      publishersById,
+  // The month the table shows — kept here so the print button prints it.
+  const [tableMonth, setTableMonth] = useState<string | null>(null);
+  const shownMonth = tableMonth ?? (firstMeeting?.dateISO ?? todayISO).slice(0, 7);
+  // Printing: the month on screen in the table; by meeting, the month of
+  // the chosen meeting's own day (not its week's Monday).
+  const printMonth = showMonth
+    ? shownMonth
+    : (rows.find((r) => r.kind === 'meeting' && selected && r.week === selected.week && r.meeting === selected.meeting) as
+        | Extract<Row, { kind: 'meeting' }>
+        | undefined)?.dateISO.slice(0, 7) ?? shownMonth;
+  const print = () => {
+    const v = effectiveVersionFor(settingsQ.data?.versions, `${printMonth}-01`);
+    void printDutiesMonth({
+      month: printMonth,
       congregationName: settingsQ.data?.congregation.name ?? null,
+      hallAddress: v?.address ?? null,
+      nameOf: (id) => publishersById.get(id)?.displayName ?? null,
       t,
       lang,
       onBusy: () => {},
     });
+  };
 
   const open = (week: string, meeting: DutyMeeting) => {
     if (wide) setChosen({ week, meeting });
@@ -319,7 +329,7 @@ export default function DutiesScreen() {
               </Pressable>
             ) : null}
           </View>
-          <DutiesMonth canEdit={perms.canEditDuties} startISO={firstMeeting?.dateISO ?? todayISO} />
+          <DutiesMonth canEdit={perms.canEditDuties} month={shownMonth} onMonth={setTableMonth} />
         </View>
       ) : wide ? (
         <View style={styles.split}>

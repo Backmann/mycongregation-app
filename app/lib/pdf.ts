@@ -99,7 +99,13 @@ function printViaFrame(html: string): Promise<{ ok: boolean; reason?: string }> 
  */
 export async function exportHtmlAsPdf(
   html: string,
-  opts?: { fileName?: string; preopenedWindow?: Window | null },
+  opts?: {
+    fileName?: string;
+    preopenedWindow?: Window | null;
+    /** A4 on its side — the browser reads the sheet's own @page rule, the
+     *  phone's PDF is sized here. */
+    landscape?: boolean;
+  },
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
     if (printsInPlace()) {
@@ -129,7 +135,9 @@ export async function exportHtmlAsPdf(
 
   // Native: produce a real PDF file and share it.
   try {
-    const { uri } = await Print.printToFileAsync({ html });
+    const { uri } = await Print.printToFileAsync(
+      opts?.landscape ? { html, width: 842, height: 595 } : { html },
+    );
     const canShare = await Sharing.isAvailableAsync();
     if (canShare) {
       await Sharing.shareAsync(uri, {

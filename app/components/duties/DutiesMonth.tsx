@@ -18,7 +18,8 @@ import { notify } from '../../lib/error-bus';
 import { FONT } from '../../lib/typography';
 import { countDuties } from '../../lib/duty-count';
 import { autofill, cellId, programmeForDuties, programmeReady, rowKeysOf } from '../../lib/duty-autofill';
-import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, shortName } from '../../lib/duty-load';
+import { monthTable, rowTitle } from '../../lib/duty-month-table';
+import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, isServing, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
 import { LoadFailure } from '../LoadFailure';
 import { dutyLabel } from '../DutiesSection';
@@ -40,20 +41,25 @@ type Selection = { kind: 'cell'; cell: Cell } | { kind: 'meeting'; meeting: numb
 
 const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
 
-function monthOf(iso: string): string {
-  return iso.slice(0, 7);
-}
 function shiftMonth(month: string, by: number): string {
   const d = new Date(`${month}-01T00:00:00`);
   d.setMonth(d.getMonth() + by);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO: string }) {
+export function DutiesMonth({
+  canEdit,
+  month,
+  onMonth,
+}: {
+  canEdit: boolean;
+  /** YYYY-MM — kept by the screen, so its print button prints this month. */
+  month: string;
+  onMonth: (month: string) => void;
+}) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const qc = useQueryClient();
-  const [month, setMonth] = useState(monthOf(startISO));
   const [sel, setSel] = useState<Selection>(null);
   // «Заполнить пустые»: proposals live here until saved — nothing is written
   // before the coordinator says so.
@@ -63,7 +69,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
   const [saving, setSaving] = useState(false);
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const changeMonth = (by: number) => {
-    setMonth(shiftMonth(month, by));
+    onMonth(shiftMonth(month, by));
     setSel(null);
     setProposals(null);
     setNobody(new Set());
@@ -85,23 +91,8 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
   const load = useMemo(() => new Map((q.data?.load ?? []).map((l) => [l.publisherId, l])), [q.data]);
 
   // The rows of the table: every place any meeting of the month has, in the
-  // order the sheets keep them.
-  const table = useMemo(() => {
-    const order = new Map<string, { sort: number; ordinal: number; row: MonthDutyRow }>();
-    const cells = meetings.map((m) => {
-      const map = new Map<string, { row: MonthDutyRow; ordinal: number }>();
-      for (const r of rowKeysOf(m)) {
-        map.set(r.key, { row: r.row, ordinal: r.ordinal });
-        const was = order.get(r.key);
-        if (!was || r.row.sortOrder < was.sort) order.set(r.key, { sort: r.row.sortOrder, ordinal: r.ordinal, row: r.row });
-      }
-      return map;
-    });
-    const rows = [...order.entries()]
-      .sort((a, b) => a[1].sort - b[1].sort || a[1].ordinal - b[1].ordinal)
-      .map(([key, v]) => ({ key, ...v }));
-    return { rows, cells };
-  }, [meetings]);
+  // order the sheets keep them (the printed sheet builds the same table).
+  const table = useMemo(() => monthTable(meetings), [meetings]);
 
   const assignM = useMutation({
     mutationFn: async (v: { meeting: MonthDutyMeeting; row: MonthDutyRow; ordinal: number; publisherId: string | null }) =>
@@ -233,16 +224,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
   );
   const monthName = capitalizeFirst(atMidnight(`${month}-01`).toLocaleDateString(lang, { month: 'long', year: 'numeric' }));
 
-  const rowTitle = (row: MonthDutyRow, ordinal: number, count: number) => {
-    const base = dutyLabel({ ...row, id: '', congregationId: '', weekStartDate: '', eventType: 'midweek' } as never, t);
-    if (row.dutyType === 'microphone') return base;
-    return count > 1 ? `${base} ${ordinal + 1}` : base;
-  };
-  const placeCount = new Map<string, number>();
-  for (const r of table.rows) {
-    const place = r.key.split('#')[0];
-    placeCount.set(place, (placeCount.get(place) ?? 0) + 1);
-  }
+  const titleOf = (key: string, row: MonthDutyRow, ordinal: number) => rowTitle(table, key, row, ordinal, t);
 
   const selCell = sel?.kind === 'cell' ? sel.cell : null;
   const selMeetingIdx = sel?.kind === 'cell' ? sel.cell.meeting : sel?.kind === 'meeting' ? sel.meeting : null;
@@ -380,12 +362,11 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
             </View>
 
             {table.rows.map((r) => {
-              const place = r.key.split('#')[0];
               return (
                 <View key={r.key} style={styles.tr}>
                   <View style={styles.placeCol}>
                     <Text style={styles.placeText} numberOfLines={2}>
-                      {rowTitle(r.row, r.ordinal, placeCount.get(place) ?? 1)}
+                      {titleOf(r.key, r.row, r.ordinal)}
                     </Text>
                   </View>
                   {meetings.map((m, mi) => {
@@ -480,10 +461,10 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
           <CellPanel
             meeting={selMeeting}
             entry={table.cells[selCell.meeting].get(selCell.row)!}
-            title={`${dayLabel(selMeeting)} · ${rowTitle(
+            title={`${dayLabel(selMeeting)} · ${titleOf(
+              selCell.row,
               table.cells[selCell.meeting].get(selCell.row)!.row,
               table.cells[selCell.meeting].get(selCell.row)!.ordinal,
-              placeCount.get(selCell.row.split('#')[0]) ?? 1,
             )}`}
             publishers={publishers}
             byId={byId}
@@ -638,6 +619,7 @@ function CellPanel({
     (p) => p.id !== entry.row.publisherId && p.id !== proposed,
   );
   const reasonOf = (p: Publisher): string | null => {
+    if (!isServing(p)) return t('dutiesMonth.reason.inactive');
     const a = absenceOn(absences, p.id, meeting.date);
     if (a) return t('dutiesMonth.reason.absent');
     if (others.has(p.id)) return t('dutiesMonth.reason.duty', { place: others.get(p.id) });

@@ -79,6 +79,12 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
     // template): the server cuts the sheet and fills the place in one call.
     mutationFn: (vars: { id: string; publisherId: string | null; eventType?: EventType }) => {
       const place = parseVirtualDuty(vars.id);
+      // «Не выбрано» on a place of a meeting with no sheet: there is nobody
+      // to take off, and cutting a sheet for it would write a page of empty
+      // rows that no longer follows the template.
+      if (place && vars.publisherId === null) {
+        return Promise.resolve({ duty: null as never, warnings: [] });
+      }
       if (place && vars.eventType) {
         return dutiesApi.assignPlace({
           weekStartDate: weekStartISO,

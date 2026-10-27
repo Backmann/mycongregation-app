@@ -16,9 +16,19 @@ const BAPTISED: ReadonlySet<string> = new Set(['elder', 'ministerial_servant', '
  * baptised brothers — the same rule the picker follows.
  */
 export function dutyPool(publishers: Publisher[]): Publisher[] {
-  const marked = publishers.filter((p) => DUTY_CAPABILITY_KEYS.some((k) => !!p.capabilities?.[k]));
+  const active = publishers.filter(isServing);
+  const marked = active.filter((p) => DUTY_CAPABILITY_KEYS.some((k) => !!p.capabilities?.[k]));
   if (marked.length > 0) return marked;
-  return publishers.filter((p) => p.gender === 'brother' && BAPTISED.has(p.appointment));
+  return active.filter((p) => p.gender === 'brother' && BAPTISED.has(p.appointment));
+}
+
+/**
+ * Not an inactive publisher (Lionel, 27 October 2026): he is neither proposed
+ * by «Заполнить пустые» nor counted among those with nothing this month.
+ * Put by hand he still may be — the panel lists him last, with the reason.
+ */
+export function isServing(p: Publisher): boolean {
+  return p.status !== 'inactive';
 }
 
 /**

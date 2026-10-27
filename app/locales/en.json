@@ -1057,9 +1057,6 @@
       "next": "Next →",
       "title": "Assignment"
     },
-    "tabs": {
-      "duties": "Duties"
-    },
     "weekend": {
       "reader": "Reader"
     },
@@ -1496,7 +1493,6 @@
       "capability_off": "Not approved for this duty"
     },
     "preparing": "Preparing…",
-    "dutyColumn": "Duty",
     "today": "Today",
     "nextUp": "Next",
     "past": "Past",
@@ -5570,7 +5566,8 @@
     "reason": {
       "absent": "away that day",
       "duty": "already at: {{place}}",
-      "part": "has a part in the program"
+      "part": "has a part in the program",
+      "inactive": "inactive publisher"
     },
     "freeHere": "Still free at this meeting: {{count}}",
     "fill": {
@@ -5588,6 +5585,10 @@
     },
     "programmeOf": "program {{assigned}}/{{total}}",
     "programmeNone": "no program",
-    "clashes": "Place and part for the same brother: {{count}}"
+    "clashes": "Place and part for the same brother: {{count}}",
+    "pdf": {
+      "title": "Meeting duties",
+      "printed": "Printed"
+    }
   }
 }

@@ -1,5 +1,5 @@
 import type { Absence, ActivityItem, MonthDutyMeeting, MonthDutyRow, MonthOfDuties, Publisher } from './api';
-import { absenceOn, busyAt, candidatesFor } from './duty-load';
+import { absenceOn, busyAt, candidatesFor, isServing } from './duty-load';
 import { placeKey } from './duty-places';
 
 /**
@@ -150,7 +150,7 @@ export function autofill(input: AutofillInput): AutofillResult {
         const place = r.key.split('#')[0];
         const before = previousAt.get(m.eventType ?? '')?.get(place) ?? new Set<string>();
         const pool = candidatesFor(r.row.capability, publishers).filter(
-          (p) => !busy.has(p.id) && !absenceOn(absences, p.id, m.date),
+          (p) => isServing(p) && !busy.has(p.id) && !absenceOn(absences, p.id, m.date),
         );
         const rank = (p: Publisher) => [
           last.get(p.id)?.get(place) ?? '',
