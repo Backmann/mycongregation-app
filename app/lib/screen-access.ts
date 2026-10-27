@@ -47,6 +47,7 @@ export type AccessRule =
   | 'annual'
   | 'attendance'
   | 'duties'
+  | 'dutyPlaces'
   | 'backups';
 
 /** What the account itself carries, beside the permissions. */
@@ -85,6 +86,8 @@ export const ACCESS_RULES: Record<
   annual: (p) => p.canManageServiceSummary,
   attendance: (p) => p.canViewAttendance,
   duties: (p) => p.canEditDuties || p.isElder || p.isAdmin,
+  // The places themselves: whoever edits the duties (27 October 2026).
+  dutyPlaces: (p) => p.canEditDuties || p.isAdmin,
   backups: (_p, user) => user?.canManageBackups === true,
 };
 
@@ -134,6 +137,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/publishers/responsibilities': 'admin',
   '/publishers/duties': 'duties',
   '/publishers/duties-meeting': 'duties',
+  '/publishers/duty-places': 'dutyPlaces',
   '/publishers/cleaning': 'all',
   '/publishers/cleaning-week': 'all',
   '/cleaning/guide': 'all',

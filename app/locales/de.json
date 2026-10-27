@@ -1168,7 +1168,9 @@
     "histNever": "noch nie",
     "histPairWith": "im Team mit {{name}}:",
     "historyScope": "Aktivität der letzten 3 Monate",
-    "showingElders": "Älteste werden angezeigt"
+    "showingElders": "Älteste werden angezeigt",
+    "nobodyHasCapabilityBrothers": "Die Markierung „{{name}}“ hat noch niemand — Brüder werden angezeigt. Markieren können Sie sie in der Verkündigerkarte.",
+    "showingBrothers": "Brüder werden angezeigt"
   },
   "admin": {
     "users": {
@@ -1501,7 +1503,8 @@
     "addAnother": "Noch einer",
     "renamePlace": "Umbenennen",
     "removePlace": "Dienst entfernen",
-    "removePlaceAsk": "„{{label}}“ mitsamt allen Zugeteilten entfernen?"
+    "removePlaceAsk": "„{{label}}“ mitsamt allen Zugeteilten entfernen?",
+    "onlyThisMeeting": "Nur bei dieser Zusammenkunft"
   },
   "publisherActivity": {
     "thisMeeting": "Diese Zusammenkunft:"
@@ -5326,7 +5329,10 @@
       "PIONEER_KIND_CORRECTION_INVALID": "Für die ganze Zeit korrigieren lässt sich nur die Art eines aktuellen allgemeinen Pioniers, Sonderpioniers oder Missionars.",
       "FS_GENERATE_RETIRED": "Zusammenkünfte werden so nicht mehr erstellt. Öffnen Sie „Monat vorbereiten“ – dort wird der Kalender berücksichtigt und nicht sofort veröffentlicht.",
       "TALK_SWAP_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs wird der Vortrag nicht getauscht: Verlegen Sie den Besuch selbst und tragen Sie den Gast im Vortragsplan unter „Zu uns“ für eine andere Woche ein.",
-      "TALK_MOVE_VISIT_WEEK": "In die Woche des Kreisaufseherbesuchs wird kein Gastredner verlegt – bitte eine andere Woche wählen."
+      "TALK_MOVE_VISIT_WEEK": "In die Woche des Kreisaufseherbesuchs wird kein Gastredner verlegt – bitte eine andere Woche wählen.",
+      "DUTY_PLACES_INVALID": "Plätze nicht gespeichert: Ein eigener Platz braucht einen Namen, jeder Platz hat 1 bis 10 Personen, und jeder Platz kommt nur einmal vor.",
+      "DUTY_PLACE_NOT_FOUND": "Diesen Platz gibt es bei dieser Zusammenkunft nicht — bitte die Ansicht aktualisieren.",
+      "MONTH_INVALID": "Der Monat ist ungültig."
     }
   },
   "stage": {
@@ -5480,5 +5486,43 @@
     "body": "Der Rest der App funktioniert. Wenn der Fehler wiederkommt, senden Sie den Text unten an den Administrator.",
     "retry": "Erneut versuchen",
     "home": "Zur Startseite"
+  },
+  "dutyPlaces": {
+    "title": "Plätze der Versammlung",
+    "door": "Welche Plätze es bei den Zusammenkünften unter der Woche und am Wochenende gibt — einmal festgelegt",
+    "kind": {
+      "midweek": "Unter der Woche",
+      "weekend": "Wochenende"
+    },
+    "hint": "Eine neue Zusammenkunft übernimmt diese Plätze. Künftige Zusammenkünfte ändern sich mit; wer schon eingeteilt ist, bleibt eingeteilt.",
+    "unnamed": "Ohne Namen",
+    "needsName": "Ein eigener Platz braucht einen Namen.",
+    "twice": "„{{name}}“ kommt doppelt vor.",
+    "needsOne": "Mindestens ein Platz ist nötig.",
+    "takeLatest": "Plätze der letzten Zusammenkunft übernehmen — {{date}}",
+    "takeLatestHas": "Dort gibt es: {{list}}",
+    "offerMark": "eigener Platz · vorschlagen: {{name}}",
+    "offerBrothers": "eigener Platz · alle Brüder vorschlagen",
+    "optional": "darf leer bleiben",
+    "fewer": "Weniger",
+    "more": "Mehr",
+    "name": "Name",
+    "namePlaceholder": "Zum Beispiel Parkplatz",
+    "offer": "Wen vorschlagen",
+    "anyBrother": "Alle Brüder",
+    "notes": "Hinweis für die Eingeteilten",
+    "notesPlaceholder": "Zum Beispiel: Warnwesten im Schrank am Eingang",
+    "remove": "Platz entfernen",
+    "addOwn": "Eigener Platz",
+    "errorTitle": "Plätze konnten nicht gespeichert werden",
+    "saved": "Plätze gespeichert. Geänderte Zusammenkünfte: {{count}}",
+    "confirmTitle": {
+      "midweek": "Plätze der Zusammenkünfte unter der Woche speichern?",
+      "weekend": "Plätze der Zusammenkünfte am Wochenende speichern?"
+    },
+    "affects": "Die Änderung betrifft künftige Zusammenkünfte: {{count}}. Vergangene bleiben unverändert.",
+    "affectsNone": "Bereits angelegte Zusammenkünfte ändern sich nicht — die nächsten übernehmen die neuen Plätze.",
+    "keptTitle": "Bleiben dort, wo schon jemand eingeteilt ist:",
+    "keptHint": "Bei diesen Zusammenkünften ist der Platz mit „nur bei dieser Zusammenkunft“ beschriftet."
   }
 }

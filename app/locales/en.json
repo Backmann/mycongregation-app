@@ -1168,7 +1168,9 @@
     "histNever": "not yet",
     "histPairWith": "paired with {{name}}:",
     "historyScope": "Activity over the last 3 months",
-    "showingElders": "Showing elders"
+    "showingElders": "Showing elders",
+    "nobodyHasCapabilityBrothers": "Nobody has the “{{name}}” mark yet — brothers are shown. You can set it on the publisher card.",
+    "showingBrothers": "Brothers are shown"
   },
   "admin": {
     "users": {
@@ -1501,7 +1503,8 @@
     "addAnother": "Add one more",
     "renamePlace": "Rename",
     "removePlace": "Remove duty",
-    "removePlaceAsk": "Remove “{{label}}” along with everyone assigned to it?"
+    "removePlaceAsk": "Remove “{{label}}” along with everyone assigned to it?",
+    "onlyThisMeeting": "Only at this meeting"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:"
@@ -5326,7 +5329,10 @@
       "PIONEER_KIND_CORRECTION_INVALID": "Only the kind of a current regular pioneer, special pioneer or missionary can be corrected for all time.",
       "FS_GENERATE_RETIRED": "Meetings are no longer made this way. Open “Prepare month” — it follows the calendar and does not publish at once.",
       "TALK_SWAP_VISIT_WEEK": "In the circuit overseer's visit week the talk is not swapped: move the visit itself, and book the guest for another week in the talk log, under “Incoming”.",
-      "TALK_MOVE_VISIT_WEEK": "No guest is moved into the circuit overseer's visit week — choose another week."
+      "TALK_MOVE_VISIT_WEEK": "No guest is moved into the circuit overseer's visit week — choose another week.",
+      "DUTY_PLACES_INVALID": "Places not saved: a place of your own needs a name, each place has 1 to 10 people, and each place appears once.",
+      "DUTY_PLACE_NOT_FOUND": "That place is not on this meeting — please refresh.",
+      "MONTH_INVALID": "The month is not valid."
     }
   },
   "stage": {
@@ -5480,5 +5486,43 @@
     "body": "The rest of the app keeps working. If it happens again, send the text below to the administrator.",
     "retry": "Try again",
     "home": "Go to Home"
+  },
+  "dutyPlaces": {
+    "title": "Congregation places",
+    "door": "Which places the midweek and weekend meetings have — set once",
+    "kind": {
+      "midweek": "Midweek",
+      "weekend": "Weekend"
+    },
+    "hint": "A new meeting takes these places. Meetings ahead change with them; whoever is already assigned stays.",
+    "unnamed": "Unnamed",
+    "needsName": "A place of your own needs a name.",
+    "twice": "“{{name}}” appears twice.",
+    "needsOne": "At least one place is needed.",
+    "takeLatest": "Take the places of the latest meeting — {{date}}",
+    "takeLatestHas": "It has: {{list}}",
+    "offerMark": "own place · offer: {{name}}",
+    "offerBrothers": "own place · offer all brothers",
+    "optional": "may stay empty",
+    "fewer": "Fewer",
+    "more": "More",
+    "name": "Name",
+    "namePlaceholder": "For example, Parking",
+    "offer": "Whom to offer",
+    "anyBrother": "All brothers",
+    "notes": "Note for those assigned",
+    "notesPlaceholder": "For example, vests in the cupboard by the door",
+    "remove": "Remove place",
+    "addOwn": "Place of your own",
+    "errorTitle": "Could not save the places",
+    "saved": "Places saved. Meetings changed: {{count}}",
+    "confirmTitle": {
+      "midweek": "Save the midweek places?",
+      "weekend": "Save the weekend places?"
+    },
+    "affects": "This changes meetings ahead: {{count}}. Past meetings stay as they are.",
+    "affectsNone": "Meetings already set up do not change — the next ones take the new places.",
+    "keptTitle": "Stay where someone is already assigned:",
+    "keptHint": "At these meetings the place is marked “only at this meeting”."
   }
 }

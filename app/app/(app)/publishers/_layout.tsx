@@ -72,6 +72,13 @@ export default function PublishersLayout() {
         }}
       />
       <Stack.Screen
+        name="duty-places"
+        options={{
+          title: t('dutyPlaces.title'),
+          headerLeft: () => <BackButton fallback="/publishers/duties" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="duties-meeting"
         options={{
           // The screen names itself by its day; this stands until it does —

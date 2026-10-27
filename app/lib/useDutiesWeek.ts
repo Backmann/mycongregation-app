@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { dutiesApi, EventType, publisherActivityApi, PublisherActivity } from "./api";
 import { notify } from "./error-bus";
+import { parseVirtualDuty } from "./duty-places";
 import { failsScreen } from "./screen-failure";
 
 /**
@@ -74,20 +75,41 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
     }
   };
   const assignDutyMutation = useMutation({
-    mutationFn: (vars: { id: string; publisherId: string | null }) =>
-      dutiesApi.assign(vars.id, { publisherId: vars.publisherId }),
+    // A place of a meeting with no sheet yet (a «virtual» row from the
+    // template): the server cuts the sheet and fills the place in one call.
+    mutationFn: (vars: { id: string; publisherId: string | null; eventType?: EventType }) => {
+      const place = parseVirtualDuty(vars.id);
+      if (place && vars.eventType) {
+        return dutiesApi.assignPlace({
+          weekStartDate: weekStartISO,
+          eventType: vars.eventType,
+          dutyType: place.dutyType,
+          customLabel: place.customLabel,
+          ordinal: place.ordinal,
+          publisherId: vars.publisherId,
+        });
+      }
+      return dutiesApi.assign(vars.id, { publisherId: vars.publisherId });
+    },
     onSuccess: (res) => {
       invalidateDuties();
       showDutyWarnings(res.warnings);
     },
   });
   const createCustomDutyMutation = useMutation({
-    mutationFn: (vars: { eventType: EventType; customLabel: string }) =>
-      dutiesApi.createCustom({
+    // A place for one evening, on a meeting with no sheet yet: the sheet is
+    // cut from the template FIRST. Written alone, the one row would become the
+    // whole sheet and the template's places would never be added to it.
+    mutationFn: async (vars: { eventType: EventType; customLabel: string }) => {
+      if (!duties.some((d) => d.eventType === vars.eventType)) {
+        await dutiesApi.generate({ weekStartDate: weekStartISO, eventType: vars.eventType });
+      }
+      return dutiesApi.createCustom({
         weekStartDate: weekStartISO,
         eventType: vars.eventType,
         customLabel: vars.customLabel,
-      }),
+      });
+    },
     onSuccess: () => invalidateDuties(),
   });
   const removeDutyMutation = useMutation({

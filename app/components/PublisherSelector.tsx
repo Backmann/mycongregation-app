@@ -49,6 +49,15 @@ interface Props {
   /** If set, only publishers of this gender are shown. */
   genderFilter?: "sister" | "brother";
   /**
+   * Brothers first, sisters only on request — a SOFT filter the «Показать
+   * всех» switch lifts. For the places at a meeting (Lionel, 27 October 2026):
+   * brothers whose card allows it, «в редких случаях — сёстры». While a card
+   * mark filters the list it decides alone (a sister with the mark is
+   * offered); where there is no mark to go by — nobody has it yet, or an own
+   * place asks for none — brothers are shown instead of everybody.
+   */
+  preferGender?: "brother";
+  /**
    * Only brothers serving as regular pioneers.
    *
    * A hard filter, unlike `preferAppointment`: at a Pioneer Service School the
@@ -152,6 +161,7 @@ export function PublisherSelector({
   matchGenderOfPublisherId,
   scopeDutyType,
   preferAppointment,
+  preferGender,
   variant = "field",
   emptyLabel,
   rowMeta,
@@ -304,6 +314,8 @@ export function PublisherSelector({
     !allPublishers.some((p) => !!p.capabilities?.[requiredCapability]);
   const filterByCapability =
     !!requiredCapability && !showAll && !nobodyHasCapability;
+  const softBrothersActive =
+    preferGender != null && !showAll && !filterByCapability;
   const capabilityLabel = requiredCapability
     ? t(`capabilities.items.${requiredCapability}`)
     : "";
@@ -326,6 +338,7 @@ export function PublisherSelector({
       return false;
     }
     if (softGenderActive && p.gender !== matchGender) return false;
+    if (softBrothersActive && p.gender !== preferGender) return false;
     if (softApptActive && p.appointment !== preferAppointment) return false;
     if (
       search !== "" &&
@@ -512,7 +525,7 @@ export function PublisherSelector({
         }
         onClose={() => setOpen(false)}
       >
-        {(requiredCapability || matchGender || preferAppointment) && (
+        {(requiredCapability || matchGender || preferAppointment || preferGender) && (
           <Pressable
             style={styles.toggleRow}
             onPress={() => setShowAll((v) => !v)}
@@ -522,7 +535,11 @@ export function PublisherSelector({
                 {t("pickers.showAllOverride")}
               </Text>
               <Text style={styles.toggleHint}>
-                {nobodyHasCapability && !showAll
+                {nobodyHasCapability && !showAll && softBrothersActive
+                  ? t("pickers.nobodyHasCapabilityBrothers", { name: capabilityLabel })
+                  : softBrothersActive
+                  ? t("pickers.showingBrothers")
+                  : nobodyHasCapability && !showAll
                   ? t("pickers.nobodyHasCapability", { name: capabilityLabel })
                   : showAll
                   ? t("pickers.showingAllNoFilter")
