@@ -1464,6 +1464,108 @@ export interface DutyWithWarnings {
   warnings: DutyWarning[];
 }
 
+/** Which kind of meeting a congregation's places belong to. */
+export type PlaceKind = "midweek" | "weekend";
+
+/**
+ * A place the congregation keeps at its meetings (27 October 2026) — the
+ * template a new duty sheet is cut from. A predefined place is known by its
+ * type, the congregation's own by its name.
+ */
+export interface DutyPlace {
+  /** Set for a kept place; a renamed one is known by it. */
+  id?: string | null;
+  dutyType: DutyType;
+  customLabel: string | null;
+  count: number;
+  notes: string | null;
+  /** For an own place: whose card qualifies (`duty_<type>`), null — any brother. */
+  capability: string | null;
+}
+
+export interface DutyPlacesView {
+  /** False while the congregation keeps none: the places are the code's list. */
+  stored: boolean;
+  places: DutyPlace[];
+  /** The places of the latest meeting held — what «взять с последней встречи» offers. */
+  latestSheet: { weekStartDate: string; places: DutyPlace[] } | null;
+}
+
+export interface DutyPlacesChange {
+  /** Meetings ahead whose sheets change. */
+  meetings: number;
+  /** People left on a place the template no longer has room for. */
+  kept: {
+    weekStartDate: string;
+    date: string | null;
+    label: string;
+    dutyType: DutyType;
+    customLabel: string | null;
+    publisherId: string;
+    publisherName: string | null;
+  }[];
+  places: DutyPlace[];
+}
+
+export interface MonthDutyRow {
+  /** Null while the meeting has no sheet: the place comes from the template. */
+  id: string | null;
+  dutyType: DutyType;
+  customLabel: string | null;
+  slotIndex: number;
+  sortOrder: number;
+  notes: string | null;
+  publisherId: string | null;
+  capability: string | null;
+  /** False for a place only this meeting has. */
+  inTemplate: boolean;
+}
+
+export interface MonthDutyMeeting {
+  weekStartDate: string;
+  eventType: EventType | null;
+  date: string;
+  time: string | null;
+  held: boolean;
+  notHeld: "congress" | "memorial" | "event" | null;
+  locked: boolean;
+  hasSheet: boolean;
+  rows: MonthDutyRow[];
+  partPublisherIds: string[];
+}
+
+export interface MonthOfDuties {
+  month: string;
+  meetings: MonthDutyMeeting[];
+  load: {
+    publisherId: string;
+    duties: number;
+    parts: number;
+    lastDutyBefore: string | null;
+  }[];
+}
+
+/** The congregation's places at its meetings. */
+export const dutyPlacesApi = {
+  async get(kind: PlaceKind): Promise<DutyPlacesView> {
+    const { data } = await api.get<DutyPlacesView>(`/duties/places/${kind}`);
+    return data;
+  },
+  async preview(kind: PlaceKind, places: DutyPlace[]): Promise<DutyPlacesChange> {
+    const { data } = await api.post<DutyPlacesChange>(
+      `/duties/places/${kind}/preview`,
+      { places },
+    );
+    return data;
+  },
+  async save(kind: PlaceKind, places: DutyPlace[]): Promise<DutyPlacesChange> {
+    const { data } = await api.put<DutyPlacesChange>(`/duties/places/${kind}`, {
+      places,
+    });
+    return data;
+  },
+};
+
 export interface ActivityItem {
   weekStartDate: string;
   eventType: string;
@@ -2063,6 +2165,31 @@ export const dutiesApi = {
   /** Remove a place with everybody at it — the bin takes off one person. */
   async removePlace(id: string): Promise<void> {
     await api.delete(`/duties/${id}/place`);
+  },
+  /** Every meeting of a month with its places, and who carries how much. */
+  async month(month: string): Promise<MonthOfDuties> {
+    const { data } = await api.get<MonthOfDuties>("/duties/month", {
+      params: { month },
+    });
+    return data;
+  },
+  /**
+   * Put a person at a place of a meeting that may have no sheet yet: the
+   * server cuts the sheet first, then fills the place's `ordinal`-th row.
+   */
+  async assignPlace(input: {
+    weekStartDate: string;
+    eventType: EventType;
+    dutyType: DutyType;
+    customLabel?: string | null;
+    ordinal: number;
+    publisherId: string | null;
+  }): Promise<DutyWithWarnings> {
+    const { data } = await api.post<DutyWithWarnings>(
+      "/duties/assign-place",
+      input,
+    );
+    return data;
   },
 };
 

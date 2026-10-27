@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   assignmentsApi,
+  dutyPlacesApi,
+  type EventType,
   meetingSettingsApi,
   Publisher,
   publishersApi,
@@ -18,6 +20,7 @@ import { weekRules } from '../lib/week-rules';
 import { capitalizeFirst } from '../lib/relative-time';
 import { FONT } from '../lib/typography';
 import { DutiesSection } from './DutiesSection';
+import { placeKey, virtualDuties } from '../lib/duty-places';
 
 export type DutyMeeting = 'midweek' | 'weekend' | 'memorial';
 
@@ -56,10 +59,9 @@ export function DutiesMeetingEditor({
   const nextWeekISO = formatDateISO(addWeeks(atMidnight(weekStartISO), 1));
   const {
     dutiesQuery,
-    duties,
+    duties: sheetDuties,
     activityById,
     renamePlaceMutation,
-    movePlaceMutation,
     removePlaceMutation,
     generateDutiesMutation,
     assignDutyMutation,
@@ -81,6 +83,26 @@ export function DutiesMeetingEditor({
     () => weekRules({ weekStartISO, version, events: events ?? [] }),
     [weekStartISO, version, events],
   );
+  // The congregation's places for this kind of meeting (27 October 2026). A
+  // midweek or weekend meeting nobody has filled yet shows them as they WILL
+  // be — nothing is written until the first person is put somewhere.
+  const placeKind = meeting === 'midweek' || meeting === 'weekend' ? meeting : null;
+  const placesQ = useQuery({
+    queryKey: ['duty-places', placeKind],
+    queryFn: () => dutyPlacesApi.get(placeKind!),
+    enabled: placeKind !== null,
+  });
+  const templatePlaces = placesQ.data?.places;
+  const hasSheet = sheetDuties.some((d) => d.eventType === meeting);
+  const duties =
+    placeKind && !hasSheet && templatePlaces
+      ? [...sheetDuties, ...virtualDuties(templatePlaces, weekStartISO, meeting as EventType)]
+      : sheetDuties;
+  const templateKeys = useMemo(
+    () => (templatePlaces ? new Set(templatePlaces.map(placeKey)) : undefined),
+    [templatePlaces],
+  );
+
   const automationOn = settingsQ.data?.congregation.assignmentAutomationEnabled ?? false;
   const autoDutyIds = autoDutyIdsOf(automationOn, assignmentsQ.data?.data ?? [], duties);
 
@@ -93,10 +115,12 @@ export function DutiesMeetingEditor({
   const held = !rules.congress && (meeting === 'memorial' ? !!rules.memorial : !rules.isTakenAway(meeting));
   const canEdit = perms.canEditDuties && !locked;
 
-  // Fill the empty sheet once, as the programme screen did — the server's
-  // generate is idempotent, and nothing else creates these rows.
+  // The Memorial's empty sheet is still cut on opening: its places come from
+  // last year's, not from a template. The ordinary meetings wait for their
+  // first assignment (above).
   const tried = useRef(false);
   useEffect(() => {
+    if (meeting !== 'memorial') return;
     if (!perms.canEditDuties || !held || locked || tried.current) return;
     if (dutiesQuery.isLoading || generateDutiesMutation.isPending) return;
     if (duties.some((d) => d.eventType === meeting)) return;
@@ -136,7 +160,6 @@ export function DutiesMeetingEditor({
             canEdit={canEdit}
             pending={
               renamePlaceMutation.isPending ||
-              movePlaceMutation.isPending ||
               removePlaceMutation.isPending ||
               generateDutiesMutation.isPending ||
               assignDutyMutation.isPending ||
@@ -145,15 +168,18 @@ export function DutiesMeetingEditor({
             }
             hideHeader
             onGenerate={(eventType) => generateDutiesMutation.mutate(eventType)}
-            onAssign={(id, publisherId) => assignDutyMutation.mutate({ id, publisherId })}
+            onAssign={(id, publisherId) =>
+              assignDutyMutation.mutate({ id, publisherId, eventType: meeting as EventType })
+            }
             onAddCustom={(eventType, customLabel) => createCustomDutyMutation.mutate({ eventType, customLabel })}
             onRemoveDuty={(id) => removeDutyMutation.mutate(id)}
             onRenamePlace={(id, customLabel) => renamePlaceMutation.mutate({ id, customLabel })}
             onRemovePlace={(id) => removePlaceMutation.mutate(id)}
-            onMovePlace={(id, direction) => movePlaceMutation.mutate({ id, direction })}
             activityById={activityById}
             weekStartISO={weekStartISO}
             memorialDateISO={rules.memorial?.date}
+            templateKeys={templateKeys}
+            templatePlaces={templatePlaces}
           />
         </View>
       )}

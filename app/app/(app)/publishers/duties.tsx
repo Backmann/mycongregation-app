@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
   dutiesApi,
+  dutyPlacesApi,
   meetingSettingsApi,
   Publisher,
   publishersApi,
@@ -20,8 +21,10 @@ import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
 import { failsScreen } from '../../../lib/screen-failure';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { OPTIONAL_DUTY_TYPES } from '../../../lib/duty-count';
 import { capitalizeFirst } from '../../../lib/relative-time';
+import { countedPlaces } from '../../../lib/duty-places';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -55,6 +58,7 @@ export default function DutiesScreen() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const perms = usePermissions();
+  const mayOpen = useMayOpen();
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
@@ -82,6 +86,10 @@ export default function DutiesScreen() {
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const rosterQ = useQuery({ queryKey: ['publishers', 'roster'], queryFn: () => publishersApi.roster() });
+  // A meeting nobody has filled has no sheet; its count comes from the
+  // congregation's places, as on «Собрание» («0 из 8», not «not filled»).
+  const midPlacesQ = useQuery({ queryKey: ['duty-places', 'midweek'], queryFn: () => dutyPlacesApi.get('midweek') });
+  const endPlacesQ = useQuery({ queryKey: ['duty-places', 'weekend'], queryFn: () => dutyPlacesApi.get('weekend') });
 
   // A meeting's edits refresh ['duties', week]; this list reads a range. It
   // watches the cache and re-reads the ranges whenever a single week's duties
@@ -181,7 +189,10 @@ export default function DutiesScreen() {
       );
       return out;
     }
-    const c = counts.get(`${r.week}|${r.meeting}`);
+    const sheet = counts.get(`${r.week}|${r.meeting}`);
+    const template =
+      r.meeting === 'midweek' ? midPlacesQ.data?.places : r.meeting === 'weekend' ? endPlacesQ.data?.places : undefined;
+    const c = sheet ?? (template ? { total: countedPlaces(template), assigned: 0 } : undefined);
     // The count stands alone on its line here, so it starts with a capital like
     // «Обязанности ещё не заполнены» below it; in the feed it follows a «·».
     const line =
@@ -221,6 +232,22 @@ export default function DutiesScreen() {
   const list = (
     <ScrollView style={wide ? styles.listPane : styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.column}>
+        {/* Where the places themselves are kept — once, for every meeting. */}
+        {mayOpen('/publishers/duty-places') ? (
+          <Pressable
+            testID="duty-places-door"
+            onPress={() => router.push('/publishers/duty-places' as never)}
+            style={({ pressed }) => [styles.placesDoor, pressed && styles.pressed]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="options-outline" size={20} color="#0369a1" />
+            <View style={styles.body}>
+              <Text style={styles.placesTitle}>{t('dutyPlaces.title')}</Text>
+              <Text style={styles.sub}>{t('dutyPlaces.door')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+          </Pressable>
+        ) : null}
         {items}
         <Pressable
           style={({ pressed }) => [styles.more, pressed && styles.pressed]}
@@ -312,6 +339,20 @@ const styles = StyleSheet.create({
   titleSoft: { fontSize: 15.5, fontFamily: FONT.semibold, color: SOFT },
   time: { fontSize: 14, fontFamily: FONT.semibold, color: SOFT },
   sub: { fontSize: 13.5, fontFamily: FONT.medium, color: SOFT, marginTop: 3 },
+  placesDoor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    margin: 12,
+    marginBottom: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  placesTitle: { fontSize: 15.5, fontFamily: FONT.bold, color: '#0369a1' },
   more: {
     margin: 16,
     minHeight: 44,

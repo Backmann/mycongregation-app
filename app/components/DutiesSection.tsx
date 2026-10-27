@@ -22,6 +22,8 @@ import {
   MEMORIAL_NOT_BAPTIZED,
 } from '../lib/memorial-people';
 import { countDuties } from '../lib/duty-count';
+import { capabilityOfOwnPlace, isVirtualDuty, placeKey } from '../lib/duty-places';
+import type { DutyPlace } from '../lib/api';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 export const DUTY_ICONS: Record<
@@ -183,6 +185,15 @@ type Props = {
   memorialDateISO?: string;
   /** Duty ids auto-filled by a congregation rule (shows an "авто" badge). */
   autoDutyIds?: Set<string>;
+  /**
+   * The congregation's places for this kind of meeting (27 October 2026).
+   * A place not among them is this meeting's own («только на этой встрече»)
+   * and is the only kind renamed or removed here — the others are changed
+   * once, in «Места собрания». Absent for the Memorial, which keeps last
+   * year's places instead.
+   */
+  templateKeys?: Set<string>;
+  templatePlaces?: DutyPlace[];
 };
 
 export function DutiesSection({
@@ -209,6 +220,8 @@ export function DutiesSection({
   nextUpToday,
   memorialDateISO,
   autoDutyIds,
+  templateKeys,
+  templatePlaces,
 }: Props) {
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
@@ -469,7 +482,17 @@ export function DutiesSection({
                     buttons squeezed the name to nothing on a narrow column,
                     and truncated it («Распоряди тель у …») on a wide one. One
                     layout also means one thing to keep right. */}
-                {groupsOf(list).map((group, gi, all) => (
+                {groupsOf(list).map((group, gi, all) => {
+                  // This meeting's own place: not in the template (or no
+                  // template at all — the Memorial). Only such a place is
+                  // renamed or removed here, and only once it is written.
+                  const onlyHere =
+                    !!templateKeys && !templateKeys.has(placeKey(group[0]));
+                  const editableHere =
+                    group[0].dutyType === 'custom' &&
+                    (!templateKeys || onlyHere) &&
+                    !isVirtualDuty(group[0].id);
+                  return (
                     // A place several brothers stand at: the name once, the
                     // people under it. A single-person place is left exactly as
                     // it was — the common case must not change shape.
@@ -503,13 +526,20 @@ export function DutiesSection({
                               {group[0].notes}
                             </Text>
                           ) : null}
+                          {onlyHere ? (
+                            <Text style={styles.onlyHere}>
+                              {t('duties.onlyThisMeeting')}
+                            </Text>
+                          ) : null}
                         </View>
-                        <PlaceActions
-                          d={group[0]}
-                          first={gi === 0}
-                          last={gi === all.length - 1}
-                        />
-                        {group[0].dutyType === 'custom' && onRemovePlace ? (
+                        {editableHere ? (
+                          <PlaceActions
+                            d={group[0]}
+                            first={gi === 0}
+                            last={gi === all.length - 1}
+                          />
+                        ) : null}
+                        {editableHere && onRemovePlace ? (
                           <Pressable
                             hitSlop={8}
                             disabled={pending}
@@ -539,7 +569,12 @@ export function DutiesSection({
                               label={dutyLabel(d, t)}
                               value={d.publisherId}
                               onChange={(id) => onAssign(d.id, id)}
-                              requiredCapability={capabilityFor(d)}
+                              requiredCapability={
+                                d.dutyType === 'custom'
+                                  ? capabilityOfOwnPlace(d.customLabel, templatePlaces)
+                                  : capabilityFor(d)
+                              }
+                              preferGender={meeting === 'memorial' ? undefined : 'brother'}
                               genderFilter={
                                 meeting === 'memorial'
                                   ? MEMORIAL_GENDER
@@ -561,7 +596,7 @@ export function DutiesSection({
                               currentEventType={meeting}
                             />
                           </View>
-                          {d.dutyType === 'custom' && (
+                          {editableHere && (
                             <Pressable
                               onPress={() => onRemoveDuty(d.id)}
                               hitSlop={8}
@@ -581,7 +616,7 @@ export function DutiesSection({
                           gives the new row the next slot by itself, so this is
                           the ordinary «add a duty» with the name already
                           filled in. */}
-                      {group[0].dutyType === 'custom' ? (
+                      {editableHere ? (
                         <Pressable
                           style={styles.groupAdd}
                           disabled={pending}
@@ -596,8 +631,8 @@ export function DutiesSection({
                         </Pressable>
                       ) : null}
                     </View>
-                  ),
-                )}
+                  );
+                })}
                 <Pressable
                   style={({ pressed }) => [
                     styles.addCustomBtn,
@@ -750,6 +785,12 @@ export function DutiesSection({
 }
 
 const styles = StyleSheet.create({
+  onlyHere: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#b45309',
+    marginTop: 2,
+  },
   embedded: {
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
