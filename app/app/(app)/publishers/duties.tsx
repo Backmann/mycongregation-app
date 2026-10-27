@@ -77,10 +77,11 @@ export default function DutiesScreen() {
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
-  // The month table wants its room: a place column, eight or nine meetings
-  // and the panel beside them (27 October 2026). Narrower windows keep the
-  // list of meetings.
-  const tableRoom = width >= 1200;
+  // The month table wants its room: a place column and eight or nine
+  // meetings. From 1200 its panel stands beside it; from 900 — a tablet held
+  // upright — the panel slides over the table (27 October 2026). Narrower
+  // windows keep the week cards.
+  const tableRoom = width >= 900;
   const [mode, setMode] = useState<'month' | 'meeting'>('month');
   const showMonth = tableRoom && mode === 'month';
   // Reading and printing: whoever edits duties, and every elder and admin —
