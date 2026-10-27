@@ -4900,7 +4900,13 @@
     "congress": "{{event}} — no meetings",
     "notHeld": "This meeting is not held",
     "showMore": "Show more",
-    "print": "Print the month's duties"
+    "print": "Print the month's duties",
+    "kind": {
+      "midweek": "Midweek",
+      "weekend": "Weekend",
+      "memorial": "Memorial"
+    },
+    "next": "Next"
   },
   "sent": {
     "openAnnual": "Open the annual report",
@@ -5485,7 +5491,6 @@
   },
   "dutyPlaces": {
     "title": "Congregation places",
-    "door": "Which places the midweek and weekend meetings have — set once",
     "kind": {
       "midweek": "Midweek",
       "weekend": "Weekend"

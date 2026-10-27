@@ -4900,7 +4900,13 @@
     "congress": "{{event}} — keine Zusammenkünfte",
     "notHeld": "Diese Zusammenkunft findet nicht statt",
     "showMore": "Mehr anzeigen",
-    "print": "Dienste des Monats drucken"
+    "print": "Dienste des Monats drucken",
+    "kind": {
+      "midweek": "Unter der Woche",
+      "weekend": "Wochenende",
+      "memorial": "Gedächtnismahl"
+    },
+    "next": "Nächste"
   },
   "sent": {
     "openAnnual": "Jahresbericht öffnen",
@@ -5485,7 +5491,6 @@
   },
   "dutyPlaces": {
     "title": "Plätze der Versammlung",
-    "door": "Welche Plätze es bei den Zusammenkünften unter der Woche und am Wochenende gibt — einmal festgelegt",
     "kind": {
       "midweek": "Unter der Woche",
       "weekend": "Wochenende"
