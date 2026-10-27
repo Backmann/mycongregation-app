@@ -21,6 +21,7 @@ import {
   MEMORIAL_GENDER,
   MEMORIAL_NOT_BAPTIZED,
 } from '../lib/memorial-people';
+import { countDuties } from '../lib/duty-count';
 
 /** Icon + accent colour per duty type (role circle in the picker). */
 export const DUTY_ICONS: Record<
@@ -234,7 +235,7 @@ export function DutiesSection({
   }
 
   const onlyList = only ? (byMeeting.get(only) ?? []) : [];
-  const onlyAssigned = onlyList.filter((d) => d.publisherId).length;
+  const onlyCount = countDuties(onlyList);
   if (only && onlyList.length === 0 && !canEdit) return null;
 
   const submitCustom = () => {
@@ -330,7 +331,7 @@ export function DutiesSection({
         {!hideHeader ? (
           <Text style={styles.headerText}>{t('duties.title')}</Text>
         ) : null}
-        {only && !hideHeader && onlyList.length > 0 ? (
+        {only && !hideHeader && onlyCount.total > 0 ? (
           <View
             style={[
               styles.countBadge,
@@ -343,7 +344,7 @@ export function DutiesSection({
                 styles.countTextNeutral,
               ]}
             >
-              {onlyAssigned}/{onlyList.length}
+              {onlyCount.assigned}/{onlyCount.total}
             </Text>
           </View>
         ) : null}
@@ -456,8 +457,8 @@ export function DutiesSection({
             {cardHead(
               meeting,
               meetingLabel,
-              list.filter((d) => d.publisherId).length,
-              list.length,
+              countDuties(list).assigned,
+              countDuties(list).total,
             )}
 
             {canEdit ? (

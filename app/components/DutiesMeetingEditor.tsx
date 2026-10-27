@@ -35,7 +35,21 @@ const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
  * The wiring is lib/useDutiesWeek, the «auto» rule lib/auto-duty-ids — both
  * shared with the programme screen.
  */
-export function DutiesMeetingEditor({ weekStartISO, meeting }: { weekStartISO: string; meeting: DutyMeeting }) {
+export function DutiesMeetingEditor({
+  weekStartISO,
+  meeting,
+  dayInHeader = false,
+}: {
+  weekStartISO: string;
+  meeting: DutyMeeting;
+  /**
+   * The screen's own header already names the day (the phone's
+   * «Среда, 28 октября»): the card then says only the time, instead of
+   * repeating the day right under it (walk, 27 October 2026). Beside the list
+   * on a wide screen there is no such header, and the card keeps the day.
+   */
+  dayInHeader?: boolean;
+}) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const perms = usePermissions();
@@ -94,7 +108,9 @@ export function DutiesMeetingEditor({ weekStartISO, meeting }: { weekStartISO: s
     meeting === 'memorial'
       ? (rules.memorial?.time ?? null)
       : ((meeting === 'midweek' ? version?.midweekTime : version?.weekendTime) || '').slice(0, 5) || null;
-  const dateLabel = dateISO
+  const dateLabel = dayInHeader
+    ? time
+    : dateISO
     ? capitalizeFirst(
         `${atMidnight(dateISO).toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}${time ? ` · ${time}` : ''}`,
       )

@@ -77,6 +77,7 @@ import {
   Topic,
 } from "../../../components/ProgrammeSheet";
 import { lowerFirst } from "../../../lib/lower-first";
+import { capitalizeFirst } from "../../../lib/relative-time";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -1638,7 +1639,7 @@ function Meeting({
     const duties = t("feed.dutiesShort", { assigned: readiness.duties.assigned, total: readiness.duties.total });
     // «Not loaded» is already the row's own line; saying it again here was a
     // repeat, so only the duties count remains.
-    status = !p.loaded ? { color: SOFT, text: duties } : { color: prog.c, text: `${prog.s} · ${duties}` };
+    status = !p.loaded ? { color: SOFT, text: capitalizeFirst(duties) } : { color: prog.c, text: `${prog.s} · ${duties}` };
   }
 
   const mineInProgramme = myParts.length > 0;

@@ -44,7 +44,7 @@ export default function DutiesMeetingScreen() {
   return (
     <>
       <Stack.Screen options={{ title }} />
-      <DutiesMeetingEditor key={`${week}|${meeting}`} weekStartISO={week} meeting={meeting} />
+      <DutiesMeetingEditor key={`${week}|${meeting}`} weekStartISO={week} meeting={meeting} dayInHeader={!!dateISO && !!settingsQ.data} />
     </>
   );
 }
