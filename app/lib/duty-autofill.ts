@@ -35,11 +35,24 @@ export interface AutofillInput {
   treasuresMicRule: boolean;
 }
 
+/**
+ * A meeting whose places may be filled by turns: its programme is loaded and
+ * every part has a person (Lionel, 27 October 2026 — «почти готова» is not
+ * enough, and at the weekend the Watchtower reader is waited for too). A
+ * place filled before the programme invites a brother to the microphone on
+ * the evening he is also given a part.
+ */
+export function programmeReady(m: MonthDutyMeeting): boolean {
+  return !!m.programme && m.programme.loaded && m.programme.total > 0 && m.programme.assigned >= m.programme.total;
+}
+
 export interface AutofillResult {
   /** `<meeting index>|<row key>` → the person proposed. */
   proposals: Map<string, string>;
   /** Cells nobody could be proposed for. */
   nobody: Set<string>;
+  /** Meetings ahead with empty places, passed over: their programme is not complete. */
+  skipped: number[];
 }
 
 /** The rows of a meeting with their table key, `<place>#<n>`, in sheet order. */
@@ -61,6 +74,7 @@ export function autofill(input: AutofillInput): AutofillResult {
   const { month, publishers, absences, history } = input;
   const proposals = new Map<string, string>();
   const nobody = new Set<string>();
+  const skipped: number[] = [];
 
   // When each person last stood at each place: the history before the month,
   // then — as the month is walked in order — its own filled places and the
@@ -103,7 +117,11 @@ export function autofill(input: AutofillInput): AutofillResult {
         note(r.row.publisherId, place, m.weekStartDate);
       }
     }
-    if (!m.locked) {
+    const fillable = !m.locked && programmeReady(m);
+    if (!m.locked && !fillable && rows.some((r) => !r.row.publisherId && r.row.dutyType !== 'timekeeper')) {
+      skipped.push(i);
+    }
+    if (fillable) {
       for (const r of rows) {
         if (r.row.publisherId) continue;
         if (r.row.dutyType === 'timekeeper') continue;
@@ -140,5 +158,5 @@ export function autofill(input: AutofillInput): AutofillResult {
     }
     previousAt.set(m.eventType ?? '', here);
   }
-  return { proposals, nobody };
+  return { proposals, nobody, skipped };
 }
