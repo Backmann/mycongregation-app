@@ -1,5 +1,16 @@
-import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  ActivityIndicator,
+  Animated,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +28,18 @@ import { useAllPublishers } from '../../lib/useAllPublishers';
 import { notify } from '../../lib/error-bus';
 import { FONT } from '../../lib/typography';
 import { countDuties } from '../../lib/duty-count';
-import { autofill, cellId, programmeForDuties, programmeReady, rowKeysOf } from '../../lib/duty-autofill';
+import {
+  autofill,
+  cellId,
+  programmeForDuties,
+  programmeReady,
+  queueContextAt,
+  queueOrder,
+  rowKeysOf,
+  type QueueContext,
+} from '../../lib/duty-autofill';
+import { placeKey } from '../../lib/duty-places';
+import { storage } from '../../lib/storage';
 import { monthTable, rowTitle } from '../../lib/duty-month-table';
 import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, isServing, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
@@ -67,10 +89,28 @@ export function DutiesMonth({
   const [nobody, setNobody] = useState<Set<string>>(new Set());
   const [skipped, setSkipped] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
+  // From 1200 the panel stands beside the table; narrower — a tablet held
+  // upright — the table takes the width and the panel slides over it when a
+  // cell is chosen (Lionel, 27 October 2026).
+  const { width } = useWindowDimensions();
+  const docked = width >= 1200;
+  const [idleOpen, setIdleOpen] = useState(false);
+  const [advance, setAdvance] = useState(true);
+  useEffect(() => {
+    storage
+      .getItem(ADVANCE_KEY)
+      .then((v) => v === '0' && setAdvance(false))
+      .catch(() => {});
+  }, []);
+  const [mainW, setMainW] = useState(0);
+  const [viewW, setViewW] = useState(0);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollX = useRef(0);
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const changeMonth = (by: number) => {
     onMonth(shiftMonth(month, by));
     setSel(null);
+    setIdleOpen(false);
     setProposals(null);
     setNobody(new Set());
     setSkipped([]);
@@ -88,6 +128,23 @@ export function DutiesMonth({
   const pool = useMemo(() => dutyPool(publishers), [publishers]);
 
   const meetings = useMemo(() => q.data?.meetings ?? [], [q.data]);
+  // The duties before the month: the queue goes by who stood where. The same
+  // query «Заполнить пустые» reads, so the panel and the button agree.
+  const firstMonday = meetings[0]?.weekStartDate ?? `${month}-01`;
+  const historyQ = useQuery({
+    queryKey: ['publisher-activity', firstMonday, 26],
+    queryFn: () => publisherActivityApi.getActivity({ weekStart: firstMonday, weeks: 26 }),
+    enabled: canEdit && meetings.length > 0,
+    staleTime: 60 * 1000,
+  });
+  const historyBefore = useMemo(
+    () =>
+      (historyQ.data ?? []).map((h) => ({
+        publisherId: h.publisherId,
+        items: h.items.filter((it) => it.weekStartDate < firstMonday),
+      })),
+    [historyQ.data, firstMonday],
+  );
   const load = useMemo(() => new Map((q.data?.load ?? []).map((l) => [l.publisherId, l])), [q.data]);
 
   // The rows of the table: every place any meeting of the month has, in the
@@ -130,7 +187,6 @@ export function DutiesMonth({
 
   const fill = async () => {
     try {
-      const firstMonday = meetings[0]?.weekStartDate ?? `${month}-01`;
       const history = await qc.fetchQuery({
         queryKey: ['publisher-activity', firstMonday, 26],
         queryFn: () => publisherActivityApi.getActivity({ weekStart: firstMonday, weeks: 26 }),
@@ -151,6 +207,7 @@ export function DutiesMonth({
       setNobody(res.nobody);
       setSkipped(res.skipped);
       setSel(null);
+      setIdleOpen(false);
       if (res.proposals.size === 0 && res.skipped.length === 0) notify(undefined, t('dutiesMonth.fill.none'), 'success');
     } catch (e) {
       notify(t('dutiesMonth.errorTitle'), extractErrorMessage(e));
@@ -233,9 +290,124 @@ export function DutiesMonth({
   const dayLabel = (m: MonthDutyMeeting) =>
     capitalizeFirst(atMidnight(m.date).toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'long' }));
 
+  // Where a cell is chosen, which of its meeting's empty places comes next —
+  // «После выбора — к следующей пустой» (27 October 2026).
+  const nextEmpty = (from: Cell): Cell | null => {
+    const m = meetings[from.meeting];
+    if (!m || m.locked) return null;
+    const at = table.rows.findIndex((r) => r.key === from.row);
+    for (const r of table.rows.slice(at + 1)) {
+      const c = table.cells[from.meeting].get(r.key);
+      if (!c || c.row.publisherId || c.row.dutyType === 'timekeeper') continue;
+      if (proposals?.has(cellId(from.meeting, r.key))) continue;
+      return { meeting: from.meeting, row: r.key };
+    }
+    return null;
+  };
+  const afterChoice = (from: Cell, wasEmpty: boolean) => {
+    const next = advance && wasEmpty ? nextEmpty(from) : null;
+    if (next) choose({ kind: 'cell', cell: next });
+    else if (!docked) close();
+  };
+
+  // A column as wide as the room allows: on a tablet held upright the
+  // meetings fill the width instead of leaving it empty on the right, and a
+  // whole surname fits where «Остерманн…» was cut.
+  const avail = Math.max(0, mainW - 2);
+  const colW = Math.max(COL, Math.min(COL_MAX, Math.floor((avail - PLACE) / Math.max(1, meetings.length))));
+
+  // Pick a cell or a meeting: with the panel sliding over the table, the
+  // chosen column is brought out from under it.
+  const choose = (s: Selection) => {
+    setSel(s);
+    setIdleOpen(false);
+    const mi = s?.kind === 'cell' ? s.cell.meeting : s?.kind === 'meeting' ? s.meeting : null;
+    if (!docked && mi != null && scrollRef.current) {
+      const left = mi * colW;
+      const room = viewW - PANEL_W;
+      if (left + colW > scrollX.current + room) {
+        scrollRef.current.scrollTo({ x: Math.max(0, left + colW - room + 16), animated: true });
+      }
+    }
+  };
+  const close = () => {
+    setSel(null);
+    setIdleOpen(false);
+  };
+
+  const cellPanel =
+    selCell && selMeeting
+      ? (() => {
+          const entry = table.cells[selCell.meeting].get(selCell.row)!;
+          return (
+            <CellPanel
+              meeting={selMeeting}
+              entry={entry}
+              kicker={dayLabel(selMeeting)}
+              title={titleOf(selCell.row, entry.row, entry.ordinal)}
+              publishers={publishers}
+              byId={byId}
+              load={load}
+              absences={absQ.data}
+              queue={queueContextAt(q.data!, historyBefore, selCell.meeting, placeKey(entry.row))}
+              historyReady={!!historyQ.data}
+              pending={assignM.isPending || saving}
+              advance={advance}
+              onAdvance={(v) => {
+                setAdvance(v);
+                void storage.setItem(ADVANCE_KEY, v ? '1' : '0').catch(() => {});
+              }}
+              proposed={
+                proposals && !entry.row.publisherId ? (proposals.get(cellId(selCell.meeting, selCell.row)) ?? null) : undefined
+              }
+              onPropose={(publisherId) => {
+                const next = new Map(proposals ?? []);
+                const id = cellId(selCell.meeting, selCell.row);
+                const wasEmpty = !next.has(id);
+                if (publisherId) next.set(id, publisherId);
+                else next.delete(id);
+                setProposals(next);
+                if (publisherId) afterChoice(selCell, wasEmpty);
+              }}
+              onPick={(publisherId) => {
+                const from = selCell;
+                const wasEmpty = !entry.row.publisherId;
+                assignM.mutate(
+                  { meeting: selMeeting, row: entry.row, ordinal: entry.ordinal, publisherId },
+                  { onSuccess: () => publisherId && afterChoice(from, wasEmpty) },
+                );
+              }}
+              onClose={close}
+            />
+          );
+        })()
+      : null;
+  const panelContent =
+    cellPanel ??
+    (selMeeting ? (
+      <PeoplePanel
+        title={t('dutiesMonth.freeAt', { day: dayLabel(selMeeting) })}
+        hint={t('dutiesMonth.freeAtHint')}
+        people={freeAt(selMeeting, pool, absQ.data)}
+        load={load}
+        onClose={close}
+      />
+    ) : (
+      <PeoplePanel
+        title={t('dutiesMonth.idleTitle')}
+        hint={t('dutiesMonth.idleHint')}
+        people={idle}
+        load={load}
+        onClose={docked ? undefined : close}
+      />
+    ));
+  const overlayOpen = !docked && (sel !== null || idleOpen);
+
+  const kindOf = (m: MonthDutyMeeting) => (m.eventType === 'weekend' ? KIND.weekend : KIND.midweek);
+
   return (
     <View style={styles.wrap}>
-      <View style={styles.main}>
+      <View style={styles.main} onLayout={(e) => setMainW(e.nativeEvent.layout.width - 32)}>
         <View style={styles.bar}>
           <View style={styles.monthNav}>
             <Pressable onPress={() => changeMonth(-1)} style={styles.navBtn} accessibilityLabel={t('dutiesMonth.prev')}>
@@ -260,8 +432,16 @@ export function DutiesMonth({
             </View>
           ) : null}
           {idle.length > 0 ? (
-            <Pressable onPress={() => setSel(null)} style={[styles.pill, styles.pillWarn]}>
+            <Pressable
+              testID="idle-pill"
+              onPress={() => {
+                setSel(null);
+                if (!docked) setIdleOpen(true);
+              }}
+              style={[styles.pill, styles.pillWarn, styles.pillRow]}
+            >
               <Text style={[styles.pillText, styles.pillWarnText]}>{t('dutiesMonth.idle', { count: idle.length })}</Text>
+              {!docked ? <Ionicons name="chevron-forward" size={13} color="#b45309" /> : null}
             </Pressable>
           ) : null}
           <View style={styles.spacer} />
@@ -312,28 +492,57 @@ export function DutiesMonth({
           </View>
         ) : null}
 
-        <ScrollView horizontal style={styles.tableScroll} contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={styles.table} testID="duties-month-table">
-            {/* Header: one column per meeting. */}
-            <View style={styles.tr}>
-              <View style={[styles.placeCol, styles.th]}>
-                <Text style={styles.thText}>{t('dutiesMonth.place')}</Text>
+        <View style={styles.table} testID="duties-month-table">
+          {/* The places stay where they are while the meetings scroll by. */}
+          <View style={styles.placeSide}>
+            <View style={[styles.placeCol, styles.th, styles.thRow, styles.thPlace]}>
+              <Text style={styles.thText}>{t('dutiesMonth.place')}</Text>
+            </View>
+            {table.rows.map((r) => (
+              <View key={r.key} style={[styles.placeCol, styles.tdRow]}>
+                <Text style={styles.placeText} numberOfLines={2}>
+                  {titleOf(r.key, r.row, r.ordinal)}
+                </Text>
               </View>
+            ))}
+            <View style={[styles.placeCol, styles.tf, styles.tfRow]}>
+              <Text style={styles.thText}>{t('dutiesMonth.freeRow')}</Text>
+            </View>
+          </View>
+          <ScrollView
+            horizontal
+            ref={scrollRef}
+            onLayout={(e) => setViewW(e.nativeEvent.layout.width)}
+            onScroll={(e) => {
+              scrollX.current = e.nativeEvent.contentOffset.x;
+            }}
+            scrollEventThrottle={32}
+            style={styles.flex}
+          >
+            <View>
+              <View style={styles.tr}>
               {meetings.map((m, mi) => {
                 const c = m.held ? countDuties(m.rows) : null;
                 const d = atMidnight(m.date);
                 return (
                   <Pressable
                     key={`${m.weekStartDate}|${m.eventType}|${mi}`}
-                    onPress={() => m.held && setSel({ kind: 'meeting', meeting: mi })}
-                    style={[styles.col, styles.th, !m.held && styles.hatched, selMeetingIdx === mi && styles.colSel]}
+                    onPress={() => m.held && choose({ kind: 'meeting', meeting: mi })}
+                    style={[
+                      styles.col,
+                      { width: colW },
+                      styles.th,
+                      styles.thRow,
+                      m.held ? { backgroundColor: kindOf(m).tint, borderTopColor: kindOf(m).color } : styles.hatched,
+                      selMeetingIdx === mi && styles.colSel,
+                    ]}
                   >
                     <Text style={styles.day}>{d.getDate()}</Text>
                     <Text style={styles.dow}>{d.toLocaleDateString(lang, { weekday: 'short' }).replace('.', '').toUpperCase()}</Text>
                     {m.held ? (
                       <>
-                        <View style={[styles.kind, m.eventType === 'midweek' ? styles.kindMid : styles.kindEnd]}>
-                          <Text style={[styles.kindText, m.eventType === 'midweek' ? styles.kindMidText : styles.kindEndText]}>
+                        <View style={styles.kind}>
+                          <Text style={[styles.kindText, { color: kindOf(m).color }]}>
                             {t(`dutiesMonth.kind.${m.eventType}`)}
                           </Text>
                         </View>
@@ -359,20 +568,13 @@ export function DutiesMonth({
                   </Pressable>
                 );
               })}
-            </View>
-
-            {table.rows.map((r) => {
-              return (
+              </View>
+              {table.rows.map((r) => (
                 <View key={r.key} style={styles.tr}>
-                  <View style={styles.placeCol}>
-                    <Text style={styles.placeText} numberOfLines={2}>
-                      {titleOf(r.key, r.row, r.ordinal)}
-                    </Text>
-                  </View>
                   {meetings.map((m, mi) => {
                     const cell = table.cells[mi].get(r.key);
                     if (!m.held || !cell) {
-                      return <View key={mi} style={[styles.col, styles.td, !m.held && styles.hatched]} />;
+                      return <View key={mi} style={[styles.col, { width: colW }, styles.td, styles.tdRow, !m.held && styles.hatched]} />;
                     }
                     const who = cell.row.publisherId ? byId.get(cell.row.publisherId) : undefined;
                     const empty = !cell.row.publisherId;
@@ -394,10 +596,12 @@ export function DutiesMonth({
                         key={mi}
                         testID={`cell-${m.date}-${r.key}`}
                         disabled={!canEdit || m.locked}
-                        onPress={() => setSel({ kind: 'cell', cell: { meeting: mi, row: r.key } })}
+                        onPress={() => choose({ kind: 'cell', cell: { meeting: mi, row: r.key } })}
                         style={[
                           styles.col,
+                          { width: colW },
                           styles.td,
+                          styles.tdRow,
                           empty && !optional && !m.locked && !proposed && styles.tdEmpty,
                           proposed && styles.tdProposed,
                           m.locked && styles.tdPast,
@@ -426,91 +630,58 @@ export function DutiesMonth({
                     );
                   })}
                 </View>
-              );
-            })}
-
-            {/* Footer: who is still free at each meeting. */}
-            <View style={styles.tr}>
-              <View style={[styles.placeCol, styles.tf]}>
-                <Text style={styles.thText}>{t('dutiesMonth.freeRow')}</Text>
-              </View>
-              {meetings.map((m, mi) => (
-                <Pressable
-                  key={mi}
-                  disabled={!m.held}
-                  onPress={() => setSel({ kind: 'meeting', meeting: mi })}
-                  style={[styles.col, styles.tf, !m.held && styles.hatched]}
-                  testID={`free-${m.date}`}
-                >
-                  {m.held ? <Text style={styles.free}>{freeAt(m, pool, absQ.data).length}</Text> : null}
-                </Pressable>
               ))}
+              {/* Footer: who is still free at each meeting. */}
+              <View style={styles.tr}>
+                {meetings.map((m, mi) => (
+                  <Pressable
+                    key={mi}
+                    disabled={!m.held}
+                    onPress={() => choose({ kind: 'meeting', meeting: mi })}
+                    style={[styles.col, { width: colW }, styles.tf, styles.tfRow, !m.held && styles.hatched]}
+                    testID={`free-${m.date}`}
+                  >
+                    {m.held ? <Text style={styles.free}>{freeAt(m, pool, absQ.data).length}</Text> : null}
+                  </Pressable>
+                ))}
+              </View>
             </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
 
         <View style={styles.legend}>
           <Legend color="#dc2626" text={t('dutiesMonth.legend.absent')} />
           <Legend color="#f59e0b" text={t('dutiesMonth.legend.part')} />
-          <Legend color="#a78bfa" text={t('dutiesMonth.legend.repeat')} />
+          <Legend color={REPEAT} text={t('dutiesMonth.legend.repeat')} />
         </View>
       </View>
 
-      <View style={styles.panel} testID="duties-month-panel">
-        {selCell && selMeeting ? (
-          <CellPanel
-            meeting={selMeeting}
-            entry={table.cells[selCell.meeting].get(selCell.row)!}
-            title={`${dayLabel(selMeeting)} · ${titleOf(
-              selCell.row,
-              table.cells[selCell.meeting].get(selCell.row)!.row,
-              table.cells[selCell.meeting].get(selCell.row)!.ordinal,
-            )}`}
-            publishers={publishers}
-            byId={byId}
-            load={load}
-            absences={absQ.data}
-            pending={assignM.isPending || saving}
-            proposed={
-              proposals && !table.cells[selCell.meeting].get(selCell.row)!.row.publisherId
-                ? (proposals.get(cellId(selCell.meeting, selCell.row)) ?? null)
-                : undefined
-            }
-            onPropose={(publisherId) => {
-              const next = new Map(proposals ?? []);
-              const id = cellId(selCell.meeting, selCell.row);
-              if (publisherId) next.set(id, publisherId);
-              else next.delete(id);
-              setProposals(next);
-            }}
-            onPick={(publisherId) =>
-              assignM.mutate({
-                meeting: selMeeting,
-                row: table.cells[selCell.meeting].get(selCell.row)!.row,
-                ordinal: table.cells[selCell.meeting].get(selCell.row)!.ordinal,
-                publisherId,
-              })
-            }
-            onClose={() => setSel(null)}
-          />
-        ) : selMeeting ? (
-          <PeoplePanel
-            title={t('dutiesMonth.freeAt', { day: dayLabel(selMeeting) })}
-            hint={t('dutiesMonth.freeAtHint')}
-            people={freeAt(selMeeting, pool, absQ.data)}
-            load={load}
-            onClose={() => setSel(null)}
-          />
-        ) : (
-          <PeoplePanel
-            title={t('dutiesMonth.idleTitle')}
-            hint={t('dutiesMonth.idleHint')}
-            people={idle}
-            load={load}
-          />
-        )}
-      </View>
+      {docked ? (
+        <View style={styles.panel} testID="duties-month-panel">
+          {panelContent}
+        </View>
+      ) : overlayOpen ? (
+        <>
+          <Pressable style={styles.scrim} onPress={close} accessibilityRole="button" accessibilityLabel={t('common.close')} />
+          <SlideIn key={idleOpen ? 'idle' : 'sel'} style={styles.sheet} testID="duties-month-panel">
+            {panelContent}
+          </SlideIn>
+        </>
+      ) : null}
     </View>
+  );
+}
+
+/** The panel coming in from the right edge, over the table. */
+function SlideIn({ children, style, testID }: { children: ReactNode; style: object; testID?: string }) {
+  const x = useRef(new Animated.Value(PANEL_W)).current;
+  useEffect(() => {
+    Animated.timing(x, { toValue: 0, duration: 220, useNativeDriver: Platform.OS !== 'web' }).start();
+  }, [x]);
+  return (
+    <Animated.View testID={testID} style={[style, { transform: [{ translateX: x }] }]}>
+      {children}
+    </Animated.View>
   );
 }
 
@@ -571,16 +742,25 @@ function PeoplePanel({
   );
 }
 
-/** One place at one meeting: who to put there, the fittest first. */
+/**
+ * One place at one meeting: who to put there. «По очереди» is the queue
+ * «Заполнить пустые» goes by — its first is the one the button would propose
+ * — and «Лучше не ставить» says why not.
+ */
 function CellPanel({
   meeting,
   entry,
+  kicker,
   title,
   publishers,
   byId,
   load,
   absences,
+  queue,
+  historyReady,
   pending,
+  advance,
+  onAdvance,
   proposed,
   onPropose,
   onPick,
@@ -591,12 +771,17 @@ function CellPanel({
   onPropose: (publisherId: string | null) => void;
   meeting: MonthDutyMeeting;
   entry: { row: MonthDutyRow; ordinal: number };
+  kicker: string;
   title: string;
   publishers: Publisher[];
   byId: Map<string, Publisher>;
   load: LoadMap;
   absences: Parameters<typeof absenceOn>[0];
+  queue: QueueContext;
+  historyReady: boolean;
   pending: boolean;
+  advance: boolean;
+  onAdvance: (on: boolean) => void;
   onPick: (publisherId: string | null) => void;
   onClose: () => void;
 }) {
@@ -626,37 +811,45 @@ function CellPanel({
     if (busy.has(p.id)) return t('dutiesMonth.reason.part');
     return null;
   };
-  const weight = (p: Publisher) => {
-    const l = load.get(p.id);
-    return (l?.duties ?? 0) * 2 + (l?.parts ?? 0);
-  };
-  const free = people
-    .filter((p) => !reasonOf(p))
-    .sort(
-      (a, b) =>
-        weight(a) - weight(b) ||
-        (load.get(a.id)?.lastDutyBefore ?? '').localeCompare(load.get(b.id)?.lastDutyBefore ?? '') ||
-        a.displayName.localeCompare(b.displayName, i18n.language),
-    );
+  const place = placeKey(entry.row);
+  const free = queueOrder(
+    people.filter((p) => !reasonOf(p)),
+    place,
+    queue,
+  );
   const notNow = people.filter((p) => !!reasonOf(p)).sort((a, b) => a.displayName.localeCompare(b.displayName, i18n.language));
   const markName = entry.row.capability ? t(`capabilities.items.${entry.row.capability}`) : null;
+  const empty = !entry.row.publisherId;
 
-  const Row = ({ p, reason }: { p: Publisher; reason: string | null }) => {
+  const Row = ({ p, reason, first }: { p: Publisher; reason: string | null; first?: boolean }) => {
     const l = load.get(p.id);
+    const lastHere = queue.last.get(p.id)?.get(place);
     return (
       <Pressable
         testID={`pick-${p.id}`}
         onPress={() => choose(p.id)}
         disabled={pending}
-        style={({ pressed }) => [styles.person, styles.personPick, reason && styles.personOff, pressed && styles.pressed]}
+        style={({ pressed }) => [
+          styles.person,
+          styles.personPick,
+          first && styles.personFirst,
+          reason && styles.personOff,
+          pressed && styles.pressed,
+        ]}
       >
         <View style={styles.flex}>
-          <Text style={styles.personName}>{p.displayName}</Text>
+          <View style={styles.nameLine}>
+            <Text style={styles.personName}>{p.displayName}</Text>
+            {first ? <Text style={styles.nextTag}>{t('dutiesMonth.queue.next')}</Text> : null}
+          </View>
           {reason ? (
             <Text style={styles.reason}>{reason}</Text>
           ) : (
             <Text style={styles.personMeta}>
-              {l?.lastDutyBefore ? t('dutiesMonth.lastDuty', { date: shortDate(l.lastDutyBefore, i18n.language) }) : t('dutiesMonth.neverDuty')}
+              {lastHere
+                ? t('dutiesMonth.queue.lastHere', { date: shortDate(lastHere, i18n.language) })
+                : t('dutiesMonth.queue.neverHere')}
+              {queue.previous.has(p.id) ? ` · ${t('dutiesMonth.queue.repeat')}` : ''}
             </Text>
           )}
         </View>
@@ -666,44 +859,62 @@ function CellPanel({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.panelBody}>
-      <View style={styles.panelHead}>
-        <Text style={styles.panelTitle}>{title}</Text>
-        <Pressable onPress={onClose} hitSlop={8} accessibilityLabel={t('common.close')}>
-          <Ionicons name="close" size={20} color="#64748b" />
-        </Pressable>
-      </View>
-      <Text style={styles.panelHint}>
-        {markName ? t('dutiesMonth.byMark', { name: markName }) : t('dutiesMonth.byBrothers')}
-      </Text>
-      {current ? (
-        <View style={styles.current}>
+    <View style={styles.flex}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.panelBody}>
+        <View style={styles.panelHead}>
           <View style={styles.flex}>
-            <Text style={styles.currentLabel}>{proposing ? t('dutiesMonth.fill.proposal') : t('dutiesMonth.now')}</Text>
-            <Text style={styles.personName}>{current.displayName}</Text>
+            <Text style={styles.kicker}>{kicker}</Text>
+            <Text style={styles.cellTitle}>{title}</Text>
           </View>
-          <Pressable onPress={() => choose(null)} disabled={pending} style={styles.clear} testID="cell-clear">
-            <Text style={styles.clearText}>{t('dutiesMonth.clear')}</Text>
+          <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn} accessibilityLabel={t('common.close')}>
+            <Ionicons name="close" size={18} color="#64748b" />
           </Pressable>
         </View>
-      ) : null}
-      <View style={styles.groupHead}>
-        <Text style={styles.groupLabel}>{t('dutiesMonth.canPut')}</Text>
-        <Text style={styles.groupLabel}>{t('dutiesMonth.thisMonth')}</Text>
-      </View>
-      {free.length === 0 ? <Text style={styles.nobody}>{t('dutiesMonth.nobody')}</Text> : null}
-      {free.map((p) => (
-        <Row key={p.id} p={p} reason={null} />
-      ))}
-      {notNow.length > 0 ? (
+        <Text style={styles.panelHint}>
+          {markName ? t('dutiesMonth.byMark', { name: markName }) : t('dutiesMonth.byBrothers')}
+        </Text>
+        {current ? (
+          <View style={styles.current}>
+            <View style={styles.flex}>
+              <Text style={styles.currentLabel}>{proposing ? t('dutiesMonth.fill.proposal') : t('dutiesMonth.now')}</Text>
+              <Text style={styles.personName}>{current.displayName}</Text>
+            </View>
+            <Pressable onPress={() => choose(null)} disabled={pending} style={styles.clear} testID="cell-clear">
+              <Text style={styles.clearText}>{t('dutiesMonth.clear')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         <View style={styles.groupHead}>
-          <Text style={styles.groupLabel}>{t('dutiesMonth.better')}</Text>
+          <Text style={styles.groupLabel}>{t('dutiesMonth.canPut')}</Text>
+          <Text style={styles.groupLabel}>{t('dutiesMonth.thisMonth')}</Text>
+        </View>
+        {free.length === 0 ? <Text style={styles.nobody}>{t('dutiesMonth.nobody')}</Text> : null}
+        {!historyReady && free.length > 0 ? <ActivityIndicator style={styles.queueWait} size="small" /> : null}
+        {free.map((p, i) => (
+          <Row key={p.id} p={p} reason={null} first={i === 0 && historyReady} />
+        ))}
+        {notNow.length > 0 ? (
+          <View style={styles.groupHead}>
+            <Text style={styles.groupLabel}>{t('dutiesMonth.better')}</Text>
+          </View>
+        ) : null}
+        {notNow.map((p) => (
+          <Row key={p.id} p={p} reason={reasonOf(p)} />
+        ))}
+      </ScrollView>
+      {empty ? (
+        <View style={styles.advance}>
+          <Switch
+            testID="advance-switch"
+            value={advance}
+            onValueChange={onAdvance}
+            trackColor={{ true: '#0e7490', false: '#cbd5e1' }}
+            thumbColor="#ffffff"
+          />
+          <Text style={styles.advanceText}>{t('dutiesMonth.advance')}</Text>
         </View>
       ) : null}
-      {notNow.map((p) => (
-        <Row key={p.id} p={p} reason={reasonOf(p)} />
-      ))}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -724,7 +935,16 @@ const SOFT = '#64748b';
 const FAINT = '#94a3b8';
 const LINE = '#e2e8f0';
 const COL = 76;
-const PLACE = 132;
+const COL_MAX = 124;
+const PLACE = 140;
+const PANEL_W = 360;
+const REPEAT = '#94a3b8';
+const ADVANCE_KEY = 'duties.month.advance';
+/** Each kind of meeting in its colour from «Программа» (teal book, violet sun). */
+const KIND = {
+  midweek: { color: '#0e7490', tint: '#f0f9ff' },
+  weekend: { color: '#6d28d9', tint: '#f5f3ff' },
+} as const;
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
@@ -739,10 +959,14 @@ const styles = StyleSheet.create({
   pillText: { fontFamily: FONT.bold, fontSize: 12.5, color: SOFT },
   pillWarn: { backgroundColor: '#fef3c7', borderColor: '#fde68a' },
   pillWarnText: { color: '#b45309' },
-  tableScroll: { flexGrow: 0 },
-  table: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: LINE, overflow: 'hidden' },
+  table: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: LINE, overflow: 'hidden' },
+  placeSide: { width: PLACE, borderRightWidth: 1, borderRightColor: LINE, backgroundColor: '#fff', zIndex: 1 },
+  thRow: { height: 104, borderTopWidth: 3, borderTopColor: 'transparent' },
+  thPlace: { justifyContent: 'flex-end', alignItems: 'flex-start', paddingBottom: 10 },
+  tdRow: { height: 46 },
+  tfRow: { height: 38 },
   tr: { flexDirection: 'row' },
-  placeCol: { width: PLACE, paddingHorizontal: 12, paddingVertical: 8, justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: '#f1f5f9', borderRightWidth: 1, borderRightColor: '#f1f5f9' },
+  placeCol: { width: PLACE, paddingHorizontal: 12, paddingVertical: 6, justifyContent: 'center', borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   placeText: { fontFamily: FONT.semibold, fontSize: 13, color: INK },
   col: { width: COL, borderBottomWidth: 1, borderBottomColor: '#f1f5f9', borderRightWidth: 1, borderRightColor: '#f1f5f9' },
   colSel: { backgroundColor: '#e0f2fe' },
@@ -750,17 +974,13 @@ const styles = StyleSheet.create({
   thText: { fontFamily: FONT.bold, fontSize: 10.5, letterSpacing: 0.6, textTransform: 'uppercase', color: FAINT },
   day: { fontFamily: FONT.extrabold, fontSize: 17, color: INK, lineHeight: 20 },
   dow: { fontFamily: FONT.bold, fontSize: 10, color: SOFT, marginTop: 1 },
-  kind: { marginTop: 4, paddingHorizontal: 6, paddingVertical: 1, borderRadius: 999 },
-  kindMid: { backgroundColor: '#fff7ed' },
-  kindEnd: { backgroundColor: '#eff6ff' },
-  kindText: { fontFamily: FONT.bold, fontSize: 10 },
-  kindMidText: { color: '#c2410c' },
-  kindEndText: { color: '#1d4ed8' },
+  kind: { marginTop: 4, paddingHorizontal: 7, paddingVertical: 1, borderRadius: 6, backgroundColor: '#ffffff' },
+  kindText: { fontFamily: FONT.extrabold, fontSize: 10, letterSpacing: 0.4, textTransform: 'uppercase' },
   count: { fontFamily: FONT.bold, fontSize: 11, color: FAINT, marginTop: 3 },
   countFull: { color: '#047857' },
   notHeld: { fontFamily: FONT.semibold, fontSize: 10.5, color: SOFT, marginTop: 6, textAlign: 'center', paddingHorizontal: 4 },
   hatched: { backgroundColor: '#f1f5f9' },
-  td: { minHeight: 38, justifyContent: 'center', paddingHorizontal: 6 },
+  td: { justifyContent: 'center', paddingHorizontal: 6 },
   tdEmpty: { backgroundColor: '#fffbeb' },
   tdPast: { backgroundColor: '#fafafa' },
   tdSel: { backgroundColor: '#e0f2fe', borderWidth: 2, borderColor: '#38bdf8' },
@@ -771,7 +991,7 @@ const styles = StyleSheet.create({
   mark: { width: 7, height: 7, borderRadius: 4 },
   markAbsent: { backgroundColor: '#dc2626' },
   markPart: { backgroundColor: '#f59e0b' },
-  markRepeat: { backgroundColor: '#a78bfa' },
+  markRepeat: { backgroundColor: REPEAT },
   tf: { backgroundColor: '#f8fafc', paddingVertical: 8, alignItems: 'center', justifyContent: 'center', borderBottomWidth: 0 },
   free: { fontFamily: FONT.extrabold, fontSize: 13, color: '#047857' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
@@ -780,6 +1000,44 @@ const styles = StyleSheet.create({
   panel: { width: 320, backgroundColor: '#fff', borderLeftWidth: 1, borderLeftColor: LINE },
   panelBody: { padding: 16, paddingBottom: 40, gap: 4 },
   panelHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
+  kicker: { fontFamily: FONT.extrabold, fontSize: 11.5, letterSpacing: 0.6, textTransform: 'uppercase', color: '#0e7490' },
+  cellTitle: { fontFamily: FONT.extrabold, fontSize: 19, color: INK, marginTop: 2 },
+  closeBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#f1f5f9', alignItems: 'center', justifyContent: 'center' },
+  scrim: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15,23,42,0.10)' },
+  sheet: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    width: PANEL_W,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: -8, height: 0 },
+    elevation: 12,
+    overflow: 'hidden',
+  },
+  nameLine: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  nextTag: {
+    fontFamily: FONT.extrabold,
+    fontSize: 10,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: '#0f766e',
+    backgroundColor: '#ccfbf1',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  personFirst: { backgroundColor: '#f0fdfa' },
+  queueWait: { alignSelf: 'flex-start', marginVertical: 4 },
+  advance: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  advanceText: { flex: 1, fontFamily: FONT.semibold, fontSize: 13, color: '#334155' },
+  pillRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   panelTitle: { flex: 1, fontFamily: FONT.extrabold, fontSize: 16, color: INK },
   panelHint: { fontFamily: FONT.regular, fontSize: 12.5, lineHeight: 18, color: SOFT, marginBottom: 8 },
   nobody: { fontFamily: FONT.medium, fontSize: 13, color: FAINT, paddingVertical: 6 },

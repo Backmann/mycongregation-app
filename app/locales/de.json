@@ -5561,11 +5561,11 @@
     "nobody": "Niemand",
     "lastDuty": "zuletzt {{date}}",
     "neverDuty": "noch nie eingeteilt",
-    "byMark": "Markierung in der Karte: {{name}}. Oben: wer diesen Monat am wenigsten hat.",
-    "byBrothers": "Brüder. Oben: wer diesen Monat am wenigsten hat.",
+    "byMark": "Vermerk in der Karte: {{name}}. Oben steht, wer am längsten nicht mehr hier war – so verteilt auch „Leere füllen“.",
+    "byBrothers": "Brüder. Oben steht, wer am längsten nicht mehr hier war – so verteilt auch „Leere füllen“.",
     "now": "Jetzt",
     "clear": "Entfernen",
-    "canPut": "Kann eingeteilt werden",
+    "canPut": "Der Reihe nach",
     "thisMonth": "im Monat",
     "better": "Besser nicht",
     "reason": {
@@ -5594,6 +5594,13 @@
     "pdf": {
       "title": "Dienste bei den Zusammenkünften",
       "printed": "Gedruckt am"
-    }
+    },
+    "queue": {
+      "next": "Als Nächster",
+      "lastHere": "hier zuletzt am {{date}}",
+      "neverHere": "hier noch nie",
+      "repeat": "stand hier schon bei der letzten solchen Zusammenkunft"
+    },
+    "advance": "Nach der Auswahl zum nächsten leeren Feld"
   }
 }

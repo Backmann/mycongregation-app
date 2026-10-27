@@ -5561,11 +5561,11 @@
     "nobody": "Nobody",
     "lastDuty": "last time {{date}}",
     "neverDuty": "not yet",
-    "byMark": "Card mark: {{name}}. On top: who has least this month.",
-    "byBrothers": "Brothers. On top: who has least this month.",
+    "byMark": "Card mark: {{name}}. On top: whoever has been longest away from this place — the order “Fill the empty ones” uses too.",
+    "byBrothers": "Brothers. On top: whoever has been longest away from this place — the order “Fill the empty ones” uses too.",
     "now": "Now",
     "clear": "Remove",
-    "canPut": "Can be assigned",
+    "canPut": "In turn",
     "thisMonth": "this month",
     "better": "Better not",
     "reason": {
@@ -5594,6 +5594,13 @@
     "pdf": {
       "title": "Meeting duties",
       "printed": "Printed"
-    }
+    },
+    "queue": {
+      "next": "Next",
+      "lastHere": "here last on {{date}}",
+      "neverHere": "never here yet",
+      "repeat": "stood here at the last such meeting"
+    },
+    "advance": "After choosing, go to the next empty cell"
   }
 }

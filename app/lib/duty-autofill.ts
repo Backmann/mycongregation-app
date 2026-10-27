@@ -152,17 +152,7 @@ export function autofill(input: AutofillInput): AutofillResult {
         const pool = candidatesFor(r.row.capability, publishers).filter(
           (p) => isServing(p) && !busy.has(p.id) && !absenceOn(absences, p.id, m.date),
         );
-        const rank = (p: Publisher) => [
-          last.get(p.id)?.get(place) ?? '',
-          monthCount.get(p.id) ?? 0,
-        ] as const;
-        const pick = (list: Publisher[]) =>
-          [...list].sort((a, b) => {
-            const [la, ca] = rank(a);
-            const [lb, cb] = rank(b);
-            return la.localeCompare(lb) || ca - cb || a.displayName.localeCompare(b.displayName);
-          })[0];
-        const chosen = pick(pool.filter((p) => !before.has(p.id))) ?? pick(pool);
+        const chosen = queueOrder(pool, place, { last, monthCount, previous: before })[0];
         const id = cellId(i, r.key);
         if (!chosen) {
           nobody.add(id);
@@ -178,4 +168,74 @@ export function autofill(input: AutofillInput): AutofillResult {
     previousAt.set(m.eventType ?? '', here);
   }
   return { proposals, nobody, skipped };
+}
+
+/** What the queue goes by — the same for «Заполнить пустые» and the panel. */
+export interface QueueContext {
+  /** Person → place → the week he last stood there. */
+  last: Map<string, Map<string, string>>;
+  /** Person → places this month. */
+  monthCount: Map<string, number>;
+  /** Who stood at this place at the previous meeting of this kind. */
+  previous: Set<string>;
+}
+
+/**
+ * THE QUEUE, IN ORDER (27 October 2026). The panel used to put first whoever
+ * carried least this month, while «Заполнить пустые» proposed whoever had
+ * waited longest at this place: the button proposed one man and the panel
+ * topped its list with another. Both read this now:
+ *  1. not the same place two meetings of a kind running, while anybody else can;
+ *  2. whoever has waited longest at this place (never — first of all);
+ *  3. whoever has fewest places this month;
+ *  4. by name.
+ */
+export function queueOrder(people: Publisher[], place: string, ctx: QueueContext): Publisher[] {
+  const key = (p: Publisher) => [ctx.previous.has(p.id) ? 1 : 0, ctx.last.get(p.id)?.get(place) ?? '', ctx.monthCount.get(p.id) ?? 0] as const;
+  return [...people].sort((a, b) => {
+    const [pa, la, ca] = key(a);
+    const [pb, lb, cb] = key(b);
+    return pa - pb || la.localeCompare(lb) || ca - cb || a.displayName.localeCompare(b.displayName);
+  });
+}
+
+/**
+ * The queue's context for one place at one meeting, as the panel needs it:
+ * the history before the month, then the month's own filled places at the
+ * meetings before this one; the month's count; and who stood here at the
+ * previous meeting of the same kind — the same walk «Заполнить пустые» makes.
+ */
+export function queueContextAt(
+  month: MonthOfDuties,
+  history: AutofillInput['history'],
+  meetingIndex: number,
+  place: string,
+): QueueContext {
+  const last = new Map<string, Map<string, string>>();
+  const note = (publisherId: string, at: string, week: string) => {
+    const m = last.get(publisherId) ?? new Map<string, string>();
+    if ((m.get(at) ?? '') < week) m.set(at, week);
+    last.set(publisherId, m);
+  };
+  for (const h of history) {
+    for (const it of h.items) {
+      if (it.kind !== 'duty' || !it.dutyType) continue;
+      note(h.publisherId, placeKey({ dutyType: it.dutyType, customLabel: it.customLabel ?? null }), it.weekStartDate);
+    }
+  }
+  const monthCount = new Map<string, number>();
+  for (const m of month.meetings) {
+    for (const r of m.rows) if (r.publisherId) monthCount.set(r.publisherId, (monthCount.get(r.publisherId) ?? 0) + 1);
+  }
+  const target = month.meetings[meetingIndex];
+  const previous = new Set<string>();
+  const earlier = month.meetings
+    .filter((m) => m.held && target && m.date < target.date)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  for (const m of earlier) {
+    for (const r of m.rows) if (r.publisherId) note(r.publisherId, placeKey(r), m.weekStartDate);
+  }
+  const prev = [...earlier].reverse().find((m) => m.eventType === target?.eventType);
+  for (const r of prev?.rows ?? []) if (r.publisherId && placeKey(r) === place) previous.add(r.publisherId);
+  return { last, monthCount, previous };
 }
