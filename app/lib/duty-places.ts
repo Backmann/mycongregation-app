@@ -89,3 +89,6 @@ export const STANDARD_PLACES: DutyType[] = [
 
 /** Card marks an own place may ask for. */
 export const PLACE_CAPABILITIES = STANDARD_PLACES.map((t) => `duty_${t}`);
+
+/** The card marks of the meeting places, `duty_<type>`. */
+export const DUTY_CAPABILITY_KEYS = PLACE_CAPABILITIES;

@@ -5524,5 +5524,54 @@
     "affectsNone": "Bereits angelegte Zusammenkünfte ändern sich nicht — die nächsten übernehmen die neuen Plätze.",
     "keptTitle": "Bleiben dort, wo schon jemand eingeteilt ist:",
     "keptHint": "Bei diesen Zusammenkünften ist der Platz mit „nur bei dieser Zusammenkunft“ beschriftet."
+  },
+  "dutiesMonth": {
+    "mode": {
+      "month": "Monat",
+      "meeting": "Nach Zusammenkünften"
+    },
+    "errorTitle": "Einteilung nicht möglich",
+    "prev": "Vorheriger Monat",
+    "next": "Nächster Monat",
+    "filled": "Besetzt: {{assigned}} von {{total}}",
+    "empty": "Leer: {{count}}",
+    "idle": "Nicht eingeteilt: {{count}}",
+    "place": "Platz",
+    "kind": {
+      "midweek": "Woche",
+      "weekend": "Wochenende"
+    },
+    "notHeld": {
+      "congress": "Kongress — keine Zusammenkünfte",
+      "memorial": "Gedächtnismahl",
+      "event": "Keine Zusammenkunft"
+    },
+    "freeRow": "Frei",
+    "legend": {
+      "absent": "an diesem Tag abwesend",
+      "part": "hat einen Programmpunkt bei dieser Zusammenkunft",
+      "repeat": "derselbe Platz auch bei der letzten solchen Zusammenkunft"
+    },
+    "freeAt": "Frei · {{day}}",
+    "freeAtHint": "Weder ein Platz noch ein Programmpunkt bei dieser Zusammenkunft und nicht abwesend. Die Zahl: wie viel jeder diesen Monat hat.",
+    "idleTitle": "Diesen Monat nicht eingeteilt",
+    "idleCard": "Diesen Monat nicht eingeteilt: {{count}}",
+    "idleHint": "Für mindestens einen Platz in der Karte markiert, aber diesen Monat weder ein Platz noch ein Programmpunkt.",
+    "nobody": "Niemand",
+    "lastDuty": "zuletzt {{date}}",
+    "neverDuty": "noch nie eingeteilt",
+    "byMark": "Markierung in der Karte: {{name}}. Oben: wer diesen Monat am wenigsten hat.",
+    "byBrothers": "Brüder. Oben: wer diesen Monat am wenigsten hat.",
+    "now": "Jetzt",
+    "clear": "Entfernen",
+    "canPut": "Kann eingeteilt werden",
+    "thisMonth": "im Monat",
+    "better": "Besser nicht",
+    "reason": {
+      "absent": "an diesem Tag abwesend",
+      "duty": "schon eingeteilt: {{place}}",
+      "part": "hat einen Programmpunkt"
+    },
+    "freeHere": "Bei dieser Zusammenkunft noch nicht eingeteilt: {{count}}"
   }
 }

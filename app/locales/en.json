@@ -5524,5 +5524,54 @@
     "affectsNone": "Meetings already set up do not change — the next ones take the new places.",
     "keptTitle": "Stay where someone is already assigned:",
     "keptHint": "At these meetings the place is marked “only at this meeting”."
+  },
+  "dutiesMonth": {
+    "mode": {
+      "month": "Month",
+      "meeting": "By meeting"
+    },
+    "errorTitle": "Could not assign",
+    "prev": "Previous month",
+    "next": "Next month",
+    "filled": "Filled {{assigned}} of {{total}}",
+    "empty": "Empty: {{count}}",
+    "idle": "Not involved: {{count}}",
+    "place": "Place",
+    "kind": {
+      "midweek": "midweek",
+      "weekend": "weekend"
+    },
+    "notHeld": {
+      "congress": "Convention — no meetings",
+      "memorial": "Memorial",
+      "event": "No meeting"
+    },
+    "freeRow": "Free",
+    "legend": {
+      "absent": "away that day",
+      "part": "has a part in this meeting",
+      "repeat": "same place at the previous such meeting"
+    },
+    "freeAt": "Free · {{day}}",
+    "freeAtHint": "No place and no part at this meeting, and not away. The number: how much each has this month.",
+    "idleTitle": "Not involved this month",
+    "idleCard": "Not involved this month: {{count}}",
+    "idleHint": "Marked on the card for at least one place, but no place and no part this month.",
+    "nobody": "Nobody",
+    "lastDuty": "last time {{date}}",
+    "neverDuty": "not yet",
+    "byMark": "Card mark: {{name}}. On top: who has least this month.",
+    "byBrothers": "Brothers. On top: who has least this month.",
+    "now": "Now",
+    "clear": "Remove",
+    "canPut": "Can be assigned",
+    "thisMonth": "this month",
+    "better": "Better not",
+    "reason": {
+      "absent": "away that day",
+      "duty": "already at: {{place}}",
+      "part": "has a part in the program"
+    },
+    "freeHere": "Still free at this meeting: {{count}}"
   }
 }
