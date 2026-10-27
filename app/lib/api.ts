@@ -1532,6 +1532,8 @@ export interface MonthDutyMeeting {
   hasSheet: boolean;
   rows: MonthDutyRow[];
   partPublisherIds: string[];
+  /** How far its programme is filled (the «Собрание» count); null when not held. */
+  programme: { loaded: boolean; assigned: number; total: number; missing: string[] } | null;
 }
 
 export interface MonthOfDuties {

@@ -17,7 +17,7 @@ import { useAllPublishers } from '../../lib/useAllPublishers';
 import { notify } from '../../lib/error-bus';
 import { FONT } from '../../lib/typography';
 import { countDuties } from '../../lib/duty-count';
-import { autofill, cellId, rowKeysOf } from '../../lib/duty-autofill';
+import { autofill, cellId, programmeForDuties, programmeReady, rowKeysOf } from '../../lib/duty-autofill';
 import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
 import { LoadFailure } from '../LoadFailure';
@@ -59,6 +59,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
   // before the coordinator says so.
   const [proposals, setProposals] = useState<Map<string, string> | null>(null);
   const [nobody, setNobody] = useState<Set<string>>(new Set());
+  const [skipped, setSkipped] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const changeMonth = (by: number) => {
@@ -66,6 +67,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
     setSel(null);
     setProposals(null);
     setNobody(new Set());
+    setSkipped([]);
   };
 
   const q = useQuery({ queryKey: ['duties', 'month', month], queryFn: () => dutiesApi.month(month) });
@@ -156,8 +158,9 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
       });
       setProposals(res.proposals);
       setNobody(res.nobody);
+      setSkipped(res.skipped);
       setSel(null);
-      if (res.proposals.size === 0) notify(undefined, t('dutiesMonth.fill.none'), 'success');
+      if (res.proposals.size === 0 && res.skipped.length === 0) notify(undefined, t('dutiesMonth.fill.none'), 'success');
     } catch (e) {
       notify(t('dutiesMonth.errorTitle'), extractErrorMessage(e));
     }
@@ -202,6 +205,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
       notify(undefined, t('dutiesMonth.fill.saved', { count: done }), 'success');
       setProposals(null);
       setNobody(new Set());
+      setSkipped([]);
     } catch (e) {
       notify(t('dutiesMonth.errorTitle'), `${extractErrorMessage(e)} (${t('dutiesMonth.fill.savedSoFar', { count: done })})`);
     } finally {
@@ -220,6 +224,13 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
     { assigned: 0, total: 0 },
   );
   const idle = idleInMonth(q.data, pool);
+  // A brother with a place AND a part at one meeting of the month still
+  // ahead — the programme was filled after the places (or the other way).
+  const clashes = meetings.reduce(
+    (n, m) =>
+      n + (m.held && !m.locked ? m.rows.filter((r) => r.publisherId && m.partPublisherIds.includes(r.publisherId)).length : 0),
+    0,
+  );
   const monthName = capitalizeFirst(atMidnight(`${month}-01`).toLocaleDateString(lang, { month: 'long', year: 'numeric' }));
 
   const rowTitle = (row: MonthDutyRow, ordinal: number, count: number) => {
@@ -261,6 +272,11 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
               <Text style={[styles.pillText, styles.pillWarnText]}>{t('dutiesMonth.empty', { count: totals.total - totals.assigned })}</Text>
             </View>
           ) : null}
+          {clashes > 0 ? (
+            <View style={[styles.pill, styles.pillClash]} testID="clashes">
+              <Text style={[styles.pillText, styles.pillClashText]}>{t('dutiesMonth.clashes', { count: clashes })}</Text>
+            </View>
+          ) : null}
           {idle.length > 0 ? (
             <Pressable onPress={() => setSel(null)} style={[styles.pill, styles.pillWarn]}>
               <Text style={[styles.pillText, styles.pillWarnText]}>{t('dutiesMonth.idle', { count: idle.length })}</Text>
@@ -280,6 +296,14 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
               {t('dutiesMonth.fill.proposed', { count: proposals.size })}
               {nobody.size > 0 ? ` · ${t('dutiesMonth.fill.nobodyCount', { count: nobody.size })}` : ''}
             </Text>
+            {skipped.length > 0 ? (
+              <Text style={styles.skipped} testID="proposals-skipped">
+                {t('dutiesMonth.fill.skipped', {
+                  count: skipped.length,
+                  list: skipped.map((i) => dayLabel(meetings[i])).join(', '),
+                })}
+              </Text>
+            ) : null}
             <Text style={styles.proposalHint}>{t('dutiesMonth.fill.hint')}</Text>
             <View style={styles.proposalBtns}>
               <Pressable
@@ -294,6 +318,7 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
                 onPress={() => {
                   setProposals(null);
                   setNobody(new Set());
+                  setSkipped([]);
                 }}
                 disabled={saving}
                 style={styles.cancelBtn}
@@ -333,6 +358,18 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
                         <Text style={[styles.count, c && c.assigned === c.total && c.total > 0 && styles.countFull]}>
                           {c ? `${c.assigned}/${c.total}` : ''}
                         </Text>
+                        {/* The programme not complete yet: the places wait
+                            for it — «Заполнить пустые» passes this one by. */}
+                        {!m.locked && !programmeReady(m) ? (
+                          <Text style={styles.progWait} testID={`programme-${m.date}`}>
+                            {programmeForDuties(m)?.loaded
+                              ? t('dutiesMonth.programmeOf', {
+                                  assigned: programmeForDuties(m)!.assigned,
+                                  total: programmeForDuties(m)!.total,
+                                })
+                              : t('dutiesMonth.programmeNone')}
+                          </Text>
+                        ) : null}
                       </>
                     ) : (
                       <Text style={styles.notHeld}>{t(`dutiesMonth.notHeld.${m.notHeld ?? 'event'}`)}</Text>
@@ -705,7 +742,7 @@ const SOFT = '#64748b';
 const FAINT = '#94a3b8';
 const LINE = '#e2e8f0';
 const COL = 76;
-const PLACE = 140;
+const PLACE = 132;
 
 const styles = StyleSheet.create({
   flex: { flex: 1, minWidth: 0 },
@@ -780,6 +817,10 @@ const styles = StyleSheet.create({
   current: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f8fafc', borderRadius: 12, padding: 10, marginBottom: 4 },
   currentLabel: { fontFamily: FONT.bold, fontSize: 10.5, letterSpacing: 0.6, textTransform: 'uppercase', color: FAINT },
   spacer: { flex: 1 },
+  skipped: { fontFamily: FONT.semibold, fontSize: 12.5, color: '#b45309' },
+  progWait: { fontFamily: FONT.bold, fontSize: 9.5, color: '#b45309', marginTop: 2, textAlign: 'center' },
+  pillClash: { backgroundColor: '#ffedd5', borderColor: '#fdba74' },
+  pillClashText: { color: '#c2410c' },
   fillBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#0e7490', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
   fillText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#fff' },
   off: { opacity: 0.5 },

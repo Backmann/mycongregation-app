@@ -5583,7 +5583,11 @@
       "savedSoFar": "bis zum Fehler gespeichert: {{count}}",
       "none": "Keine leeren Plätze, die sich füllen lassen.",
       "noOne": "niemand",
-      "proposal": "Vorschlag"
-    }
+      "proposal": "Vorschlag",
+      "skipped": "Übersprungene Zusammenkünfte: {{count}} — das Programm ist noch nicht vollständig ({{list}}). Die Plätze dort, sobald das Programm steht."
+    },
+    "programmeOf": "Programm {{assigned}}/{{total}}",
+    "programmeNone": "kein Programm",
+    "clashes": "Platz und Programmpunkt beim selben Bruder: {{count}}"
   }
 }

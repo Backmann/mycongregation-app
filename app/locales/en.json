@@ -5583,7 +5583,11 @@
       "savedSoFar": "saved before the error: {{count}}",
       "none": "There are no empty places that can be filled.",
       "noOne": "nobody",
-      "proposal": "Proposal"
-    }
+      "proposal": "Proposal",
+      "skipped": "Meetings skipped: {{count}} — the program is not complete yet ({{list}}). Their places once the program is ready."
+    },
+    "programmeOf": "program {{assigned}}/{{total}}",
+    "programmeNone": "no program",
+    "clashes": "Place and part for the same brother: {{count}}"
   }
 }
