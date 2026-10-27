@@ -22,6 +22,7 @@ export function UndoBar({
   onUndo,
   onDismiss,
   seconds = 10,
+  icon = 'trash-outline',
 }: {
   visible: boolean;
   message: string;
@@ -29,6 +30,8 @@ export function UndoBar({
   onDismiss: () => void;
   /** Ten seconds: long enough to read the strip, notice, and reach it. */
   seconds?: number;
+  /** The bin for a removal; a replacement says so with its own sign. */
+  icon?: keyof typeof Ionicons.glyphMap;
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
@@ -73,7 +76,7 @@ export function UndoBar({
   return (
     <Animated.View style={[styles.wrap, { opacity: fade }]} pointerEvents="box-none">
       <View style={styles.bar}>
-        <Ionicons name="trash-outline" size={16} color="#e2e8f0" />
+        <Ionicons name={icon} size={16} color="#e2e8f0" />
         <Text style={styles.text} numberOfLines={2}>
           {message}
         </Text>
