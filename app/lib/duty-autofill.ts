@@ -38,12 +38,31 @@ export interface AutofillInput {
 /**
  * A meeting whose places may be filled by turns: its programme is loaded and
  * every part has a person (Lionel, 27 October 2026 — «почти готова» is not
- * enough, and at the weekend the Watchtower reader is waited for too). A
+ * enough, and at the weekend the Watchtower reader is waited for too; the
+ * closing prayer is not waited for, see NOT_AWAITED). A
  * place filled before the programme invites a brother to the microphone on
  * the evening he is also given a part.
  */
 export function programmeReady(m: MonthDutyMeeting): boolean {
-  return !!m.programme && m.programme.loaded && m.programme.total > 0 && m.programme.assigned >= m.programme.total;
+  const p = programmeForDuties(m);
+  return !!p && p.loaded && p.total > 0 && p.assigned >= p.total;
+}
+
+/**
+ * Parts a meeting may still lack when its places are filled: the closing
+ * prayer is often given out on the evening itself (Lionel, 27 October 2026 —
+ * «не стоит препятствовать»). If the brother who gets it also stands at a
+ * place, the programme's picker already says so («на этой встрече: …»).
+ */
+const NOT_AWAITED = new Set(['midweek_closing_prayer', 'weekend_closing_prayer']);
+
+/** The programme count as the duties read it: the closing prayer aside. */
+export function programmeForDuties(
+  m: MonthDutyMeeting,
+): { loaded: boolean; assigned: number; total: number } | null {
+  if (!m.programme) return null;
+  const waived = m.programme.missing.filter((k) => NOT_AWAITED.has(k)).length;
+  return { loaded: m.programme.loaded, assigned: m.programme.assigned, total: m.programme.total - waived };
 }
 
 export interface AutofillResult {

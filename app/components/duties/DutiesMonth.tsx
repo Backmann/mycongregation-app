@@ -17,7 +17,7 @@ import { useAllPublishers } from '../../lib/useAllPublishers';
 import { notify } from '../../lib/error-bus';
 import { FONT } from '../../lib/typography';
 import { countDuties } from '../../lib/duty-count';
-import { autofill, cellId, programmeReady, rowKeysOf } from '../../lib/duty-autofill';
+import { autofill, cellId, programmeForDuties, programmeReady, rowKeysOf } from '../../lib/duty-autofill';
 import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
 import { LoadFailure } from '../LoadFailure';
@@ -362,8 +362,11 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
                             for it — «Заполнить пустые» passes this one by. */}
                         {!m.locked && !programmeReady(m) ? (
                           <Text style={styles.progWait} testID={`programme-${m.date}`}>
-                            {m.programme?.loaded
-                              ? t('dutiesMonth.programmeOf', { assigned: m.programme.assigned, total: m.programme.total })
+                            {programmeForDuties(m)?.loaded
+                              ? t('dutiesMonth.programmeOf', {
+                                  assigned: programmeForDuties(m)!.assigned,
+                                  total: programmeForDuties(m)!.total,
+                                })
                               : t('dutiesMonth.programmeNone')}
                           </Text>
                         ) : null}
