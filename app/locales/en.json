@@ -5572,6 +5572,18 @@
       "duty": "already at: {{place}}",
       "part": "has a part in the program"
     },
-    "freeHere": "Still free at this meeting: {{count}}"
+    "freeHere": "Still free at this meeting: {{count}}",
+    "fill": {
+      "button": "Fill the empty ones",
+      "proposed": "Proposed: {{count}}",
+      "nobodyCount": "nobody available: {{count}}",
+      "hint": "The proposals are not saved yet. Click a cell to replace or remove one. Nobody gets anything until you tap “Save proposals”.",
+      "save": "Save proposals",
+      "saved": "Saved: {{count}}",
+      "savedSoFar": "saved before the error: {{count}}",
+      "none": "There are no empty places that can be filled.",
+      "noOne": "nobody",
+      "proposal": "Proposal"
+    }
   }
 }

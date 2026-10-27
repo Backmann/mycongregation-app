@@ -7,6 +7,8 @@ import {
   absencesApi,
   dutiesApi,
   extractErrorMessage,
+  meetingSettingsApi,
+  publisherActivityApi,
   type MonthDutyMeeting,
   type MonthDutyRow,
   type Publisher,
@@ -15,7 +17,7 @@ import { useAllPublishers } from '../../lib/useAllPublishers';
 import { notify } from '../../lib/error-bus';
 import { FONT } from '../../lib/typography';
 import { countDuties } from '../../lib/duty-count';
-import { placeKey } from '../../lib/duty-places';
+import { autofill, cellId, rowKeysOf } from '../../lib/duty-autofill';
 import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
 import { LoadFailure } from '../LoadFailure';
@@ -47,25 +49,24 @@ function shiftMonth(month: string, by: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/** The places of a meeting as rows of the table: `<place>#<n>`. */
-function rowKeysOf(m: MonthDutyMeeting): { key: string; row: MonthDutyRow; ordinal: number }[] {
-  const seen = new Map<string, number>();
-  return [...m.rows]
-    .sort((a, b) => a.sortOrder - b.sortOrder || a.slotIndex - b.slotIndex)
-    .map((row) => {
-      const place = placeKey(row);
-      const n = seen.get(place) ?? 0;
-      seen.set(place, n + 1);
-      return { key: `${place}#${n}`, row, ordinal: n };
-    });
-}
-
 export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO: string }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const qc = useQueryClient();
   const [month, setMonth] = useState(monthOf(startISO));
   const [sel, setSel] = useState<Selection>(null);
+  // «Заполнить пустые»: proposals live here until saved — nothing is written
+  // before the coordinator says so.
+  const [proposals, setProposals] = useState<Map<string, string> | null>(null);
+  const [nobody, setNobody] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState(false);
+  const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
+  const changeMonth = (by: number) => {
+    setMonth(shiftMonth(month, by));
+    setSel(null);
+    setProposals(null);
+    setNobody(new Set());
+  };
 
   const q = useQuery({ queryKey: ['duties', 'month', month], queryFn: () => dutiesApi.month(month) });
   const peopleQ = useAllPublishers();
@@ -134,6 +135,82 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
     );
   }
 
+  const fill = async () => {
+    try {
+      const firstMonday = meetings[0]?.weekStartDate ?? `${month}-01`;
+      const history = await qc.fetchQuery({
+        queryKey: ['publisher-activity', firstMonday, 26],
+        queryFn: () => publisherActivityApi.getActivity({ weekStart: firstMonday, weeks: 26 }),
+      });
+      // Only what came before the month: the month itself is walked in order.
+      const before = history.map((h) => ({
+        publisherId: h.publisherId,
+        items: h.items.filter((it) => it.weekStartDate < firstMonday),
+      }));
+      const res = autofill({
+        month: q.data!,
+        publishers,
+        absences: absQ.data,
+        history: before,
+        treasuresMicRule: settingsQ.data?.congregation.assignmentAutomationEnabled ?? false,
+      });
+      setProposals(res.proposals);
+      setNobody(res.nobody);
+      setSel(null);
+      if (res.proposals.size === 0) notify(undefined, t('dutiesMonth.fill.none'), 'success');
+    } catch (e) {
+      notify(t('dutiesMonth.errorTitle'), extractErrorMessage(e));
+    }
+  };
+  const saveProposals = async () => {
+    if (!proposals) return;
+    setSaving(true);
+    let done = 0;
+    try {
+      // One by one: the first name of a meeting with no sheet cuts it, and
+      // the next ones of that meeting must find it there.
+      for (const [id, publisherId] of proposals) {
+        const [mi, rowKey] = [Number(id.split('|')[0]), id.slice(id.indexOf('|') + 1)];
+        const meeting = meetings[mi];
+        const entry = table.cells[mi]?.get(rowKey);
+        if (!meeting || !entry || entry.row.publisherId) continue;
+        await (entry.row.id
+          ? dutiesApi.assign(entry.row.id, { publisherId })
+          : dutiesApi.assignPlace({
+              weekStartDate: meeting.weekStartDate,
+              eventType: meeting.eventType!,
+              dutyType: entry.row.dutyType,
+              customLabel: entry.row.customLabel,
+              ordinal: entry.ordinal,
+              publisherId,
+            }));
+        done += 1;
+        // A meeting with no sheet has one now: the rest of its places are
+        // read again before the next of them is written.
+        if (!entry.row.id) {
+          const fresh = await dutiesApi.month(month);
+          q.refetch();
+          const again = fresh.meetings[mi];
+          if (again) {
+            for (const r of rowKeysOf(again)) {
+              const cell = table.cells[mi].get(r.key);
+              if (cell && !cell.row.id) cell.row = { ...cell.row, id: r.row.id };
+            }
+          }
+        }
+      }
+      notify(undefined, t('dutiesMonth.fill.saved', { count: done }), 'success');
+      setProposals(null);
+      setNobody(new Set());
+    } catch (e) {
+      notify(t('dutiesMonth.errorTitle'), `${extractErrorMessage(e)} (${t('dutiesMonth.fill.savedSoFar', { count: done })})`);
+    } finally {
+      setSaving(false);
+      qc.invalidateQueries({ queryKey: ['duties'] });
+      qc.invalidateQueries({ queryKey: ['publisher-activity'] });
+    }
+  };
+
   const held = meetings.filter((m) => m.held);
   const totals = held.reduce(
     (acc, m) => {
@@ -168,11 +245,11 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
       <View style={styles.main}>
         <View style={styles.bar}>
           <View style={styles.monthNav}>
-            <Pressable onPress={() => { setMonth(shiftMonth(month, -1)); setSel(null); }} style={styles.navBtn} accessibilityLabel={t('dutiesMonth.prev')}>
+            <Pressable onPress={() => changeMonth(-1)} style={styles.navBtn} accessibilityLabel={t('dutiesMonth.prev')}>
               <Ionicons name="chevron-back" size={16} color="#64748b" />
             </Pressable>
             <Text style={styles.monthName}>{monthName}</Text>
-            <Pressable onPress={() => { setMonth(shiftMonth(month, 1)); setSel(null); }} style={styles.navBtn} accessibilityLabel={t('dutiesMonth.next')}>
+            <Pressable onPress={() => changeMonth(1)} style={styles.navBtn} accessibilityLabel={t('dutiesMonth.next')}>
               <Ionicons name="chevron-forward" size={16} color="#64748b" />
             </Pressable>
           </View>
@@ -189,7 +266,44 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
               <Text style={[styles.pillText, styles.pillWarnText]}>{t('dutiesMonth.idle', { count: idle.length })}</Text>
             </Pressable>
           ) : null}
+          <View style={styles.spacer} />
+          {canEdit && !proposals ? (
+            <Pressable onPress={fill} style={({ pressed }) => [styles.fillBtn, pressed && styles.pressed]} testID="fill-empty">
+              <Ionicons name="sparkles-outline" size={16} color="#fff" />
+              <Text style={styles.fillText}>{t('dutiesMonth.fill.button')}</Text>
+            </Pressable>
+          ) : null}
         </View>
+        {proposals ? (
+          <View style={styles.proposalBar} testID="proposal-bar">
+            <Text style={styles.proposalText}>
+              {t('dutiesMonth.fill.proposed', { count: proposals.size })}
+              {nobody.size > 0 ? ` · ${t('dutiesMonth.fill.nobodyCount', { count: nobody.size })}` : ''}
+            </Text>
+            <Text style={styles.proposalHint}>{t('dutiesMonth.fill.hint')}</Text>
+            <View style={styles.proposalBtns}>
+              <Pressable
+                onPress={saveProposals}
+                disabled={saving || proposals.size === 0}
+                style={[styles.fillBtn, (saving || proposals.size === 0) && styles.off]}
+                testID="proposals-save"
+              >
+                <Text style={styles.fillText}>{saving ? t('common.saving') : t('dutiesMonth.fill.save')}</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  setProposals(null);
+                  setNobody(new Set());
+                }}
+                disabled={saving}
+                style={styles.cancelBtn}
+                testID="proposals-cancel"
+              >
+                <Text style={styles.cancelText}>{t('common.cancel')}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
 
         <ScrollView horizontal style={styles.tableScroll} contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.table} testID="duties-month-table">
@@ -255,6 +369,8 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
                       !!prev &&
                       table.cells[meetings.indexOf(prev)].get(r.key)?.row.publisherId === cell.row.publisherId;
                     const isSel = selCell?.meeting === mi && selCell.row === r.key;
+                    const proposed = empty ? proposals?.get(cellId(mi, r.key)) : undefined;
+                    const noOne = empty && nobody.has(cellId(mi, r.key));
                     return (
                       <Pressable
                         key={mi}
@@ -264,12 +380,19 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
                         style={[
                           styles.col,
                           styles.td,
-                          empty && !optional && !m.locked && styles.tdEmpty,
+                          empty && !optional && !m.locked && !proposed && styles.tdEmpty,
+                          proposed && styles.tdProposed,
                           m.locked && styles.tdPast,
                           isSel && styles.tdSel,
                         ]}
                       >
-                        {empty ? (
+                        {proposed ? (
+                          <Text style={styles.proposedName} numberOfLines={1}>
+                            {shortName(byId.get(proposed))}
+                          </Text>
+                        ) : noOne ? (
+                          <Text style={styles.noOne}>{t('dutiesMonth.fill.noOne')}</Text>
+                        ) : empty ? (
                           <Text style={styles.dash}>{optional ? '' : '—'}</Text>
                         ) : (
                           <View style={styles.cellRow}>
@@ -329,7 +452,19 @@ export function DutiesMonth({ canEdit, startISO }: { canEdit: boolean; startISO:
             byId={byId}
             load={load}
             absences={absQ.data}
-            pending={assignM.isPending}
+            pending={assignM.isPending || saving}
+            proposed={
+              proposals && !table.cells[selCell.meeting].get(selCell.row)!.row.publisherId
+                ? (proposals.get(cellId(selCell.meeting, selCell.row)) ?? null)
+                : undefined
+            }
+            onPropose={(publisherId) => {
+              const next = new Map(proposals ?? []);
+              const id = cellId(selCell.meeting, selCell.row);
+              if (publisherId) next.set(id, publisherId);
+              else next.delete(id);
+              setProposals(next);
+            }}
             onPick={(publisherId) =>
               assignM.mutate({
                 meeting: selMeeting,
@@ -428,9 +563,14 @@ function CellPanel({
   load,
   absences,
   pending,
+  proposed,
+  onPropose,
   onPick,
   onClose,
 }: {
+  /** While proposals are shown, the empty cell's proposal (null — none). */
+  proposed?: string | null;
+  onPropose: (publisherId: string | null) => void;
   meeting: MonthDutyMeeting;
   entry: { row: MonthDutyRow; ordinal: number };
   title: string;
@@ -443,7 +583,13 @@ function CellPanel({
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const current = entry.row.publisherId ? byId.get(entry.row.publisherId) : undefined;
+  const proposing = proposed !== undefined;
+  const current = entry.row.publisherId
+    ? byId.get(entry.row.publisherId)
+    : proposed
+      ? byId.get(proposed)
+      : undefined;
+  const choose = (id: string | null) => (proposing ? onPropose(id) : onPick(id));
   const busy = busyAt(meeting);
   const others = new Map<string, string>();
   for (const r of meeting.rows) {
@@ -451,7 +597,9 @@ function CellPanel({
       others.set(r.publisherId, dutyLabel({ ...r, id: '', congregationId: '', weekStartDate: '', eventType: 'midweek' } as never, t));
     }
   }
-  const people = candidatesFor(entry.row.capability, publishers).filter((p) => p.id !== entry.row.publisherId);
+  const people = candidatesFor(entry.row.capability, publishers).filter(
+    (p) => p.id !== entry.row.publisherId && p.id !== proposed,
+  );
   const reasonOf = (p: Publisher): string | null => {
     const a = absenceOn(absences, p.id, meeting.date);
     if (a) return t('dutiesMonth.reason.absent');
@@ -479,7 +627,7 @@ function CellPanel({
     return (
       <Pressable
         testID={`pick-${p.id}`}
-        onPress={() => onPick(p.id)}
+        onPress={() => choose(p.id)}
         disabled={pending}
         style={({ pressed }) => [styles.person, styles.personPick, reason && styles.personOff, pressed && styles.pressed]}
       >
@@ -512,10 +660,10 @@ function CellPanel({
       {current ? (
         <View style={styles.current}>
           <View style={styles.flex}>
-            <Text style={styles.currentLabel}>{t('dutiesMonth.now')}</Text>
+            <Text style={styles.currentLabel}>{proposing ? t('dutiesMonth.fill.proposal') : t('dutiesMonth.now')}</Text>
             <Text style={styles.personName}>{current.displayName}</Text>
           </View>
-          <Pressable onPress={() => onPick(null)} disabled={pending} style={styles.clear} testID="cell-clear">
+          <Pressable onPress={() => choose(null)} disabled={pending} style={styles.clear} testID="cell-clear">
             <Text style={styles.clearText}>{t('dutiesMonth.clear')}</Text>
           </Pressable>
         </View>
@@ -631,6 +779,19 @@ const styles = StyleSheet.create({
   cntZeroText: { color: '#b45309' },
   current: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f8fafc', borderRadius: 12, padding: 10, marginBottom: 4 },
   currentLabel: { fontFamily: FONT.bold, fontSize: 10.5, letterSpacing: 0.6, textTransform: 'uppercase', color: FAINT },
+  spacer: { flex: 1 },
+  fillBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#0e7490', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+  fillText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#fff' },
+  off: { opacity: 0.5 },
+  proposalBar: { backgroundColor: '#f0f9ff', borderWidth: 1, borderColor: '#bae6fd', borderRadius: 12, padding: 12, gap: 6 },
+  proposalText: { fontFamily: FONT.extrabold, fontSize: 14, color: '#0369a1' },
+  proposalHint: { fontFamily: FONT.regular, fontSize: 12.5, color: '#475569' },
+  proposalBtns: { flexDirection: 'row', gap: 8, marginTop: 2 },
+  cancelBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#cbd5e1', backgroundColor: '#fff' },
+  cancelText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#64748b' },
+  tdProposed: { backgroundColor: '#f0f9ff', borderWidth: 1, borderStyle: 'dashed', borderColor: '#7dd3fc' },
+  proposedName: { fontFamily: FONT.semibold, fontSize: 12.5, color: '#0369a1' },
+  noOne: { fontFamily: FONT.semibold, fontSize: 11, color: '#b91c1c', textAlign: 'center' },
   clear: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: '#fee2e2' },
   clearText: { fontFamily: FONT.bold, fontSize: 12.5, color: '#b91c1c' },
 });

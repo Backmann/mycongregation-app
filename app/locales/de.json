@@ -5572,6 +5572,18 @@
       "duty": "schon eingeteilt: {{place}}",
       "part": "hat einen Programmpunkt"
     },
-    "freeHere": "Bei dieser Zusammenkunft noch nicht eingeteilt: {{count}}"
+    "freeHere": "Bei dieser Zusammenkunft noch nicht eingeteilt: {{count}}",
+    "fill": {
+      "button": "Leere füllen",
+      "proposed": "Vorgeschlagen: {{count}}",
+      "nobodyCount": "niemand verfügbar: {{count}}",
+      "hint": "Die Vorschläge sind noch nicht gespeichert. Klick auf ein Feld: ersetzen oder entfernen. Niemand erhält etwas, bevor Sie „Vorschläge speichern“ tippen.",
+      "save": "Vorschläge speichern",
+      "saved": "Gespeichert: {{count}}",
+      "savedSoFar": "bis zum Fehler gespeichert: {{count}}",
+      "none": "Keine leeren Plätze, die sich füllen lassen.",
+      "noOne": "niemand",
+      "proposal": "Vorschlag"
+    }
   }
 }
