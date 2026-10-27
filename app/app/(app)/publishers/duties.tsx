@@ -20,6 +20,8 @@ import { printDutiesMonth } from '../../../lib/print-duties-month';
 import { FONT } from '../../../lib/typography';
 import { HEADER_ICON } from '../../../lib/header';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
+import { DutiesMonth } from '../../../components/duties/DutiesMonth';
+import { IdleCard } from '../../../components/duties/IdleCard';
 import { failsScreen } from '../../../lib/screen-failure';
 import { useMayOpen } from '../../../lib/useMayOpen';
 import { OPTIONAL_DUTY_TYPES } from '../../../lib/duty-count';
@@ -62,6 +64,12 @@ export default function DutiesScreen() {
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
+  // The month table wants its room: a place column, eight or nine meetings
+  // and the panel beside them (27 October 2026). Narrower windows keep the
+  // list of meetings.
+  const tableRoom = width >= 1200;
+  const [mode, setMode] = useState<'month' | 'meeting'>('month');
+  const showMonth = tableRoom && mode === 'month';
   // Reading and printing: whoever edits duties, and every elder and admin —
   // the programme screen printed duties for elders, and moving must not take
   // that away. Editing inside a sheet stays canEditDuties.
@@ -229,9 +237,26 @@ export default function DutiesScreen() {
     return out;
   });
 
+  const modeSwitch = (
+    <View style={styles.seg}>
+      {(['month', 'meeting'] as const).map((m) => (
+        <Pressable
+          key={m}
+          testID={`duties-mode-${m}`}
+          onPress={() => setMode(m)}
+          style={[styles.segItem, mode === m && styles.segOn]}
+        >
+          <Text style={[styles.segText, mode === m && styles.segTextOn]}>{t(`dutiesMonth.mode.${m}`)}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+
   const list = (
     <ScrollView style={wide ? styles.listPane : styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.column}>
+        {tableRoom ? modeSwitch : null}
+        {!wide ? <IdleCard /> : null}
         {/* Where the places themselves are kept — once, for every meeting. */}
         {mayOpen('/publishers/duty-places') ? (
           <Pressable
@@ -279,7 +304,24 @@ export default function DutiesScreen() {
             : undefined,
         }}
       />
-      {wide ? (
+      {showMonth ? (
+        <View style={styles.flex}>
+          <View style={styles.monthTop}>
+            <View style={styles.monthSwitch}>{modeSwitch}</View>
+            {mayOpen('/publishers/duty-places') ? (
+              <Pressable
+                onPress={() => router.push('/publishers/duty-places' as never)}
+                style={({ pressed }) => [styles.placesBtn, pressed && styles.pressed]}
+                testID="duty-places-door"
+              >
+                <Ionicons name="options-outline" size={17} color="#0369a1" />
+                <Text style={styles.placesBtnText}>{t('dutyPlaces.title')}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+          <DutiesMonth canEdit={perms.canEditDuties} startISO={firstMeeting?.dateISO ?? todayISO} />
+        </View>
+      ) : wide ? (
         <View style={styles.split}>
           {list}
           <View style={styles.detailPane}>
@@ -300,6 +342,26 @@ export default function DutiesScreen() {
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  monthTop: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 12 },
+  monthSwitch: { width: 280 },
+  placesBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    backgroundColor: '#fff',
+  },
+  placesBtnText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#0369a1' },
+  seg: { flexDirection: 'row', backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, padding: 3, margin: 12, marginBottom: 4 },
+  segItem: { flex: 1, alignItems: 'center', paddingVertical: 7, borderRadius: 9 },
+  segOn: { backgroundColor: '#e0f2fe' },
+  segText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#64748b' },
+  segTextOn: { color: '#0369a1' },
   screen: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { paddingBottom: 40, alignItems: 'center' },
   column: { width: '100%', maxWidth: 720, paddingTop: 8 },

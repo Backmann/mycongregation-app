@@ -21,6 +21,7 @@ import { capitalizeFirst } from '../lib/relative-time';
 import { FONT } from '../lib/typography';
 import { DutiesSection } from './DutiesSection';
 import { placeKey, virtualDuties } from '../lib/duty-places';
+import { FreeAtMeeting } from './duties/IdleCard';
 
 export type DutyMeeting = 'midweek' | 'weekend' | 'memorial';
 
@@ -150,6 +151,8 @@ export function DutiesMeetingEditor({
         </Text>
       ) : (
         <View>
+          {/* Who is still free at this meeting — for whoever fills it. */}
+          {canEdit && placeKind ? <FreeAtMeeting weekStartISO={weekStartISO} eventType={placeKind} /> : null}
           <DutiesSection
             only={meeting}
             dateLabel={dateLabel}
