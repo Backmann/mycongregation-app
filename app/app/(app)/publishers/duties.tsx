@@ -12,13 +12,14 @@ import {
   publishersApi,
   specialEventsApi,
 } from '../../../lib/api';
-import { addWeeks, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { addDays, addWeeks, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { formatDayRange } from '../../../lib/date-range';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { usePermissions } from '../../../lib/permissions';
 import { weekRules } from '../../../lib/week-rules';
 import { printDutiesMonth } from '../../../lib/print-duties-month';
 import { FONT } from '../../../lib/typography';
-import { HEADER_ICON } from '../../../lib/header';
+import { fittedHeaderTitle, HEADER_ICON } from '../../../lib/header';
 import { DutiesMeetingEditor, type DutyMeeting } from '../../../components/DutiesMeetingEditor';
 import { DutiesMonth } from '../../../components/duties/DutiesMonth';
 import { IdleCard } from '../../../components/duties/IdleCard';
@@ -31,9 +32,21 @@ import { countedPlaces } from '../../../lib/duty-places';
 const INK = '#0f172a';
 const SOFT = '#64748b';
 const LINE = '#eef2f6';
-const MEETING_DOT = '#f59e0b';
+/**
+ * Each kind of meeting in the colour and sign it wears in «Программа»
+ * (schedule/index.tsx, 25 September): the weekday takes the colour of
+ * «Сокровища», the weekend that of the public talk, the Memorial the amber
+ * of a special day.
+ */
+const KIND: Record<DutyMeeting, { color: string; bg: string; icon: keyof typeof Ionicons.glyphMap }> = {
+  midweek: { color: '#0e7490', bg: '#e0f2fe', icon: 'book-outline' },
+  weekend: { color: '#6d28d9', bg: '#ede9fe', icon: 'sunny-outline' },
+  memorial: { color: '#b45309', bg: '#fef3c7', icon: 'star-outline' },
+};
 const FIRST = 8;
 const MORE = 6;
+
+const twoIconTitle = fittedHeaderTitle(2);
 
 const atMidnight = (iso: string) => new Date(`${iso}T00:00:00`);
 
@@ -182,70 +195,122 @@ export default function DutiesScreen() {
     else router.push(`/publishers/duties-meeting?week=${week}&meeting=${meeting}` as never);
   };
 
+  // The coming weeks, one card each (27 October 2026, Lionel chose it from
+  // the mockup): every row used to look alike — the same amber dot, the same
+  // long title — and a weekday told itself from a weekend only by one word in
+  // the middle of it. A week is a pair of meetings, so it is drawn as one;
+  // each kind wears its colour and sign from «Программа».
+  type Week = { week: string; congress: string | null; meetings: Extract<Row, { kind: 'meeting' }>[] };
+  const byWeek: Week[] = [];
+  for (const r of rows) {
+    let w = byWeek[byWeek.length - 1];
+    if (!w || w.week !== r.week) {
+      w = { week: r.week, congress: null, meetings: [] };
+      byWeek.push(w);
+    }
+    if (r.kind === 'congress') w.congress = r.event;
+    else w.meetings.push(r);
+  }
+  const nextWeek = byWeek.find((w) => w.meetings.length > 0)?.week;
+
   let lastMonth = -1;
-  const items = rows.flatMap((r, i) => {
+  const items = byWeek.flatMap((w) => {
     const out: ReactNode[] = [];
-    const day = atMidnight(r.kind === 'meeting' ? r.dateISO : r.week);
-    if (i > 0 && day.getMonth() !== lastMonth) {
+    const day = atMidnight(w.meetings[0]?.dateISO ?? w.week);
+    // Every month says its name — the first one too: «28 СР» used to hang
+    // above «НОЯБРЬ» with no month of its own.
+    if (day.getMonth() !== lastMonth) {
       out.push(
-        <Text key={`m${r.week}${i}`} style={styles.label}>
+        <Text key={`m${w.week}`} style={styles.label}>
           {day.toLocaleDateString(lang, { month: 'long' })}
         </Text>,
       );
     }
     lastMonth = day.getMonth();
-    if (r.kind === 'congress') {
+    const span = formatDayRange(w.week, formatDateISO(addDays(atMidnight(w.week), 6)), lang, { month: 'short' });
+    if (w.congress) {
       out.push(
-        <View key={`c${r.week}`} style={styles.row}>
-          <View style={styles.dateCol}>
-            <Text style={styles.day}>{day.getDate()}</Text>
-          </View>
+        <View key={`c${w.week}`} style={styles.congress}>
+          <Ionicons name="people-outline" size={18} color={SOFT} />
           <View style={styles.body}>
-            <Text style={styles.titleSoft}>{t('dutiesScreen.congress', { event: r.event })}</Text>
+            <Text style={styles.congressTitle}>{t('dutiesScreen.congress', { event: w.congress })}</Text>
+            <Text style={styles.weekSpan}>{span}</Text>
           </View>
         </View>,
       );
       return out;
     }
+    const isNext = w.week === nextWeek;
+    out.push(
+      <View key={`w${w.week}`} style={[styles.week, isNext && styles.weekNext]}>
+        <View style={styles.weekHead}>
+          <Text style={styles.weekSpan}>{span}</Text>
+          {isNext ? <Text style={styles.nextTag}>{t('dutiesScreen.next')}</Text> : null}
+        </View>
+        {w.meetings.map((r, i) => meetingRow(r, i > 0, day.getMonth()))}
+      </View>,
+    );
+    return out;
+  });
+
+  function meetingRow(r: Extract<Row, { kind: 'meeting' }>, divided: boolean, sectionMonth: number) {
     const sheet = counts.get(`${r.week}|${r.meeting}`);
     const template =
       r.meeting === 'midweek' ? midPlacesQ.data?.places : r.meeting === 'weekend' ? endPlacesQ.data?.places : undefined;
     const c = sheet ?? (template ? { total: countedPlaces(template), assigned: 0 } : undefined);
-    // The count stands alone on its line here, so it starts with a capital like
-    // «Обязанности ещё не заполнены» below it; in the feed it follows a «·».
     const line =
       c && c.total > 0
         ? capitalizeFirst(t('feed.dutiesShort', { assigned: c.assigned, total: c.total }))
         : t('duties.noDuties');
+    const k = KIND[r.meeting];
+    const day = atMidnight(r.dateISO);
+    // «ср 4»; a meeting that falls into the next month says its month too.
+    const date = day
+      .toLocaleDateString(lang, {
+        weekday: 'short',
+        day: 'numeric',
+        ...(day.getMonth() !== sectionMonth ? { month: 'short' as const } : {}),
+      })
+      .replace(',', '');
     const isSel = wide && !!selected && selected.week === r.week && selected.meeting === r.meeting;
-    const dow = day.toLocaleDateString(lang, { weekday: 'short' }).replace('.', '').toUpperCase();
-    out.push(
+    return (
       <Pressable
         key={`${r.week}|${r.meeting}`}
+        testID={`duties-meeting-${r.week}-${r.meeting}`}
         onPress={() => open(r.week, r.meeting)}
-        style={({ pressed }) => [styles.row, isSel && styles.rowSelected, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.meeting, divided && styles.meetingLine, isSel && styles.rowSelected, pressed && styles.pressed]}
         accessibilityRole="button"
         accessibilityLabel={`${day.toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' })}. ${t(`eventTypes.${r.meeting}`)}. ${line}`}
       >
-        <View style={styles.dateCol}>
-          <Text style={styles.day}>{day.getDate()}</Text>
-          <Text style={styles.dow}>{dow}</Text>
+        <View style={[styles.kindIcon, { backgroundColor: k.bg }]}>
+          <Ionicons name={k.icon} size={18} color={k.color} />
         </View>
         <View style={styles.body}>
-          <View style={styles.titleRow}>
-            <View style={styles.dot} />
-            <Text style={styles.title} numberOfLines={2}>
-              {t(`eventTypes.${r.meeting}`)}
+          <View style={styles.line1}>
+            <Text style={[styles.kind, { color: k.color }]}>
+              {t(`dutiesScreen.kind.${r.meeting}`)}
             </Text>
-            {r.time ? <Text style={styles.time}>{r.time}</Text> : null}
+            <Text style={styles.date}>
+              {date}
+              {r.time ? <Text style={styles.time}>{`  ·  ${r.time}`}</Text> : null}
+            </Text>
           </View>
-          <Text style={styles.sub}>{line}</Text>
+          {c && c.total > 0 ? (
+            <Filled total={c.total} assigned={c.assigned} color={k.color} />
+          ) : (
+            <Text style={styles.sub}>{line}</Text>
+          )}
         </View>
+        {c && c.total > 0 ? (
+          <Text style={styles.count}>
+            {c.assigned}
+            <Text style={styles.countOf}>/{c.total}</Text>
+          </Text>
+        ) : null}
         <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-      </Pressable>,
+      </Pressable>
     );
-    return out;
-  });
+  }
 
   const modeSwitch = (
     <View style={styles.seg}>
@@ -267,22 +332,6 @@ export default function DutiesScreen() {
       <View style={styles.column}>
         {tableRoom ? modeSwitch : null}
         {!wide ? <IdleCard /> : null}
-        {/* Where the places themselves are kept — once, for every meeting. */}
-        {mayOpen('/publishers/duty-places') ? (
-          <Pressable
-            testID="duty-places-door"
-            onPress={() => router.push('/publishers/duty-places' as never)}
-            style={({ pressed }) => [styles.placesDoor, pressed && styles.pressed]}
-            accessibilityRole="button"
-          >
-            <Ionicons name="options-outline" size={20} color="#0369a1" />
-            <View style={styles.body}>
-              <Text style={styles.placesTitle}>{t('dutyPlaces.title')}</Text>
-              <Text style={styles.sub}>{t('dutyPlaces.door')}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-          </Pressable>
-        ) : null}
         {items}
         <Pressable
           style={({ pressed }) => [styles.more, pressed && styles.pressed]}
@@ -295,23 +344,46 @@ export default function DutiesScreen() {
     </ScrollView>
   );
 
+  const placesInHeader = !showMonth && mayOpen('/publishers/duty-places');
+
   return (
     <>
       <Stack.Screen
         options={{
-          headerRight: canPrint
-            ? () => (
-                <Pressable
-                  onPress={print}
-                  style={{ paddingHorizontal: 12 }}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('dutiesScreen.print')}
-                >
-                  <Ionicons name="print-outline" size={22} color={HEADER_ICON} />
-                </Pressable>
-              )
-            : undefined,
+          ...(canPrint && placesInHeader ? { headerTitle: twoIconTitle } : {}),
+          // «Места собрания» are set once a year: a sign in the header, not a
+          // card over the list every day (Lionel, 27 October 2026). The month
+          // table keeps its own button beside the mode switch.
+          headerRight:
+            canPrint || placesInHeader
+              ? () => (
+                  <View style={styles.headerIcons}>
+                    {placesInHeader ? (
+                      <Pressable
+                        testID="duty-places-door"
+                        onPress={() => router.push('/publishers/duty-places' as never)}
+                        style={styles.headerIcon}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('dutyPlaces.title')}
+                      >
+                        <Ionicons name="options-outline" size={22} color={HEADER_ICON} />
+                      </Pressable>
+                    ) : null}
+                    {canPrint ? (
+                      <Pressable
+                        onPress={print}
+                        style={styles.headerIcon}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('dutiesScreen.print')}
+                      >
+                        <Ionicons name="print-outline" size={22} color={HEADER_ICON} />
+                      </Pressable>
+                    ) : null}
+                  </View>
+                )
+              : undefined,
         }}
       />
       {showMonth ? (
@@ -377,7 +449,7 @@ const styles = StyleSheet.create({
   column: { width: '100%', maxWidth: 720, paddingTop: 8 },
   note: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, padding: 16 },
   split: { flex: 1, flexDirection: 'row', backgroundColor: '#ffffff' },
-  listPane: { width: 440, flexGrow: 0, borderRightWidth: 1, borderRightColor: '#e2e8f0' },
+  listPane: { width: 440, flexGrow: 0, backgroundColor: '#f1f5f9', borderRightWidth: 1, borderRightColor: '#e2e8f0' },
   detailPane: { flex: 1, backgroundColor: '#f6f8fb' },
   label: {
     paddingHorizontal: 16,
@@ -389,42 +461,64 @@ const styles = StyleSheet.create({
     color: SOFT,
     textTransform: 'uppercase',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 60,
-    borderBottomWidth: 1,
-    borderBottomColor: LINE,
-  },
   rowSelected: { backgroundColor: '#f0f9ff' },
   pressed: { backgroundColor: '#f8fafc' },
-  dateCol: { width: 48, alignItems: 'center' },
-  day: { fontSize: 24, fontFamily: FONT.extrabold, color: INK, lineHeight: 28 },
-  dow: { fontSize: 11, fontFamily: FONT.bold, color: SOFT, marginTop: 2 },
   body: { flex: 1, minWidth: 0 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: MEETING_DOT },
-  title: { flex: 1, fontSize: 15.5, fontFamily: FONT.bold, color: INK },
-  titleSoft: { fontSize: 15.5, fontFamily: FONT.semibold, color: SOFT },
-  time: { fontSize: 14, fontFamily: FONT.semibold, color: SOFT },
   sub: { fontSize: 13.5, fontFamily: FONT.medium, color: SOFT, marginTop: 3 },
-  placesDoor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    margin: 12,
-    marginBottom: 4,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderRadius: 14,
+  headerIcons: { flexDirection: 'row', alignItems: 'center' },
+  headerIcon: { paddingHorizontal: 10 },
+  week: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+    borderRadius: 16,
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#e2e8f0',
+    overflow: 'hidden',
   },
-  placesTitle: { fontSize: 15.5, fontFamily: FONT.bold, color: '#0369a1' },
+  weekNext: { borderWidth: 2, borderColor: '#0e7490' },
+  weekHead: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingTop: 9 },
+  weekSpan: { flex: 1, fontSize: 12, fontFamily: FONT.bold, color: '#94a3b8', letterSpacing: 0.2 },
+  nextTag: {
+    fontSize: 10.5,
+    fontFamily: FONT.extrabold,
+    color: '#ffffff',
+    backgroundColor: '#0e7490',
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    overflow: 'hidden',
+  },
+  meeting: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingLeft: 14, paddingRight: 10, paddingVertical: 11, minHeight: 60 },
+  meetingLine: { borderTopWidth: 1, borderTopColor: LINE },
+  kindIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  line1: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 8 },
+  kind: { fontSize: 15.5, fontFamily: FONT.extrabold },
+  date: { flexShrink: 0, fontSize: 14, fontFamily: FONT.semibold, color: '#334155' },
+  time: { fontSize: 13.5, fontFamily: FONT.medium, color: '#94a3b8' },
+  count: { fontSize: 15, fontFamily: FONT.extrabold, color: '#334155', minWidth: 34, textAlign: 'right' },
+  countOf: { fontSize: 13, fontFamily: FONT.semibold, color: '#94a3b8' },
+  bar: { flexDirection: 'row', gap: 3, marginTop: 7 },
+  tick: { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#e2e8f0' },
+  barTrack: { height: 5, borderRadius: 3, backgroundColor: '#e2e8f0', marginTop: 7, overflow: 'hidden' },
+  barFill: { height: 5, borderRadius: 3 },
+  congress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginHorizontal: 12,
+    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#cbd5e1',
+    backgroundColor: '#f8fafc',
+  },
+  congressTitle: { fontSize: 14.5, fontFamily: FONT.bold, color: '#475569' },
   more: {
     margin: 16,
     minHeight: 44,
@@ -436,3 +530,25 @@ const styles = StyleSheet.create({
   },
   moreText: { fontSize: 15, fontFamily: FONT.bold, color: '#0369a1' },
 });
+
+/**
+ * How many of a meeting's places are taken, as ticks — one per place, in the
+ * meeting's colour. Counted, not judged (20 September): no red for empty.
+ * A sheet with more places than a row has room for ticks gets one bar.
+ */
+function Filled({ total, assigned, color }: { total: number; assigned: number; color: string }) {
+  if (total > 12) {
+    return (
+      <View style={styles.barTrack}>
+        <View style={[styles.barFill, { width: `${Math.min(100, (assigned / total) * 100)}%`, backgroundColor: color }]} />
+      </View>
+    );
+  }
+  return (
+    <View style={styles.bar}>
+      {Array.from({ length: total }, (_, i) => (
+        <View key={i} style={[styles.tick, i < assigned && { backgroundColor: color }]} />
+      ))}
+    </View>
+  );
+}

@@ -57,8 +57,11 @@ export const headerTitleText = {
  * not fit is cut as before.
  */
 function NativeTitle({ children }: { children: string }) {
-  const title = String(children ?? "");
-  const room = Dimensions.get("window").width - 100;
+  return fitTitle(String(children ?? ""), 0);
+}
+
+function fitTitle(title: string, rightRoom: number) {
+  const room = Dimensions.get("window").width - 100 - rightRoom;
   const fontSize = Math.max(
     14,
     Math.min(18, Math.floor(room / Math.max(1, title.length * 0.67))),
@@ -68,10 +71,21 @@ function NativeTitle({ children }: { children: string }) {
     {
       numberOfLines: 1,
       ellipsizeMode: "tail",
-      style: { ...headerTitleText, fontSize },
+      style: { ...headerTitleText, fontSize, maxWidth: room },
     },
     title,
   );
+}
+
+/**
+ * The same fitted title for a screen with more than one sign on the right
+ * (27 October 2026: «Обязанности на встречах» got «Места собрания» beside
+ * the printer, and in German «Dienste bei Zusammenkünften» ran under them in
+ * the browser, which gives a title no bound of its own). `icons` — how many
+ * header icons stand on the right, 44 points each.
+ */
+export function fittedHeaderTitle(icons: number) {
+  return ({ children }: { children: string }) => fitTitle(String(children ?? ""), icons * 44);
 }
 
 export const headerOptions: NativeStackNavigationOptions = {
