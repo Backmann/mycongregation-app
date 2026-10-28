@@ -6041,6 +6041,11 @@ export interface ConductRun {
   /** When the first part began (16 October 2026); null in older results. */
   startedAt?: string | null;
   savedAt: string;
+  /**
+   * The last day it is kept (YYYY-MM-DD): the 4th day after the meeting, in
+   * the congregation's calendar (28 October 2026). Absent from older servers.
+   */
+  keepUntil?: string;
 }
 
 export const conductRunsApi = {
