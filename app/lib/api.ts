@@ -906,6 +906,8 @@ export interface PublisherHistoryResponse {
    */
   canMarkAuxiliary: boolean;
   timeline: PublisherHistoryEntry[];
+  /** His service year as a regular pioneer; `elders` only for elders. */
+  pioneerYear?: PioneerYearCard | null;
 }
 
 export interface GroupReportsResponse {
@@ -4933,6 +4935,56 @@ export interface MyReportStanding {
    * corrected. Absent from servers before 28 September.
    */
   closed?: boolean;
+  /** What was handed in for `reportMonth`. */
+  report?: {
+    servedThisMonth: boolean | null;
+    hoursReported: number | null;
+    bibleStudies: number;
+    submittedAt: string;
+    /** He may still correct it himself. */
+    canEdit: boolean;
+  } | null;
+  /** The form `reportMonth` wants, and the studies hint. */
+  form?: ReportFormVariant | null;
+  /** His service year when he is a regular pioneer in it — goal only. */
+  pioneerYear?: PioneerYearCard | null;
+}
+
+/** Which form a month wants — asked of the spells of THAT month (28 October 2026). */
+export interface ReportFormVariant {
+  reportMonth: string;
+  wantsHours: boolean;
+  /** Hours because of an auxiliary month. */
+  auxiliary: boolean;
+  /** Studies of the latest report before this month — offered, never filled. */
+  lastStudies: number | null;
+  lastStudiesMonth: string | null;
+  submitted: boolean;
+}
+
+/**
+ * A regular pioneer's service year, by the elders' review's own rule. The
+ * `elders` figures (560) come only to elders, admins and the secretary.
+ */
+export interface PioneerYearCard {
+  serviceYear: number;
+  goal: number;
+  pace: number;
+  hours: number;
+  countedMonths: number;
+  months: {
+    reportMonth: string;
+    state: 'reported' | 'zero' | 'missing' | 'collecting' | 'upcoming' | 'notPioneer';
+    hours: number | null;
+  }[];
+  collectingMonth: string | null;
+  elders?: {
+    yearMinimum: number;
+    expectedGoal: number | null;
+    expectedMinimum: number | null;
+    toGoal: number | null;
+    toMinimum: number | null;
+  };
 }
 
 /** Where one regular pioneer stands in the service year. */
@@ -5026,6 +5078,13 @@ export const serviceReportsApi = {
   },
   async listMy(): Promise<ServiceReport[]> {
     const { data } = await api.get<ServiceReport[]>("/service-reports/my");
+    return data;
+  },
+  /** Which form a month wants (self, or `publisherId` for whoever may file for him). */
+  async form(reportMonth: string, publisherId?: string): Promise<ReportFormVariant> {
+    const { data } = await api.get<ReportFormVariant>("/service-reports/form", {
+      params: { reportMonth: reportMonth.slice(0, 7), publisherId },
+    });
     return data;
   },
   /** The caller's own report standing for the previous month. */

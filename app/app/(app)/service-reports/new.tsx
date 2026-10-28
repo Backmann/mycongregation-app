@@ -20,7 +20,6 @@ import {
   extractErrorMessage,
   meApi,
   serviceReportsApi,
-  auxiliaryPioneersApi,
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import { LoadFailure } from '../../../components/LoadFailure';
@@ -145,16 +144,33 @@ export default function NewOrEditServiceReportScreen() {
     preFilledMonth ? toYearMonth(preFilledMonth) : recentMonths[0].value,
   );
 
-  // Whether the current user serves as an auxiliary pioneer in the selected
-  // month — if so, the report uses the hours form even without pioneerType.
-  const { data: iAmAuxThisMonth } = useQuery({
-    queryKey: ['aux-pioneers', 'mine', reportMonth],
-    queryFn: () => auxiliaryPioneersApi.mine(reportMonth),
-    enabled: !isEditMode && !isOnBehalf && !!reportMonth,
-    // Эндпоинт отвечает положением целиком; форме нужен только ответ «да/нет».
-    // Ключ запроса общий с главной, поэтому и форма кэша должна быть одна.
-    select: (s) => s.serving,
+  /**
+   * Which form THIS month wants, asked of the server (28 October 2026).
+   *
+   * The form used to judge by today's card — «is he a pioneer now» — while
+   * the server, which refuses the wrong shape, asks his spells for the month
+   * being reported. A sister who stopped pioneering in September was offered
+   * «участвовал ли» for August and then refused; a new pioneer was offered
+   * hours for the month before he began. One question, one answerer now.
+   * It also brings the studies of the latest report, offered as a hint.
+   */
+  const formQ = useQuery({
+    queryKey: ['report-form', reportMonth, isOnBehalf ? onBehalfPublisherId : 'self'],
+    queryFn: () =>
+      serviceReportsApi.form(reportMonth, isOnBehalf ? onBehalfPublisherId : undefined),
+    enabled: !isEditMode && !!reportMonth,
   });
+  const iAmAuxThisMonth = formQ.data?.auxiliary === true;
+
+  // Opening on a month already handed in showed the whole form above a dead
+  // button. Without a month named, the form opens on the first one still due.
+  const [monthChosenByHand, setMonthChosenByHand] = useState(!!preFilledMonth);
+  useEffect(() => {
+    if (monthChosenByHand || isEditMode || isOnBehalf || !myReports) return;
+    const free = recentMonths.find((m) => !submittedMonths.has(m.value));
+    if (free && free.value !== reportMonth) setReportMonth(free.value);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myReports, monthChosenByHand]);
 
   const [servedThisMonth, setServedThisMonth] = useState<boolean | null>(null);
   const [hours, setHours] = useState('');
@@ -208,11 +224,33 @@ export default function NewOrEditServiceReportScreen() {
   // - self-create: own pioneerType, or auxiliary pioneer this month.
   const isPioneer = isEditMode
     ? editingReport?.hoursReported != null
-    : isOnBehalf
-      ? onBehalfIsPioneer
-      : (myPublisher?.pioneerType != null &&
-          myPublisher.pioneerType !== 'none') ||
-        iAmAuxThisMonth === true;
+    : formQ.data
+      ? formQ.data.wantsHours
+      : isOnBehalf
+        ? onBehalfIsPioneer
+        : (myPublisher?.pioneerType != null &&
+            myPublisher.pioneerType !== 'none') ||
+          iAmAuxThisMonth;
+  /** The studies of his latest report — offered while the field is empty. */
+  const studiesHint =
+    !isEditMode && !bibleStudies && (formQ.data?.lastStudies ?? 0) > 0 && servedThisMonth !== false
+      ? {
+          n: formQ.data!.lastStudies as number,
+          month: formQ.data!.lastStudiesMonth
+            ? new Date(`${formQ.data!.lastStudiesMonth.slice(0, 7)}-01T12:00:00`).toLocaleDateString(
+                i18nInstance.language,
+                { month: 'long' },
+              )
+            : '',
+        }
+      : null;
+  /** Every month the form offers is already in — nothing to fill. */
+  const allIn =
+    !isEditMode &&
+    !isOnBehalf &&
+    !preFilledMonth &&
+    !!myReports &&
+    recentMonths.every((m) => submittedMonths.has(m.value));
 
   const submitMutation = useMutation({
     // Shown in place by this form — keep it out of the global error strip,
@@ -363,6 +401,21 @@ export default function NewOrEditServiceReportScreen() {
     );
   }
 
+  if (allIn && !submitted) {
+    return (
+      <View style={styles.doneScreen}>
+        <View style={[styles.doneMark, { backgroundColor: '#0e7490' }]}>
+          <Ionicons name="checkmark-done" size={36} color="#fff" />
+        </View>
+        <Text style={styles.doneTitle}>{t('reports.allIn.title')}</Text>
+        <Text style={styles.doneMonthPlain}>{t('reports.allIn.body')}</Text>
+        <Pressable style={styles.doneBtn} onPress={() => goBack('/service-reports')}>
+          <Text style={styles.doneBtnText}>{t('common.done')}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   const screenTitle = isEditMode
     ? t('reports.title.edit')
     : isOnBehalf
@@ -486,7 +539,11 @@ export default function NewOrEditServiceReportScreen() {
               return (
                 <Pressable
                   key={m.value}
-                  onPress={() => !isTaken && setReportMonth(m.value)}
+                  onPress={() => {
+                    if (isTaken) return;
+                    setMonthChosenByHand(true);
+                    setReportMonth(m.value);
+                  }}
                   disabled={isTaken}
                   accessibilityRole="button"
                   accessibilityState={{
@@ -564,7 +621,7 @@ export default function NewOrEditServiceReportScreen() {
                   <Ionicons
                     name="checkmark-circle-outline"
                     size={18}
-                    color={servedThisMonth === true ? '#fff' : '#64748b'}
+                    color={servedThisMonth === true ? '#0e7490' : '#64748b'}
                   />
                   <Text
                     style={[
@@ -593,7 +650,7 @@ export default function NewOrEditServiceReportScreen() {
                   <Ionicons
                     name="remove-circle-outline"
                     size={18}
-                    color={servedThisMonth === false ? '#fff' : '#64748b'}
+                    color={servedThisMonth === false ? '#334155' : '#64748b'}
                   />
                   <Text
                     style={[
@@ -652,6 +709,20 @@ export default function NewOrEditServiceReportScreen() {
                   <Ionicons name="add" size={20} color="#0f172a" />
                 </Pressable>
               </View>
+              {/* Studies run for months: last month's number, one tap away —
+                  offered, never filled in for him. */}
+              {studiesHint ? (
+                <Pressable
+                  style={styles.hintChip}
+                  onPress={() => setBibleStudies(String(studiesHint.n))}
+                  accessibilityRole="button"
+                >
+                  <Ionicons name="refresh" size={14} color="#0e7490" />
+                  <Text style={styles.hintChipText}>
+                    {t('reports.studiesLikeLast', { month: studiesHint.month, n: studiesHint.n })}
+                  </Text>
+                </Pressable>
+              ) : null}
             </>
           ) : null}
 
@@ -736,34 +807,68 @@ export default function NewOrEditServiceReportScreen() {
           </Pressable>
         ) : null}
 
-        <Pressable
-          onPress={handleSubmit}
-          disabled={!canSubmit()}
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.submitBtn,
-            !canSubmit() && styles.submitBtnDisabled,
-            pressed && canSubmit() && styles.submitBtnPressed,
-          ]}
-        >
-          {mutation.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitBtnText}>
-              {isEditMode
-                ? t('reports.updateReport')
-                : t('reports.submitForMonth', { month: monthLabel })}
-            </Text>
-          )}
-        </Pressable>
-        {reason ? <Text style={styles.blockedHint}>{reason}</Text> : null}
       </ScrollView>
+      {/* The button stays under the thumb, whatever the length of the form. */}
+      <View style={styles.footer}>
+          <Pressable
+            onPress={handleSubmit}
+            disabled={!canSubmit()}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.submitBtn,
+              !canSubmit() && styles.submitBtnDisabled,
+              pressed && canSubmit() && styles.submitBtnPressed,
+            ]}
+          >
+            {mutation.isPending ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.submitBtnText}>
+                {isEditMode
+                  ? t('reports.updateReport')
+                  : t('reports.submitForMonth', { month: monthLabel })}
+              </Text>
+            )}
+          </Pressable>
+          {reason ? <Text style={styles.blockedHint}>{reason}</Text> : null}
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 40 },
+  container: { padding: 16, paddingBottom: 24 },
+  footer: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+    backgroundColor: '#f1f5f9',
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  doneMonthPlain: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 14.5,
+    color: '#64748b',
+    marginTop: 6,
+    textAlign: 'center',
+    lineHeight: 20,
+    maxWidth: 320,
+  },
+  hintChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'center',
+    marginTop: 12,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  hintChipText: { color: '#0e7490', fontFamily: 'Manrope_700Bold', fontSize: 13 },
 
   // ---- Accepted ----
   doneScreen: {
@@ -799,8 +904,8 @@ const styles = StyleSheet.create({
   doneFigure: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#0f172a' },
   doneBtn: {
     marginTop: 28,
-    backgroundColor: '#0ea5e9',
-    borderRadius: 12,
+    backgroundColor: '#0e7490',
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 40,
   },
@@ -813,7 +918,7 @@ const styles = StyleSheet.create({
   // ---- Head ----
   headCard: {
     backgroundColor: '#fff',
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     paddingVertical: 16,
@@ -854,7 +959,7 @@ const styles = StyleSheet.create({
   // ---- Fields ----
   card: {
     backgroundColor: '#fff',
-    borderRadius: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: '#e2e8f0',
     padding: 16,
@@ -993,7 +1098,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  monthChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  monthChipActive: { backgroundColor: '#0e7490', borderColor: '#0e7490' },
   monthChipTaken: {
     backgroundColor: '#f1f5f9',
     borderColor: '#cbd5e1',
@@ -1010,23 +1115,25 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: 'row', gap: 12 },
   toggleBtn: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 16,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
+    borderRadius: 16,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
     alignItems: 'center',
+    gap: 4,
   },
-  toggleBtnYes: { backgroundColor: '#10b981', borderColor: '#10b981' },
-  toggleBtnNo: { backgroundColor: '#64748b', borderColor: '#64748b' },
-  toggleText: { fontSize: 16, fontFamily: 'Manrope_500Medium', color: '#0f172a' },
-  toggleTextActive: { color: '#fff', fontFamily: 'Manrope_700Bold',},
+  // Chosen: the brand's tint and a firm edge — one look for both answers,
+  // neither of which is «wrong».
+  toggleBtnYes: { backgroundColor: '#ecfeff', borderColor: '#0e7490' },
+  toggleBtnNo: { backgroundColor: '#f1f5f9', borderColor: '#475569' },
+  toggleText: { fontSize: 17, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  toggleTextActive: { color: '#0f172a', fontFamily: 'Manrope_800ExtraBold' },
   submitBtn: {
-    backgroundColor: '#0ea5e9',
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: '#0e7490',
+    paddingVertical: 15,
+    borderRadius: 14,
     alignItems: 'center',
-    marginTop: 24,
   },
   removeBtn: {
     flexDirection: 'row',

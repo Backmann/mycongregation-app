@@ -1,17 +1,11 @@
-import { Stack, router } from 'expo-router';
-import { headerOptions, HEADER_ICON } from '../../../lib/header';
-import { Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
+import { headerOptions } from '../../../lib/header';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from '../../../components/BackButton';
 import { screenGate } from '../../../components/ScreenGate';
-import { useMyPublisher } from '../../../lib/useMyPublisher';
 
 export default function ServiceReportsLayout() {
   const { t } = useTranslation();
-  // «+» files one's OWN report: a login with no card has nothing to file.
-  const { myPublisherId, asked } = useMyPublisher();
-  const noCard = asked.data !== undefined && !myPublisherId;
   return (
     <Stack
       screenLayout={screenGate('/service-reports')}
@@ -25,21 +19,8 @@ export default function ServiceReportsLayout() {
         options={{
           title: t('reports.title.list'),
           headerLeft: () => <BackButton fallback="/cart" toParent />,
-          // ONE button. There were six unlabelled icons here — summary,
-          // annual, attendance, feed, group, add — and two of them were people
-          // and people-in-a-circle. Every section is now a named line on the
-          // screen below, shown to whoever it belongs to; this is the one
-          // action eighty-eight people come for.
-          headerRight: () =>
-            noCard ? null : (
-            <Pressable
-              onPress={() => router.push('/service-reports/new' as any)}
-              style={{ paddingHorizontal: 8 }}
-              hitSlop={8}
-            >
-              <Ionicons name="add" size={28} color={HEADER_ICON} />
-            </Pressable>
-            ),
+          // The «+» is set by the screen itself (28 October 2026): it shows
+          // only while there is a month left to hand in.
         }}
       />
       <Stack.Screen name="new" options={{ title: t('reports.title.new') }} />

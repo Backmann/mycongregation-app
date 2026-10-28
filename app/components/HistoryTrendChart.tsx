@@ -10,92 +10,90 @@ export interface TrendPoint {
 
 interface Props {
   points: TrendPoint[];
+  /** A dashed line at this many hours — the monthly pace of a pioneer. */
+  paceLine?: number | null;
 }
 
 const CHART_HEIGHT = 130;
-const DOT = 8;
 
 /**
- * Combined trend: bible studies as bars, hours as a dotted line (dots joined by
- * thin segments). Pure Views — no chart dependency, works on web and native.
+ * Twelve months at a glance. Pure Views — no chart dependency, web and native.
  * Oldest → newest, left to right.
+ *
+ * ONE scale per chart (28 October 2026). Hours and studies used to share the
+ * height — two studies drew a bar as tall as forty-six hours, and the eye
+ * read them as the same size. Now: where there are hours, the bars are hours
+ * (with the pace as a dashed line) and the studies stand as a row of figures
+ * under the months; a publisher without hours gets his studies as the bars.
  */
-export function HistoryTrendChart({ points }: Props) {
+export function HistoryTrendChart({ points, paceLine }: Props) {
   const { t } = useTranslation();
 
-  const { maxHours, maxStudies, hasHours } = useMemo(() => {
-    let mh = 0;
-    let ms = 0;
-    let any = false;
+  const { max, hasHours } = useMemo(() => {
+    const anyHours = points.some((p) => p.hours != null);
+    let m = 0;
     for (const p of points) {
-      if (p.hours != null) {
-        any = true;
-        if (p.hours > mh) mh = p.hours;
-      }
-      if (p.studies > ms) ms = p.studies;
+      const v = anyHours ? (p.hours ?? 0) : p.studies;
+      if (v > m) m = v;
     }
-    return { maxHours: mh || 1, maxStudies: ms || 1, hasHours: any };
-  }, [points]);
+    if (anyHours && paceLine) m = Math.max(m, paceLine);
+    return { max: m || 1, hasHours: anyHours };
+  }, [points, paceLine]);
 
   if (points.length === 0) return null;
-
-  const hoursTop = (h: number | null) =>
-    h == null ? null : CHART_HEIGHT - (h / maxHours) * CHART_HEIGHT * 0.9;
+  const valueOf = (p: TrendPoint) => (hasHours ? p.hours : p.studies);
+  const heightOf = (v: number) => (v / max) * CHART_HEIGHT * 0.86;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{t('reports.publisherHistory.trendTitle')}</Text>
-
-      <View style={styles.legend}>
-        {hasHours ? (
-          <View style={styles.legendItem}>
-            <View style={styles.legendDot} />
-            <Text style={styles.legendText}>
-              {t('reports.publisherHistory.hours')}
-            </Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>
+          {hasHours
+            ? t('reports.publisherHistory.trendHours')
+            : t('reports.publisherHistory.trendStudies')}
+        </Text>
+        {/* The pace line is named up here: written on the line itself it sat
+            on top of the bars' own figures. */}
+        {hasHours && paceLine ? (
+          <View style={styles.legend}>
+            <View style={styles.legendDash} />
+            <Text style={styles.legendText}>{t('reports.publisherHistory.paceLine', { n: paceLine })}</Text>
           </View>
         ) : null}
-        <View style={styles.legendItem}>
-          <View style={styles.legendBar} />
-          <Text style={styles.legendText}>
-            {t('reports.publisherHistory.studies')}
-          </Text>
-        </View>
       </View>
-
-      <View style={styles.chart}>
+      <View style={styles.plot}>
+        {hasHours && paceLine ? (
+          <View style={[styles.pace, { bottom: heightOf(paceLine) }]} />
+        ) : null}
         {points.map((p, i) => {
-          const barH = Math.max(
-            2,
-            (p.studies / maxStudies) * CHART_HEIGHT * 0.85,
-          );
-          const dotTop = hoursTop(p.hours);
+          const v = valueOf(p);
           return (
             <View key={i} style={styles.col}>
-              {/* studies bar */}
-              <View style={[styles.bar, { height: barH }]} />
-              {/* hours dot with value */}
-              {dotTop != null ? (
-                <View
-                  style={[styles.dotWrap, { top: dotTop - DOT / 2 - 14 }]}
-                  pointerEvents="none"
-                >
-                  <Text style={styles.dotValue}>{p.hours}</Text>
-                  <View style={styles.dot} />
-                </View>
-              ) : null}
+              {v != null ? <Text style={styles.value}>{v}</Text> : null}
+              <View style={[styles.bar, { height: v ? Math.max(3, heightOf(v)) : 3 }, !v && styles.barNone]} />
             </View>
           );
         })}
       </View>
-
-      <View style={styles.labels}>
+      <View style={styles.axis}>
         {points.map((p, i) => (
-          <Text key={i} style={styles.monthLabel} numberOfLines={1}>
+          <Text key={i} style={styles.axisText}>
             {p.monthLabel}
           </Text>
         ))}
       </View>
+      {hasHours ? (
+        <>
+          <View style={styles.axis}>
+            {points.map((p, i) => (
+              <Text key={i} style={styles.studies}>
+                {p.studies}
+              </Text>
+            ))}
+          </View>
+          <Text style={styles.studiesLabel}>{t('reports.publisherHistory.studiesRow')}</Text>
+        </>
+      ) : null}
     </View>
   );
 }
@@ -103,84 +101,63 @@ export function HistoryTrendChart({ points }: Props) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    borderWidth: 0.5,
+    borderRadius: 20,
+    borderWidth: 1,
     borderColor: '#e2e8f0',
-    padding: 16,
-    marginBottom: 12,
+    padding: 18,
   },
   title: {
-    fontSize: 14,
-    color: '#0f172a',
-    fontFamily: 'Manrope_600SemiBold',
-    marginBottom: 12,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.6,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
   },
-  legend: { flexDirection: 'row', gap: 16, marginBottom: 14 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendDot: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#185FA5',
-    borderRadius: 5,
-  },
-  legendBar: {
-    width: 10,
-    height: 10,
-    backgroundColor: '#9FE1CB',
-    borderRadius: 2,
-  },
-  legendText: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
-  chart: {
+  plot: {
+    height: CHART_HEIGHT + 18,
     flexDirection: 'row',
     alignItems: 'flex-end',
-    height: CHART_HEIGHT,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-    paddingHorizontal: 4,
-  },
-  col: {
-    flex: 1,
-    height: CHART_HEIGHT,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
     position: 'relative',
   },
-  bar: {
-    width: '55%',
-    backgroundColor: '#9FE1CB',
-    borderTopLeftRadius: 3,
-    borderTopRightRadius: 3,
+  col: { flex: 1, alignItems: 'center', justifyContent: 'flex-end' },
+  value: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 11,
+    color: '#334155',
+    marginBottom: 3,
+    fontVariant: ['tabular-nums'],
   },
-  dotWrap: {
+  bar: { width: '100%', maxWidth: 34, backgroundColor: '#0e7490', borderTopLeftRadius: 6, borderTopRightRadius: 6, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
+  barNone: { backgroundColor: '#e2e8f0' },
+  pace: {
     position: 'absolute',
-    alignSelf: 'center',
-    alignItems: 'center',
-    zIndex: 2,
+    left: 0,
+    right: 0,
+    borderTopWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#94a3b8',
   },
-  dotValue: {
-    fontSize: 10,
-    color: '#185FA5',
-    fontFamily: 'Manrope_600SemiBold',
-    marginBottom: 1,
-  },
-  dot: {
-    width: DOT,
-    height: DOT,
-    borderRadius: DOT / 2,
-    backgroundColor: '#185FA5',
-    borderWidth: 1.5,
-    borderColor: '#fff',
-  },
-  labels: {
-    flexDirection: 'row',
-    paddingHorizontal: 4,
-    marginTop: 6,
-  },
-  monthLabel: {
-    fontFamily: 'Manrope_400Regular',
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  legend: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDash: { width: 18, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: '#94a3b8' },
+  legendText: { fontFamily: 'Manrope_700Bold', fontSize: 11, color: '#64748b' },
+  axis: { flexDirection: 'row', gap: 6, marginTop: 6 },
+  axisText: { flex: 1, textAlign: 'center', fontFamily: 'Manrope_600SemiBold', fontSize: 9.5, color: '#94a3b8' },
+  studies: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 11,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 11.5,
+    color: '#0f766e',
+    fontVariant: ['tabular-nums'],
+  },
+  studiesLabel: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 10.5,
     color: '#94a3b8',
+    textAlign: 'right',
+    marginTop: 2,
   },
 });

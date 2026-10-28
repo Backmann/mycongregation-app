@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { MonthPlaque, PioneerYear, cardStyles } from '../../../components/reports/ReportBits';
 import {
   ActivityIndicator,
   FlatList,
@@ -7,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -20,8 +22,6 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n, { formatMonthLabel } from '../../../lib/i18n';
-import { pioneerProgress } from '../../../lib/pioneer-goal';
-import { isActivePermanentPioneer } from '../../../lib/pioneer-status';
 import { usePermissions } from '../../../lib/permissions';
 import { confirm } from '../../../components/ConfirmHost';
 import { StatusReasonsModal } from '../../../components/StatusReasonsModal';
@@ -38,9 +38,9 @@ import { failsScreen } from '../../../lib/screen-failure';
 function shortMonthLabel(reportMonth: string): string {
   const full = formatMonthLabel(reportMonth); // "Июнь 2026"
   const parts = full.split(' ');
-  const mon = parts[0]?.slice(0, 3).toLowerCase() ?? '';
-  const yr = parts[1]?.slice(2) ?? '';
-  return `${mon} ${yr}`;
+  // The month alone: twelve bars in a row leave no room for the year, and
+  // the twelve months that ended are what the chart is about.
+  return parts[0]?.slice(0, 3).toLowerCase() ?? '';
 }
 
 function describeReport(report: NonNullable<PublisherHistoryEntry['report']>): {
@@ -283,10 +283,11 @@ function TimelineEntryCard({
     // month never handed in.
     const removed = entry.removedReport;
     return (
-      <View style={[styles.card, styles.cardEmpty]}>
+      <View style={[styles.card, styles.cardEmpty, styles.cardRow]}>
+        <MonthPlaque month={entry.reportMonth} small tone="muted" />
+        <View style={{ flex: 1 }}>
         <Text style={styles.monthLabel}>{monthLabel}</Text>
         <View style={styles.row}>
-          <View style={[styles.dot, styles.dotPending]} />
           <Text style={styles.emptyText}>
             {removed
               ? removed.removedByName
@@ -306,6 +307,7 @@ function TimelineEntryCard({
               : i18n.t('reports.publisherHistory.notSubmitted')}
           </Text>
         </View>
+        </View>
       </View>
     );
   }
@@ -316,10 +318,18 @@ function TimelineEntryCard({
   // for a name, so the card read «Подал: true». The name lives in its own
   // field; when the publisher entered it himself there is none, and the line
   // says so.
-  const submittedByName = entry.report.submittedOnBehalfOf
-    ? (entry.report.submittedByName ??
-      i18n.t('reports.publisherHistory.someoneElse'))
-    : i18n.t('reports.publisherHistory.self');
+  const when = entry.report.submittedAt
+    ? new Date(entry.report.submittedAt).toLocaleDateString(i18n.language, {
+        day: 'numeric',
+        month: 'long',
+      })
+    : null;
+  const byLine = entry.report.submittedOnBehalfOf
+    ? i18n.t('reports.publisherHistory.enteredBy', {
+        name:
+          entry.report.submittedByName ?? i18n.t('reports.publisherHistory.someoneElse'),
+      })
+    : i18n.t('reports.publisherHistory.handedInHimself');
   const editLabel =
     entry.report.lastEditedAt && entry.report.lastEditedByName
       ? i18n.t('reports.publisherHistory.editedBy', { name: entry.report.lastEditedByName })
@@ -328,13 +338,15 @@ function TimelineEntryCard({
   return (
     <Pressable
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, styles.cardRow]}
       android_ripple={{ color: '#e2e8f0' }}
     >
+      <MonthPlaque month={entry.reportMonth} small />
+      <View style={{ flex: 1 }}>
       <View style={styles.cardHeader}>
         <Text style={styles.monthLabel}>{monthLabel}</Text>
         {entry.report.canEdit && (
-          <Ionicons name="pencil-outline" size={14} color="#94a3b8" />
+          <Ionicons name="create-outline" size={15} color="#94a3b8" />
         )}
       </View>
       <View style={styles.row}>
@@ -354,15 +366,17 @@ function TimelineEntryCard({
           )}
         </Text>
       </View>
-      {entry.report.notes && (
-        <Text style={styles.notes} numberOfLines={2}>
-          “{entry.report.notes}”
+      {entry.report.notes ? (
+        // A pioneer writes his credit hours here; it is read where the month is.
+        <Text style={styles.notes} numberOfLines={3}>
+          «{entry.report.notes}»
         </Text>
-      )}
+      ) : null}
       <Text style={styles.meta}>
-        {i18n.t('reports.publisherHistory.submittedBy', { name: submittedByName })}
+        {when ? `${byLine} · ${when}` : byLine}
         {editLabel && <Text style={styles.metaEdited}>{' · ' + editLabel}</Text>}
       </Text>
+      </View>
     </Pressable>
   );
 }
@@ -473,8 +487,9 @@ export default function PublisherHistoryScreen() {
   const trendPoints = useMemo<TrendPoint[]>(() => {
     const tl = data?.timeline ?? [];
     const withReports = tl.filter((e) => e.report != null);
+    // Twelve bars at most: two years of them could not be read.
     return withReports
-      .slice()
+      .slice(0, 12)
       .reverse()
       .map((e) => ({
         monthLabel: shortMonthLabel(e.reportMonth),
@@ -488,12 +503,10 @@ export default function PublisherHistoryScreen() {
     [data, initialDisplayName, t],
   );
 
-  const progress = useMemo(() => {
-    const p = data?.publisher;
-    if (!p || !isActivePermanentPioneer(p.pioneerType, p.pioneerSince))
-      return null;
-    return pioneerProgress(p.pioneerType, p.pioneerSince, data.timeline);
-  }, [data]);
+  // Two columns from here (28 October 2026): the person on the left, the
+  // months on the right — as on the publisher's card.
+  const { width } = useWindowDimensions();
+  const wide = width >= 980;
 
   if (!publisherId) {
     return (
@@ -524,6 +537,60 @@ export default function PublisherHistoryScreen() {
       </View>
     );
   }
+
+  /** Who, his year as a pioneer, and his twelve months — the left column. */
+  const left = (
+    <View style={{ gap: 12, marginBottom: wide ? 0 : 6 }}>
+      <View style={[cardStyles.card, { marginBottom: 0 }]}>
+        <View style={styles.heroRow}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {headerTitle
+                .split(/\s+/)
+                .slice(0, 2)
+                .map((w) => w.charAt(0))
+                .join('')
+                .toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={styles.heroName} numberOfLines={2}>
+              {headerTitle}
+            </Text>
+            <View style={styles.heroChips}>
+              {/* The history is where somebody comes to work out why a person
+                  stands where he does — so the badge answers here too. */}
+              {data && (
+                <StatusBadge
+                  status={data.publisher.status}
+                  isOverridden={data.publisher.statusManuallyOverridden}
+                  onPress={
+                    canSeeStatuses && publisherId ? () => setExplain(true) : undefined
+                  }
+                />
+              )}
+              {data?.publisher.isPioneer ? (
+                <View style={styles.pioneerChip}>
+                  <Text style={styles.pioneerChipText}>{t('reports.publisherHistory.pioneerChip')}</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </View>
+        {data?.pioneerYear ? (
+          <View style={{ marginTop: 16 }}>
+            <PioneerYear year={data.pioneerYear} />
+          </View>
+        ) : null}
+      </View>
+      {trendPoints.length >= 2 ? (
+        <HistoryTrendChart
+          points={trendPoints}
+          paceLine={data?.pioneerYear ? data.pioneerYear.pace : null}
+        />
+      ) : null}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -559,33 +626,10 @@ export default function PublisherHistoryScreen() {
             : undefined,
         }}
       />
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <Text style={styles.headerName} numberOfLines={1}>
-            {headerTitle}
-            {data?.publisher.isPioneer && (
-              <Text style={styles.pioneerTag}>{t('reports.pioneerInline')}</Text>
-            )}
-          </Text>
-          {/* The history is where somebody comes to work out why a person
-              stands where he does — so the badge answers here too, not only on
-              the group screen. */}
-          {data && (
-            <StatusBadge
-              status={data.publisher.status}
-              isOverridden={data.publisher.statusManuallyOverridden}
-              onPress={
-                canSeeStatuses && publisherId
-                  ? () => setExplain(true)
-                  : undefined
-              }
-            />
-          )}
-        </View>
-        <Text style={styles.headerSub}>{t('reports.publisherHistory.last12Months')}</Text>
-      </View>
-
+      <View style={wide ? styles.columns : { flex: 1 }}>
+      {wide ? <View style={styles.leftCol}>{left}</View> : null}
       <FlatList
+        style={wide ? styles.rightCol : undefined}
         // Reading: months before this person was a publisher are noise — a man
         // who joined last autumn had a year of «отчёта нет» behind him for
         // months nobody ever asked about. FILLING: the whole window, because
@@ -594,59 +638,7 @@ export default function PublisherHistoryScreen() {
         data={visibleTimeline}
         keyExtractor={(item) => item.reportMonth}
         contentContainerStyle={{ padding: 16, gap: 10 }}
-        ListHeaderComponent={
-          <View>
-            {progress && (
-              <View style={styles.goalCard}>
-                <View style={styles.goalRow}>
-                  <Text style={styles.goalLabel}>
-                    {t('reports.pioneerGoal.title')}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.goalPace,
-                      progress.onTrack ? styles.goalOk : styles.goalBehind,
-                    ]}
-                  >
-                    {progress.onTrack
-                      ? t('reports.pioneerGoal.onTrack')
-                      : t('reports.pioneerGoal.behind')}
-                  </Text>
-                </View>
-                <View style={styles.goalBarTrack}>
-                  <View
-                    style={[
-                      styles.goalBarFill,
-                      progress.onTrack
-                        ? styles.goalBarOk
-                        : styles.goalBarBehind,
-                      {
-                        width: `${Math.min(
-                          100,
-                          progress.annualGoal > 0
-                            ? (progress.hours / progress.annualGoal) * 100
-                            : 0,
-                        )}%`,
-                      },
-                    ]}
-                  />
-                </View>
-                <Text style={styles.goalDetail}>
-                  {t('reports.pioneerGoal.detail', {
-                    hours: progress.hours,
-                    goalToDate: progress.goalToDate,
-                    annualGoal: progress.annualGoal,
-                  })}
-                </Text>
-              </View>
-            )}
-            {trendPoints.length >= 2 ? (
-              <View style={{ marginBottom: 6 }}>
-                <HistoryTrendChart points={trendPoints} />
-              </View>
-            ) : null}
-          </View>
-        }
+        ListHeaderComponent={wide ? undefined : left}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
@@ -685,9 +677,9 @@ export default function PublisherHistoryScreen() {
                         params: {
                           publisherId,
                           onBehalfName: initialDisplayName,
-                          onBehalfIsPioneer: data?.publisher.isPioneer
-                            ? '1'
-                            : '0',
+                          // The form of THAT month — the server's answer per
+                          // month, not today's card (28 October 2026).
+                          onBehalfIsPioneer: item.wantsHours ? '1' : '0',
                           reportMonth: item.reportMonth,
                           from: `/service-reports/publisher-history?publisherId=${publisherId}&displayName=${encodeURIComponent(
                             initialDisplayName,
@@ -710,6 +702,7 @@ export default function PublisherHistoryScreen() {
           )
         }
       />
+      </View>
       {filling ? (
         <View style={styles.fillBar}>
           <Text style={styles.fillHint} numberOfLines={2}>
@@ -923,11 +916,29 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 16,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
+  cardRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  avatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#0e7490',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 21, color: '#fff' },
+  heroName: { fontFamily: 'Manrope_800ExtraBold', fontSize: 22, color: '#0f172a', letterSpacing: -0.2 },
+  heroChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' },
+  pioneerChip: { backgroundColor: '#e0f2fe', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  pioneerChipText: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: '#0369a1' },
+  columns: { flex: 1, flexDirection: 'row', gap: 4, paddingLeft: 16 },
+  leftCol: { flexGrow: 5, flexShrink: 1, flexBasis: 0, minWidth: 0, paddingTop: 16 },
+  rightCol: { flexGrow: 6, flexShrink: 1, flexBasis: 0, minWidth: 0 },
   cardEmpty: { borderStyle: 'dashed', backgroundColor: '#f8fafc' },
   cardHeader: {
     flexDirection: 'row',
@@ -949,6 +960,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#475569',
     marginTop: 6,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    alignSelf: 'flex-start',
   },
   meta: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8', marginTop: 6 },
   metaEdited: { color: '#0ea5e9' },

@@ -628,8 +628,6 @@
       "daysLeft_other": "{{count}} days left",
       "lastDays": "Last days: the month closes on {{date}}",
       "missed": "The month has closed — ask the secretary",
-      "doneEditable": "Submitted. You can change it until {{date}}",
-      "doneClosed": "Submitted; the month has closed",
       "submit": "Submit report",
       "change": "Change",
       "myMonths": "My months",
@@ -659,7 +657,7 @@
     "submittingOnBehalfOf": "Submitting on behalf of",
     "publisher": "publisher",
     "reportMonth": "Report month",
-    "alreadySubmitted": "Already submitted. Go back and tap the pencil icon to edit.",
+    "alreadySubmitted": "The report for this month is already submitted. You can correct it under “Reports” while the month is open — after that, through your group overseer.",
     "hoursLabel": "Hours in ministry",
     "didTheyShare": "Did they share in the ministry this month?",
     "didYouShare": "Did you share in the ministry this month?",
@@ -670,7 +668,7 @@
     "updateReport": "Update report",
     "alerts": {
       "alreadySubmittedTitle": "Already submitted",
-      "alreadySubmittedBody": "A report for {{month}} already exists. Go back and tap the pencil icon to edit it.",
+      "alreadySubmittedBody": "The report for {{month}} is already submitted. You can correct it under “Reports” while the month is open — after that, through your group overseer.",
       "validationTitle": "Check your entry",
       "validationHours": "Please enter valid hours (0–744).",
       "validationServedOnBehalf": "Please indicate whether they served this month.",
@@ -709,21 +707,16 @@
       "notSubmitted": "Not submitted",
       "noPublisherId": "Open the history from the group reports — this screen does not know which publisher to show.",
       "fallbackName": "Publisher",
-      "last12Months": "Last 12 months",
       "noHistory": "No history",
-      "self": "(self)",
       "someoneElse": "someone else",
-      "submittedBy": "Submitted by {{name}}",
       "editedBy": "edited by {{name}}",
-      "trendTitle": "Service trend",
-      "hours": "Hours",
-      "studies": "Studies"
-    },
-    "pioneerGoal": {
-      "title": "Hour goal (year)",
-      "onTrack": "On track",
-      "behind": "Behind",
-      "detail": "{{hours}} h of {{goalToDate}} h by this month · annual goal {{annualGoal}} h"
+      "pioneerChip": "Regular pioneer",
+      "enteredBy": "Entered by {{name}}",
+      "handedInHimself": "Submitted in person",
+      "trendHours": "12 months · hours",
+      "trendStudies": "12 months · Bible studies",
+      "paceLine": "pace {{n}} h",
+      "studiesRow": "Bible studies"
     },
     "collection": {
       "title": "Reports for {{month}}",
@@ -766,7 +759,38 @@
     "studiesMinus": "One study fewer",
     "studiesPlus": "One study more",
     "submitForMonth": "Submit the report for {{month}}",
-    "alreadySubmittedFor": "The report for {{month}} has already been submitted. It may have been entered on another device, or by an elder. The list of months has been refreshed."
+    "alreadySubmittedFor": "The report for {{month}} has already been submitted. It may have been entered on another device, or by an elder. The list of months has been refreshed.",
+    "studiesLikeLast": "Same as last time ({{month}}): {{n}}",
+    "hero": {
+      "notIn": "● Not submitted",
+      "until_one": "until {{date}} · {{count}} day",
+      "until_other": "until {{date}} · {{count}} days",
+      "in": "✓ Submitted",
+      "inOn": "✓ Submitted on {{date}}",
+      "hours": "hours",
+      "shared": "shared in the ministry",
+      "studies": "Bible studies",
+      "correctUntil": "Correct · until {{date}}",
+      "correctByOverseer": "Your group overseer can correct the report now.",
+      "noStudies": "no Bible studies",
+      "noCard": "Your login is not linked to a publisher card, so there are no months of your own here. An administrator can link them: “Congregation” → “Publishers” → card → “App access”."
+    },
+    "year": {
+      "title": "Service year {{from}}/{{to}}",
+      "h": "{{n}} h",
+      "hoursYear": "hours this year",
+      "goal": "year goal",
+      "left": "to go",
+      "paceLine": "Each division is a month; full at {{n}} h, the usual pace.",
+      "hoursIn": "this year · {{n}} mo.",
+      "paceGoal": "goal pace {{n}}",
+      "paceMinimum": "minimum pace {{n}}",
+      "eldersLine": "{{min}} h short of the minimum’s pace, {{goal}} h short of the goal’s."
+    },
+    "allIn": {
+      "title": "All reports are submitted",
+      "body": "There is nothing to submit for the recent months. A submitted report can be corrected under “Reports” while the month is open."
+    }
   },
   "serviceGroups": {
     "title": {
@@ -4479,7 +4503,8 @@
     "studies": "studies: {{count}}",
     "toMinimumOwn": "For {{months}} months of service the minimum is {{expected}} h: {{count}} h short",
     "meetsOwn": "For {{months}} months of service the minimum of {{expected}} h is met",
-    "yearLeftOwn": "{{count}} h left to his requirement for the year ({{total}} h) — {{perMonth}} a month"
+    "yearLeftOwn": "{{count}} h left to his requirement for the year ({{total}} h) — {{perMonth}} a month",
+    "noHoursYet": "Reports are in, with no hours yet"
   },
   "memorial": {
     "title": "Memorial",

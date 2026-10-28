@@ -1,17 +1,31 @@
+import { useLayoutEffect } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
+import { HEADER_ICON } from '../../../lib/header';
+import {
+  BRAND,
+  Chip,
+  INK,
+  LINE,
+  MUTED,
+  MonthPlaque,
+  PioneerYear,
+  Tile,
+  cardStyles,
+} from '../../../components/reports/ReportBits';
 import {
   extractErrorMessage,
+  MyReportStanding,
   ServiceReport,
   serviceGroupsApi,
   serviceReportsApi,
@@ -45,91 +59,163 @@ function formatEditedTime(iso: string): string {
 /**
  * The way into the section, and the one card most of the congregation needs.
  *
- * Eighty-eight people come here to hand in one report. They used to meet a
- * list of their own past months and a row of SIX unlabelled icons in the
- * header — two of which were people, and people-in-a-circle. Everything the
- * elders reach for is now a named line on the page, in plain words, shown only
- * to those it belongs to; the header keeps the plus and nothing else.
- *
- * Above all of it stands this month: whether it is handed in, and how long
- * there is. The line CALLS rather than permits — «месяц закончился, можно
- * сдавать», then a count of days, and only at the end the date itself. Said
- * the other way round, a deadline three weeks off reads as permission to
- * forget.
+ * Eighty-eight people come here to hand in one report. Above everything
+ * stands this month (rebuilt 28 October 2026 in the look of the publisher's
+ * card): a month plaque, its state as a chip, and ONE action — «Сдать отчёт»
+ * while it is due, a quiet «Исправить» while he may still correct it, and
+ * plain words when he no longer may. The line CALLS rather than permits:
+ * a deadline three weeks off said as a date reads as permission to forget.
  */
-function MonthCard() {
+function MonthCard({ standing }: { standing: MyReportStanding | undefined }) {
   const { t } = useTranslation();
-  const { data } = useQuery({
-    queryKey: ['my-report-standing'],
-    queryFn: () => serviceReportsApi.myStanding(),
-  });
+  const data = standing;
   if (!data?.applicable || !data.reportMonth) return null;
 
   const days = data.daysLeft;
   // Two different ends (28 September): the last day to CORRECT a filed
   // report is `closesOn`; a missing one is still taken after it, until the
-  // secretary closes the month. The screen used to treat the date as the
-  // closing and said «обратитесь к секретарю» while the report could still
-  // simply be handed in — and the Home screen said the opposite.
+  // secretary closes the month.
   const pastDeadline = days !== null && days < 0;
   const closed = data.closed === true;
-  const monthLabel = formatMonthLabel(data.reportMonth);
   const closesLabel = data.closesOn
     ? new Date(`${data.closesOn}T12:00:00`).toLocaleDateString(i18n.language, {
         day: 'numeric',
         month: 'long',
       })
     : '';
+  const monthName = new Date(`${data.reportMonth.slice(0, 7)}-01T12:00:00`)
+    .toLocaleDateString(i18n.language, { month: 'long' });
+  const mine = data.report ?? null;
+  const canEdit = mine ? mine.canEdit : !pastDeadline && !closed;
 
+  const due = !data.submitted;
   const call = data.submitted
-    ? closed || pastDeadline
-      ? t('reports.entry.doneClosed')
-      : t('reports.entry.doneEditable', { date: closesLabel })
+    ? null
     : closed
       ? t('reports.entry.missed')
       : pastDeadline
         ? t('reports.entry.late', { date: closesLabel })
         : days !== null && days <= 4
-        ? t('reports.entry.lastDays', { date: closesLabel })
-        : days !== null && days <= 11
-          ? t('reports.entry.daysLeft', { count: days })
-          : t('reports.entry.open');
+          ? t('reports.entry.lastDays', { date: closesLabel })
+          : days !== null && days <= 11
+            ? t('reports.entry.daysLeft', { count: days })
+            : t('reports.entry.open');
 
   return (
-    <View style={[styles.monthCard, data.submitted && styles.monthCardDone]}>
-      <Text style={styles.monthKicker}>{t('reports.entry.myReport')}</Text>
-      <Text style={styles.monthBig}>{monthLabel}</Text>
-      <Text
-        style={[
-          styles.monthCall,
-          !data.submitted && !closed && days !== null && days <= 4
-            ? styles.monthCallUrgent
-            : null,
-        ]}
-      >
-        {call}
-      </Text>
-      {/* Hand in while the month is open; correct only until the deadline. */}
-      {!closed && !(data.submitted && pastDeadline) ? (
-        <Pressable
-          style={styles.monthBtn}
-          onPress={() =>
-            router.push(
-              data.submitted && data.reportId
-                ? (`/service-reports/new?id=${data.reportId}` as any)
-                : ('/service-reports/new' as any),
-            )
-          }
-        >
-          <Text style={styles.monthBtnText}>
-            {data.submitted
-              ? t('reports.entry.change')
-              : t('reports.entry.submit')}
-          </Text>
-        </Pressable>
-      ) : null}
+    <View style={[cardStyles.card, due ? cardStyles.due : cardStyles.done]}>
+      <View style={styles.heroTop}>
+        <MonthPlaque month={data.reportMonth} tone={due ? 'due' : 'done'} />
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={styles.kicker}>{t('reports.entry.myReport')}</Text>
+          <Text style={styles.heroTitle}>{capitalise(monthName)}</Text>
+          <View style={styles.chips}>
+            {due ? (
+              <>
+                <Chip tone="amber" text={t('reports.hero.notIn')} />
+                {data.closesOn && !pastDeadline && !closed ? (
+                  <Chip
+                    tone="grey"
+                    text={t('reports.hero.until', { date: closesLabel, count: Math.max(0, days ?? 0) })}
+                  />
+                ) : null}
+              </>
+            ) : (
+              <Chip
+                tone="green"
+                text={
+                  mine
+                    ? t('reports.hero.inOn', {
+                        date: new Date(mine.submittedAt).toLocaleDateString(i18n.language, {
+                          day: 'numeric',
+                          month: 'long',
+                        }),
+                      })
+                    : t('reports.hero.in')
+                }
+              />
+            )}
+          </View>
+        </View>
+      </View>
+
+      {due ? (
+        <>
+          {call ? (
+            <Text
+              style={[
+                styles.call,
+                !closed && days !== null && days <= 4 ? styles.callUrgent : null,
+              ]}
+            >
+              {call}
+            </Text>
+          ) : null}
+          {!closed ? (
+            <Pressable
+              style={styles.primary}
+              accessibilityRole="button"
+              onPress={() =>
+                router.push(`/service-reports/new?reportMonth=${data.reportMonth}` as any)
+              }
+            >
+              <Text style={styles.primaryText}>{t('reports.entry.submit')}</Text>
+            </Pressable>
+          ) : null}
+        </>
+      ) : (
+        <>
+          {mine ? (
+            <View style={styles.tiles}>
+              {mine.hoursReported !== null ? (
+                <Tile value={t('reports.hoursShort', { count: mine.hoursReported })} label={t('reports.hero.hours')} />
+              ) : (
+                <Tile
+                  value={mine.servedThisMonth ? t('common.yes') : t('common.no')}
+                  label={t('reports.hero.shared')}
+                />
+              )}
+              <Tile value={String(mine.bibleStudies)} label={t('reports.hero.studies')} />
+            </View>
+          ) : null}
+          {canEdit && data.reportId ? (
+            <Pressable
+              style={styles.soft}
+              accessibilityRole="button"
+              onPress={() => router.push(`/service-reports/new?id=${data.reportId}` as any)}
+            >
+              <Ionicons name="create-outline" size={15} color={BRAND} />
+              <Text style={styles.softText}>
+                {data.closesOn
+                  ? t('reports.hero.correctUntil', { date: closesLabel })
+                  : t('reports.entry.change')}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text style={styles.call}>{t('reports.hero.correctByOverseer')}</Text>
+          )}
+        </>
+      )}
     </View>
   );
+}
+
+function capitalise(s: string): string {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+/** The last three ended months — the ones the form offers. */
+function recentMonths(): string[] {
+  const now = new Date();
+  return [1, 2, 3].map((i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  });
+}
+
+/** «2026/27» for a YYYY-MM month — September opens the next year. */
+function serviceYearOf(month: string): number {
+  const y = Number(month.slice(0, 4));
+  return Number(month.slice(5, 7)) >= 9 ? y + 1 : y;
 }
 
 function SectionRow({
@@ -178,6 +264,33 @@ export default function ServiceReportsListScreen() {
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
   });
+  const standingQ = useQuery({
+    queryKey: ['my-report-standing'],
+    queryFn: () => serviceReportsApi.myStanding(),
+  });
+  const navigation = useNavigation();
+  const noCardYet =
+    (error as { response?: { data?: { code?: string } } } | null)?.response?.data?.code ===
+    'NO_OWN_CARD';
+  // «+» only while one of the months the form offers is still to hand in.
+  const handedIn = new Set((data ?? []).map((r) => r.reportMonth.slice(0, 7)));
+  const somethingToFile = !!data && !noCardYet && recentMonths().some((m) => !handedIn.has(m));
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: somethingToFile
+        ? () => (
+            <Pressable
+              onPress={() => router.push('/service-reports/new' as any)}
+              style={{ paddingHorizontal: 8 }}
+              hitSlop={8}
+              accessibilityLabel={t('reports.title.new')}
+            >
+              <Ionicons name="add" size={28} color={HEADER_ICON} />
+            </Pressable>
+          )
+        : undefined,
+    });
+  }, [navigation, somethingToFile, t]);
   // A section line that says its own number answers the question before it is
   // opened, and half the visits here stop being necessary. Only ONE extra
   // request, and one the app already makes elsewhere: «сдали столько-то из
@@ -238,143 +351,154 @@ export default function ServiceReportsListScreen() {
     (a, b) => b.reportMonth.localeCompare(a.reportMonth),
   );
 
+  // Grouped by service year, the newest first — the year is how reports are
+  // read everywhere else (the S-21 card, the annual report).
+  const byYear = new Map<number, ServiceReport[]>();
+  for (const r of reports) {
+    const y = serviceYearOf(r.reportMonth);
+    byYear.set(y, [...(byYear.get(y) ?? []), r]);
+  }
+  const years = [...byYear.keys()].sort((a, b) => b - a);
+
   return (
     <View style={styles.container}>
-      <FlatList
-        data={reports}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 32 }}
+      <ScrollView
+        contentContainerStyle={styles.content}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => {
+              void refetch();
+              void standingQ.refetch();
+            }}
+          />
         }
-        ListHeaderComponent={
-          <View>
-            <MonthCard />
-            {canViewGroupReports ? (
-              <SectionRow
-                icon="people-outline"
-                label={t('reports.title.group')}
-                value={
-                  collection.data
-                    ? t('reports.entry.collected', {
-                        received: collection.data.received,
-                        expected: collection.data.expected,
-                        month: formatMonthLabel(collection.data.reportMonth),
-                      })
-                    : undefined
-                }
-                onPress={() =>
-                  router.push('/service-reports/group' as any)
-                }
-              />
-            ) : null}
-            {/* The attendance sheet is for the elders and for those who
-                count at the meeting — not a publisher's errand. */}
-            {mayOpen('/service-reports/attendance') ? (
-              <SectionRow
-                icon="people-circle-outline"
-                label={t('attendance.pageTitle')}
-                onPress={() =>
-                  router.push('/service-reports/attendance' as any)
-                }
-              />
-            ) : null}
-            {mayOpen('/service-reports/summary') ? (
-              <SectionRow
-                icon="stats-chart-outline"
-                label={t('reports.summary.title')}
-                onPress={() => router.push('/service-reports/summary' as any)}
-              />
-            ) : null}
-            {/* The annual report stays the secretary's. */}
-            {mayOpen('/service-reports/annual') ? (
-              <>
-                <SectionRow
-                  icon="clipboard-outline"
-                  label={t('annualReport.pageTitle')}
-                  // No request for this one: which service year we are in is
-                  // arithmetic, and September starts the next.
-                  value={t('reports.entry.serviceYear', {
-                    from: annualYear,
-                    to: annualYear + 1,
-                  })}
-                  onPress={() =>
-                    router.push('/service-reports/annual' as any)
-                  }
-                />
-              </>
-            ) : null}
-            {mayOpen('/service-reports/activity') ? (
-              <SectionRow
-                icon="pulse-outline"
-                label={t('reports.title.activity')}
-                onPress={() =>
-                  router.push('/service-reports/activity' as any)
-                }
-              />
-            ) : null}
-            {noCard ? (
-              <View style={[styles.errorBox, { marginTop: 16 }]}>
-                <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
-              </View>
-            ) : (
-              <Text style={styles.listHeading}>{t('reports.entry.myMonths')}</Text>
-            )}
+      >
+        <MonthCard standing={standingQ.data} />
+        {standingQ.data?.pioneerYear ? (
+          <View style={cardStyles.card}>
+            <PioneerYear year={standingQ.data.pioneerYear} />
           </View>
-        }
-        ListEmptyComponent={
-          noCard ? null : (
+        ) : null}
+
+        {canViewGroupReports ? (
+          <SectionRow
+            icon="people-outline"
+            label={t('reports.title.group')}
+            value={
+              collection.data
+                ? t('reports.entry.collected', {
+                    received: collection.data.received,
+                    expected: collection.data.expected,
+                    month: formatMonthLabel(collection.data.reportMonth),
+                  })
+                : undefined
+            }
+            onPress={() => router.push('/service-reports/group' as any)}
+          />
+        ) : null}
+        {/* The attendance sheet is for the elders and for those who
+            count at the meeting — not a publisher's errand. */}
+        {mayOpen('/service-reports/attendance') ? (
+          <SectionRow
+            icon="people-circle-outline"
+            label={t('attendance.pageTitle')}
+            onPress={() => router.push('/service-reports/attendance' as any)}
+          />
+        ) : null}
+        {mayOpen('/service-reports/summary') ? (
+          <SectionRow
+            icon="stats-chart-outline"
+            label={t('reports.summary.title')}
+            onPress={() => router.push('/service-reports/summary' as any)}
+          />
+        ) : null}
+        {/* The annual report stays the secretary's. */}
+        {mayOpen('/service-reports/annual') ? (
+          <SectionRow
+            icon="clipboard-outline"
+            label={t('annualReport.pageTitle')}
+            // No request for this one: which service year we are in is
+            // arithmetic, and September starts the next.
+            value={t('reports.entry.serviceYear', {
+              from: annualYear,
+              to: annualYear + 1,
+            })}
+            onPress={() => router.push('/service-reports/annual' as any)}
+          />
+        ) : null}
+        {mayOpen('/service-reports/activity') ? (
+          <SectionRow
+            icon="pulse-outline"
+            label={t('reports.title.activity')}
+            onPress={() => router.push('/service-reports/activity' as any)}
+          />
+        ) : null}
+
+        {noCard ? (
+          // An administrator's login with no card of its own: an ordinary
+          // state, said quietly (it was a red error box).
+          <Text style={styles.noCard}>{t('reports.hero.noCard')}</Text>
+        ) : reports.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="document-text-outline" size={64} color="#cbd5e1" />
+            <Ionicons name="document-text-outline" size={56} color="#cbd5e1" />
             <Text style={styles.emptyTitle}>{t('reports.noReports')}</Text>
-            <Text style={styles.emptySubtitle}>
-              {t('reports.noReportsHint')}
-            </Text>
+            <Text style={styles.emptySubtitle}>{t('reports.noReportsHint')}</Text>
           </View>
-          )
-        }
-        renderItem={({ item }) => <ReportRow report={item} />}
-      />
+        ) : (
+          years.map((y, i) => (
+            <View key={y}>
+              <View style={styles.sectHead}>
+                <Text style={styles.kicker}>{i === 0 ? t('reports.entry.myMonths') : ''}</Text>
+                <Text style={styles.sectYear}>{`${y - 1}/${String(y).slice(2)}`}</Text>
+              </View>
+              {byYear.get(y)!.map((r) => (
+                <ReportRow key={r.id} report={r} />
+              ))}
+            </View>
+          ))
+        )}
+      </ScrollView>
     </View>
   );
 }
 
 function ReportRow({ report }: { report: ServiceReport }) {
+  const shared = report.hoursReported !== null ? (report.hoursReported ?? 0) > 0 : !!report.servedThisMonth;
   return (
     <View style={styles.row}>
+      <MonthPlaque month={report.reportMonth} small />
       <View style={{ flex: 1 }}>
-        <Text style={styles.month}>{formatMonthLabel(report.reportMonth)}</Text>
-        <View style={styles.statsRow}>
-          <Text style={styles.statPrimary}>{formatActivity(report)}</Text>
-          {report.bibleStudies > 0 && (
-            <Text style={styles.statSecondary}>
-              {i18n.t('reports.studies', { count: report.bibleStudies })}
-            </Text>
-          )}
-        </View>
-        {report.notes && (
+        <Text style={styles.rowTitle}>{formatActivity(report)}</Text>
+        <Text style={styles.rowSub}>
+          {report.bibleStudies > 0
+            ? i18n.t('reports.studies', { count: report.bibleStudies })
+            : i18n.t('reports.hero.noStudies')}
+        </Text>
+        {report.notes ? (
           <Text style={styles.notes} numberOfLines={2}>
             {report.notes}
           </Text>
-        )}
-        {report.lastEditedAt && (
+        ) : null}
+        {report.lastEditedAt ? (
           <Text style={styles.editInfo}>
             {report.lastEditedByName
               ? i18n.t('reports.editedAtBy', { when: formatEditedTime(report.lastEditedAt), name: report.lastEditedByName })
               : i18n.t('reports.editedAt', { when: formatEditedTime(report.lastEditedAt) })}
           </Text>
-        )}
+        ) : null}
       </View>
-      {report.canEdit && (
+      {report.canEdit ? (
         <Pressable
-          onPress={() =>
-            router.push(`/service-reports/new?id=${report.id}` as any)
-          }
+          onPress={() => router.push(`/service-reports/new?id=${report.id}` as any)}
           style={styles.editBtn}
           hitSlop={8}
+          accessibilityLabel={i18n.t('reports.entry.change')}
         >
-          <Ionicons name="pencil" size={20} color="#0ea5e9" />
+          <Ionicons name="create-outline" size={19} color={BRAND} />
         </Pressable>
+      ) : (
+        <View style={[styles.dot, !shared && styles.dotOff]} />
       )}
     </View>
   );
@@ -382,105 +506,88 @@ function ReportRow({ report }: { report: ServiceReport }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  monthCard: {
-    backgroundColor: '#fff',
-    margin: 12,
-    marginBottom: 8,
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  monthCardDone: { borderColor: '#bbf7d0', backgroundColor: '#f7fefa' },
-  monthKicker: {
+  content: { padding: 14, paddingBottom: 40 },
+  heroTop: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  kicker: {
     fontSize: 11,
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: '#94a3b8',
-    fontFamily: 'Manrope_700Bold',
-  },
-  monthBig: {
-    fontSize: 20,
-    marginTop: 2,
-    color: '#0f172a',
     fontFamily: 'Manrope_800ExtraBold',
   },
-  monthCall: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 4, lineHeight: 19 },
-  monthCallUrgent: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
-  monthBtn: {
-    marginTop: 12,
-    backgroundColor: '#0e7490',
-    borderRadius: 10,
-    paddingVertical: 11,
+  heroTitle: { fontSize: 22, color: INK, fontFamily: 'Manrope_800ExtraBold', letterSpacing: -0.2 },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  call: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 12, lineHeight: 19 },
+  callUrgent: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
+  primary: {
+    marginTop: 14,
+    backgroundColor: BRAND,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: 'center',
   },
-  monthBtnText: {
-    color: '#fff',
-    fontSize: 15,
-    fontFamily: 'Manrope_700Bold',
+  primaryText: { color: '#fff', fontSize: 15.5, fontFamily: 'Manrope_800ExtraBold' },
+  tiles: { flexDirection: 'row', gap: 8, marginTop: 14 },
+  soft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginTop: 12,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
   },
+  softText: { color: BRAND, fontFamily: 'Manrope_800ExtraBold', fontSize: 13.5 },
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     backgroundColor: '#fff',
-    marginHorizontal: 12,
-    marginBottom: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderRadius: 12,
+    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: LINE,
   },
-  sectionValue: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 1 },
-  sectionLabel: {
-    fontSize: 15,
-    color: '#0f172a',
-    fontFamily: 'Manrope_600SemiBold',
+  sectionValue: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: MUTED, marginTop: 1 },
+  sectionLabel: { fontSize: 15, color: INK, fontFamily: 'Manrope_600SemiBold' },
+  sectHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 9,
+    paddingHorizontal: 4,
   },
-  listHeading: {
-    fontSize: 11,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-    color: '#94a3b8',
-    fontFamily: 'Manrope_700Bold',
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 6,
-  },
+  sectYear: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: '#94a3b8' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    gap: 12,
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderWidth: 1,
+    borderColor: LINE,
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
   },
-  editBtn: { marginLeft: 12, padding: 8 },
-  month: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  statsRow: { flexDirection: 'row', gap: 12, marginTop: 6, flexWrap: 'wrap' },
-  statPrimary: { fontSize: 13, color: '#0ea5e9', fontFamily: 'Manrope_600SemiBold',},
-  statSecondary: { fontSize: 13, color: '#64748b', fontFamily: 'Manrope_500Medium',},
-  editInfo: {
-    fontFamily: 'Manrope_400Regular',
-    fontSize: 11,
-    color: '#94a3b8',
-    marginTop: 6,
-  },
-  notes: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 },
-  emptyState: {
-    alignItems: 'center',
-    paddingTop: 80,
-    paddingHorizontal: 32,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: 'Manrope_600SemiBold',
-    color: '#475569',
-    marginTop: 16,
-  },
+  rowTitle: { fontSize: 14.5, fontFamily: 'Manrope_700Bold', color: INK },
+  rowSub: { fontSize: 12.5, fontFamily: 'Manrope_400Regular', color: MUTED, marginTop: 2 },
+  dot: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#10b981', marginRight: 4 },
+  dotOff: { backgroundColor: '#cbd5e1' },
+  editBtn: { padding: 6 },
+  editInfo: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#94a3b8', marginTop: 4 },
+  notes: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#475569', marginTop: 4, lineHeight: 17 },
+  noCard: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8', marginTop: 16, paddingHorizontal: 4, lineHeight: 18 },
+  emptyState: { alignItems: 'center', paddingTop: 48, paddingHorizontal: 32 },
+  emptyTitle: { fontSize: 17, fontFamily: 'Manrope_600SemiBold', color: '#475569', marginTop: 14 },
   emptySubtitle: {
     fontFamily: 'Manrope_400Regular',
     fontSize: 14,
