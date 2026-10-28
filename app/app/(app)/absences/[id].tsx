@@ -107,7 +107,7 @@ export default function AbsenceDetailScreen() {
   if (editing) {
     return (
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}
         keyboardShouldPersistTaps="handled"
       >
         <AbsenceForm
@@ -129,7 +129,7 @@ export default function AbsenceDetailScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}>
       <Text style={styles.name}>{data.publisher?.displayName ?? "—"}</Text>
       {removed ? (
         <Text style={styles.removedBadge}>{t("absences.deleted")}</Text>

@@ -61,6 +61,17 @@ interface Props {
    * is chosen seeing them, not blind.
    */
   marks?: Record<string, 'meeting' | 'taken' | 'busy'>;
+  /**
+   * Months after `start` (or today) to open on — the second of two calendars
+   * side by side opens on the month after the first (28 October 2026).
+   */
+  monthOffset?: number;
+  /**
+   * Draw the choice only on the days of the month shown — with two months
+   * side by side the spill-over days of one are the real days of the other,
+   * and a day marked in both reads as two days.
+   */
+  ownMonthOnly?: boolean;
 }
 
 const MARK_COLOR = { meeting: '#0ea5e9', taken: '#dc2626', busy: '#d97706' } as const;
@@ -76,12 +87,14 @@ export function MonthCalendar({
   hidePresets,
   minDate,
   marks,
+  monthOffset = 0,
+  ownMonthOnly = false,
 }: Props) {
   const { t } = useTranslation();
   const todayISO = toISO(new Date());
   const [viewMonth, setViewMonth] = useState<Date>(() => {
     const base = start ? fromISO(start) : new Date();
-    return new Date(base.getFullYear(), base.getMonth(), 1);
+    return new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
   });
 
   const weekdays = useMemo(() => {
@@ -222,8 +235,9 @@ export function MonthCalendar({
           {cells.slice(w * 7, w * 7 + 7).map((d, i) => {
             const iso = toISO(d);
             const otherMonth = d.getMonth() !== viewMonth.getMonth();
-            const selected = isStart(iso) || isEnd(iso);
-            const between = inRange(iso);
+            const hideChoice = ownMonthOnly && otherMonth;
+            const selected = !hideChoice && (isStart(iso) || isEnd(iso));
+            const between = !hideChoice && inRange(iso);
             const isToday = iso === todayISO;
             const off = tooEarly(iso);
             return (

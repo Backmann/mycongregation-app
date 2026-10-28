@@ -2547,7 +2547,6 @@
       "mine": "My absences"
     },
     "empty": "No absences yet",
-    "showPast": "Show past",
     "deleted": "Deleted",
     "confirmDelete": "Delete this absence?",
     "fields": {
@@ -2559,13 +2558,13 @@
       "note": "e.g. vacation, business trip"
     },
     "form": {
-      "multiDay": "Several days",
-      "pickDate": "Date",
-      "pickStart": "Start",
-      "pickEnd": "End",
       "needPublisher": "Select a publisher",
       "needDate": "Select a date",
-      "needEndDate": "Select an end date"
+      "addPerson": "Add another person for the same days",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days",
+      "oneDay": "one day",
+      "tapHint": "Tap the first day, then the last"
     },
     "actions": {
       "create": "Add",
@@ -2583,6 +2582,44 @@
     "fromSchool": {
       "title": "From the Pioneer Service School",
       "body": "The school entered this absence: the brother has a duty at the school that day. To remove it, change the assignment in the school."
+    },
+    "groups": {
+      "now": "Now",
+      "soon": "In the coming weeks",
+      "later": "Later"
+    },
+    "rel": {
+      "left_one": "{{count}} more day",
+      "left_other": "{{count}} more days",
+      "in_one": "in {{count}} day",
+      "in_other": "in {{count}} days"
+    },
+    "clash": {
+      "other": "Assigned on these days: {{list}}",
+      "mine": "You are assigned on these days: {{list}}. Please tell whoever prepares the program.",
+      "form": "Assigned on these days: {{list}}"
+    },
+    "pills": {
+      "now": "Away now: {{count}}",
+      "clashes": "Assigned while away: {{count}}"
+    },
+    "tabs": {
+      "ahead": "Upcoming",
+      "past": "Past"
+    },
+    "emptyPast": "No past absences",
+    "removed": {
+      "show": "Show removed",
+      "hide": "Hide removed"
+    },
+    "timeline": {
+      "who": "Who"
+    },
+    "quick": {
+      "day": "1 day",
+      "week": "One week",
+      "twoWeeks": "2 weeks",
+      "month": "To month end"
     }
   },
   "home": {
@@ -5329,7 +5366,8 @@
       "TALK_MOVE_VISIT_WEEK": "No guest is moved into the circuit overseer's visit week — choose another week.",
       "DUTY_PLACES_INVALID": "Places not saved: a place of your own needs a name, each place has 1 to 10 people, and each place appears once.",
       "DUTY_PLACE_NOT_FOUND": "That place is not on this meeting — please refresh.",
-      "MONTH_INVALID": "The month is not valid."
+      "MONTH_INVALID": "The month is not valid.",
+      "ABSENCE_ENDS_BEFORE_START": "An absence cannot end before it starts."
     }
   },
   "stage": {

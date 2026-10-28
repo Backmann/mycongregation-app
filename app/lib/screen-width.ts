@@ -47,6 +47,11 @@ const OVERVIEW = new Set<string>([
   // The groups beside the chosen group; a group in two columns (28 October).
   '/service-groups',
   '/service-groups/[id]',
+  // Eight weeks of absences across, the cards in two columns; the form's
+  // two months side by side (28 October 2026).
+  '/absences',
+  '/absences/new',
+  '/absences/[id]',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

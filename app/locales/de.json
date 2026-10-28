@@ -2547,7 +2547,6 @@
       "mine": "Meine Abwesenheiten"
     },
     "empty": "Noch keine Abwesenheiten",
-    "showPast": "Vergangene anzeigen",
     "deleted": "Gelöscht",
     "confirmDelete": "Wirklich löschen?",
     "fields": {
@@ -2559,13 +2558,13 @@
       "note": "z. B. Urlaub, Dienstreise"
     },
     "form": {
-      "multiDay": "Mehrere Tage",
-      "pickDate": "Datum",
-      "pickStart": "Beginn",
-      "pickEnd": "Ende",
       "needPublisher": "Wählen Sie einen Verkündiger",
       "needDate": "Wählen Sie ein Datum",
-      "needEndDate": "Wählen Sie ein Enddatum"
+      "addPerson": "Weitere Person für dieselben Tage",
+      "days_one": "{{count}} Tag",
+      "days_other": "{{count}} Tage",
+      "oneDay": "ein Tag",
+      "tapHint": "Ersten Tag antippen, dann den letzten"
     },
     "actions": {
       "create": "Hinzufügen",
@@ -2583,6 +2582,44 @@
     "fromSchool": {
       "title": "Aus der Pionierdienstschule",
       "body": "Diese Abwesenheit hat die Schule eingetragen: Der Bruder hat an diesem Tag eine Aufgabe in der Schule. Um sie zu entfernen, die Einteilung in der Schule ändern."
+    },
+    "groups": {
+      "now": "Jetzt",
+      "soon": "In den nächsten Wochen",
+      "later": "Später"
+    },
+    "rel": {
+      "left_one": "noch {{count}} Tag",
+      "left_other": "noch {{count}} Tage",
+      "in_one": "in {{count}} Tag",
+      "in_other": "in {{count}} Tagen"
+    },
+    "clash": {
+      "other": "In diesen Tagen eingeteilt: {{list}}",
+      "mine": "Sie sind in diesen Tagen eingeteilt: {{list}}. Bitte sagen Sie es dem, der das Programm erstellt.",
+      "form": "In diesen Tagen eingeteilt: {{list}}"
+    },
+    "pills": {
+      "now": "Jetzt abwesend: {{count}}",
+      "clashes": "Eingeteilt trotz Abwesenheit: {{count}}"
+    },
+    "tabs": {
+      "ahead": "Anstehend",
+      "past": "Vergangen"
+    },
+    "emptyPast": "Keine vergangenen Abwesenheiten",
+    "removed": {
+      "show": "Gelöschte anzeigen",
+      "hide": "Gelöschte ausblenden"
+    },
+    "timeline": {
+      "who": "Wer"
+    },
+    "quick": {
+      "day": "1 Tag",
+      "week": "Eine Woche",
+      "twoWeeks": "2 Wochen",
+      "month": "Bis Monatsende"
     }
   },
   "home": {
@@ -5329,7 +5366,8 @@
       "TALK_MOVE_VISIT_WEEK": "In die Woche des Kreisaufseherbesuchs wird kein Gastredner verlegt – bitte eine andere Woche wählen.",
       "DUTY_PLACES_INVALID": "Plätze nicht gespeichert: Ein eigener Platz braucht einen Namen, jeder Platz hat 1 bis 10 Personen, und jeder Platz kommt nur einmal vor.",
       "DUTY_PLACE_NOT_FOUND": "Diesen Platz gibt es bei dieser Zusammenkunft nicht — bitte die Ansicht aktualisieren.",
-      "MONTH_INVALID": "Der Monat ist ungültig."
+      "MONTH_INVALID": "Der Monat ist ungültig.",
+      "ABSENCE_ENDS_BEFORE_START": "Eine Abwesenheit kann nicht vor ihrem Beginn enden."
     }
   },
   "stage": {
