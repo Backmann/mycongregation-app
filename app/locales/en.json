@@ -300,7 +300,6 @@
       "baptism": "Baptism",
       "baptismDate": "Baptism date",
       "ministryStart": "Ministry start (unbaptized)",
-      "pioneer": "Pioneer",
       "pioneerType": "Pioneer type",
       "pioneerSince": "Pioneer since",
       "birthDate": "Birth date",
@@ -309,7 +308,6 @@
       "lastName": "Last name",
       "mobilePhone": "Mobile phone",
       "generalNotes": "General notes",
-      "status": "Status",
       "spiritualStatus": "Theocratic status",
       "isDeaf": "Deaf (needs sign language)",
       "isBlind": "Blind",
@@ -347,7 +345,6 @@
       "correctBody": "“{{from}}” since {{since}} becomes “{{to}}” for all those months. Only when the kind was entered wrong.",
       "correctConfirm": "Correct"
     },
-    "pioneerSinceFormat": "{{label}} (since {{date}})",
     "gender": {
       "brother": "Male",
       "sister": "Female"
@@ -452,7 +449,6 @@
       "unknown": "Not set"
     },
     "s21": {
-      "button": "S-21 card",
       "title": "Generate S-21",
       "year": "Choose the service year"
     },
@@ -5602,5 +5598,39 @@
       "repeat": "stood here at the last such meeting"
     },
     "advance": "After choosing, go to the next empty cell"
+  },
+  "publisherCard": {
+    "brother": "Brother",
+    "sister": "Sister",
+    "pioneerSince": "{{kind}} since {{year}}",
+    "groupRole": {
+      "overseer": "Group “{{name}}” · overseer",
+      "assistant": "Group “{{name}}” · assistant"
+    },
+    "group": "Group “{{name}}”",
+    "awayNow": "Away: {{span}}",
+    "awayFrom": "Will be away: {{span}}",
+    "call": "Call",
+    "write": "Email",
+    "map": "Map",
+    "noContacts": "No contact details",
+    "add": "Add",
+    "email": "Email",
+    "inCongregation": "In the congregation",
+    "duty": "Responsibility",
+    "since": "since {{date}}",
+    "service": "Ministry · 6 months",
+    "reports": "Report history",
+    "noReports": "No reports for these months",
+    "weighed": "Took part in {{served}} of {{expected}} closed months",
+    "why": "Why?",
+    "meetings": "At the meetings",
+    "less": "Less",
+    "more": "More",
+    "noMeetings": "No parts or duties in recent months",
+    "assistant": "assistant",
+    "ahead": "ahead",
+    "week": "week of {{date}}",
+    "whatsapp": "WhatsApp"
   }
 }

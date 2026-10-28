@@ -300,7 +300,6 @@
       "baptism": "Taufe",
       "baptismDate": "Tauftag",
       "ministryStart": "Predigtdienstbeginn (ungetauft)",
-      "pioneer": "Pionier",
       "pioneerType": "Pionierart",
       "pioneerSince": "Pionier seit",
       "birthDate": "Geburtsdatum",
@@ -309,7 +308,6 @@
       "lastName": "Nachname",
       "mobilePhone": "Mobiltelefon",
       "generalNotes": "Allgemeine Notizen",
-      "status": "Status",
       "spiritualStatus": "Geistlicher Status",
       "isDeaf": "Gehörlos (braucht Gebärdensprache)",
       "isBlind": "Blind",
@@ -347,7 +345,6 @@
       "correctBody": "„{{from}}“ seit {{since}} wird für alle diese Monate zu „{{to}}“. Nur wenn die Art falsch eingetragen war.",
       "correctConfirm": "Korrigieren"
     },
-    "pioneerSinceFormat": "{{label}} (seit {{date}})",
     "gender": {
       "brother": "Männlich",
       "sister": "Weiblich"
@@ -452,7 +449,6 @@
       "unknown": "Nicht angegeben"
     },
     "s21": {
-      "button": "S-21-Karte",
       "title": "S-21 erstellen",
       "year": "Dienstjahr wählen"
     },
@@ -5602,5 +5598,39 @@
       "repeat": "stand hier schon bei der letzten solchen Zusammenkunft"
     },
     "advance": "Nach der Auswahl zum nächsten leeren Feld"
+  },
+  "publisherCard": {
+    "brother": "Bruder",
+    "sister": "Schwester",
+    "pioneerSince": "{{kind}} seit {{year}}",
+    "groupRole": {
+      "overseer": "Gruppe „{{name}}“ · Aufseher",
+      "assistant": "Gruppe „{{name}}“ · Gehilfe"
+    },
+    "group": "Gruppe „{{name}}“",
+    "awayNow": "Abwesend: {{span}}",
+    "awayFrom": "Wird abwesend sein: {{span}}",
+    "call": "Anrufen",
+    "write": "E-Mail",
+    "map": "Karte",
+    "noContacts": "Keine Kontaktdaten",
+    "add": "Hinzufügen",
+    "email": "E-Mail",
+    "inCongregation": "In der Versammlung",
+    "duty": "Aufgabe",
+    "since": "seit {{date}}",
+    "service": "Dienst · 6 Monate",
+    "reports": "Berichtsverlauf",
+    "noReports": "Für diese Monate keine Berichte",
+    "weighed": "Beteiligung in {{served}} von {{expected}} abgeschlossenen Monaten",
+    "why": "Warum?",
+    "meetings": "Bei den Zusammenkünften",
+    "less": "Weniger",
+    "more": "Mehr",
+    "noMeetings": "In den letzten Monaten weder Programmpunkte noch Dienste",
+    "assistant": "Partner",
+    "ahead": "geplant",
+    "week": "Woche {{date}}",
+    "whatsapp": "WhatsApp"
   }
 }

@@ -1,5 +1,5 @@
 import { goBack } from '../../../components/NavHistory';
-import { Children, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -12,12 +12,11 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   extractErrorMessage,
-  Publisher,
   publishersApi,
   RemovalImpact,
   RemovalReason,
@@ -26,16 +25,11 @@ import {
 } from '../../../lib/api';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../../lib/i18n';
-import { formatLongDate } from '../../../lib/dates';
 import { PublisherForm } from '../../../components/PublisherForm';
 import { PublisherAccessContent } from '../../../components/PublisherAccessContent';
-import {
-  CAPABILITY_CATEGORIES,
-  countActiveCapabilities,
-} from '../../../lib/capabilities';
+import { PublisherCardView } from '../../../components/publisher-card/PublisherCardView';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
-import { contactsCheckLine } from '../../../lib/contacts-check';
 import { Dialog } from '../../../components/Dialog';
 import { reportError, notify } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
@@ -310,8 +304,6 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
     );
   }
 
-  const totalActiveCaps = countActiveCapabilities(publisher.capabilities ?? {});
-
   return (
     <ScrollView
       style={styles.container}
@@ -319,8 +311,6 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
       // and editing doesn't shift the layout under the reader.
       contentContainerStyle={styles.content}
     >
-      <PublisherHeader publisher={publisher} />
-
       {publisher.deletedAt && (
         <View style={styles.removedBanner}>
           <Text style={styles.removedText}>
@@ -335,255 +325,66 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
         </View>
       )}
 
-      {/* Only shown when there is something to show, and only to those the
-          server sends it to: an empty section would tell a reader these facts
-          exist and were checked, which is itself more than they need. */}
-      {canSeeStatus &&
-      (publisher.isDeaf || publisher.isBlind || publisher.isImprisoned) ? (
-        <Section title={t('publishers.sections.circumstances')}>
-          {publisher.isDeaf ? (
-            <Field label={t('publishers.fields.isDeaf')} value={t('common.yes')} />
-          ) : null}
-          {publisher.isBlind ? (
-            <Field label={t('publishers.fields.isBlind')} value={t('common.yes')} />
-          ) : null}
-          {publisher.isImprisoned ? (
-            <Field
-              label={t('publishers.fields.isImprisoned')}
-              value={t('common.yes')}
-            />
-          ) : null}
-        </Section>
-      ) : null}
-
-      <Section title={t('publishers.sections.contact')}>
-        <Field label={t('publishers.fields.phone')} value={publisher.mobilePhone} />
-        <Field label={t('publishers.fields.email')} value={publisher.email} />
-        <Field label={t('publishers.fields.address')} value={publisher.address} />
-      </Section>
-      {/* When the contacts were last vouched for, and a way to vouch for them
-          on behalf of a publisher who doesn't use the app. */}
-      <View style={styles.checkRow}>
-        <Ionicons
-          name={
-            publisher.contactsConfirmedAt
-              ? 'shield-checkmark-outline'
-              : 'alert-circle-outline'
-          }
-          size={14}
-          color={publisher.contactsConfirmedAt ? '#16a34a' : '#b45309'}
-        />
-        <Text style={styles.checkText}>
-          {contactsCheckLine(
-            t,
-            i18n.language,
-            publisher.contactsConfirmedAt,
-            publisher.contactsConfirmedByName,
-          )}
-        </Text>
-        {canEditPublishers ? (
-          <Pressable
-            onPress={() => confirmContactsMutation.mutate()}
-            disabled={confirmContactsMutation.isPending}
-            hitSlop={6}
-          >
-            <Text style={styles.checkAction}>
-              {confirmContactsMutation.isPending
-                ? t('common.loading')
-                : t('myContacts.confirm')}
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
-
-      <Section title={t('publishers.sections.spirituality')}>
-        <Field
-          label={t('publishers.fields.appointment')}
-          value={appointmentLabel(publisher.appointment)}
-        />
-        {(publisher.appointment === 'publisher' ||
-          publisher.appointment === 'ministerial_servant' ||
-          publisher.appointment === 'elder') && (
-          <Field
-            label={t('publishers.fields.baptism')}
-            value={publisher.baptismDate ? formatLongDate(publisher.baptismDate, i18n.language) : null}
-          />
-        )}
-        {publisher.appointment === 'unbaptized_publisher' && (
-          <Field
-            label={t('publishers.fields.ministryStart')}
-            value={publisher.ministryStartDate ? formatLongDate(publisher.ministryStartDate, i18n.language) : null}
-          />
-        )}
-        {(publisher.appointment === 'publisher' ||
-          publisher.appointment === 'ministerial_servant' ||
-          publisher.appointment === 'elder') && (
-          <Field
-            label={t('publishers.fields.pioneer')}
-            value={pioneerLabel(publisher.pioneerType, publisher.pioneerSince)}
-          />
-        )}
-        {publisher.isAuxiliaryPioneerNow ? (
-          <View style={styles.auxRow}>
-            <Ionicons name="infinite" size={15} color="#0F6E56" />
-            <Text style={styles.auxRowText}>
-              {t('auxPioneer.servesAsAux')}
-            </Text>
-          </View>
-        ) : null}
-      </Section>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          {t('publishers.sections.capabilities')} {totalActiveCaps > 0 ? `(${totalActiveCaps})` : ''}
-        </Text>
-        <View style={styles.sectionBody}>
-          {totalActiveCaps === 0 ? (
-            <Text style={styles.emptyCaps}>{t('publishers.noCapabilities')}</Text>
-          ) : (
-            CAPABILITY_CATEGORIES.map((category) => {
-              const activeCaps = category.capabilities.filter(
-                (c) => publisher.capabilities?.[c.key],
-              );
-              if (activeCaps.length === 0) return null;
-              return (
-                <View key={category.key} style={styles.capCategory}>
-                  <Text style={styles.capCategoryLabel}>{t(`capabilities.categories.${category.key}`)}</Text>
-                  <View style={styles.capChips}>
-                    {activeCaps.map((cap) => (
-                      <View key={cap.key} style={styles.capChip}>
-                        <Text style={styles.capChipText}>{t(`capabilities.items.${cap.key}`)}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </View>
-
-      <Section title={t('publishers.sections.personal')}>
-        <Field label={t('publishers.fields.birthDate')} value={publisher.birthDate} />
-        <Field
-          label={t('publishers.fields.gender')}
-          value={publisher.gender === 'brother' ? t('publishers.gender.brother') : t('publishers.gender.sister')}
-        />
-        {canSeeStatus && publisher.status ? (
-          <View style={styles.statusRow}>
-            <Text style={styles.statusRowLabel}>
-              {t('publishers.fields.status')}
-            </Text>
-            <View
-              style={[
-                styles.statusBadge,
-                publisher.status === 'active' && styles.statusBadgeActive,
-                publisher.status === 'irregular' && styles.statusBadgeIrregular,
-                publisher.status === 'inactive' && styles.statusBadgeInactive,
-              ]}
-            >
-              <Text style={styles.statusBadgeText}>
-                {t(`publishers.status.${publisher.status}`)}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-      </Section>
-
-      {isAdmin && (
-        <Section title={t('publishers.sections.appAccess')}>
+      <PublisherCardView
+        publisher={publisher}
+        pastoral={canSeeStatus}
+        isAdmin={isAdmin}
+        actions={{
+          canEdit: canEditPublishers,
+          canS21: canGenerateS21 && publisher.appointment !== 'student',
+          onEdit: () => setEditing(true),
+          onS21: () => setS21Open(true),
+          onConfirmContacts: () => confirmContactsMutation.mutate(),
+          confirmingContacts: confirmContactsMutation.isPending,
+        }}
+        access={
           <View style={styles.accessWrap}>
             <PublisherAccessContent publisher={publisher} />
           </View>
-        </Section>
-      )}
-
-      {publisher.lastEditedByName ? (
-        <Text
-          style={{
-            fontFamily: 'Manrope_400Regular',
-            color: '#94a3b8',
-            fontSize: 12,
-            textAlign: 'center',
-            marginBottom: 10,
-            paddingHorizontal: 16,
-          }}
-        >
-          {t('publishers.lastEdited', {
-            name: publisher.lastEditedByName,
-            when: new Date(publisher.updatedAt).toLocaleString(i18n.language, {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: false,
-            }),
-          })}
-        </Text>
-      ) : null}
-      <View style={styles.actions}>
-        {!publisher.deletedAt && canEditPublishers && (
-          <Pressable
-            style={[styles.button, styles.buttonEdit]}
-            onPress={() => setEditing(true)}
-          >
-            <Text style={styles.buttonEditText}>{t('publishers.actions.edit')}</Text>
-          </Pressable>
-        )}
-        {/* Hidden from native until there WAS a native app. exportHtmlAsPdf has
-            handled both since: a real PDF via expo-print plus the share sheet
-            on a device, the print pipeline in a browser. */}
-        {!publisher.deletedAt &&
-          canGenerateS21 &&
-          publisher.appointment !== 'student' && (
-          <Pressable
-            style={[styles.button, styles.buttonS21]}
-            onPress={() => setS21Open(true)}
-          >
-            <Ionicons
-              name="document-text-outline"
-              size={16}
-              color="#0369a1"
-              style={{ marginRight: 6 }}
-            />
-            <Text style={styles.buttonS21Text}>
-              {t('publishers.s21.button')}
-            </Text>
-          </Pressable>
-        )}
-        {!publisher.deletedAt && canEditPublishers && (
-          <>
-            <Pressable
-              style={[styles.button, styles.buttonRemove]}
-              onPress={handleRemove}
-              disabled={removeMutation.isPending}
-            >
-              <Text style={styles.buttonRemoveText}>
-                {removeMutation.isPending
-                  ? t('publishers.actions.removing')
-                  : t('publishers.actions.remove')}
+        }
+        footer={
+          // Who touched the card last, and the two actions nobody should
+          // reach for by accident — at the foot, small, apart from the rest.
+          <View style={styles.foot}>
+            {publisher.lastEditedByName ? (
+              <Text style={styles.footText}>
+                {t('publishers.lastEdited', {
+                  name: publisher.lastEditedByName,
+                  when: new Date(publisher.updatedAt).toLocaleString(i18n.language, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                  }),
+                })}
               </Text>
-            </Pressable>
-            <Text style={styles.actionHint}>
-              {t('publishers.removal.hint')}
-            </Text>
-          </>
-        )}
-        {isAdmin && (
-          <Pressable
-            style={[styles.button, styles.buttonPurge]}
-            onPress={handlePurge}
-            disabled={purgeMutation.isPending}
-          >
-            <Text style={styles.buttonPurgeText}>
-              {purgeMutation.isPending
-                ? t('publishers.purge.deleting')
-                : t('publishers.purge.button')}
-            </Text>
-          </Pressable>
-        )}
-      </View>
+            ) : null}
+            {!publisher.deletedAt && canEditPublishers ? (
+              <View style={styles.footRow}>
+                <Pressable onPress={handleRemove} disabled={removeMutation.isPending} hitSlop={6} testID="card-remove">
+                  <Text style={styles.footDanger}>
+                    {removeMutation.isPending
+                      ? t('publishers.actions.removing')
+                      : t('publishers.actions.remove')}
+                  </Text>
+                </Pressable>
+                <Text style={styles.footText}>{t('publishers.removal.hint')}</Text>
+              </View>
+            ) : null}
+            {isAdmin ? (
+              <Pressable onPress={handlePurge} disabled={purgeMutation.isPending} hitSlop={6}>
+                <Text style={styles.footPurge}>
+                  {purgeMutation.isPending
+                    ? t('publishers.purge.deleting')
+                    : t('publishers.purge.button')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+        }
+      />
       <Dialog
         visible={s21Open}
         title={t('publishers.s21.title')}
@@ -629,88 +430,6 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
       />
     </ScrollView>
   );
-}
-
-function PublisherHeader({ publisher }: { publisher: Publisher }) {
-  const initials =
-    (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
-  return (
-    <View style={styles.headerSection}>
-      <View
-        style={[
-          styles.headerAvatar,
-          {
-            backgroundColor:
-              publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
-          },
-        ]}
-      >
-        <Text style={styles.headerAvatarText}>{initials}</Text>
-      </View>
-      <Text style={styles.headerName}>{publisher.displayName}</Text>
-      <View style={styles.headerRoleChip}>
-        <Text style={styles.headerRoleChipText}>
-          {publisher.gender === 'brother'
-            ? i18n.t('publishers.gender.brother')
-            : i18n.t('publishers.gender.sister')}
-          {publisher.appointment !== 'publisher' &&
-          publisher.appointment !== 'unbaptized_publisher'
-            ? ` · ${appointmentLabel(publisher.appointment)}`
-            : ''}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  const items = Children.toArray(children).filter(Boolean);
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View style={styles.sectionBody}>
-        {items.map((child, i) => (
-          <View key={i}>
-            {i > 0 ? <View style={styles.divider} /> : null}
-            {child}
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string | null }) {
-  return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {value ? (
-        <Text style={styles.fieldValue}>{value}</Text>
-      ) : (
-        <Text style={styles.fieldEmpty}>—</Text>
-      )}
-    </View>
-  );
-}
-
-function appointmentLabel(a: Publisher['appointment']): string {
-  return i18n.t(`publishers.appointment.${a}`);
-}
-
-function pioneerLabel(
-  type: Publisher['pioneerType'],
-  since: string | null,
-): string {
-  const label = i18n.t(`publishers.pioneer.detail.${type}`);
-  return type === 'none' || !since
-    ? label
-    : i18n.t('publishers.pioneerSinceFormat', { label, date: since });
 }
 
 function RemoveModal({
@@ -968,43 +687,20 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     overflow: 'hidden',
   },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-  },
-  statusRowLabel: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b' },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: '#94a3b8',
-  },
-  statusBadgeActive: { backgroundColor: '#10b981' },
-  statusBadgeIrregular: { backgroundColor: '#f59e0b' },
-  statusBadgeInactive: { backgroundColor: '#94a3b8' },
-  statusBadgeText: { color: '#fff', fontSize: 12.5, fontFamily: 'Manrope_700Bold' },
-  auxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginHorizontal: 12,
-    marginTop: 4,
-    borderRadius: 10,
-    backgroundColor: '#E1F5EE',
-  },
-  auxRowText: { fontSize: 13, fontFamily: 'Manrope_600SemiBold', color: '#0F6E56' },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: {
+    paddingTop: 12,
+    paddingHorizontal: 12,
     paddingBottom: 32,
     width: '100%',
-    maxWidth: 720,
+    maxWidth: 1120,
     alignSelf: 'center',
   },
+  foot: { alignItems: 'center', gap: 8, paddingVertical: 10 },
+  footRow: { alignItems: 'center', gap: 2 },
+  footText: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#94a3b8', textAlign: 'center' },
+  footDanger: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#b91c1c' },
+  footPurge: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#94a3b8', textDecorationLine: 'underline' },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -1074,41 +770,6 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 16, textAlign: 'center' },
 
-  headerSection: {
-    backgroundColor: '#fff',
-    marginHorizontal: 12,
-    marginTop: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#e8edf3',
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  headerAvatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  headerAvatarText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 28 },
-  headerName: {
-    fontSize: 22,
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    textAlign: 'center',
-    paddingHorizontal: 12,
-  },
-  headerRoleChip: {
-    marginTop: 10,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  headerRoleChipText: { color: '#475569', fontSize: 13, fontFamily: 'Manrope_600SemiBold',},
 
   removedBanner: {
     backgroundColor: '#fef3c7',
@@ -1122,109 +783,11 @@ const styles = StyleSheet.create({
   removedText: { color: '#92400e', fontFamily: 'Manrope_600SemiBold',},
   removedNote: { fontFamily: 'Manrope_400Regular', color: '#78350f', marginTop: 4, fontSize: 13 },
 
-  section: { marginHorizontal: 12, marginTop: 16 },
-  checkRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    marginHorizontal: 18,
-    marginTop: 8,
-  },
-  checkText: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 12.5, color: '#64748b' },
-  checkAction: {
-    fontSize: 12.5,
-    color: '#0369a1',
-    fontFamily: 'Manrope_700Bold',
-  },
-  sectionTitle: {
-    fontSize: 11.5,
-    fontFamily: 'Manrope_600SemiBold',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    marginLeft: 6,
-    marginBottom: 8,
-    letterSpacing: 0.6,
-  },
-  sectionBody: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#e8edf3',
-    overflow: 'hidden',
-  },
-  divider: { height: 1, backgroundColor: '#f3f6f9', marginHorizontal: 14 },
-  field: {
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-  },
   accessWrap: { paddingHorizontal: 14, paddingVertical: 4 },
   // Labels read like the form's: same size and weight, so a value looks the
   // same whether you are reading it or about to change it.
-  fieldLabel: {
-    fontSize: 13,
-    color: '#475569',
-    marginBottom: 4,
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  fieldValue: { fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_500Medium',},
-  fieldEmpty: { fontFamily: 'Manrope_400Regular', fontSize: 15, color: '#cbd5e1' },
 
-  emptyCaps: {
-    fontFamily: 'Manrope_400Regular',
-    color: '#cbd5e1',
-    fontSize: 14,
-    textAlign: 'center',
-    padding: 16,
-  },
-  capCategory: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  capCategoryLabel: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 6,
-    fontFamily: 'Manrope_500Medium',
-  },
-  capChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  capChip: {
-    backgroundColor: '#e0f2fe',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  capChipText: { color: '#0369a1', fontSize: 12, fontFamily: 'Manrope_500Medium',},
 
-  actions: { paddingHorizontal: 16, paddingTop: 22, gap: 10 },
-  button: { paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-  buttonEdit: { backgroundColor: '#0ea5e9' },
-  buttonEditText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_700Bold',},
-  buttonS21: {
-    backgroundColor: '#e0f2fe',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonS21Text: {
-    color: '#0369a1',
-    fontSize: 16,
-    fontFamily: 'Manrope_700Bold',
-  },
-  s21Overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
-    justifyContent: 'center',
-    padding: 28,
-  },
-  s21Card: { backgroundColor: '#fff', borderRadius: 14, padding: 18 },
-  s21Title: {
-    fontSize: 16,
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    marginBottom: 4,
-  },
   s21Section: {
     fontFamily: 'Manrope_400Regular',
     fontSize: 12,
@@ -1241,25 +804,4 @@ const styles = StyleSheet.create({
     borderTopColor: '#e2e8f0',
   },
   s21YearLabel: { fontSize: 15, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  buttonRemove: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#fecaca',
-  },
-  buttonRemoveText: { color: '#dc2626', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
-  buttonPurge: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#fca5a5',
-  },
-  buttonPurgeText: { color: '#7f1d1d', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
-  actionHint: {
-    fontFamily: 'Manrope_400Regular',
-    color: '#94a3b8',
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: -2,
-    marginBottom: 4,
-  },
-  buttonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 });

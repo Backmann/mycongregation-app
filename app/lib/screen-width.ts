@@ -42,6 +42,8 @@ const OVERVIEW = new Set<string>([
   '/publishers/list',
   // A table of the duties with the picker beside it (27 October 2026).
   '/publishers/responsibilities',
+  // The publisher's card in two columns on its own (28 October 2026).
+  '/publishers/[id]',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */
