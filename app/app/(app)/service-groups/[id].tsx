@@ -1,10 +1,10 @@
 import { goBack } from '../../../components/NavHistory';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   Modal,
   Platform,
-  
   Pressable,
   ScrollView,
   StyleSheet,
@@ -19,8 +19,12 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   auxiliaryPioneersApi,
   extractErrorMessage,
+  fieldServiceApi,
+  isFieldServiceCancelled,
+  meApi,
+  serviceOverseerApi,
+  serviceReportsApi,
   Publisher,
-  ServiceGroup,
   serviceGroupsApi,
   UpdateServiceGroupInput,
 } from '../../../lib/api';
@@ -34,14 +38,60 @@ import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
+import { addWeeks, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { formatDay } from '../../../lib/date-range';
+import { formatMonthLabel } from '../../../lib/i18n';
+import { FONT } from '../../../lib/typography';
 
 export default function ServiceGroupDetailScreen() {
-  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
+  return <GroupDetail id={id} />;
+}
+
+/**
+ * A SERVICE GROUP (28 October 2026, mockup «Группы служения»), on its own
+ * screen and beside the list of groups on a wide one.
+ *
+ * Who comes here and for what: a publisher — where his group meets and who
+ * leads it; the group's overseer and assistant — the group to look after; the
+ * elders — every group. So the group says, at the top: who leads it, its next
+ * field-service meeting, the service overseer's visit, and — for the elders
+ * and the group's own two — how many have reported. Then the people.
+ */
+export function GroupDetail({
+  id,
+  onRemoved,
+  footer,
+}: {
+  id: string | undefined;
+  onRemoved?: () => void;
+  /** Drawn under the group — the other groups, where the group page opens first. */
+  footer?: ReactNode;
+}) {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [trimming, setTrimming] = useState(false);
+  const [width, setWidth] = useState(0);
+  const wide = width >= 700;
+  const isAdminUser = user?.role === 'admin';
+  const isElderUser = user?.role === 'elder';
+
+  const meQuery = useQuery({ queryKey: ['me-publisher'], queryFn: () => meApi.publisher(), staleTime: 5 * 60 * 1000 });
+  const monday = formatDateISO(startOfWeekMonday(new Date()));
+  const meetingsQuery = useQuery({
+    queryKey: ['field-service', 'group-next', monday],
+    queryFn: () =>
+      fieldServiceApi.list({ weekStart: monday, weekEnd: formatDateISO(addWeeks(startOfWeekMonday(new Date()), 5)) }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const visitsQuery = useQuery({
+    queryKey: ['service-overseer', 'group-visits'],
+    queryFn: () => serviceOverseerApi.groupVisits(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const groupQuery = useQuery({
     throwOnError: failsScreen,
@@ -72,6 +122,24 @@ export default function ServiceGroupDetailScreen() {
     enabled: !!id && !editing,
   });
 
+  // The month being collected — the one the group's reports screen opens on.
+  const lastMonth = (() => {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const g0 = groupQuery.data;
+  const me0 = meQuery.data?.publisher?.id ?? null;
+  const reportsQuery = useQuery({
+    queryKey: ['service-reports', 'group', lastMonth],
+    queryFn: () => serviceReportsApi.findGroup(lastMonth),
+    enabled:
+      !!g0 &&
+      (isAdminUser || isElderUser || (!!me0 && (g0.overseerPublisherId === me0 || g0.assistantPublisherId === me0))),
+    staleTime: 60 * 1000,
+  });
+
   // Everything about groups now hangs off ONE key prefix — the lists, the
   // names the roster reads, a single group and its members. Before this the
   // card lived under a key of its own, so a change made anywhere else left it
@@ -96,7 +164,8 @@ export default function ServiceGroupDetailScreen() {
     mutationFn: () => serviceGroupsApi.remove(id!),
     onSuccess: () => {
       invalidateGroups();
-      goBack('/service-groups');
+      if (onRemoved) onRemoved();
+      else goBack('/service-groups');
     },
   });
 
@@ -229,160 +298,257 @@ export default function ServiceGroupDetailScreen() {
     );
   }
 
+  const myPublisherId = meQuery.data?.publisher?.id ?? null;
+  // Who leads THIS group reads its reports, as the server lets him.
+  const leadsIt =
+    !!myPublisherId &&
+    (group.overseerPublisherId === myPublisherId || group.assistantPublisherId === myPublisherId);
+  const seesReports = isAdmin || user?.role === 'elder' || leadsIt;
+  const seesVisitHistory = seesReports;
+
+  // The leaders stand at the top; the composition lists everyone else, by
+  // name (28 October 2026: they were shown twice).
+  const rest = members
+    .filter((p) => p.id !== group.overseerPublisherId && p.id !== group.assistantPublisherId)
+    .sort((a, b) => a.displayName.localeCompare(b.displayName, i18n.language));
+
+  // The next field-service meeting this group goes to: its own, or one for
+  // the whole congregation.
+  const nextMeeting = (() => {
+    const now = new Date();
+    const upcoming = (meetingsQuery.data ?? [])
+      .filter((m) => !isFieldServiceCancelled(m) && (m.serviceGroupId === group.id || m.isGeneral))
+      .map((m) => {
+        const d = new Date(`${m.weekStartDate}T${(m.startTime || '00:00').slice(0, 5)}:00`);
+        d.setDate(d.getDate() + (m.dayOfWeek - 1));
+        return { m, at: d };
+      })
+      .filter((x) => x.at >= now)
+      .sort((a, b) => +a.at - +b.at);
+    return upcoming[0] ?? null;
+  })();
+  const visit = visitsQuery.data?.groups.find((g) => g.serviceGroupId === group.id) ?? null;
+  const reportRows = (reportsQuery.data?.publishers ?? []).filter((r) => r.groupId === group.id);
+  const reported = reportRows.filter((r) => !!r.report).length;
+
+  const openMap = () => {
+    if (!group.meetingLocation) return;
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(group.meetingLocation)}`;
+    if (Platform.OS === 'web') window.open(url, '_blank', 'noopener');
+    else void Linking.openURL(url);
+  };
+  const openCard = (pid: string) => router.push(`/publishers/${pid}?from=/service-groups/${id}` as never);
+
+  const facts: { key: string; label: string; value: string; tone?: 'warn' | 'ok'; onPress?: () => void }[] = [];
+  if (nextMeeting) {
+    facts.push({
+      key: 'meeting',
+      label: t('groupCard.nextMeeting'),
+      value:
+        nextMeeting.at.toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' }) +
+        ` · ${nextMeeting.m.startTime.slice(0, 5)}` +
+        (nextMeeting.m.isGeneral ? ` · ${t('groupCard.general')}` : ''),
+      onPress: () => router.push('/cart/field-service' as never),
+    });
+  }
+  if (visit?.nextVisitDate) {
+    facts.push({
+      key: 'visit',
+      label: t('groupCard.serviceOverseer'),
+      value: t('groupCard.visitComing', { date: formatDay(visit.nextVisitDate, i18n.language, { weekday: 'short', month: 'short' }) }),
+      tone: 'ok',
+    });
+  } else if (seesVisitHistory && visit) {
+    facts.push({
+      key: 'visit',
+      label: t('groupCard.serviceOverseer'),
+      value: visit.lastVisitDate
+        ? t('groupCard.visitLast', { date: formatDay(visit.lastVisitDate, i18n.language, { month: 'short', year: 'auto' }) })
+        : t('groupCard.visitNone'),
+      tone: (visit.madeThisYear ?? visit.visitsThisYear) > 0 ? undefined : 'warn',
+    });
+  }
+  if (seesReports && reportsQuery.data && reportRows.length > 0) {
+    facts.push({
+      key: 'reports',
+      label: t('groupCard.reports', { month: formatMonthLabel(reportsQuery.data.reportMonth.slice(0, 7)) }),
+      value: t('groupCard.reportsOf', { done: reported, total: reportRows.length }),
+      tone: reported === reportRows.length ? 'ok' : undefined,
+      onPress: () => router.push('/service-reports/group' as never),
+    });
+  }
+
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 32 }}
+      contentContainerStyle={styles.content}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
-      <View style={styles.headerSection}>
-        <Text style={styles.headerName}>{group.name}</Text>
-        {group.meetingLocation && (
-          <Text style={styles.headerSub}>📍 {group.meetingLocation}</Text>
-        )}
-        {group.deletedAt && <Text style={styles.removedBadge}>{t('common.removed')}</Text>}
+      <View style={styles.hero}>
+        <View style={styles.heroTop}>
+          <View style={styles.heroIcon}>
+            <Ionicons name="people" size={24} color="#6d28d9" />
+          </View>
+          <View style={styles.flex}>
+            <View style={styles.nameRow}>
+              <Text style={styles.heroName}>{group.name}</Text>
+              {group.mine ? <Text style={styles.mineTag}>{t('serviceGroups.mine')}</Text> : null}
+              {group.deletedAt ? <Text style={styles.removedTag}>{t('common.removed')}</Text> : null}
+            </View>
+            {group.meetingLocation ? (
+              <Pressable onPress={openMap} hitSlop={4} accessibilityRole="link">
+                <Text style={styles.heroPlace}>
+                  <Ionicons name="location-outline" size={14} color="#0369a1" /> {group.meetingLocation}
+                  <Text style={styles.heroMap}>{`  ·  ${t('groupCard.onMap')} ›`}</Text>
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
+          {canManage ? (
+            <Pressable
+              onPress={() => setEditing(true)}
+              style={({ pressed }) => [styles.editBtn, pressed && styles.pressed]}
+              testID="group-edit"
+            >
+              <Ionicons name="create-outline" size={16} color="#fff" />
+              <Text style={styles.editText}>{t('common.edit')}</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
+        {overseer || assistant ? (
+          <View style={[styles.leaders, wide && styles.leadersWide]}>
+            {[
+              { p: overseer, role: 'overseer' as const },
+              { p: assistant, role: 'assistant' as const },
+            ]
+              .filter((x) => !!x.p)
+              .map(({ p, role }) => (
+                <Pressable
+                  key={role}
+                  // The card opens to those who may read it; for the others the
+                  // name is a name, not a door to «No access» (walk, 23 October).
+                  disabled={!privileged}
+                  onPress={() => openCard(p!.id)}
+                  style={({ pressed }) => [styles.leader, wide && styles.leaderWide, pressed && styles.pressed]}
+                >
+                  <Avatar p={p!} />
+                  <View style={styles.flex}>
+                    {/* Not in capitals: «GRUPPENVERANTWORTLICHER» broke in the
+                        middle of the word on a phone (20 October 2026). */}
+                    <Text style={styles.leaderRole}>{t(`serviceGroups.${role}`)}</Text>
+                    <Text style={styles.leaderName}>{p!.displayName}</Text>
+                  </View>
+                  {privileged ? <Ionicons name="chevron-forward" size={16} color="#c4b5fd" /> : null}
+                </Pressable>
+              ))}
+          </View>
+        ) : null}
+
+        {facts.length > 0 ? (
+          <View style={styles.facts}>
+            {facts.map((f) => (
+              <Pressable
+                key={f.key}
+                disabled={!f.onPress}
+                onPress={f.onPress}
+                style={({ pressed }) => [styles.fact, wide && styles.factWide, pressed && styles.pressed]}
+                testID={`group-fact-${f.key}`}
+              >
+                <Text style={styles.factLabel}>{f.label}</Text>
+                <Text style={[styles.factValue, f.tone === 'warn' && styles.factWarn, f.tone === 'ok' && styles.factOk]}>
+                  {f.value}
+                  {f.onPress ? <Text style={styles.factGo}>{'  ›'}</Text> : null}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        {group.notes ? <Text style={styles.note}>{group.notes}</Text> : null}
       </View>
-
-      {(overseer || assistant) && (
-        <View style={styles.leadership}>
-          {overseer && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.leaderCard,
-                pressed && styles.rowPressed,
-              ]}
-              // The card opens to those who may read it; for the others the
-              // name is a name, not a door to «No access» (walk, 23 October).
-              disabled={!privileged}
-              onPress={() => router.push(
-                  `/publishers/${overseer.id}?from=/service-groups/${id}` as any,
-                )}
-            >
-              <Text style={styles.leaderRole}>{t('serviceGroups.overseer')}</Text>
-              <Text style={styles.leaderName}>{overseer.displayName}</Text>
-            </Pressable>
-          )}
-          {assistant && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.leaderCard,
-                pressed && styles.rowPressed,
-              ]}
-              disabled={!privileged}
-              onPress={() => router.push(
-                  `/publishers/${assistant.id}?from=/service-groups/${id}` as any,
-                )}
-            >
-              <Text style={styles.leaderRole}>{t('serviceGroups.assistant')}</Text>
-              <Text style={styles.leaderName}>{assistant.displayName}</Text>
-            </Pressable>
-          )}
-        </View>
-      )}
-
-      {group.notes && (
-        <View style={styles.notesBox}>
-          <Text style={styles.notesText}>{group.notes}</Text>
-        </View>
-      )}
 
       {membersRefused ? (
         <Text style={styles.empty}>{t('serviceGroups.otherGroupClosed')}</Text>
       ) : (
-      <>
-      <Text style={styles.sectionTitle}>
-        {/* Students are not publishers: the congregation's list leaves them
-            out of its total, and so does this one — they are named apart. */}
-        {studentsHere > 0
-          ? t('serviceGroups.membersWithStudents', {
-              count: (membersQuery.data?.total ?? 0) - studentsHere,
-              students: studentsHere,
-            })
-          : t('serviceGroups.membersCount', { count: membersQuery.data?.total ?? 0 })}
-      </Text>
+        <>
+          <View style={styles.sectionHead}>
+            <Text style={styles.sectionTitle}>
+              {/* Students are not publishers: the congregation's list leaves them
+                  out of its total, and so does this one — they are named apart. */}
+              {studentsHere > 0
+                ? t('serviceGroups.membersWithStudents', {
+                    count: (membersQuery.data?.total ?? 0) - studentsHere,
+                    students: studentsHere,
+                  })
+                : t('serviceGroups.membersCount', { count: membersQuery.data?.total ?? 0 })}
+            </Text>
+            {canManage ? (
+              <View style={styles.sectionActions}>
+                {rest.length > 0 ? (
+                  <Pressable onPress={() => setTrimming((v) => !v)} hitSlop={6} testID="group-trim">
+                    <Text style={styles.link}>{trimming ? t('common.done') : t('groupCard.trim')}</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable onPress={() => setAddOpen(true)} hitSlop={6} testID="group-add">
+                  <Text style={styles.link}>＋ {t('groupCard.add')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
+          </View>
 
-      <View style={styles.list}>
-        {membersQuery.isLoading ? (
-          <ActivityIndicator style={{ padding: 16 }} />
-        ) : membersQuery.error ? (
-          <LoadFailure
-            error={membersQuery.error}
-            onRetry={() => void membersQuery.refetch()}
-          />
-        ) : members.length === 0 ? (
-          <Text style={styles.empty}>{t('serviceGroups.noMembersYet')}</Text>
-        ) : (
-          // Whoever serves the group and his assistant come first: someone
-          // opening a group is usually looking for exactly those two, and
-          // finding them meant hunting through the list for a small badge.
-          [...members]
-            .sort((a, b) => roleRank(a, group) - roleRank(b, group))
-            .map((p) => {
-            const role =
-              p.id === group.overseerPublisherId
-                ? 'overseer'
-                : p.id === group.assistantPublisherId
-                ? 'assistant'
-                : null;
-            return (
-              <MemberRow
-                key={p.id}
-                publisher={p}
-                role={role}
-                privileged={privileged}
-                isAuxiliaryPioneer={activeAuxIds.has(p.id)}
-                canRemove={canManage && role === null}
-                pending={removeMemberMutation.isPending}
-                onRemove={() => confirmRemoveMember(p)}
-                groupId={id}
-              />
-            );
-          })
-        )}
-      </View>
-      </>
+          {membersQuery.isLoading ? (
+            <ActivityIndicator style={{ padding: 16 }} />
+          ) : membersQuery.error ? (
+            <LoadFailure error={membersQuery.error} onRetry={() => void membersQuery.refetch()} />
+          ) : rest.length === 0 ? (
+            <Text style={styles.empty}>
+              {members.length === 0 ? t('serviceGroups.noMembersYet') : t('groupCard.onlyLeaders')}
+            </Text>
+          ) : (
+            <View style={[styles.grid, wide && styles.gridWide]}>
+              {rest.map((p) => (
+                <MemberRow
+                  key={p.id}
+                  publisher={p}
+                  wide={wide}
+                  privileged={privileged}
+                  isAuxiliaryPioneer={activeAuxIds.has(p.id)}
+                  // Taking someone out of a group is offered only after
+                  // «Изменить состав»: a cross on every row was one slip away.
+                  canRemove={canManage && trimming}
+                  pending={removeMemberMutation.isPending}
+                  onRemove={() => confirmRemoveMember(p)}
+                  onOpen={() => openCard(p.id)}
+                />
+              ))}
+            </View>
+          )}
+        </>
       )}
 
-      {canManage && (
-        <Pressable
-          style={({ pressed }) => [styles.addBtn, pressed && styles.addBtnPressed]}
-          onPress={() => setAddOpen(true)}
-        >
-          <Ionicons name="person-add-outline" size={16} color="#0369a1" />
-          <Text style={styles.addBtnText}>{t('serviceGroups.addMembers')}</Text>
-        </Pressable>
-      )}
+      {isAdmin ? (
+        <View style={styles.foot}>
+          {group.deletedAt ? (
+            <Pressable onPress={() => restoreMutation.mutate()} disabled={restoreMutation.isPending} hitSlop={6}>
+              <Text style={styles.footRestore}>
+                {restoreMutation.isPending ? t('common.restoring') : t('common.restore')}
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable onPress={confirmRemove} disabled={removeMutation.isPending} hitSlop={6} testID="group-remove">
+              <Text style={styles.footText}>
+                {t('groupCard.disband')}{' '}
+                <Text style={styles.footDanger}>
+                  {removeMutation.isPending ? t('common.removing') : t('common.remove')}
+                </Text>
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      ) : null}
 
-      <View style={styles.actions}>
-        {canManage && (
-          <Pressable
-            style={[styles.button, styles.buttonEdit]}
-            onPress={() => setEditing(true)}
-          >
-            <Text style={styles.buttonEditText}>{t('common.edit')}</Text>
-          </Pressable>
-        )}
-        {isAdmin && (group.deletedAt ? (
-          <Pressable
-            style={[styles.button, styles.buttonRestore]}
-            onPress={() => restoreMutation.mutate()}
-            disabled={restoreMutation.isPending}
-          >
-            <Text style={styles.buttonText}>
-              {restoreMutation.isPending ? t('common.restoring') : t('common.restore')}
-            </Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            style={[styles.button, styles.buttonRemove]}
-            onPress={confirmRemove}
-            disabled={removeMutation.isPending}
-          >
-            <Text style={styles.buttonText}>
-              {removeMutation.isPending ? t('common.removing') : t('common.remove')}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      {footer}
 
       <AddMembersModal
         visible={addOpen}
@@ -395,86 +561,58 @@ export default function ServiceGroupDetailScreen() {
   );
 }
 
-/** Overseer first, then his assistant, then everyone else as they came. */
-function roleRank(p: Publisher, group: ServiceGroup): number {
-  if (p.id === group.overseerPublisherId) return 0;
-  if (p.id === group.assistantPublisherId) return 1;
-  return 2;
+function Avatar({ p }: { p: Publisher }) {
+  return (
+    <View style={[styles.avatar, { backgroundColor: p.gender === 'brother' ? '#0e7490' : '#be185d' }]}>
+      <Text style={styles.avatarText}>{(p.firstName[0] ?? '') + (p.lastName[0] ?? '')}</Text>
+    </View>
+  );
 }
 
 function MemberRow({
   publisher,
-  role,
+  wide,
   canRemove,
   pending,
   privileged,
   isAuxiliaryPioneer,
   onRemove,
-  groupId,
+  onOpen,
 }: {
   publisher: Publisher;
-  role: 'overseer' | 'assistant' | null;
+  wide: boolean;
   canRemove: boolean;
   pending?: boolean;
   privileged: boolean;
   isAuxiliaryPioneer: boolean;
   onRemove: () => void;
-  /** Passed down rather than read from the route: this row is a component of
-   * its own and has no business knowing which screen mounted it. */
-  groupId: string;
+  onOpen: () => void;
 }) {
-  const { t } = useTranslation();
   const tags = publisherTags(publisher, { privileged, isAuxiliaryPioneer });
-  const initials =
-    (publisher.firstName[0] ?? '') + (publisher.lastName[0] ?? '');
+  const pioneer = publisher.pioneerType !== 'none' || isAuxiliaryPioneer;
   return (
     <Pressable
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-      disabled={!privileged}
-      onPress={() => router.push(
-        `/publishers/${publisher.id}?from=/service-groups/${groupId}` as any,
-      )}
+      style={({ pressed }) => [styles.member, wide && styles.memberWide, pressed && privileged && styles.pressed]}
+      disabled={!privileged || canRemove}
+      onPress={onOpen}
     >
-      <View
-        style={[
-          styles.avatar,
-          {
-            backgroundColor:
-              publisher.gender === 'brother' ? '#0ea5e9' : '#ec4899',
-          },
-        ]}
-      >
-        <Text style={styles.avatarText}>{initials}</Text>
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.name} numberOfLines={1}>
+      <Avatar p={publisher} />
+      <View style={styles.flex}>
+        <Text style={styles.memberName} numberOfLines={1}>
           {publisher.displayName}
         </Text>
-        {role ? (
-          // Said in full — «Ответственный за группу», not a three-letter chip
-          // that has to be decoded.
-          <Text style={styles.memberRole}>
-            {t(`serviceGroups.${role}`)}
-          </Text>
-        ) : null}
         {tags.length > 0 ? (
-          <Text style={styles.memberTags} numberOfLines={2}>
-            {tags.join(' \u00b7 ')}
+          <Text style={[styles.memberTags, pioneer && styles.memberPioneer]} numberOfLines={2}>
+            {tags.join(' · ')}
           </Text>
         ) : null}
       </View>
-
       {canRemove ? (
-        <Pressable
-          onPress={onRemove}
-          hitSlop={8}
-          disabled={pending}
-          style={styles.removeBtn}
-        >
-          <Ionicons name="close-circle" size={22} color="#cbd5e1" />
+        <Pressable onPress={onRemove} hitSlop={8} disabled={pending} style={styles.removeBtn} testID={`group-remove-${publisher.id}`}>
+          <Ionicons name="remove-circle" size={22} color="#ef4444" />
         </Pressable>
       ) : privileged ? (
-        <Text style={styles.chevron}>›</Text>
+        <Ionicons name="chevron-forward" size={16} color="#cbd5e1" />
       ) : null}
     </Pressable>
   );
@@ -621,149 +759,123 @@ function AddMembersModal({
   );
 }
 
+const INK = '#0f172a';
+const SOFT = '#64748b';
+const LINE = '#e2e8f0';
+
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  content: { padding: 12, paddingBottom: 32, width: '100%', maxWidth: 1120, alignSelf: 'center' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  errorText: { fontFamily: 'Manrope_400Regular', color: '#dc2626', fontSize: 16, textAlign: 'center' },
+  errorText: { fontFamily: FONT.regular, color: '#dc2626', fontSize: 16, textAlign: 'center' },
+  flex: { flex: 1, minWidth: 0 },
+  pressed: { opacity: 0.75 },
+  rowPressed: { backgroundColor: '#f8fafc' },
 
-  headerSection: {
-    backgroundColor: '#fff',
-    paddingTop: 24,
-    paddingBottom: 24,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+  hero: { backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: LINE, padding: 18, gap: 14 },
+  heroTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' },
+  heroIcon: { width: 50, height: 50, borderRadius: 14, backgroundColor: '#ede9fe', alignItems: 'center', justifyContent: 'center' },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+  heroName: { fontFamily: FONT.extrabold, fontSize: 24, color: INK, letterSpacing: -0.3 },
+  mineTag: {
+    fontFamily: FONT.extrabold,
+    fontSize: 10.5,
+    color: '#5b21b6',
+    backgroundColor: '#ede9fe',
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    overflow: 'hidden',
+    textTransform: 'uppercase',
   },
-  headerName: {
-    fontSize: 22,
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    paddingHorizontal: 24,
-    textAlign: 'center',
-  },
-  headerSub: { fontFamily: 'Manrope_400Regular', color: '#64748b', marginTop: 6, fontSize: 14 },
-  removedBadge: {
-    marginTop: 8,
+  removedTag: {
+    fontFamily: FONT.bold,
+    fontSize: 11,
     color: '#92400e',
     backgroundColor: '#fef3c7',
-    paddingHorizontal: 8,
+    borderRadius: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 4,
-    fontSize: 12,
-    fontFamily: 'Manrope_600SemiBold',
+    overflow: 'hidden',
   },
-
-  leadership: { flexDirection: 'row', padding: 16, gap: 12 },
-  leaderCard: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  // Not in capitals: «GRUPPENVERANTWORTLICHER» broke in the middle of the
-  // word on a phone-wide card (the German pass of 20 October 2026).
-  leaderRole: {
-    fontSize: 12,
-    color: '#7c3aed',
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  leaderName: {
-    fontSize: 15,
-    color: '#0f172a',
-    marginTop: 4,
-    fontFamily: 'Manrope_500Medium',
-  },
-
-  notesBox: {
-    backgroundColor: '#fff',
-    margin: 16,
-    marginTop: 0,
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  notesText: { fontFamily: 'Manrope_400Regular', color: '#475569', fontSize: 14 },
-
-  sectionTitle: {
-    fontSize: 12,
-    fontFamily: 'Manrope_600SemiBold',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    paddingHorizontal: 20,
-    marginTop: 8,
-    marginBottom: 6,
-    letterSpacing: 0.5,
-  },
-  list: {
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  empty: {
-    fontFamily: 'Manrope_400Regular',
-    textAlign: 'center',
-    color: '#94a3b8',
-    padding: 32,
-    fontSize: 14,
-  },
-
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    alignItems: 'center',
-  },
-  rowPressed: { backgroundColor: '#f8fafc' },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  avatarText: { color: '#fff', fontFamily: 'Manrope_700Bold', fontSize: 13 },
-  name: { fontSize: 15, fontFamily: 'Manrope_500Medium', color: '#0f172a', flex: 1 },
-  removeBtn: { marginLeft: 8, padding: 2 },
-  memberRole: {
-    fontSize: 12,
-    color: '#7c3aed',
-    fontFamily: 'Manrope_700Bold',
-    marginTop: 1,
-  },
-  memberTags: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 1 },
-  chevron: { fontFamily: 'Manrope_400Regular', color: '#cbd5e1', fontSize: 24, marginLeft: 8 },
-
-  addBtn: {
+  heroPlace: { fontFamily: FONT.semibold, fontSize: 14, color: '#0369a1', marginTop: 4 },
+  heroMap: { fontFamily: FONT.bold, color: '#0369a1' },
+  editBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: 6,
-    marginHorizontal: 16,
-    marginTop: 12,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: '#bae6fd',
-    backgroundColor: '#fff',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 11,
+    backgroundColor: '#0e7490',
   },
-  addBtnPressed: { backgroundColor: '#e0f2fe' },
-  addBtnText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0369a1' },
+  editText: { fontFamily: FONT.bold, fontSize: 13.5, color: '#fff' },
 
-  actions: { padding: 20, gap: 8 },
-  button: { paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
-  buttonEdit: { backgroundColor: '#0ea5e9' },
-  buttonEditText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
-  buttonRemove: { backgroundColor: '#dc2626' },
-  buttonRestore: { backgroundColor: '#059669' },
-  buttonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
+  leaders: { gap: 10 },
+  leadersWide: { flexDirection: 'row' },
+  leader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: '#faf5ff',
+    borderWidth: 1,
+    borderColor: '#ede9fe',
+  },
+  leaderWide: { flex: 1 },
+  leaderRole: { fontFamily: FONT.bold, fontSize: 12, color: '#6d28d9' },
+  leaderName: { fontFamily: FONT.bold, fontSize: 14.5, color: INK, marginTop: 1 },
+  avatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#fff', fontFamily: FONT.bold, fontSize: 13 },
+
+  facts: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  fact: { flexGrow: 1, flexBasis: '45%', backgroundColor: '#f8fafc', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },
+  factWide: { flexBasis: '30%' },
+  factLabel: { fontFamily: FONT.extrabold, fontSize: 10.5, letterSpacing: 0.5, textTransform: 'uppercase', color: SOFT },
+  factValue: { fontFamily: FONT.bold, fontSize: 14, color: INK, marginTop: 3 },
+  factWarn: { color: '#b45309' },
+  factOk: { color: '#15803d' },
+  factGo: { color: '#0369a1' },
+  note: {
+    fontFamily: FONT.medium,
+    fontSize: 14,
+    lineHeight: 21,
+    color: '#334155',
+    backgroundColor: '#fffbeb',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+
+  empty: { fontFamily: FONT.regular, textAlign: 'center', color: '#94a3b8', padding: 24, fontSize: 14 },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18, marginBottom: 8, paddingHorizontal: 4 },
+  sectionTitle: { fontFamily: FONT.extrabold, fontSize: 11.5, letterSpacing: 1, textTransform: 'uppercase', color: SOFT },
+  sectionActions: { flexDirection: 'row', gap: 16 },
+  link: { fontFamily: FONT.bold, fontSize: 13.5, color: '#0369a1' },
+  grid: { gap: 8 },
+  gridWide: { flexDirection: 'row', flexWrap: 'wrap' },
+  member: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: LINE,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  memberWide: { flexBasis: '48%', flexGrow: 1 },
+  memberName: { fontFamily: FONT.bold, fontSize: 14.5, color: INK },
+  memberTags: { fontFamily: FONT.medium, fontSize: 12, color: SOFT, marginTop: 1 },
+  memberPioneer: { color: '#15803d' },
+  removeBtn: { marginLeft: 4, padding: 2 },
+
+  foot: { alignItems: 'center', paddingVertical: 16 },
+  footText: { fontFamily: FONT.regular, fontSize: 12.5, color: '#94a3b8' },
+  footDanger: { fontFamily: FONT.bold, color: '#b91c1c' },
+  footRestore: { fontFamily: FONT.bold, fontSize: 13.5, color: '#047857' },
 
   modal: { flex: 1, backgroundColor: '#f1f5f9' },
   modalHeader: {

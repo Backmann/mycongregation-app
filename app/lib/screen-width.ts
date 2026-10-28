@@ -44,6 +44,9 @@ const OVERVIEW = new Set<string>([
   '/publishers/responsibilities',
   // The publisher's card in two columns on its own (28 October 2026).
   '/publishers/[id]',
+  // The groups beside the chosen group; a group in two columns (28 October).
+  '/service-groups',
+  '/service-groups/[id]',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

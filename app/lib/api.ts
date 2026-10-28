@@ -472,6 +472,10 @@ export interface ServiceGroup {
    * объяснения.
    */
   mine?: boolean;
+  /** How many people the group has, as this reader would be shown it (28 October 2026). */
+  memberCount?: number;
+  /** Pioneers already serving — sent only to readers with private access. */
+  pioneerCount?: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
