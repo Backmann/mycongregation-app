@@ -723,7 +723,7 @@
       "handedInHimself": "Сдан лично",
       "trendHours": "12 месяцев · часы",
       "trendStudies": "12 месяцев · изучения",
-      "paceLine": "{{n}} ч",
+      "paceLine": "темп {{n}} ч",
       "studiesRow": "изучения"
     },
     "collection": {

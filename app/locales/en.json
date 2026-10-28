@@ -715,7 +715,7 @@
       "handedInHimself": "Submitted in person",
       "trendHours": "12 months · hours",
       "trendStudies": "12 months · Bible studies",
-      "paceLine": "{{n}} h",
+      "paceLine": "pace {{n}} h",
       "studiesRow": "Bible studies"
     },
     "collection": {

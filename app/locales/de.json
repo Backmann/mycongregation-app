@@ -715,7 +715,7 @@
       "handedInHimself": "Selbst abgegeben",
       "trendHours": "12 Monate · Stunden",
       "trendStudies": "12 Monate · Bibelstudien",
-      "paceLine": "{{n}} Std.",
+      "paceLine": "Tempo {{n}} Std.",
       "studiesRow": "Bibelstudien"
     },
     "collection": {

@@ -46,16 +46,24 @@ export function HistoryTrendChart({ points, paceLine }: Props) {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>
-        {hasHours
-          ? t('reports.publisherHistory.trendHours')
-          : t('reports.publisherHistory.trendStudies')}
-      </Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>
+          {hasHours
+            ? t('reports.publisherHistory.trendHours')
+            : t('reports.publisherHistory.trendStudies')}
+        </Text>
+        {/* The pace line is named up here: written on the line itself it sat
+            on top of the bars' own figures. */}
+        {hasHours && paceLine ? (
+          <View style={styles.legend}>
+            <View style={styles.legendDash} />
+            <Text style={styles.legendText}>{t('reports.publisherHistory.paceLine', { n: paceLine })}</Text>
+          </View>
+        ) : null}
+      </View>
       <View style={styles.plot}>
         {hasHours && paceLine ? (
-          <View style={[styles.pace, { bottom: heightOf(paceLine) }]}>
-            <Text style={styles.paceText}>{t('reports.publisherHistory.paceLine', { n: paceLine })}</Text>
-          </View>
+          <View style={[styles.pace, { bottom: heightOf(paceLine) }]} />
         ) : null}
         {points.map((p, i) => {
           const v = valueOf(p);
@@ -131,16 +139,10 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     borderColor: '#94a3b8',
   },
-  paceText: {
-    position: 'absolute',
-    left: 0,
-    top: -17,
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 10.5,
-    color: '#64748b',
-    backgroundColor: '#fff',
-    paddingHorizontal: 4,
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  legend: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDash: { width: 18, borderTopWidth: 1.5, borderStyle: 'dashed', borderColor: '#94a3b8' },
+  legendText: { fontFamily: 'Manrope_700Bold', fontSize: 11, color: '#64748b' },
   axis: { flexDirection: 'row', gap: 6, marginTop: 6 },
   axisText: { flex: 1, textAlign: 'center', fontFamily: 'Manrope_600SemiBold', fontSize: 9.5, color: '#94a3b8' },
   studies: {
