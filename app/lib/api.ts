@@ -4137,6 +4137,8 @@ export interface LocalNeedsTopic {
   createdById: string | null;
   /** Who wrote it down — the name of his card (28 October 2026). */
   createdByName?: string | null;
+  /** Minutes the topic is meant for — to match the part's minutes. */
+  durationMin?: number | null;
   /**
    * The week chosen for it while that week's programme is not imported yet.
    * Only a note: the screen offers «Поставить» once the week exists.
@@ -4166,6 +4168,8 @@ export interface LocalNeedsUse {
   weekStartDate: string;
   /** The day it was given — the midweek meeting of that week. */
   meetingDate?: string | null;
+  /** The part's minutes, as it stands now or as it was. */
+  durationMin?: number | null;
   /** The part, while it still exists. */
   assignmentId: string | null;
   partKey: string | null;
@@ -4195,6 +4199,7 @@ export interface CreateLocalNeedsTopicInput {
   speakerPublisherId?: string | null;
   usedWeek?: string | null;
   plannedWeek?: string | null;
+  durationMin?: number | null;
 }
 
 export type UpdateLocalNeedsTopicInput = Partial<CreateLocalNeedsTopicInput>;

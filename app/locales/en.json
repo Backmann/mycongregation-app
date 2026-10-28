@@ -2831,12 +2831,17 @@
       "title": "Topic",
       "notes": "Notes",
       "speaker": "Speaker (optional)",
-      "week": "Week it was covered"
+      "week": "Week it was covered",
+      "minutes": "Meant for",
+      "minutesNone": "Not given",
+      "minutesOther": "Other",
+      "minutesHint": "To match a topic to the time the workbook gives the part."
     },
     "placeholders": {
       "title": "e.g. Reminder about cleaning the Kingdom Hall",
       "notes": "Notes for the speaker…",
-      "week": "Not set"
+      "week": "Not set",
+      "minutes": "min"
     },
     "insertCta": "Insert from local needs",
     "insertTitle": "Choose a topic",
@@ -2877,7 +2882,8 @@
       "planned": "Topic planned for the week of {{day}}",
       "noLnPart": "program there",
       "taken": "taken: “{{title}}”",
-      "free": "“Local Needs” free"
+      "free": "free",
+      "topicHeadFor": "Topic · part of {{n}} min"
     },
     "board": {
       "head": "Weeks with “Local Needs”",
@@ -2917,6 +2923,11 @@
       "head": "Topic bank",
       "past": "Given",
       "empty": "Every topic is placed. Write a new one when the elders choose it."
+    },
+    "fit": {
+      "fits": "fits · {{n}} min",
+      "meantFor": "for {{n}} min",
+      "longerThanPart": "The topic is meant for {{n}} min, the part has {{part}} min"
     }
   },
   "circuitOverseer": {
@@ -3979,7 +3990,8 @@
       "programmeSpelling": "Spelling in the program",
       "setAsideBy": "Set aside by the circuit visit",
       "openingSong": "Opening song",
-      "plannedWeek": "Planned for the week"
+      "plannedWeek": "Planned for the week",
+      "durationMin": "Meant for (min)"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

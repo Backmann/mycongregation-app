@@ -2831,12 +2831,17 @@
       "title": "Thema",
       "notes": "Notizen",
       "speaker": "Redner (optional)",
-      "week": "Woche der Behandlung"
+      "week": "Woche der Behandlung",
+      "minutes": "Gedacht für",
+      "minutesNone": "Keine Angabe",
+      "minutesOther": "Andere",
+      "minutesHint": "Damit ein Thema zur Zeit passt, die das Arbeitsheft dem Punkt gibt."
     },
     "placeholders": {
       "title": "z. B. Hinweis zur Reinigung des Königreichssaals",
       "notes": "Notizen für den Redner…",
-      "week": "Nicht gesetzt"
+      "week": "Nicht gesetzt",
+      "minutes": "Min."
     },
     "insertCta": "Aus „Örtliche Bedürfnisse“ einfügen",
     "insertTitle": "Thema auswählen",
@@ -2877,7 +2882,8 @@
       "planned": "Thema für die Woche {{day}} vorgemerkt",
       "noLnPart": "Programm vorhanden",
       "taken": "belegt: „{{title}}“",
-      "free": "„Örtliche Bedürfnisse“ frei"
+      "free": "frei",
+      "topicHeadFor": "Thema · Punkt mit {{n}} Min."
     },
     "board": {
       "head": "Wochen mit „Örtlichen Bedürfnissen“",
@@ -2917,6 +2923,11 @@
       "head": "Themensammlung",
       "past": "Behandelt",
       "empty": "Alle Themen sind eingesetzt. Notieren Sie ein neues, wenn die Ältesten es wählen."
+    },
+    "fit": {
+      "fits": "passt · {{n}} Min.",
+      "meantFor": "für {{n}} Min.",
+      "longerThanPart": "Das Thema ist für {{n}} Min. gedacht, der Punkt hat {{part}} Min."
     }
   },
   "circuitOverseer": {
@@ -3979,7 +3990,8 @@
       "programmeSpelling": "Schreibweise im Programm",
       "setAsideBy": "Vom Kreisaufseherbesuch zurückgestellt",
       "openingSong": "Anfangslied",
-      "plannedWeek": "Vorgemerkt für die Woche"
+      "plannedWeek": "Vorgemerkt für die Woche",
+      "durationMin": "Gedacht für (Min.)"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

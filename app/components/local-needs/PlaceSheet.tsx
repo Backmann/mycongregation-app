@@ -9,7 +9,7 @@ import { FormChips } from '../FormChips';
 import { localNeedsApi, type LocalNeedsTopic, type LocalNeedsWeek } from '../../lib/api';
 import { reportSuccess } from '../../lib/error-bus';
 import { BRAND } from '../../lib/header';
-import { fullName, mondayOfISO, shortDayLabel } from '../../lib/local-needs';
+import { byFit, fitOf, fullName, mondayOfISO, shortDayLabel } from '../../lib/local-needs';
 
 /**
  * «Поставить на неделю» — the three ways the body of elders puts a topic into
@@ -65,6 +65,28 @@ export function PlaceSheet({
   const chosenTopic = topic ?? bank.find((b) => b.id === topicId) ?? null;
   const titleOf = (id: string | null) => topics.find((x) => x.id === id)?.title ?? null;
   const theWeek = weeks.find((w) => w.weekStartDate === week) ?? null;
+  const minLabel = (n: number) => t('localNeeds.place.min', { n });
+
+  // The part the topic is going to — its minutes are what a topic must fit.
+  const targetPart =
+    theWeek && choice && choice !== 'extra'
+      ? (theWeek.parts.find((p) => p.id === choice) ?? null)
+      : null;
+  const partMin = targetPart?.partDurationMin ?? null;
+
+  // A new part is as long as the topic is meant to be, unless changed.
+  useEffect(() => {
+    if (chosenTopic?.durationMin) setMinutes(chosenTopic.durationMin);
+  }, [visible, chosenTopic?.id, chosenTopic?.durationMin]);
+
+  /** What the bank row says on its right: does it fit the part? */
+  const fitNote = (x: LocalNeedsTopic): { text?: string; tone?: 'free' | 'quiet' | 'warn' } => {
+    if (!x.durationMin) return {};
+    const f = fitOf(x.durationMin, partMin);
+    if (f === 'fits') return { text: t('localNeeds.fit.fits', { n: x.durationMin }), tone: 'free' };
+    if (f === 'longer') return { text: t('localNeeds.fit.meantFor', { n: x.durationMin }), tone: 'warn' };
+    return { text: t('localNeeds.fit.meantFor', { n: x.durationMin }), tone: 'quiet' };
+  };
 
   // The week's local-needs part is the usual place: chosen for the person.
   useEffect(() => {
@@ -107,7 +129,8 @@ export function PlaceSheet({
     const ln = w.parts.find((p) => p.localNeeds);
     if (!ln) return { text: t('localNeeds.place.noLnPart'), free: false };
     if (ln.topicId) return { text: t('localNeeds.place.taken', { title: titleOf(ln.topicId) ?? ln.partTitle }), free: false };
-    return { text: t('localNeeds.place.free'), free: true };
+    const free = t('localNeeds.place.free');
+    return { text: ln.partDurationMin ? `${free} · ${minLabel(ln.partDurationMin)}` : free, free: true };
   };
 
   return (
@@ -132,20 +155,27 @@ export function PlaceSheet({
     >
       {!topic ? (
         <>
-          <Text style={styles.head}>{t('localNeeds.place.topicHead')}</Text>
+          <Text style={styles.head}>
+            {partMin ? t('localNeeds.place.topicHeadFor', { n: partMin }) : t('localNeeds.place.topicHead')}
+          </Text>
           {bank.length === 0 ? (
             <Text style={styles.quiet}>{t('localNeeds.place.noBank')}</Text>
           ) : (
             <View style={styles.list}>
-              {bank.map((b) => (
-                <Option
-                  key={b.id}
-                  on={topicId === b.id}
-                  title={b.title}
-                  sub={fullName(b.speaker) ?? undefined}
-                  onPress={() => setTopicId(b.id)}
-                />
-              ))}
+              {byFit(bank, partMin).map((b) => {
+                const note = fitNote(b);
+                return (
+                  <Option
+                    key={b.id}
+                    on={topicId === b.id}
+                    title={b.title}
+                    sub={fullName(b.speaker) ?? undefined}
+                    right={note.text}
+                    rightTone={note.tone}
+                    onPress={() => setTopicId(b.id)}
+                  />
+                );
+              })}
             </View>
           )}
         </>
@@ -206,6 +236,11 @@ export function PlaceSheet({
               .sort((a, b) => Number(b.localNeeds) - Number(a.localNeeds))
               .map((p) => {
                 const other = p.topicId && p.topicId !== chosenTopic?.id ? titleOf(p.topicId) : null;
+                const longer = fitOf(chosenTopic?.durationMin, p.partDurationMin) === 'longer';
+                const who = fullName(p.speaker) ?? (p.localNeeds ? t('localNeeds.place.usual') : null);
+                const plain = [p.partDurationMin ? minLabel(p.partDurationMin) : null, who]
+                  .filter(Boolean)
+                  .join(' · ');
                 return (
                   <Option
                     key={p.id}
@@ -218,9 +253,14 @@ export function PlaceSheet({
                     sub={
                       other
                         ? t('localNeeds.place.replaces', { title: other })
-                        : (fullName(p.speaker) ?? (p.localNeeds ? t('localNeeds.place.usual') : undefined))
+                        : longer
+                          ? t('localNeeds.fit.longerThanPart', {
+                              n: chosenTopic?.durationMin,
+                              part: p.partDurationMin,
+                            })
+                          : plain || undefined
                     }
-                    warn={!!other}
+                    warn={!!other || longer}
                     onPress={() => setChoice(p.id)}
                   />
                 );
@@ -237,7 +277,9 @@ export function PlaceSheet({
               <FormChips
                 label={t('localNeeds.place.minutes')}
                 value={minutes}
-                options={[5, 10, 15].map((m) => ({ value: m, label: t('localNeeds.place.min', { n: m }) }))}
+                options={[...new Set([5, 10, 15, minutes])]
+                  .sort((a, b) => a - b)
+                  .map((m) => ({ value: m, label: minLabel(m) }))}
                 onChange={setMinutes}
               />
             </View>
@@ -262,7 +304,7 @@ function Option({
   title: string;
   sub?: string;
   right?: string;
-  rightTone?: 'free' | 'quiet';
+  rightTone?: 'free' | 'quiet' | 'warn';
   warn?: boolean;
   onPress: () => void;
 }) {
@@ -279,7 +321,10 @@ function Option({
         {sub ? <Text style={[styles.optionSub, warn && styles.warn]}>{sub}</Text> : null}
       </View>
       {right ? (
-        <Text style={[styles.right, rightTone === 'free' && styles.free]} numberOfLines={2}>
+        <Text
+          style={[styles.right, rightTone === 'free' && styles.free, rightTone === 'warn' && styles.warn]}
+          numberOfLines={2}
+        >
           {right}
         </Text>
       ) : null}

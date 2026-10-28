@@ -175,7 +175,8 @@ export function TopicCard({
     .map((u) => {
       const who = shortName(u.speaker);
       const day = dayLabel(u.meetingDate ?? u.weekStartDate, lang);
-      return who ? `${day} · ${who}` : day;
+      const min = u.durationMin ? t('localNeeds.place.min', { n: u.durationMin }) : null;
+      return [day, min, who].filter(Boolean).join(' · ');
     })
     .join('; ');
   return (
@@ -198,6 +199,12 @@ export function TopicCard({
         </Pressable>
       ) : null}
       <View style={styles.metaRow}>
+        {topic.durationMin ? (
+          <View style={styles.meta}>
+            <Ionicons name="time-outline" size={12} color="#334155" />
+            <Text style={styles.metaText}>{t('localNeeds.fit.meantFor', { n: topic.durationMin })}</Text>
+          </View>
+        ) : null}
         <View style={styles.meta}>
           <Text style={styles.metaText}>
             {t('localNeeds.card.speaker', {
