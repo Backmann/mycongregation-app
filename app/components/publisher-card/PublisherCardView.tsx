@@ -6,6 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
   absencesApi,
+  meetingSettingsApi,
+  specialEventsApi,
+  type ActivityItem,
   publisherActivityApi,
   publishersApi,
   responsibilitiesApi,
@@ -14,6 +17,8 @@ import {
   type Publisher,
 } from '../../lib/api';
 import { addWeeks, formatDateISO, startOfWeekMonday } from '../../lib/dates';
+import { effectiveVersionFor } from '../../lib/meeting-schedule';
+import { weekRules } from '../../lib/week-rules';
 import { formatDay, formatDayRange } from '../../lib/date-range';
 import { formatMonthLabel } from '../../lib/i18n';
 import { activityItemLabel } from '../../lib/activity';
@@ -446,16 +451,36 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
     queryFn: () => publisherActivityApi.getActivity({ weekStart: until, weeks: 16 }),
     staleTime: 60 * 1000,
   });
-  const thisWeek = formatDateISO(monday);
+  // The activity knows the week; the day is the week rules' answer — a
+  // meeting moved by the circuit overseer's visit on its moved day, the
+  // Memorial on its own date (Lionel, 28 October 2026: the day, not the week).
+  const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
+  const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
+  const dayOf = (i: ActivityItem): string | null => {
+    if (!settingsQ.data || !eventsQ.data) return null;
+    const rules = weekRules({
+      weekStartISO: i.weekStartDate,
+      version: effectiveVersionFor(settingsQ.data.versions, i.weekStartDate),
+      events: eventsQ.data,
+    });
+    if (i.eventType === 'memorial') return rules.memorial?.date ?? null;
+    if (i.eventType === 'midweek' || i.eventType === 'weekend') return rules.dateOf(i.eventType);
+    return null;
+  };
+  const todayISO = formatDateISO(new Date());
   const items = (q.data?.find((a) => a.publisherId === publisherId)?.items ?? [])
-    .slice()
-    .sort((a, b) => b.weekStartDate.localeCompare(a.weekStartDate));
-  const ahead = items.filter((i) => i.weekStartDate >= thisWeek).reverse();
-  const past = items.filter((i) => i.weekStartDate < thisWeek);
+    .map((i) => ({ i, day: dayOf(i) }))
+    .sort((a, b) => (b.day ?? b.i.weekStartDate).localeCompare(a.day ?? a.i.weekStartDate));
+  // Ahead by the day itself: Sunday's part is still ahead on Wednesday,
+  // Monday's is not.
+  const isAheadOf = (x: { i: ActivityItem; day: string | null }) =>
+    x.day ? x.day >= todayISO : x.i.weekStartDate >= formatDateISO(monday);
+  const ahead = items.filter(isAheadOf).reverse();
+  const past = items.filter((x) => !isAheadOf(x));
   // Folded: the next three and the last three; «Ещё» opens the rest.
   const shown = [
-    ...ahead.slice(0, more ? 12 : 3).map((i) => ({ i, ahead: true })),
-    ...past.slice(0, more ? 12 : 3).map((i) => ({ i, ahead: false })),
+    ...ahead.slice(0, more ? 12 : 3).map((x) => ({ ...x, ahead: true })),
+    ...past.slice(0, more ? 12 : 3).map((x) => ({ ...x, ahead: false })),
   ];
   return (
     <Block
@@ -467,11 +492,12 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
       ) : shown.length === 0 ? (
         <Text style={styles.emptyText}>{t('publisherCard.noMeetings')}</Text>
       ) : (
-        shown.map(({ i, ahead: isAhead }, n) => (
+        shown.map(({ i, day, ahead: isAhead }, n) => (
           <View key={`${i.weekStartDate}${i.eventType}${i.kind}${i.partKey ?? i.dutyType}${i.slotIndex ?? ''}${n}`} style={styles.act}>
-            {/* The activity knows the week, not the day: say so. */}
             <Text style={styles.actWeek}>
-              {t('publisherCard.week', { date: formatDay(i.weekStartDate, i18n.language, { month: 'short' }) })}
+              {day
+                ? formatDay(day, i18n.language, { weekday: 'short', month: 'short' })
+                : t('publisherCard.week', { date: formatDay(i.weekStartDate, i18n.language, { month: 'short' }) })}
             </Text>
             <View style={[styles.actDot, { backgroundColor: KIND_COLOR[i.eventType] ?? '#94a3b8' }]} />
             <Text style={styles.actText} numberOfLines={2}>
@@ -683,7 +709,7 @@ const styles = StyleSheet.create({
   monthText: { fontFamily: FONT.bold, fontSize: 11 },
   reason: { fontFamily: FONT.medium, fontSize: 12.5, color: '#475569', marginTop: 10 },
   act: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
-  actWeek: { width: 92, fontFamily: FONT.bold, fontSize: 12.5, color: SOFT },
+  actWeek: { width: 104, fontFamily: FONT.bold, fontSize: 12.5, color: SOFT },
   actDot: { width: 8, height: 8, borderRadius: 4 },
   actText: { flex: 1, fontFamily: FONT.semibold, fontSize: 13.5, color: INK },
   ahead: {
