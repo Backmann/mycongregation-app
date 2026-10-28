@@ -18,7 +18,8 @@ import { failsScreen } from '../../../lib/screen-failure';
 /**
  * «ИТОГИ ВСТРЕЧ» — one place to find them (Lionel, 25 October 2026).
  *
- * A result is kept seven days and was found only at its meeting in the
+ * A result is kept through the 4th day after the meeting (seven days from
+ * saving until 28 October 2026) and was found only at its meeting in the
  * Programme, which opens at the current week: a Wednesday's result was out
  * of sight by Monday though it was still kept. Here: every result still
  * kept, newest first — this week's and last week's, both meetings — for
@@ -27,7 +28,8 @@ import { failsScreen } from '../../../lib/screen-failure';
 
 type Kind = 'midweek' | 'weekend';
 const KINDS: Kind[] = ['weekend', 'midweek'];
-const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
+/** An older server without `keepUntil`: the rule since 28 October 2026. */
+const KEEP_DAYS = 4;
 
 export default function ConductResults() {
   const { t, i18n } = useTranslation();
@@ -101,7 +103,8 @@ export default function ConductResults() {
       {found.map(({ week, kind, run, day }) => {
         const drift = run.totalSec - run.plannedSec;
         const mins = Math.round(Math.abs(drift) / 60);
-        const keep = new Date(new Date(run.savedAt).getTime() + KEEP_MS);
+        // Through the 4th day after the meeting, as the server says.
+        const keep = run.keepUntil ?? formatDateISO(addDays(new Date(`${day.slice(0, 10)}T12:00:00`), KEEP_DAYS));
         return (
           <Pressable
             key={`${week}-${kind}`}
@@ -131,7 +134,7 @@ export default function ConductResults() {
                       : t('conduct.ahead', { minutes: mins })}
                 </Text>
               </Text>
-              <Text style={styles.keep}>{t('conduct.results.keep', { day: dayLabel(formatDateISO(keep), false) })}</Text>
+              <Text style={styles.keep}>{t('conduct.results.keep', { day: dayLabel(keep, true) })}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
           </Pressable>

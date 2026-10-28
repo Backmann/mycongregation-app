@@ -124,7 +124,7 @@ import { NoAccess } from '../../../components/NoAccess';
  * timekeeper named in its duties («Ведущий времени»), and an admin — ONE of
  * them at a time. Not the elders in general — two people advancing the same
  * parts would help nobody. The elders may READ the result once it is saved,
- * for its seven days.
+ * through the 4th day after the meeting.
  *
  * LIVE (15 October 2026). Lionel: a brother keeps the time so the chairman
  * does not have to lead and tap at once. The one who runs it sends every tap
@@ -490,7 +490,7 @@ export default function ConductScreen({
         // в меню «⋯» — «Начать заново».
         const at = Date.now();
         if (isExpiredRecord(raw, week, at)) {
-          // Older than the seven days the server keeps the result: gone.
+          // A run left on this device for over a week: gone.
           AsyncStorage.removeItem(key).catch(() => undefined);
           return;
         }

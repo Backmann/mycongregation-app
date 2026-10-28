@@ -105,7 +105,7 @@ export function ConductEntry({
 }
 
 /**
- * «ИТОГ ВСТРЕЧИ» — how a midweek meeting ran, for its seven days
+ * «ИТОГ ВСТРЕЧИ» — how a meeting ran, through the 4th day after it
  * (14 October 2026).
  *
  * Shown to whoever may read it — the admins, the counsel brother and the

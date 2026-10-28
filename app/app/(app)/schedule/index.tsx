@@ -1770,7 +1770,7 @@ function Meeting({
             />
           ) : null}
           {tab === "programme" && (item.kind === "midweek" || item.kind === "weekend") ? (
-            // How the meeting ran, for its seven days — here, at the meeting
+            // How the meeting ran, while it is kept — here, at the meeting
             // itself, and no longer on the Home screen (Lionel, 25 October
             // 2026: Home is for what is to be done today). Both meetings.
             <View style={styles.conductLink}>
