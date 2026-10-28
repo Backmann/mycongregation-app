@@ -92,7 +92,7 @@ if (!/\{notice \? <View/.test(read('components/DoorList.tsx'))) problems.push('D
 const HUBS = {
   // [where it stands, the requests every line is read from]
   'app/(app)/cart/index.tsx': [/notice=\{<PartlyShown queries=\{asked\}/, ['standingQ', 'collectionQ', 'attendanceQ', 'fieldQ', '...cartQs', 'visitsQ', 'eventsQ', 'auxQ', 'servingQ']],
-  'app/(app)/publishers/index.tsx': [/notice=\{<PartlyShown queries=\{\[/, ['summaryQ']],
+  'app/(app)/publishers/index.tsx': [/notice=\{<PartlyShown queries=\{\[/, ['summaryQ', 'lnWeeksQ']],
   'app/(app)/profile/index.tsx': [/contentContainerStyle=\{\{ paddingBottom: 32 \}\}\s*>\s*\{\/\*[\s\S]{0,200}?\*\/\}\s*<PartlyShown\s+queries=\{\[/, ['signedInQuery', 'myTasksQuery', 'myPublisherQuery']],
 };
 for (const [rel, [where, names]] of Object.entries(HUBS)) {

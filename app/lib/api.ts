@@ -4135,6 +4135,15 @@ export interface LocalNeedsTopic {
   /** The meeting part this topic became, when placed from the schedule. */
   usedAssignmentId: string | null;
   createdById: string | null;
+  /** Who wrote it down — the name of his card (28 October 2026). */
+  createdByName?: string | null;
+  /**
+   * The week chosen for it while that week's programme is not imported yet.
+   * Only a note: the screen offers «Поставить» once the week exists.
+   */
+  plannedWeek?: string | null;
+  /** Each week it was given, newest first, for two years. */
+  uses?: LocalNeedsUse[];
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -4146,11 +4155,46 @@ export interface LocalNeedsTopic {
   } | null;
 }
 
+export interface LocalNeedsSpeaker {
+  id: string;
+  displayName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+}
+
+export interface LocalNeedsUse {
+  weekStartDate: string;
+  /** The day it was given — the midweek meeting of that week. */
+  meetingDate?: string | null;
+  /** The part, while it still exists. */
+  assignmentId: string | null;
+  partKey: string | null;
+  speaker: LocalNeedsSpeaker | null;
+}
+
+/** A week of the programme ahead with its «В жизни христианина» parts. */
+export interface LocalNeedsWeek {
+  weekStartDate: string;
+  meetingDate: string | null;
+  parts: {
+    id: string;
+    partKey: string;
+    partTitle: string | null;
+    partDurationMin: number | null;
+    /** The workbook's «Местные потребности» part. */
+    localNeeds: boolean;
+    /** The topic standing on this part. */
+    topicId: string | null;
+    speaker: LocalNeedsSpeaker | null;
+  }[];
+}
+
 export interface CreateLocalNeedsTopicInput {
   title: string;
   notes?: string | null;
   speakerPublisherId?: string | null;
   usedWeek?: string | null;
+  plannedWeek?: string | null;
 }
 
 export type UpdateLocalNeedsTopicInput = Partial<CreateLocalNeedsTopicInput>;
@@ -4201,6 +4245,25 @@ export const localNeedsApi = {
     const { data } = await api.post<LocalNeedsTopic>(
       `/local-needs/${id}/used`,
       cleanPayload(input ?? {}),
+    );
+    return data;
+  },
+  /** The programme's weeks ahead, with their «В жизни христианина» parts. */
+  async weeks(): Promise<LocalNeedsWeek[]> {
+    const { data } = await api.get<LocalNeedsWeek[]>("/local-needs/weeks");
+    return data;
+  },
+  /**
+   * Put the topic into a week: on a part (`assignmentId`) — the «Местные
+   * потребности» one or another «В жизни христианина» — or as one more part.
+   */
+  async place(
+    id: string,
+    input: { weekStartDate: string; assignmentId?: string; durationMin?: number },
+  ): Promise<LocalNeedsTopic> {
+    const { data } = await api.post<LocalNeedsTopic>(
+      `/local-needs/${id}/place`,
+      cleanPayload(input),
     );
     return data;
   },

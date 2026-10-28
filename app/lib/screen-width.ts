@@ -52,6 +52,8 @@ const OVERVIEW = new Set<string>([
   '/absences',
   '/absences/new',
   '/absences/[id]',
+  // The weeks ahead beside the bank of topics (28 October 2026).
+  '/local-needs',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

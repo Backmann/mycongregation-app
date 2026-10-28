@@ -2819,23 +2819,14 @@
     "title": {
       "list": "Local needs"
     },
-    "intro": "A topic bank for the “Living as Christians” part. Plan topics and slot them into the week you need.",
     "add": "Add topic",
-    "empty": "No topics yet. Add topics that concern the congregation.",
     "section": {
-      "planned": "Planned",
-      "upcoming": "Scheduled",
-      "past": "Past",
-      "archived": "Archived",
-      "today": "At tonight’s meeting"
+      "archived": "Archived"
     },
-    "noPlanned": "All topics have been covered.",
     "newTitle": "New topic",
     "editTitle": "Edit topic",
     "edit": "Edit",
     "delete": "Delete",
-    "markUsed": "Mark as covered",
-    "markPlanned": "Move back to planned",
     "fields": {
       "title": "Topic",
       "notes": "Notes",
@@ -2851,7 +2842,6 @@
     "insertTitle": "Choose a topic",
     "insertEmpty": "No planned topics. Add them on the “Local needs” screen (the light bulb icon in the schedule header).",
     "wasUsedOn": "Covered in the week {{week}}",
-    "scheduledFor": "In the program for the week {{week}}",
     "archived": "Archived",
     "restore": "Restore from the archive",
     "searchPlaceholder": "Search topics and notes",
@@ -2860,7 +2850,74 @@
     "insertSearch": "Search topics",
     "insertPastGroup": "Already covered",
     "insertPlannedGroup": "Planned",
-    "deleted": "Topic deleted"
+    "deleted": "Topic deleted",
+    "place": {
+      "title": "Put a topic into a week",
+      "titleFor": "Put “{{title}}”",
+      "cta": "Put in",
+      "planCta": "Plan",
+      "topicHead": "Topic",
+      "noBank": "No topics in the bank. Write one down and put it in right away.",
+      "weekHead": "Week",
+      "otherWeek": "Another week…",
+      "otherWeekSub": "no program yet",
+      "otherDate": "Week",
+      "otherDatePh": "Pick a day of the week",
+      "otherHint": "The topic is marked as planned. Once the workbook is imported, “Put in” appears here.",
+      "howHead": "Where on {{day}}",
+      "instead": "Instead of “{{title}}”",
+      "replaces": "Replaces the topic “{{title}}”",
+      "usual": "The usual place for the topic",
+      "extra": "Additional part",
+      "extraSub": "After the last “Living as Christians” part",
+      "minutes": "Length",
+      "min": "{{n}} min",
+      "speakerNote": "The speaker receives only the title of the topic — as before. If the part has no speaker yet, the one named on the topic is put on it.",
+      "done": "Topic put on {{day}}",
+      "planned": "Topic planned for the week of {{day}}",
+      "noLnPart": "program there",
+      "taken": "taken: “{{title}}”",
+      "free": "“Local Needs” free"
+    },
+    "board": {
+      "head": "Weeks with “Local Needs”",
+      "headShort": "The weeks ahead",
+      "empty": "The imported program of the weeks ahead has no “Local Needs” part.",
+      "footnote": "The weeks come from the imported program. A topic can be planned ahead for a week without a program.",
+      "plannedKicker": "PLANNED",
+      "noProgramme": "NO PROGRAMME YET",
+      "noSpeaker": "No speaker chosen",
+      "placeNow": "Put into the program",
+      "plannedHint": "Planned",
+      "waitImport": "Put in once the workbook is imported",
+      "lifeKicker": "Living as Christians",
+      "notChosen": "No topic chosen",
+      "notChosenLower": "no topic chosen",
+      "inProgramme": "In the program",
+      "choose": "Choose a topic",
+      "replace": "Replace topic"
+    },
+    "toCouncil": {
+      "cta": "Bring to the elders",
+      "itemTitle": "Local needs — topic for {{day}}",
+      "noMeeting": "Set an elders’ meeting first",
+      "done": "Added to the agenda of {{day}}"
+    },
+    "card": {
+      "proposedBy": "proposed by {{name}}",
+      "speaker": "Speaker: {{name}}",
+      "noSpeaker": "not chosen",
+      "written": "Written down {{date}}",
+      "plannedFor": "Planned for {{day}}",
+      "given": "Given:",
+      "placeAgain": "Put in again",
+      "place": "Put into a week"
+    },
+    "bank": {
+      "head": "Topic bank",
+      "past": "Given",
+      "empty": "Every topic is placed. Write a new one when the elders choose it."
+    }
   },
   "circuitOverseer": {
     "firstName": "First name",
@@ -3921,7 +3978,8 @@
       "draftDates": "Draft days",
       "programmeSpelling": "Spelling in the program",
       "setAsideBy": "Set aside by the circuit visit",
-      "openingSong": "Opening song"
+      "openingSong": "Opening song",
+      "plannedWeek": "Planned for the week"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -4868,7 +4926,8 @@
       "duties": "Who serves where at the upcoming meetings",
       "users": "Sign-ins, roles and passwords",
       "meetingPlace": "Days, times, halls",
-      "responsibilities": "Who is responsible for what"
+      "responsibilities": "Who is responsible for what",
+      "localNeeds": "The elders’ topics for the weeks ahead"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties",
@@ -4904,7 +4963,8 @@
       "kindAfter": "after the meetings",
       "weekOf": "from {{date}}",
       "cleaningMine": "Your group: {{kind}}, {{when}}",
-      "thisWeek": "this week"
+      "thisWeek": "this week",
+      "localNeeds": "Next: {{day}} — {{what}}"
     }
   },
   "cleaningHall": {
@@ -5367,7 +5427,9 @@
       "DUTY_PLACES_INVALID": "Places not saved: a place of your own needs a name, each place has 1 to 10 people, and each place appears once.",
       "DUTY_PLACE_NOT_FOUND": "That place is not on this meeting — please refresh.",
       "MONTH_INVALID": "The month is not valid.",
-      "ABSENCE_ENDS_BEFORE_START": "An absence cannot end before it starts."
+      "ABSENCE_ENDS_BEFORE_START": "An absence cannot end before it starts.",
+      "LOCAL_NEEDS_NO_PROGRAMME": "This week has no program yet — the topic can only be planned.",
+      "LOCAL_NEEDS_NOT_A_PART": "A topic can only take the place of a “Living as Christians” part of that week."
     }
   },
   "stage": {

@@ -137,6 +137,10 @@ function routeForNotification(data) {
         path: '/talk-coordinator/log',
         params: data.view === 'attention' ? { view: 'attention' } : {},
       };
+    // A «Местные потребности» part still without a topic: the coordinator's
+    // reminder opens the screen with the weeks ahead (28 October 2026).
+    case 'local_needs_reminder':
+      return { path: '/local-needs', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':

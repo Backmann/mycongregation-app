@@ -1,743 +1,342 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigation } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { formatWeekRange } from '../../../lib/week-range';
-import { UndoBar } from '../../../components/UndoBar';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  CreateLocalNeedsTopicInput,
-  LocalNeedsTopic,
-  MeetingSettingsVersion,
-  SpecialEvent,
-  UpdateLocalNeedsTopicInput,
-  extractErrorMessage,
+  agendaApi,
   localNeedsApi,
-  meetingSettingsApi,
-  specialEventsApi,
+  tasksApi,
+  type LocalNeedsTopic,
 } from '../../../lib/api';
-import { PublisherSelector } from '../../../components/PublisherSelector';
-import { DateField } from '../../../components/DateField';
 import { usePermissions } from '../../../lib/permissions';
-import { weekRules } from '../../../lib/week-rules';
-import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { failsScreen } from '../../../lib/screen-failure';
-import { Toast } from '../../../components/ErrorToast';
+import { reportError, reportSuccess } from '../../../lib/error-bus';
+import { HEADER_ICON, BRAND } from '../../../lib/header';
+import { UndoBar } from '../../../components/UndoBar';
+import { WeekCard, TopicCard } from '../../../components/local-needs/Cards';
+import { PlaceSheet } from '../../../components/local-needs/PlaceSheet';
+import { TopicForm } from '../../../components/local-needs/TopicForm';
+import {
+  buildBoard,
+  normalise,
+  shortDayLabel,
+  type BoardWeek,
+} from '../../../lib/local-needs';
+
+/** Two columns from this width of the screen's own room. */
+const TWO_COLUMNS_FROM = 900;
 
 /**
- * The day a week's midweek meeting actually falls on.
+ * «Местные потребности» (rebuilt 28 October 2026).
  *
- * A topic stores the WEEK it was used in, not a date — so «прошла» was being
- * decided by comparing Mondays, and a subject covered on Thursday went on
- * calling itself upcoming until the following Monday. Reading the list on
- * Friday, the next three subjects were not the next three.
+ * The body of elders chooses the subjects, and the question it brings here
+ * is «what stands in the coming weeks, and what is still open» — so the
+ * weeks ahead come first, on the left (on a phone, above), and the bank of
+ * topics beside them. A topic is put into a week from either side: «Выбрать
+ * тему» on an empty week, «Поставить на неделю» on a topic.
  *
- * The day comes from lib/week-rules, the one authority on what happens in a
- * week: it knows the congregation's midweek day and moves it for a circuit
- * overseer's visit, so «the meeting has been held» stays true in a week when
- * the meeting was on Tuesday.
+ * Editing is for the administrators, the Life & Ministry overseer and the
+ * body of elders' coordinator; every elder reads.
  */
-function meetingDayOf(
-  weekISO: string,
-  version: MeetingSettingsVersion | null | undefined,
-  events: SpecialEvent[],
-): string | null {
-  return weekRules({ weekStartISO: weekISO, version, events }).dateOf('midweek');
-}
-
-/** Today as YYYY-MM-DD, on the device's clock. */
-function todayLocalISO(): string {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${d.getFullYear()}-${m}-${dd}`;
-}
-
-/** Monday (YYYY-MM-DD) of the current week, in local time. */
-function thisMonday(): string {
-  const d = new Date();
-  const day = (d.getDay() + 6) % 7; // 0 = Monday
-  d.setDate(d.getDate() - day);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${dd}`;
-}
-
-// `usedWeek` is the Monday the week starts on, not the day of the meeting:
-// «на 5 октября» read as a date nobody meets on (the Android pass of 28
-// September). Say the week.
-function fmtWeek(week: string, loc: string): string {
-  const monday = new Date(`${week}T00:00:00`);
-  const range = formatWeekRange(monday, loc);
-  return monday.getFullYear() === new Date().getFullYear()
-    ? range
-    : `${range} ${monday.getFullYear()}`;
-}
-
 export default function LocalNeedsScreen() {
   const { t, i18n } = useTranslation();
+  const lang = i18n.language;
   const qc = useQueryClient();
-  const { canManageLocalNeeds, canViewLocalNeeds } = usePermissions();
+  const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const perms = usePermissions();
+  const manage = perms.canManageLocalNeeds;
 
-  const { data, isLoading, isRefetching, refetch, error } = useQuery({
+  const topicsQ = useQuery({
     throwOnError: failsScreen,
-    // Deleted topics come along: they are the archive, and the whole reason
-    // the archive exists is that a subject already covered must stay findable.
+    // Deleted topics come along: they are the archive.
     queryKey: ['local-needs', 'with-archive'],
     queryFn: () => localNeedsApi.list({ includeRemoved: true }),
-    enabled: canViewLocalNeeds,
+    enabled: perms.canViewLocalNeeds,
+  });
+  const weeksQ = useQuery({
+    queryKey: ['local-needs', 'weeks'],
+    queryFn: () => localNeedsApi.weeks(),
+    enabled: perms.canViewLocalNeeds,
   });
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [title, setTitle] = useState('');
-  const [notes, setNotes] = useState('');
-  const [speakerId, setSpeakerId] = useState<string | null>(null);
-  /*
-   * No «точно удалить?» here any more.
-   *
-   * A dialog asks everybody, every time, about a thing they almost always
-   * meant — the price is paid on every correct deletion. The strip is paid
-   * only by the person who erred, and only for a moment. That was the reason
-   * the strip was built; keeping both meant paying both.
-   */
-  const [search, setSearch] = useState('');
-  const [expandedNotes, setExpandedNotes] = useState<Record<string, boolean>>(
-    {},
-  );
-  const [archiveOpen, setArchiveOpen] = useState(false);
-  const [usedWeek, setUsedWeek] = useState<string | null>(null);
-
-  const invalidate = () =>
-    qc.invalidateQueries({ queryKey: ['local-needs'] });
-
-  const createMut = useMutation({
-    mutationFn: (input: CreateLocalNeedsTopicInput) =>
-      localNeedsApi.create(input),
-    onSuccess: () => {
-      invalidate();
-      closeModal();
-    },
-  });
-  const updateMut = useMutation({
-    mutationFn: (vars: { id: string; input: UpdateLocalNeedsTopicInput }) =>
-      localNeedsApi.update(vars.id, vars.input),
-    onSuccess: () => {
-      invalidate();
-      closeModal();
-    },
-  });
   /**
-   * The topic just deleted, so the strip can offer it back.
-   *
-   * Deleting a topic is soft and the archive holds it, but finding it there
-   * means leaving the screen and knowing the archive exists. A tap on
-   * «Отменить» in the same second costs neither.
+   * «Вынести на совет» — for whoever may build the next meeting's agenda.
+   * The rights are the server's answer for that meeting; without a meeting
+   * the coordinator (and an administrator) still sees the button, and is told
+   * to set the meeting first.
    */
-  const [justDeleted, setJustDeleted] = useState<string | null>(null);
-  const removeMut = useMutation({
-    mutationFn: (id: string) => localNeedsApi.remove(id),
-    onSuccess: (_r, id) => {
-      invalidate();
-      setJustDeleted(id);
+  const agendaQ = useQuery({
+    queryKey: ['tasks', 'agenda', 'next'],
+    queryFn: () => tasksApi.agenda(),
+    enabled: perms.canViewLocalNeeds,
+    staleTime: 60 * 1000,
+  });
+  const nextMeeting = agendaQ.data?.meeting ?? null;
+  const rightsQ = useQuery({
+    queryKey: ['agenda-rights', nextMeeting?.id],
+    queryFn: () => agendaApi.rights(nextMeeting!.id),
+    enabled: !!nextMeeting,
+  });
+  // Without a meeting: admin or the coordinator, as canManageEvents says.
+  const toCouncil = nextMeeting ? !!rightsQ.data?.mayBuild : agendaQ.isSuccess && perms.canManageEvents;
+
+  const councilMut = useMutation({
+    mutationFn: async (week: BoardWeek) => {
+      if (!nextMeeting) return null;
+      await agendaApi.create(nextMeeting.id, {
+        title: t('localNeeds.toCouncil.itemTitle', { day: shortDayLabel(week.day, lang) }),
+        area: 'teaching',
+      });
+      return nextMeeting;
+    },
+    onSuccess: (meeting) => {
+      if (!meeting) {
+        reportError(t('localNeeds.toCouncil.noMeeting'));
+        return;
+      }
+      void qc.invalidateQueries({ queryKey: ['agenda-items', meeting.id] });
+      reportSuccess(t('localNeeds.toCouncil.done', { day: shortDayLabel(meeting.date, lang) }));
     },
   });
-  const usedMut = useMutation({
-    // The week is the server's business now — it reads the congregation's
-    // clock. The screen only says which way it is moving.
-    mutationFn: (vars: { id: string; used: boolean }) =>
-      vars.used
-        ? localNeedsApi.markUsed(vars.id)
-        : localNeedsApi.markPlanned(vars.id),
-    onSuccess: invalidate,
-  });
+
+  const [search, setSearch] = useState('');
+  const [pastOpen, setPastOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<LocalNeedsTopic | null>(null);
+  const [justDeleted, setJustDeleted] = useState<string | null>(null);
+  const [place, setPlace] = useState<{
+    topic: LocalNeedsTopic | null;
+    week?: string;
+    partId?: string;
+  } | null>(null);
+
+  const openNew = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: manage
+        ? () => (
+            <Pressable
+              onPress={openNew}
+              style={{ paddingHorizontal: 12 }}
+              hitSlop={8}
+              accessibilityLabel={t('localNeeds.add')}
+            >
+              <Ionicons name="add" size={28} color={HEADER_ICON} />
+            </Pressable>
+          )
+        : undefined,
+    });
+  }, [navigation, manage, t]);
+
   const restoreMut = useMutation({
     mutationFn: (id: string) => localNeedsApi.restore(id),
-    onSuccess: invalidate,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['local-needs'] }),
   });
 
-  /** Loose match so «Гостеприимство» finds «о гостеприимстве». */
-  const normalise = (v: string) =>
-    v
-      .toLowerCase()
-      .replace(/[«»"'’.,:;!?()\-—–]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+  const all = useMemo(() => topicsQ.data ?? [], [topicsQ.data]);
+  const weeks = useMemo(() => weeksQ.data ?? [], [weeksQ.data]);
+  const board = useMemo(() => buildBoard(weeks, all), [weeks, all]);
 
-  /**
-   * What the congregation's week looks like — the same two sources the
-   * schedule screen reads, so the two cannot disagree about which day the
-   * meeting is on.
-   */
-  const settingsQuery = useQuery({
-    queryKey: ['meeting-settings'],
-    queryFn: () => meetingSettingsApi.getOverview(),
-    staleTime: 10 * 60 * 1000,
-  });
-  /**
-   * Events from a year back, not every one ever recorded.
-   *
-   * They are here for one reason — a circuit overseer's visit moves the
-   * midweek meeting, and that decides whether a topic has already been
-   * covered. A year covers every topic this screen shows; asking for all of
-   * them was a list that grows for ever to answer a question about last month.
-   */
-  const sinceISO = new Date(Date.now() - 400 * 24 * 3600 * 1000)
-    .toISOString()
-    .slice(0, 10);
-  const eventsQuery = useQuery({
-    queryKey: ['special-events', 'since', sinceISO],
-    queryFn: () => specialEventsApi.list({ since: sinceISO }),
-    staleTime: 10 * 60 * 1000,
-  });
-
-  /**
-   * The one answer to «has that meeting happened yet», used by the grouping
-   * AND by the chip on each row.
-   *
-   * Two copies of this rule is how the list and the label drift apart: the
-   * section would say «прошедшие» while the row still said «в программе».
-   */
-  const versions = settingsQuery.data?.versions;
-  const events = useMemo(() => eventsQuery.data ?? [], [eventsQuery.data]);
-  const meetingHeld = useCallback(
-    (weekISO: string): boolean => {
-      const day = meetingDayOf(
-        weekISO,
-        effectiveVersionFor(versions, weekISO),
-        events,
-      );
-      // No settings yet: fall back to the old rule rather than guessing.
-      if (!day) return weekISO < thisMonday();
-      return day < todayLocalISO();
-    },
-    [versions, events],
-  );
-
-  const { planned, upcoming, today, past, archived, all } = useMemo(() => {
-    const rows = data ?? [];
-    const monday = thisMonday();
-    const todayISO = todayLocalISO();
-
-    const held = meetingHeld;
-    void monday;
+  const { bank, past, archive } = useMemo(() => {
     const needle = normalise(search);
     const matches = (r: LocalNeedsTopic) =>
-      !needle ||
-      normalise(`${r.title} ${r.notes ?? ''}`).includes(needle);
-    const live = rows.filter((r) => !r.deletedAt);
-    const withWeek = live.filter((r) => !!r.usedWeek);
+      !needle || normalise(`${r.title} ${r.notes ?? ''}`).includes(needle);
+    // What stands on the left needs no second place on the right.
+    const onBoard = new Set(
+      board.flatMap((w) => w.slots.filter((x) => !x.planned && x.topic).map((x) => x.topic!.id)),
+    );
+    const live = all.filter((r) => !r.deletedAt);
     return {
-      all: rows,
-      planned: live.filter((r) => !r.usedWeek).filter(matches),
-      // On the schedule and the meeting is still ahead.
-      upcoming: withWeek
-        .filter((r) => !held(r.usedWeek as string))
-        .filter(
-          (r) =>
-            meetingDayOf(
-              r.usedWeek as string,
-              effectiveVersionFor(versions, r.usedWeek as string),
-              events,
-            ) !== todayISO,
-        )
+      // Waiting: never given, or put back. A planned week does not take a
+      // topic out of the bank — it is still to be placed.
+      bank: live.filter((r) => !r.usedWeek).filter(matches),
+      // Given — every one not standing in a week ahead on the left.
+      past: live
+        .filter((r) => !!r.usedWeek && !onBoard.has(r.id))
         .filter(matches)
-        .sort((a, b) =>
-          (a.usedWeek as string).localeCompare(b.usedWeek as string),
-        ),
-      /* Its own line, because «на этой неделе» and «сегодня вечером» are
-         different answers to the question the elder is actually asking. */
-      today: withWeek
-        .filter(
-          (r) =>
-            meetingDayOf(
-              r.usedWeek as string,
-              effectiveVersionFor(versions, r.usedWeek as string),
-              events,
-            ) === todayISO,
-        )
-        .filter(matches),
-      // The meeting has already been held — this is the history.
-      past: withWeek
-        .filter((r) => held(r.usedWeek as string))
-        .filter(matches)
-        .sort((a, b) =>
-          (b.usedWeek as string).localeCompare(a.usedWeek as string),
-        ),
-      // Deleted, but kept: a subject already covered is worth remembering, and
-      // sometimes worth coming back to.
-      archived: rows
+        .sort((a, b) => (b.usedWeek as string).localeCompare(a.usedWeek as string)),
+      archive: all
         .filter((r) => !!r.deletedAt)
         .filter(matches)
         .sort((a, b) => (b.deletedAt as string).localeCompare(a.deletedAt ?? '')),
     };
-  }, [data, search, meetingHeld, versions, events]);
+  }, [all, search, board]);
 
-  /**
-   * A subject that has come up before, whatever state it is in now.
-   *
-   * The fear this answers is a real one — taking the same subject twice a year
-   * apart — and the moment to answer it is while the title is being typed, not
-   * afterwards.
-   */
-  const similar = useMemo(() => {
-    const needle = normalise(title);
-    if (needle.length < 4) return [];
-    return (all ?? [])
-      .filter((r) => r.id !== editId)
-      .filter((r) => {
-        const other = normalise(r.title);
-        return other.includes(needle) || needle.includes(other);
-      })
-      .slice(0, 3);
-  }, [title, all, editId]);
+  const twoColumns = width >= TWO_COLUMNS_FROM;
+  const loading = topicsQ.isLoading || weeksQ.isLoading;
 
-  const [pastOpen, setPastOpen] = useState(true);
+  const refresh = () => {
+    void topicsQ.refetch();
+    void weeksQ.refetch();
+  };
 
-  function openNew() {
-    setEditId(null);
-    setTitle('');
-    setNotes('');
-    setSpeakerId(null);
-    setUsedWeek(null);
-    createMut.reset();
-    updateMut.reset();
-    setModalOpen(true);
-  }
-  function openEdit(topic: LocalNeedsTopic) {
-    setEditId(topic.id);
-    setTitle(topic.title);
-    setNotes(topic.notes ?? '');
-    setSpeakerId(topic.speakerPublisherId);
-    setUsedWeek(topic.usedWeek);
-    createMut.reset();
-    updateMut.reset();
-    setModalOpen(true);
-  }
-  function closeModal() {
-    setModalOpen(false);
-  }
+  const weeksColumn = (
+    <View style={twoColumns ? styles.left : null}>
+      <Text style={styles.sectionLabel}>{twoColumns ? t('localNeeds.board.head') : t('localNeeds.board.headShort')}</Text>
+      {weeksQ.isLoading ? (
+        <ActivityIndicator style={{ marginVertical: 16 }} />
+      ) : board.length === 0 ? (
+        <Text style={styles.empty}>{t('localNeeds.board.empty')}</Text>
+      ) : (
+        board.map((w) => (
+          <WeekCard
+            key={w.weekStartDate}
+            week={w}
+            manage={manage}
+            toCouncil={toCouncil}
+            onChoose={(wk, slot) => setPlace({ topic: null, week: wk.weekStartDate, partId: slot.part?.id })}
+            onPlacePlanned={(wk, topic) => setPlace({ topic, week: wk.weekStartDate })}
+            onCouncil={(wk) => councilMut.mutate(wk)}
+          />
+        ))
+      )}
+      <Text style={styles.footnote}>{t('localNeeds.board.footnote')}</Text>
+    </View>
+  );
 
-  function save() {
-    const cleanTitle = title.trim();
-    if (!cleanTitle) return;
-    if (editId) {
-      updateMut.mutate({
-        id: editId,
-        input: {
-          title: cleanTitle,
-          notes: notes.trim() ? notes.trim() : null,
-          speakerPublisherId: speakerId ?? null,
-          usedWeek: usedWeek,
-        },
-      });
-    } else {
-      createMut.mutate({
-        title: cleanTitle,
-        notes: notes.trim() || undefined,
-        speakerPublisherId: speakerId ?? undefined,
-      });
-    }
-  }
+  const card = (r: LocalNeedsTopic, mode: 'bank' | 'past' | 'archive') => (
+    <TopicCard
+      key={r.id}
+      topic={r}
+      manage={manage}
+      mode={mode}
+      onPlace={(topic) => setPlace({ topic })}
+      onEdit={(topic) => {
+        setEditing(topic);
+        setFormOpen(true);
+      }}
+      onRestore={(topic) => restoreMut.mutate(topic.id)}
+    />
+  );
 
-  const saving = createMut.isPending || updateMut.isPending;
-  const saveError = createMut.error || updateMut.error;
+  const bankColumn = (
+    <View style={twoColumns ? styles.right : null}>
+      <View style={styles.bankHead}>
+        <Text style={[styles.sectionLabel, { marginBottom: 0 }]}>
+          {t('localNeeds.bank.head')} · {bank.length}
+        </Text>
+        {past.length > 0 ? (
+          <Pressable onPress={() => setPastOpen((v) => !v)} hitSlop={8} style={styles.linkRow}>
+            <Text style={styles.link}>
+              {t('localNeeds.bank.past')} · {past.length}
+            </Text>
+            <Ionicons name={pastOpen ? 'chevron-up' : 'chevron-forward'} size={14} color={BRAND} />
+          </Pressable>
+        ) : null}
+      </View>
 
-  function renderRow(item: LocalNeedsTopic) {
-    const isArchived = !!item.deletedAt;
-    const isUsed = !!item.usedWeek;
-    const isPast = isUsed && meetingHeld(item.usedWeek as string);
-    const notesOpen = !!expandedNotes[item.id];
-    return (
-      <View key={item.id} style={[styles.row, isArchived && styles.rowArchived]}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.topicTitle}>{item.title}</Text>
-          {item.notes ? (
-            // Tappable, because an elder who may read the backlog but not edit
-            // it had no other way to see a note longer than two lines.
-            <Pressable
-              onPress={() =>
-                setExpandedNotes((prev) => ({
-                  ...prev,
-                  [item.id]: !prev[item.id],
-                }))
-              }
-            >
-              <Text
-                style={styles.notes}
-                numberOfLines={notesOpen ? undefined : 2}
-              >
-                {item.notes}
-              </Text>
+      {manage ? (
+        <Pressable style={styles.addCard} onPress={openNew} accessibilityRole="button">
+          <Ionicons name="add" size={18} color={BRAND} />
+          <Text style={styles.addCardText}>{t('localNeeds.add')}</Text>
+        </Pressable>
+      ) : null}
+
+      {all.length > 3 ? (
+        <View style={styles.searchBox}>
+          <Ionicons name="search-outline" size={16} color="#94a3b8" />
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t('localNeeds.searchPlaceholder')}
+            placeholderTextColor="#94a3b8"
+            autoCapitalize="none"
+          />
+          {search ? (
+            <Pressable onPress={() => setSearch('')} hitSlop={8}>
+              <Ionicons name="close-circle" size={16} color="#cbd5e1" />
             </Pressable>
           ) : null}
-          <View style={styles.metaRow}>
-            {item.speaker ? (
-              <View style={styles.metaChip}>
-                <Ionicons name="person-outline" size={12} color="#475569" />
-                <Text style={styles.metaText}>{item.speaker.displayName}</Text>
-              </View>
-            ) : null}
-            {/* Said in words. A tick and a date used to mean both "will be" and
-                "already was", told apart only by the shade of the chip. */}
-            {isUsed ? (
-              <View
-                style={[
-                  styles.metaChip,
-                  isPast ? styles.pastChip : styles.upcomingChip,
-                ]}
-              >
-                <Ionicons
-                  name={isPast ? 'checkmark-circle' : 'calendar-outline'}
-                  size={12}
-                  color={isPast ? '#047857' : '#0369a1'}
-                />
-                <Text
-                  style={[
-                    styles.metaText,
-                    { color: isPast ? '#047857' : '#0369a1' },
-                  ]}
-                >
-                  {isPast
-                    ? t('localNeeds.wasUsedOn', {
-                        week: fmtWeek(item.usedWeek as string, i18n.language),
-                      })
-                    : t('localNeeds.scheduledFor', {
-                        week: fmtWeek(item.usedWeek as string, i18n.language),
-                      })}
-                </Text>
-              </View>
-            ) : null}
-            {isArchived ? (
-              <View style={[styles.metaChip, styles.archivedChip]}>
-                <Ionicons name="archive-outline" size={12} color="#92400e" />
-                <Text style={[styles.metaText, { color: '#92400e' }]}>
-                  {t('localNeeds.archived')}
-                </Text>
-              </View>
-            ) : null}
-          </View>
         </View>
+      ) : null}
 
-        {canManageLocalNeeds && (
-          <View style={styles.actions}>
-            {isArchived ? (
-              <Pressable
-                onPress={() => restoreMut.mutate(item.id)}
-                hitSlop={6}
-                style={styles.actionBtn}
-                accessibilityLabel={t('localNeeds.restore')}
-              >
-                <Ionicons name="arrow-undo-outline" size={20} color="#0ea5e9" />
-              </Pressable>
-            ) : (
-              <>
-                <Pressable
-                  onPress={() =>
-                    usedMut.mutate({ id: item.id, used: !isUsed })
-                  }
-                  hitSlop={6}
-                  style={styles.actionBtn}
-                  accessibilityLabel={
-                    isUsed ? t('localNeeds.markPlanned') : t('localNeeds.markUsed')
-                  }
-                >
-                  <Ionicons
-                    name={isUsed ? 'arrow-undo-outline' : 'checkmark-done-outline'}
-                    size={20}
-                    color={isUsed ? '#64748b' : '#059669'}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={() => openEdit(item)}
-                  hitSlop={6}
-                  style={styles.actionBtn}
-                  accessibilityLabel={t('localNeeds.edit')}
-                >
-                  <Ionicons name="create-outline" size={20} color="#0ea5e9" />
-                </Pressable>
-                <Pressable
-                  onPress={() => removeMut.mutate(item.id)}
-                  hitSlop={6}
-                  style={styles.actionBtn}
-                  accessibilityLabel={t('localNeeds.delete')}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#ef4444" />
-                </Pressable>
-              </>
-            )}
-          </View>
-        )}
-      </View>
-    );
-  }
+      {topicsQ.isLoading ? (
+        <ActivityIndicator style={{ marginVertical: 16 }} />
+      ) : bank.length === 0 ? (
+        <Text style={styles.empty}>{search ? t('localNeeds.noMatches') : t('localNeeds.bank.empty')}</Text>
+      ) : (
+        bank.map((r) => card(r, 'bank'))
+      )}
+
+      {pastOpen && past.length > 0 ? (
+        <>
+          <Text style={[styles.sectionLabel, { marginTop: 12 }]}>
+            {t('localNeeds.bank.past')} · {past.length}
+          </Text>
+          {past.map((r) => card(r, 'past'))}
+        </>
+      ) : null}
+
+      {archive.length > 0 ? (
+        <Pressable onPress={() => setArchiveOpen((v) => !v)} hitSlop={6} style={[styles.linkRow, { marginTop: 8 }]}>
+          <Text style={styles.archiveLink}>
+            {t('localNeeds.section.archived')} · {archive.length}
+          </Text>
+          <Ionicons name={archiveOpen ? 'chevron-up' : 'chevron-down'} size={13} color="#94a3b8" />
+        </Pressable>
+      ) : null}
+      {archiveOpen ? <View style={{ marginTop: 8 }}>{archive.map((r) => card(r, 'archive'))}</View> : null}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 48 }}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
-        }
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={topicsQ.isRefetching} onRefresh={refresh} />}
       >
-        <Text style={styles.intro}>{t('localNeeds.intro')}</Text>
-
-        {canManageLocalNeeds && (
-          <Pressable style={styles.addBtn} onPress={openNew}>
-            <Ionicons name="add" size={20} color="#fff" />
-            <Text style={styles.addBtnText}>{t('localNeeds.add')}</Text>
-          </Pressable>
-        )}
-
-        {(data ?? []).length > 0 && (
-          <View style={styles.searchBox}>
-            <Ionicons name="search-outline" size={16} color="#94a3b8" />
-            <TextInput
-              style={styles.searchInput}
-              value={search}
-              onChangeText={setSearch}
-              placeholder={t('localNeeds.searchPlaceholder')}
-              placeholderTextColor="#94a3b8"
-              autoCapitalize="none"
-            />
-            {search ? (
-              <Pressable onPress={() => setSearch('')} hitSlop={8}>
-                <Ionicons name="close-circle" size={16} color="#cbd5e1" />
-              </Pressable>
-            ) : null}
-          </View>
-        )}
-
-        {error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{extractErrorMessage(error)}</Text>
-          </View>
-        )}
-
-        {isLoading ? (
+        {loading && !topicsQ.data ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
-        ) : (data ?? []).length === 0 ? (
-          <Text style={styles.empty}>{t('localNeeds.empty')}</Text>
+        ) : twoColumns ? (
+          <View style={styles.columns}>
+            {weeksColumn}
+            {bankColumn}
+          </View>
         ) : (
           <>
-            <Text style={styles.sectionLabel}>
-              {t('localNeeds.section.planned')} · {planned.length}
-            </Text>
-            {planned.length === 0 ? (
-              <Text style={styles.sectionEmpty}>
-                {t('localNeeds.noPlanned')}
-              </Text>
-            ) : (
-              planned.map(renderRow)
-            )}
-
-            {/* Above «запланированы», because tonight is nearer than next
-                month and the eye should meet it first. */}
-            {today.length > 0 && (
-              <>
-                <Text style={[styles.sectionLabel, { marginTop: 18 }]}>
-                  {t('localNeeds.section.today')} · {today.length}
-                </Text>
-                {today.map(renderRow)}
-              </>
-            )}
-
-            {upcoming.length > 0 && (
-              <>
-                <Text style={[styles.sectionLabel, { marginTop: 18 }]}>
-                  {t('localNeeds.section.upcoming')} · {upcoming.length}
-                </Text>
-                {upcoming.map(renderRow)}
-              </>
-            )}
-
-            {past.length > 0 && (
-              <>
-                <Pressable
-                  style={styles.pastHeader}
-                  onPress={() => setPastOpen((v) => !v)}
-                >
-                  <Text style={styles.sectionLabel}>
-                    {t('localNeeds.section.past')} · {past.length}
-                  </Text>
-                  <Ionicons
-                    name={pastOpen ? 'chevron-up' : 'chevron-down'}
-                    size={16}
-                    color="#94a3b8"
-                  />
-                </Pressable>
-                {pastOpen ? (
-                  <View style={styles.pastRow}>{past.map(renderRow)}</View>
-                ) : null}
-              </>
-            )}
-
-            {archived.length > 0 && (
-              <>
-                <Pressable
-                  style={styles.pastHeader}
-                  onPress={() => setArchiveOpen((v) => !v)}
-                >
-                  <Text style={styles.sectionLabel}>
-                    {t('localNeeds.section.archived')} · {archived.length}
-                  </Text>
-                  <Ionicons
-                    name={archiveOpen ? 'chevron-up' : 'chevron-down'}
-                    size={16}
-                    color="#94a3b8"
-                  />
-                </Pressable>
-                {archiveOpen ? (
-                  <View style={styles.pastRow}>{archived.map(renderRow)}</View>
-                ) : null}
-              </>
-            )}
-
-            {search &&
-            planned.length +
-              upcoming.length +
-              past.length +
-              archived.length ===
-              0 ? (
-              <Text style={styles.sectionEmpty}>
-                {t('localNeeds.noMatches')}
-              </Text>
-            ) : null}
+            {weeksColumn}
+            <View style={{ height: 20 }} />
+            {bankColumn}
           </>
         )}
       </ScrollView>
 
-      {/* Add / edit modal */}
-      <Modal
-        visible={modalOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalBackdrop}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={closeModal}
-            accessibilityRole="button"
-          />
-          <View style={styles.modalCard}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editId ? t('localNeeds.editTitle') : t('localNeeds.newTitle')}
-              </Text>
-              <Pressable onPress={closeModal} hitSlop={8}>
-                <Ionicons name="close" size={24} color="#64748b" />
-              </Pressable>
-            </View>
-
-            <ScrollView
-              contentContainerStyle={{ paddingBottom: 8 }}
-              keyboardShouldPersistTaps="handled"
-            >
-              <Text style={styles.label}>{t('localNeeds.fields.title')}</Text>
-              <TextInput
-                style={styles.input}
-                value={title}
-                onChangeText={setTitle}
-                placeholder={t('localNeeds.placeholders.title')}
-                placeholderTextColor="#94a3b8"
-              />
-
-              {/* Asked while the title is being typed, not discovered a year
-                  later: has this subject come up before, in any state? */}
-              {similar.length > 0 ? (
-                <View style={styles.similarBox}>
-                  <Text style={styles.similarHead}>
-                    {t('localNeeds.similarWarning')}
-                  </Text>
-                  {similar.map((r) => (
-                    <Text key={r.id} style={styles.similarItem}>
-                      • {r.title}
-                      {r.usedWeek
-                        ? ` — ${fmtWeek(r.usedWeek, i18n.language)}`
-                        : ''}
-                      {r.deletedAt ? ` (${t('localNeeds.archived')})` : ''}
-                    </Text>
-                  ))}
-                </View>
-              ) : null}
-
-              <Text style={styles.label}>{t('localNeeds.fields.notes')}</Text>
-              <TextInput
-                style={[styles.input, styles.multiline]}
-                value={notes}
-                onChangeText={setNotes}
-                placeholder={t('localNeeds.placeholders.notes')}
-                placeholderTextColor="#94a3b8"
-                multiline
-              />
-
-              <PublisherSelector
-                label={t('localNeeds.fields.speaker')}
-                value={speakerId}
-                onChange={setSpeakerId}
-                preferAppointment="elder"
-              />
-
-              {/* Recording a topic that was given weeks ago. The tick on the
-                  list only ever means "this week", which is right for the
-                  common case and useless for catching up. */}
-              {editId ? (
-                <DateField
-                  label={t('localNeeds.fields.week')}
-                  value={usedWeek ?? ''}
-                  onChange={(v) => setUsedWeek(v || null)}
-                  placeholder={t('localNeeds.placeholders.week')}
-                />
-              ) : null}
-
-              {saveError && (
-                <View style={styles.errorBox}>
-                  <Text style={styles.errorText}>
-                    {extractErrorMessage(saveError)}
-                  </Text>
-                </View>
-              )}
-            </ScrollView>
-
-            <View style={styles.modalActions}>
-              <Pressable
-                style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={closeModal}
-              >
-                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.modalBtn,
-                  styles.saveBtn,
-                  (!title.trim() || saving) && styles.saveBtnDisabled,
-                ]}
-                onPress={save}
-                disabled={!title.trim() || saving}
-              >
-                <Text style={styles.saveBtnText}>
-                  {saving ? t('common.saving') : t('common.save')}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-        {/* Its own strip: the root one is drawn under this window. */}
-        <Toast layer />
-      </Modal>
-
+      <PlaceSheet
+        visible={!!place}
+        onClose={() => setPlace(null)}
+        topic={place?.topic ?? null}
+        bank={bank}
+        topics={all}
+        weeks={weeks}
+        initialWeek={place?.week ?? null}
+        initialPartId={place?.partId ?? null}
+      />
+      <TopicForm
+        visible={formOpen}
+        onClose={() => setFormOpen(false)}
+        editing={editing}
+        all={all}
+        onDeleted={setJustDeleted}
+      />
       <UndoBar
         visible={!!justDeleted}
         message={t('localNeeds.deleted')}
@@ -745,7 +344,7 @@ export default function LocalNeedsScreen() {
           if (!justDeleted) return;
           await localNeedsApi.restore(justDeleted);
           setJustDeleted(null);
-          invalidate();
+          void qc.invalidateQueries({ queryKey: ['local-needs'] });
         }}
         onDismiss={() => setJustDeleted(null)}
       />
@@ -755,66 +354,41 @@ export default function LocalNeedsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  intro: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginBottom: 12, lineHeight: 18 },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0ea5e9',
-    borderRadius: 10,
-    paddingVertical: 12,
-    marginBottom: 16,
-    gap: 6,
-  },
-  addBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold',},
-  empty: { fontFamily: 'Manrope_400Regular', textAlign: 'center', color: '#64748b', marginTop: 32 },
-  pastHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 18,
-  },
-  pastRow: { opacity: 0.6 },
+  content: { padding: 16, paddingBottom: 48 },
+  columns: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
+  left: { flex: 5, minWidth: 0 },
+  right: { flex: 7, minWidth: 0 },
   sectionLabel: {
     fontSize: 12,
     fontFamily: 'Manrope_700Bold',
     color: '#64748b',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  sectionEmpty: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#94a3b8', marginBottom: 8 },
-  errorBox: {
-    backgroundColor: '#fee2e2',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 8,
-  },
-  errorText: { fontFamily: 'Manrope_400Regular', color: '#b91c1c' },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 12,
+    letterSpacing: 0.6,
     marginBottom: 10,
   },
-  topicTitle: { fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
-  notes: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 3 },
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
-  metaChip: {
+  bankHead: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#f1f5f9',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  usedChip: { backgroundColor: '#ecfdf5' },
-  upcomingChip: { backgroundColor: '#e0f2fe' },
-  archivedChip: { backgroundColor: '#fef3c7' },
-  rowArchived: { opacity: 0.75 },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  link: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: BRAND },
+  archiveLink: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: '#94a3b8' },
+  addCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#a5f3fc',
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 12,
+  },
+  addCardText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: BRAND },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -828,89 +402,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchInput: { fontFamily: 'Manrope_400Regular', flex: 1, fontSize: 14, color: '#0f172a', paddingVertical: 2 },
-  similarBox: {
-    backgroundColor: '#fffbeb',
-    borderColor: '#fde68a',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 10,
-    marginTop: 8,
-  },
-  similarHead: {
-    fontSize: 12.5,
-    color: '#92400e',
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  similarItem: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#92400e', marginTop: 2 },
-  pastChip: { backgroundColor: '#f1f5f9' },
-  metaText: { fontSize: 12, color: '#475569', fontFamily: 'Manrope_500Medium',},
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  actionBtn: { padding: 6 },
-  // Modal
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.45)',
-    justifyContent: 'center',
-    padding: 16,
-  },
-  modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  modalTitle: { fontSize: 18, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
-  label: {
-    fontSize: 13,
-    fontFamily: 'Manrope_600SemiBold',
-    color: '#334155',
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  input: {
-    fontFamily: 'Manrope_400Regular',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#0f172a',
-    backgroundColor: '#fff',
-  },
-  multiline: { minHeight: 72, textAlignVertical: 'top' },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
-  },
-  modalBtn: {
-    flex: 1,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  cancelBtn: { backgroundColor: '#f1f5f9' },
-  cancelBtnText: { color: '#475569', fontSize: 15, fontFamily: 'Manrope_600SemiBold',},
-  saveBtn: { backgroundColor: '#0ea5e9' },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#fff', fontSize: 15, fontFamily: 'Manrope_700Bold',},
-  deleteBtn: { backgroundColor: '#ef4444' },
-  confirmCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-  },
-  confirmText: {
-    fontSize: 16,
-    color: '#0f172a',
-    fontFamily: 'Manrope_600SemiBold',
-    textAlign: 'center',
-  },
+  empty: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#94a3b8', marginBottom: 12 },
+  footnote: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginTop: 2, lineHeight: 17 },
 });
