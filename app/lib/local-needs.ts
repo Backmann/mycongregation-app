@@ -99,6 +99,42 @@ export function nextLocalNeeds(
   return null;
 }
 
+/**
+ * Does a topic fit the minutes its part is given?
+ *   'fits'   — meant for no more than the part's minutes;
+ *   'longer' — meant for more (still allowed: only said);
+ *   null     — one of the two is not known.
+ */
+export function fitOf(
+  topicMin: number | null | undefined,
+  partMin: number | null | undefined,
+): 'fits' | 'longer' | null {
+  if (!topicMin || !partMin) return null;
+  return topicMin <= partMin ? 'fits' : 'longer';
+}
+
+/**
+ * The bank in the order it is chosen from for a part of `partMin` minutes:
+ * those that fit, the closest first; then those with no minutes; then those
+ * meant for longer. Without the part's minutes the order is kept.
+ */
+export function byFit<T extends { durationMin?: number | null }>(
+  topics: T[],
+  partMin: number | null | undefined,
+): T[] {
+  if (!partMin) return topics;
+  const rank = (x: T) => {
+    const f = fitOf(x.durationMin, partMin);
+    if (f === 'fits') return partMin - (x.durationMin as number);
+    if (f === null) return 1000;
+    return 2000 + (x.durationMin as number) - partMin;
+  };
+  return topics
+    .map((x, i) => ({ x, i }))
+    .sort((a, b) => rank(a.x) - rank(b.x) || a.i - b.i)
+    .map((e) => e.x);
+}
+
 /** «Беккер Й.» — short enough for a line of history. */
 export function shortName(p: LocalNeedsSpeaker | null | undefined): string | null {
   if (!p) return null;

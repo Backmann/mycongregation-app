@@ -4,10 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Sheet } from '../Sheet';
 import { DateField } from '../DateField';
+import { FormChips } from '../FormChips';
 import { PublisherSelector } from '../PublisherSelector';
 import { localNeedsApi, type LocalNeedsTopic } from '../../lib/api';
 import { BRAND } from '../../lib/header';
 import { dayLabel, normalise } from '../../lib/local-needs';
+
+/** The usual lengths of the part; anything else goes in «Другое». */
+const PRESETS = [5, 10, 15];
 
 /**
  * Writing a topic down, or changing it. Deleting sits here, quietly, at the
@@ -37,6 +41,10 @@ export function TopicForm({
   const [notes, setNotes] = useState('');
   const [speakerId, setSpeakerId] = useState<string | null>(null);
   const [usedWeek, setUsedWeek] = useState<string | null>(null);
+  /** Minutes the topic is meant for; null — not said. 'other' opens a field. */
+  const [minutes, setMinutes] = useState<number | null>(null);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const [otherText, setOtherText] = useState('');
 
   useEffect(() => {
     if (!visible) return;
@@ -44,7 +52,19 @@ export function TopicForm({
     setNotes(editing?.notes ?? '');
     setSpeakerId(editing?.speakerPublisherId ?? null);
     setUsedWeek(editing?.usedWeek ?? null);
+    const m = editing?.durationMin ?? null;
+    setMinutes(m);
+    const odd = m != null && !PRESETS.includes(m);
+    setOtherOpen(odd);
+    setOtherText(odd ? String(m) : '');
   }, [visible, editing]);
+
+  // «Другое»: whole minutes from 1 to 60, as the server takes them.
+  const otherValue = (() => {
+    const n = Number(otherText.trim());
+    return Number.isInteger(n) && n >= 1 && n <= 60 ? n : null;
+  })();
+  const minutesOut = otherOpen ? otherValue : minutes;
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['local-needs'] });
   const saveMut = useMutation({
@@ -55,12 +75,14 @@ export function TopicForm({
             title: clean,
             notes: notes.trim() ? notes.trim() : null,
             speakerPublisherId: speakerId ?? null,
+            durationMin: minutesOut,
             ...(usedWeek !== editing.usedWeek ? { usedWeek } : {}),
           })
         : localNeedsApi.create({
             title: clean,
             notes: notes.trim() || undefined,
             speakerPublisherId: speakerId ?? undefined,
+            durationMin: minutesOut ?? undefined,
           });
     },
     onSuccess: () => {
@@ -90,7 +112,10 @@ export function TopicForm({
       .slice(0, 3);
   }, [title, all, editing]);
 
-  const ok = !!title.trim() && !saveMut.isPending;
+  // An «Другое» field left with something that is not a minute count stops
+  // the save rather than quietly dropping what was typed.
+  const otherBad = otherOpen && otherText.trim() !== '' && otherValue === null;
+  const ok = !!title.trim() && !saveMut.isPending && !otherBad;
 
   return (
     <Sheet
@@ -154,6 +179,40 @@ export function TopicForm({
         multiline
       />
 
+      <View style={{ marginTop: 12 }}>
+        <FormChips<number | 'none' | 'other'>
+          label={t('localNeeds.fields.minutes')}
+          value={otherOpen ? 'other' : (minutes ?? 'none')}
+          options={[
+            { value: 'none', label: t('localNeeds.fields.minutesNone') },
+            ...PRESETS.map((m) => ({ value: m, label: t('localNeeds.place.min', { n: m }) })),
+            { value: 'other', label: t('localNeeds.fields.minutesOther') },
+          ]}
+          onChange={(v) => {
+            if (v === 'other') {
+              // Starts from what was chosen, so opening it changes nothing.
+              if (!otherOpen) setOtherText(minutes ? String(minutes) : '');
+              setOtherOpen(true);
+              return;
+            }
+            setOtherOpen(false);
+            setMinutes(v === 'none' ? null : v);
+          }}
+        />
+        {otherOpen ? (
+          <TextInput
+            style={[styles.input, styles.minutesInput, otherBad && styles.inputBad]}
+            value={otherText}
+            onChangeText={(v) => setOtherText(v.replace(/[^0-9]/g, ''))}
+            keyboardType="number-pad"
+            maxLength={2}
+            placeholder={t('localNeeds.placeholders.minutes')}
+            placeholderTextColor="#94a3b8"
+          />
+        ) : null}
+        <Text style={styles.hint}>{t('localNeeds.fields.minutesHint')}</Text>
+      </View>
+
       <PublisherSelector
         label={t('localNeeds.fields.speaker')}
         value={speakerId}
@@ -194,6 +253,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   multiline: { minHeight: 72, textAlignVertical: 'top' },
+  minutesInput: { width: 120, marginTop: -6 },
+  inputBad: { borderColor: '#f59e0b' },
+  hint: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#94a3b8', marginTop: 4 },
   similar: {
     backgroundColor: '#fffbeb',
     borderColor: '#fde68a',
