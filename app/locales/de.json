@@ -167,7 +167,6 @@
     "searchByName": "Nach Name suchen…",
     "showRemoved": "Entfernte anzeigen",
     "noMatches": "Keine Treffer",
-    "totalCount": "{{count}} insgesamt",
     "nameRequired": "Name ist erforderlich",
     "notes": "Notizen",
     "name": "Name",
@@ -5632,5 +5631,28 @@
     "ahead": "geplant",
     "week": "Woche {{date}}",
     "whatsapp": "WhatsApp"
+  },
+  "groupCard": {
+    "nextMeeting": "Zusammenkunft für den Predigtdienst",
+    "general": "gemeinsam",
+    "serviceOverseer": "Dienstaufseher",
+    "visitComing": "Kommt am {{date}}",
+    "visitLast": "Zuletzt am {{date}}",
+    "visitNone": "In diesem Dienstjahr noch nicht",
+    "reports": "Berichte · {{month}}",
+    "reportsOf": "{{done}} von {{total}}",
+    "onMap": "auf der Karte",
+    "trim": "Mitglieder bearbeiten",
+    "add": "Hinzufügen",
+    "onlyLeaders": "Außer Aufseher und Gehilfe noch niemand in der Gruppe",
+    "disband": "Gruppe auflösen —",
+    "otherGroups": "Andere Gruppen",
+    "overseerShort": "Aufseher",
+    "assistantShort": "Gehilfe",
+    "members": "Mitglieder: {{count}}",
+    "pioneers": "Pioniere: {{count}}",
+    "removedCount": "Gelöschte Gruppen: {{count}}",
+    "show": "anzeigen",
+    "hide": "ausblenden"
   }
 }

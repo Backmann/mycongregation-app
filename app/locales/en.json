@@ -167,7 +167,6 @@
     "searchByName": "Search by name…",
     "showRemoved": "Show removed",
     "noMatches": "No matches",
-    "totalCount": "{{count}} total",
     "nameRequired": "Name is required",
     "notes": "Notes",
     "name": "Name",
@@ -5632,5 +5631,28 @@
     "ahead": "ahead",
     "week": "week of {{date}}",
     "whatsapp": "WhatsApp"
+  },
+  "groupCard": {
+    "nextMeeting": "Field service meeting",
+    "general": "congregation",
+    "serviceOverseer": "Service overseer",
+    "visitComing": "Coming {{date}}",
+    "visitLast": "Last {{date}}",
+    "visitNone": "Not yet this service year",
+    "reports": "Reports · {{month}}",
+    "reportsOf": "{{done}} of {{total}}",
+    "onMap": "on the map",
+    "trim": "Edit members",
+    "add": "Add",
+    "onlyLeaders": "No one in the group yet besides the overseer and assistant",
+    "disband": "Disband the group —",
+    "otherGroups": "Other groups",
+    "overseerShort": "overseer",
+    "assistantShort": "assistant",
+    "members": "Members: {{count}}",
+    "pioneers": "Pioneers: {{count}}",
+    "removedCount": "Removed groups: {{count}}",
+    "show": "show",
+    "hide": "hide"
   }
 }

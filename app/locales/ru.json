@@ -167,7 +167,6 @@
     "searchByName": "Поиск по имени…",
     "showRemoved": "Показать удалённые",
     "noMatches": "Ничего не найдено",
-    "totalCount": "Всего: {{count}}",
     "nameRequired": "Требуется название",
     "notes": "Заметки",
     "name": "Название",
@@ -5758,5 +5757,28 @@
     "ahead": "впереди",
     "week": "нед. {{date}}",
     "whatsapp": "WhatsApp"
+  },
+  "groupCard": {
+    "nextMeeting": "Встреча для проповеди",
+    "general": "общая",
+    "serviceOverseer": "Служебный старейшина",
+    "visitComing": "Придёт {{date}}",
+    "visitLast": "Был {{date}}",
+    "visitNone": "В этом году ещё не был",
+    "reports": "Отчёты · {{month}}",
+    "reportsOf": "{{done}} из {{total}}",
+    "onMap": "на карте",
+    "trim": "Изменить состав",
+    "add": "Добавить",
+    "onlyLeaders": "Кроме ответственного и помощника, в группе пока никого",
+    "disband": "Расформировать группу —",
+    "otherGroups": "Другие группы",
+    "overseerShort": "ответственный",
+    "assistantShort": "помощник",
+    "members": "Участников: {{count}}",
+    "pioneers": "Пионеров: {{count}}",
+    "removedCount": "Удалённые группы: {{count}}",
+    "show": "показать",
+    "hide": "скрыть"
   }
 }
