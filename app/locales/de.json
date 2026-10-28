@@ -2819,23 +2819,14 @@
     "title": {
       "list": "Örtliche Bedürfnisse"
     },
-    "intro": "Ein Themenspeicher für den Teil „Unser Leben als Christ“. Planen Sie Themen und fügen Sie sie in der gewünschten Woche ein.",
     "add": "Thema hinzufügen",
-    "empty": "Noch keine Themen. Fügen Sie Themen hinzu, die die Versammlung betreffen.",
     "section": {
-      "planned": "Geplant",
-      "upcoming": "Eingeplant",
-      "past": "Vergangen",
-      "archived": "Archiviert",
-      "today": "Bei der Zusammenkunft heute"
+      "archived": "Archiviert"
     },
-    "noPlanned": "Alle Themen wurden behandelt.",
     "newTitle": "Neues Thema",
     "editTitle": "Thema bearbeiten",
     "edit": "Bearbeiten",
     "delete": "Löschen",
-    "markUsed": "Als behandelt markieren",
-    "markPlanned": "Zurück zu geplant",
     "fields": {
       "title": "Thema",
       "notes": "Notizen",
@@ -2851,7 +2842,6 @@
     "insertTitle": "Thema auswählen",
     "insertEmpty": "Keine geplanten Themen. Fügen Sie sie im Bildschirm „Örtliche Bedürfnisse“ hinzu (Glühbirne in der Kopfzeile des Programms).",
     "wasUsedOn": "Behandelt in der Woche {{week}}",
-    "scheduledFor": "Im Programm für die Woche {{week}}",
     "archived": "Archiviert",
     "restore": "Aus dem Archiv zurückholen",
     "searchPlaceholder": "Themen und Notizen durchsuchen",
@@ -2860,7 +2850,74 @@
     "insertSearch": "Themen suchen",
     "insertPastGroup": "Schon behandelt",
     "insertPlannedGroup": "Geplant",
-    "deleted": "Thema gelöscht"
+    "deleted": "Thema gelöscht",
+    "place": {
+      "title": "Thema in eine Woche setzen",
+      "titleFor": "„{{title}}“ einsetzen",
+      "cta": "Einsetzen",
+      "planCta": "Vormerken",
+      "topicHead": "Thema",
+      "noBank": "Keine Themen in der Sammlung. Notieren Sie ein Thema und setzen Sie es gleich ein.",
+      "weekHead": "Woche",
+      "otherWeek": "Andere Woche…",
+      "otherWeekSub": "noch kein Programm",
+      "otherDate": "Woche",
+      "otherDatePh": "Einen Tag der Woche wählen",
+      "otherHint": "Das Thema wird vorgemerkt. Sobald das Arbeitsheft geladen ist, erscheint hier „Einsetzen“.",
+      "howHead": "Wohin am {{day}}",
+      "instead": "Statt „{{title}}“",
+      "replaces": "Ersetzt das Thema „{{title}}“",
+      "usual": "Der übliche Platz für das Thema",
+      "extra": "Zusätzlicher Programmpunkt",
+      "extraSub": "Nach dem letzten Punkt von „Unser Leben als Christ“",
+      "minutes": "Dauer",
+      "min": "{{n}} Min.",
+      "speakerNote": "Der Redner erhält nur den Titel des Themas — wie bisher. Hat der Punkt noch keinen Redner, wird der beim Thema genannte eingetragen.",
+      "done": "Thema für {{day}} eingesetzt",
+      "planned": "Thema für die Woche {{day}} vorgemerkt",
+      "noLnPart": "Programm vorhanden",
+      "taken": "belegt: „{{title}}“",
+      "free": "„Örtliche Bedürfnisse“ frei"
+    },
+    "board": {
+      "head": "Wochen mit „Örtlichen Bedürfnissen“",
+      "headShort": "Die nächsten Wochen",
+      "empty": "Im geladenen Programm der nächsten Wochen gibt es keinen Punkt „Örtliche Bedürfnisse“.",
+      "footnote": "Die Wochen stammen aus dem geladenen Programm. Für eine Woche ohne Programm lässt sich ein Thema vormerken.",
+      "plannedKicker": "VORGEMERKT",
+      "noProgramme": "NOCH KEIN PROGRAMM",
+      "noSpeaker": "Kein Redner gewählt",
+      "placeNow": "Ins Programm setzen",
+      "plannedHint": "Vorgemerkt",
+      "waitImport": "Wird eingesetzt, sobald das Arbeitsheft geladen ist",
+      "lifeKicker": "Unser Leben als Christ",
+      "notChosen": "Kein Thema gewählt",
+      "notChosenLower": "kein Thema gewählt",
+      "inProgramme": "Im Programm",
+      "choose": "Thema wählen",
+      "replace": "Thema ersetzen"
+    },
+    "toCouncil": {
+      "cta": "Zur Ältestenbesprechung",
+      "itemTitle": "Örtliche Bedürfnisse — Thema für {{day}}",
+      "noMeeting": "Legen Sie zuerst eine Ältestenbesprechung fest",
+      "done": "Zur Tagesordnung vom {{day}} hinzugefügt"
+    },
+    "card": {
+      "proposedBy": "vorgeschlagen von {{name}}",
+      "speaker": "Redner: {{name}}",
+      "noSpeaker": "nicht gewählt",
+      "written": "Notiert am {{date}}",
+      "plannedFor": "Vorgemerkt für {{day}}",
+      "given": "Behandelt:",
+      "placeAgain": "Erneut einsetzen",
+      "place": "In eine Woche setzen"
+    },
+    "bank": {
+      "head": "Themensammlung",
+      "past": "Behandelt",
+      "empty": "Alle Themen sind eingesetzt. Notieren Sie ein neues, wenn die Ältesten es wählen."
+    }
   },
   "circuitOverseer": {
     "firstName": "Vorname",
@@ -3921,7 +3978,8 @@
       "draftDates": "Tage der Entwürfe",
       "programmeSpelling": "Schreibweise im Programm",
       "setAsideBy": "Vom Kreisaufseherbesuch zurückgestellt",
-      "openingSong": "Anfangslied"
+      "openingSong": "Anfangslied",
+      "plannedWeek": "Vorgemerkt für die Woche"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -4868,7 +4926,8 @@
       "duties": "Wer bei den nächsten Zusammenkünften welchen Platz hat",
       "users": "Zugänge, Rollen und Passwörter",
       "meetingPlace": "Tage, Zeiten, Säle",
-      "responsibilities": "Wer wofür zuständig ist"
+      "responsibilities": "Wer wofür zuständig ist",
+      "localNeeds": "Themen der Ältestenschaft für die nächsten Wochen"
     },
     "cleaning": "Saalreinigung",
     "duties": "Dienste bei Zusammenkünften",
@@ -4904,7 +4963,8 @@
       "kindAfter": "nach den Zusammenkünften",
       "weekOf": "ab {{date}}",
       "cleaningMine": "Ihre Gruppe: {{kind}}, {{when}}",
-      "thisWeek": "diese Woche"
+      "thisWeek": "diese Woche",
+      "localNeeds": "Nächste: {{day}} — {{what}}"
     }
   },
   "cleaningHall": {
@@ -5367,7 +5427,9 @@
       "DUTY_PLACES_INVALID": "Plätze nicht gespeichert: Ein eigener Platz braucht einen Namen, jeder Platz hat 1 bis 10 Personen, und jeder Platz kommt nur einmal vor.",
       "DUTY_PLACE_NOT_FOUND": "Diesen Platz gibt es bei dieser Zusammenkunft nicht — bitte die Ansicht aktualisieren.",
       "MONTH_INVALID": "Der Monat ist ungültig.",
-      "ABSENCE_ENDS_BEFORE_START": "Eine Abwesenheit kann nicht vor ihrem Beginn enden."
+      "ABSENCE_ENDS_BEFORE_START": "Eine Abwesenheit kann nicht vor ihrem Beginn enden.",
+      "LOCAL_NEEDS_NO_PROGRAMME": "Für diese Woche gibt es noch kein Programm — das Thema lässt sich nur vormerken.",
+      "LOCAL_NEEDS_NOT_A_PART": "Ein Thema kann nur statt eines Punktes von „Unser Leben als Christ“ dieser Woche stehen."
     }
   },
   "stage": {

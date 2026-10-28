@@ -93,7 +93,7 @@ export interface Permissions {
   /** Absences — admin OR body coordinator / midweek overseer / secretary. */
   canManageAbsences: boolean;
 
-  /** Local needs — visible to elders (read); managed by admin + L&M overseer. */
+  /** Local needs — visible to elders (read); managed by admin, L&M overseer and the coordinator. */
   canViewLocalNeeds: boolean;
   canViewPioneerSchool: boolean;
   canManagePioneerSchool: boolean;
@@ -228,7 +228,8 @@ export function usePermissions(): Permissions {
       canViewPioneerSchool: isAdmin || isElder,
       // Only an administrator keeps the schedule — Lionel's decision.
       canManagePioneerSchool: isAdmin,
-      canManageLocalNeeds: isAdmin || holds("life_ministry_overseer"),
+      canManageLocalNeeds:
+        isAdmin || holds("life_ministry_overseer") || holds("body_coordinator"),
       // Помощник имеет те же права: замену делают перед встречей, и
       // координатора может не быть рядом.
       // The coordinator of the body of elders answers for the exchange of

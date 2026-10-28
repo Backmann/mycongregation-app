@@ -4,7 +4,8 @@ import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
-import { congregationSummaryApi } from '../../../lib/api';
+import { congregationSummaryApi, localNeedsApi } from '../../../lib/api';
+import { nextLocalNeeds, shortDayLabel } from '../../../lib/local-needs';
 import { congregationLines, type DoorLine } from '../../../lib/congregation-lines';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
 import { PartlyShown } from '../../../components/ConnectionState';
@@ -48,7 +49,7 @@ export default function CongregationScreen() {
       void refetch();
     }, [refetch]),
   );
-  const lines: Record<string, DoorLine> = summaryQ.data
+  const baseLines: Record<string, DoorLine> = summaryQ.data
     ? congregationLines(
         summaryQ.data,
         { manageAbsences: perms.canManageAbsences, editCleaning: perms.canEditCleaning },
@@ -56,6 +57,26 @@ export default function CongregationScreen() {
         i18n.language,
       )
     : {};
+  // «Ближайшая: ср 11 нояб. — тема не выбрана» under «Местные потребности».
+  const lnWeeksQ = useQuery({
+    queryKey: ['local-needs', 'weeks'],
+    queryFn: () => localNeedsApi.weeks(),
+    enabled: perms.canViewLocalNeeds,
+    staleTime: 60 * 1000,
+  });
+  const lnNext = lnWeeksQ.data ? nextLocalNeeds(lnWeeksQ.data) : null;
+  const lines: Record<string, DoorLine> = lnNext
+    ? {
+        ...baseLines,
+        localNeeds: {
+          text: t('congregationHub.live.localNeeds', {
+            day: shortDayLabel(lnNext.day, i18n.language),
+            what: lnNext.filled ? lnNext.topicTitle : t('localNeeds.board.notChosenLower'),
+          }),
+          due: !lnNext.filled,
+        },
+      }
+    : baseLines;
 
   // The roster rule — the same as the roster screen's and the server's.
   const privileged =
@@ -106,7 +127,15 @@ export default function CongregationScreen() {
 
   const elders: Door[] = [
     { key: 'tasks', title: t('tasks.title'), subtitle: t('congregationHub.sub.tasks'), href: '/tasks' },
+    // The topics the body of elders chooses — reached from here too, not
+    // only through «⋯» on the programme (28 October 2026).
     {
+      key: 'localNeeds',
+      title: t('localNeeds.title.list'),
+      subtitle: t('congregationHub.sub.localNeeds'),
+      href: '/local-needs',
+    },
+{
       key: 'school',
       title: t('pioneerSchool.title'),
       subtitle: t('congregationHub.sub.school'),
@@ -246,13 +275,18 @@ export default function CongregationScreen() {
         },
       ];
 
+  const retryLines = () => {
+    void refetch();
+    void lnWeeksQ.refetch();
+  };
+
   return (
     <DoorList
       sections={sections}
       lines={lines}
       // The one request every line is read from (9 October 2026): when it did
       // not come, the screen says that the lines are not shown.
-      notice={<PartlyShown queries={[summaryQ]} onRetry={() => void refetch()} />}
+      notice={<PartlyShown queries={[summaryQ, lnWeeksQ]} onRetry={retryLines} />}
     />
   );
 }
