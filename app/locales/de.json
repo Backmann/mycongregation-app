@@ -628,8 +628,6 @@
       "daysLeft_other": "Noch {{count}} Tage",
       "lastDays": "Letzte Tage: der Monat schließt am {{date}}",
       "missed": "Der Monat ist abgeschlossen — wenden Sie sich an den Sekretär",
-      "doneEditable": "Abgegeben. Änderbar bis {{date}}",
-      "doneClosed": "Abgegeben; der Monat ist abgeschlossen",
       "submit": "Bericht abgeben",
       "change": "Ändern",
       "myMonths": "Meine Monate",
@@ -659,7 +657,7 @@
     "submittingOnBehalfOf": "Bericht abgegeben für",
     "publisher": "Verkündiger",
     "reportMonth": "Berichtsmonat",
-    "alreadySubmitted": "Bereits abgegeben. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um zu bearbeiten.",
+    "alreadySubmitted": "Für diesen Monat ist der Bericht schon abgegeben. Ändern können Sie ihn unter „Berichte“, solange der Monat offen ist – danach über den Gruppenaufseher.",
     "hoursLabel": "Stunden im Predigtdienst",
     "didTheyShare": "Haben sie diesen Monat am Predigtdienst teilgenommen?",
     "didYouShare": "Haben Sie diesen Monat am Predigtdienst teilgenommen?",
@@ -670,7 +668,7 @@
     "updateReport": "Bericht aktualisieren",
     "alerts": {
       "alreadySubmittedTitle": "Bereits abgegeben",
-      "alreadySubmittedBody": "Ein Bericht für {{month}} existiert bereits. Gehen Sie zurück und tippen Sie auf das Stift-Symbol, um ihn zu bearbeiten.",
+      "alreadySubmittedBody": "Der Bericht für {{month}} ist schon abgegeben. Ändern können Sie ihn unter „Berichte“, solange der Monat offen ist – danach über den Gruppenaufseher.",
       "validationTitle": "Validierung",
       "validationHours": "Bitte geben Sie gültige Stunden ein (0–744).",
       "validationServedOnBehalf": "Bitte geben Sie an, ob sie diesen Monat am Predigtdienst teilgenommen haben.",
@@ -709,21 +707,16 @@
       "notSubmitted": "Nicht abgegeben",
       "noPublisherId": "Öffnen Sie den Verlauf aus den Gruppenberichten — so ist nicht klar, um welchen Verkündiger es geht.",
       "fallbackName": "Verkündiger",
-      "last12Months": "Letzte 12 Monate",
       "noHistory": "Kein Verlauf",
-      "self": "(selbst)",
       "someoneElse": "jemand anderes",
-      "submittedBy": "Abgegeben von {{name}}",
       "editedBy": "bearbeitet von {{name}}",
-      "trendTitle": "Diensttrend",
-      "hours": "Stunden",
-      "studies": "Studien"
-    },
-    "pioneerGoal": {
-      "title": "Stundenziel (Jahr)",
-      "onTrack": "Im Plan",
-      "behind": "Im Rückstand",
-      "detail": "{{hours}} Std. von {{goalToDate}} Std. bis diesen Monat · Jahresziel {{annualGoal}} Std."
+      "pioneerChip": "Allgemeiner Pionier",
+      "enteredBy": "Eingetragen von {{name}}",
+      "handedInHimself": "Selbst abgegeben",
+      "trendHours": "12 Monate · Stunden",
+      "trendStudies": "12 Monate · Bibelstudien",
+      "paceLine": "{{n}} Std.",
+      "studiesRow": "Bibelstudien"
     },
     "collection": {
       "title": "Berichte für {{month}}",
@@ -766,7 +759,38 @@
     "studiesMinus": "Ein Bibelstudium weniger",
     "studiesPlus": "Ein Bibelstudium mehr",
     "submitForMonth": "Bericht für {{month}} abgeben",
-    "alreadySubmittedFor": "Der Bericht für {{month}} wurde bereits abgegeben. Vielleicht wurde er auf einem anderen Gerät oder von einem Ältesten eingetragen. Die Monatsliste wurde aktualisiert."
+    "alreadySubmittedFor": "Der Bericht für {{month}} wurde bereits abgegeben. Vielleicht wurde er auf einem anderen Gerät oder von einem Ältesten eingetragen. Die Monatsliste wurde aktualisiert.",
+    "studiesLikeLast": "Wie zuletzt ({{month}}): {{n}}",
+    "hero": {
+      "notIn": "● Nicht abgegeben",
+      "until_one": "bis {{date}} · {{count}} Tag",
+      "until_other": "bis {{date}} · {{count}} Tage",
+      "in": "✓ Abgegeben",
+      "inOn": "✓ Abgegeben am {{date}}",
+      "hours": "Stunden",
+      "shared": "im Dienst",
+      "studies": "Bibelstudien",
+      "correctUntil": "Ändern · bis {{date}}",
+      "correctByOverseer": "Ändern kann den Bericht jetzt der Gruppenaufseher.",
+      "noStudies": "keine Bibelstudien",
+      "noCard": "Ihr Konto ist mit keiner Verkündigerkarte verbunden, daher stehen hier keine eigenen Monate. Verbinden kann sie ein Administrator: „Versammlung“ → „Verkündiger“ → Karte → „Zugang zur App“."
+    },
+    "year": {
+      "title": "Dienstjahr {{from}}/{{to}}",
+      "h": "{{n}} Std.",
+      "hoursYear": "Stunden im Jahr",
+      "goal": "Jahresziel",
+      "left": "noch",
+      "paceLine": "Jedes Feld ist ein Monat; voll bei {{n}} Std., dem üblichen Tempo.",
+      "hoursIn": "im Jahr · {{n}} Mon.",
+      "paceGoal": "Tempo Ziel {{n}}",
+      "paceMinimum": "Tempo Mindestmaß {{n}}",
+      "eldersLine": "Bis zum Tempo des Mindestmaßes fehlen {{min}} Std., bis zum Ziel {{goal}} Std."
+    },
+    "allIn": {
+      "title": "Alle Berichte abgegeben",
+      "body": "Für die letzten Monate ist nichts mehr abzugeben. Einen abgegebenen Bericht können Sie unter „Berichte“ ändern, solange der Monat offen ist."
+    }
   },
   "serviceGroups": {
     "title": {
@@ -4479,7 +4503,8 @@
     "studies": "Studien: {{count}}",
     "toMinimumOwn": "Für {{months}} Monate Dienst liegt das Minimum bei {{expected}} Std.: {{count}} Std. fehlen",
     "meetsOwn": "Für {{months}} Monate Dienst ist das Minimum von {{expected}} Std. erreicht",
-    "yearLeftOwn": "Bis zu seinem Jahresmaß ({{total}} Std.) fehlen {{count}} Std. — {{perMonth}} im Monat"
+    "yearLeftOwn": "Bis zu seinem Jahresmaß ({{total}} Std.) fehlen {{count}} Std. — {{perMonth}} im Monat",
+    "noHoursYet": "Berichte sind da, aber noch ohne Stunden"
   },
   "memorial": {
     "title": "Gedächtnismahl",

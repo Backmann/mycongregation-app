@@ -158,7 +158,12 @@ export default function PioneerYearReviewScreen() {
   );
 
   const card = (row: PioneerYearRow) => {
-    const measured = row.toMinimum !== null;
+    // Nothing handed in yet: the shortfall is the missing report, and that is
+    // what is said (28 October 2026) — «не хватает 47 ч» of a brother whose
+    // September report is simply not in read as a judgement on his service.
+    const measured =
+      row.toMinimum !== null &&
+      (row.months ?? []).some((m) => m.state === 'reported' || m.state === 'zero');
     /**
      * Served part of the year — appointed after September or stopped before
      * August. Measured pro rata to HIS months (28 September, Lionel), so his
@@ -197,7 +202,12 @@ export default function PioneerYearReviewScreen() {
           })}
         </Text>
       ) : (
-        <Text style={styles.paceLead}>{t("pioneerReview.noReports")}</Text>
+        <Text style={styles.paceLead}>
+          {/* A report with no hours (ill, credit in the note) is not «no report». */}
+          {(row.months ?? []).some((m) => m.state === "zero")
+            ? t("pioneerReview.noHoursYet")
+            : t("pioneerReview.noReports")}
+        </Text>
       )}
 
       {/*
