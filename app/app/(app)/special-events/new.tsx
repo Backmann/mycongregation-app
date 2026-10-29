@@ -73,6 +73,8 @@ export default function NewSpecialEventScreen() {
           form.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form.coMidweekDow
             : undefined,
+        auxReducedHours:
+          form.type.trim() === 'campaign' ? form.auxReducedHours : undefined,
       }),
     // The new event opens — not the list it was made from: that is where
     // the next thing to do with it (the visit schedule, the programme link)
@@ -163,6 +165,7 @@ const CHOICES = [
   'regional_convention',
   'memorial',
   'branch_representative_visit',
+  'campaign',
   'other',
 ] as const;
 

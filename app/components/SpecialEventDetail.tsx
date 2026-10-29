@@ -71,6 +71,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     coRole: e.coRole ?? 'overseer',
     coAccommodationAddress: e.coAccommodationAddress ?? '',
     coMidweekDow: e.coMidweekDow ?? 2,
+    auxReducedHours: e.auxReducedHours ?? false,
   };
 }
 
@@ -136,6 +137,8 @@ export function SpecialEventDetail({
           form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form!.coMidweekDow
             : undefined,
+        auxReducedHours:
+          form!.type.trim() === 'campaign' ? form!.auxReducedHours : undefined,
       }),
     onSuccess: () => {
       invalidateAfterEventChange(qc);

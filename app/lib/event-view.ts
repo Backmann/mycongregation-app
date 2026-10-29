@@ -31,6 +31,7 @@ export type KindKey =
   | 'regional_convention'
   | 'circuit_assembly'
   | 'memorial'
+  | 'campaign'
   | 'other';
 
 export function kindOf(item: EventListItem): KindKey {
@@ -42,6 +43,7 @@ export function kindOf(item: EventListItem): KindKey {
     case 'regional_convention':
     case 'circuit_assembly':
     case 'memorial':
+    case 'campaign':
     case 'special_talk':
       return type;
     default:
@@ -57,6 +59,7 @@ export const KIND_LOOK: Record<KindKey, { icon: string; color: string; soft: str
   regional_convention: { icon: 'megaphone-outline', color: '#b45309', soft: '#fef3c7' },
   circuit_assembly: { icon: 'megaphone-outline', color: '#b45309', soft: '#fef3c7' },
   memorial: { icon: 'wine-outline', color: '#be123c', soft: '#ffe4e6' },
+  campaign: { icon: 'flag-outline', color: '#047857', soft: '#d1fae5' },
   other: { icon: 'calendar-outline', color: '#475569', soft: '#f1f5f9' },
 };
 
