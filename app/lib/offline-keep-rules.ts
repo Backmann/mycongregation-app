@@ -14,7 +14,8 @@
  *   • the programme, duties, cleaning and field service of the eight weeks
  *     from this Monday — the first piece of the feed and of «Главная»;
  *   • meeting times and special events;
- *   • names of people and of groups — what every publisher sees anyway.
+ *   • names of people and of groups — what every publisher sees anyway;
+ *   • one's own hours log — the overview and the months one opened.
  *
  * NEVER: anybody's phone, e-mail or address (one's own included — see
  * keptIdentity), reports, absences, the elders' tasks, the journal, anything
@@ -49,6 +50,13 @@ export function keptName(queryKey: readonly unknown[], mondayISO: string): strin
   }
   if (a === 'publishers' && b === 'roster' && queryKey.length === 2) return 'publishers/roster';
   if (a === 'service-groups' && queryKey.length === 1) return 'service-groups';
+  // His own hours log (29 October 2026): written where there is often no
+  // signal, so the month he last saw stays readable there. His alone, and
+  // wiped with everything else kept when he signs out.
+  if (a === 'service-log' && b === 'overview' && queryKey.length === 2) return 'service-log/overview';
+  if (a === 'service-log' && b === 'month' && queryKey.length === 3 && typeof c === 'string') {
+    return `service-log/month/${c}`;
+  }
   if (typeof a === 'string' && RANGE_KINDS.includes(a) && b === 'range' && c === mondayISO) {
     if (queryKey.length === 3) return `${a}/${c}`;
     if (queryKey.length === 4 && typeof d === 'string') return `${a}/${c}/${d}`;

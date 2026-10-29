@@ -6747,6 +6747,8 @@ export interface ServiceLogMonth {
   reportHours: number;
   report: { hours: number | null; byOther: boolean } | null;
   today: string;
+  /** The first month of the log in the congregation; null — off. */
+  startsFrom?: string | null;
 }
 
 export interface ServiceLogEntryInput {

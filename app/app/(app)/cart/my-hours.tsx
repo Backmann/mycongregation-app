@@ -110,7 +110,15 @@ export default function MyHoursScreen() {
 
         {m.role === null ? (
           <View style={styles.card}>
-            <Text style={styles.quiet}>{t('hoursLog.month.notYours')}</Text>
+            <Text style={styles.quiet}>
+              {m.startsFrom && m.month < m.startsFrom
+                ? // Before the log began here: not «your report has no hours»,
+                  // which a pioneer would rightly find wrong (29 October 2026).
+                  t('hoursLog.month.startsFrom', {
+                    month: monthName(m.startsFrom, lang).replace(/\s?г\.$/, ''),
+                  })
+                : t('hoursLog.month.notYours')}
+            </Text>
           </View>
         ) : (
           <View style={styles.card}>

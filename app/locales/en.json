@@ -6106,7 +6106,8 @@
       "byOther": "Your report was submitted for you: {{n}} h. Your log has {{dur}}. To correct it, ask your group overseer.",
       "empty": "No entries yet",
       "pending_one": "{{count}} entry not sent yet — it will go once there is a connection.",
-      "pending_other": "{{count}} entries not sent yet — they will go once there is a connection."
+      "pending_other": "{{count}} entries not sent yet — they will go once there is a connection.",
+      "startsFrom": "The hours log begins with {{month}}. The report for this month is submitted as usual."
     },
     "undo": {
       "written": "Logged {{dur}}",

@@ -6106,7 +6106,8 @@
       "byOther": "Ihr Bericht wurde für Sie abgegeben: {{n}} Std. Eingetragen sind {{dur}}. Zum Korrigieren wenden Sie sich an Ihren Gruppenaufseher.",
       "empty": "Noch keine Einträge",
       "pending_one": "{{count}} Eintrag noch nicht gesendet — er geht, sobald eine Verbindung besteht.",
-      "pending_other": "{{count}} Einträge noch nicht gesendet — sie gehen, sobald eine Verbindung besteht."
+      "pending_other": "{{count}} Einträge noch nicht gesendet — sie gehen, sobald eine Verbindung besteht.",
+      "startsFrom": "Die Stundenerfassung beginnt mit {{month}}. Der Bericht für diesen Monat wird wie gewohnt abgegeben."
     },
     "undo": {
       "written": "Eingetragen {{dur}}",
