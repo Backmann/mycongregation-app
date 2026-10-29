@@ -119,6 +119,8 @@ export interface Permissions {
    *  admin, service overseer, or body coordinator. */
   canViewCoSchedule: boolean;
   canManageAuxiliaryPioneers: boolean;
+  /** A begun auxiliary period may be deleted (a mistake taken back) — admins and the secretary, as with a closed month. */
+  canDeleteBegunAuxPeriod: boolean;
   canEditCoSchedule: boolean;
 
   /** The set of responsibility types held by the current user. */
@@ -216,6 +218,7 @@ export function usePermissions(): Permissions {
         holds("body_coordinator") ||
         holds("secretary") ||
         holds("service_overseer"),
+      canDeleteBegunAuxPeriod: isAdmin || holds("secretary"),
 
       // Secretary + admin only.
       canManageEvents: isAdmin || holds("body_coordinator"),

@@ -42,7 +42,7 @@ const STATE_DOT: Record<string, string> = {
 export default function AuxiliaryPioneersScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const { canManageAuxiliaryPioneers } = usePermissions();
+  const { canManageAuxiliaryPioneers, canDeleteBegunAuxPeriod } = usePermissions();
 
   const [cursor, setCursor] = useState(() => dayjs().date(1));
   const monthDate = cursor.locale(i18n.language);
@@ -151,15 +151,31 @@ export default function AuxiliaryPioneersScreen() {
     onError: (e) => setAddError(extractErrorMessage(e)),
   });
 
+  // Stopping asks for the LAST month served (29 October 2026): it used to end
+  // the period with the current month whatever was meant. Deleting asks
+  // first, and is offered for a begun period only to those the server lets
+  // take one back — a begun period is history, stopped rather than deleted.
+  const [stopFor, setStopFor] = useState<AuxPioneerMonthRow | null>(null);
+  const [stopMonth, setStopMonth] = useState(monthParam);
+  const [removeFor, setRemoveFor] = useState<AuxPioneerMonthRow | null>(null);
+  const thisMonthKey = dayjs().format('YYYY-MM-01');
   const stopMutation = useMutation({
-    mutationFn: (id: string) => auxiliaryPioneersApi.stop(id),
-    onSuccess: invalidate,
+    mutationFn: (v: { id: string; endMonth: string }) =>
+      auxiliaryPioneersApi.stop(v.id, v.endMonth),
+    onSuccess: () => {
+      invalidate();
+      setStopFor(null);
+    },
   });
-
   const removeMutation = useMutation({
     mutationFn: (id: string) => auxiliaryPioneersApi.remove(id),
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      setRemoveFor(null);
+    },
   });
+  const mayRemove = (r: AuxPioneerMonthRow) =>
+    canDeleteBegunAuxPeriod || r.startMonth.slice(0, 10) > thisMonthKey;
 
   const reduced = (monthQuery.data?.hourGoal ?? 30) === 15;
   const rows = monthQuery.data?.rows ?? [];
@@ -243,8 +259,15 @@ export default function AuxiliaryPioneersScreen() {
               periodLabel={periodLabel(r)}
               canManage={canManageAuxiliaryPioneers}
               onEdit={() => openEdit(r)}
-              onStop={() => stopMutation.mutate(r.id)}
-              onRemove={() => removeMutation.mutate(r.id)}
+              onStop={() => {
+                setStopMonth(
+                  thisMonthKey < `${r.startMonth.slice(0, 7)}-01`
+                    ? `${r.startMonth.slice(0, 7)}-01`
+                    : thisMonthKey,
+                );
+                setStopFor(r);
+              }}
+              onRemove={mayRemove(r) ? () => setRemoveFor(r) : undefined}
               editLabel={t('common.edit')}
               stopLabel={t('auxPioneer.stop')}
               removeLabel={t('common.delete')}
@@ -317,6 +340,58 @@ export default function AuxiliaryPioneersScreen() {
           })
         )}
       </ScrollView>
+
+      <Dialog
+        visible={!!stopFor}
+        title={t('auxPioneer.stopTitle')}
+        icon="stop-circle-outline"
+        iconTint="#b45309"
+        iconBg="#fef3c7"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('auxPioneer.stop')}
+        pending={stopMutation.isPending}
+        onConfirm={() =>
+          stopFor && stopMutation.mutate({ id: stopFor.id, endMonth: stopMonth })
+        }
+        onCancel={() => setStopFor(null)}
+      >
+        {stopFor ? (
+          <>
+            <Text style={styles.dialogText}>{stopFor.publisherName}</Text>
+            <Text style={styles.fieldLabel}>{t('auxPioneer.lastMonth')}</Text>
+            <MonthPicker
+              value={stopMonth}
+              options={monthOptions.filter(
+                (o) => o.value >= `${stopFor.startMonth.slice(0, 7)}-01`,
+              )}
+              onChange={setStopMonth}
+            />
+            <Text style={styles.switchHint}>{t('auxPioneer.lastMonthHint')}</Text>
+          </>
+        ) : null}
+      </Dialog>
+
+      <Dialog
+        visible={!!removeFor}
+        title={t('auxPioneer.removeTitle')}
+        icon="trash-outline"
+        iconTint="#dc2626"
+        iconBg="#fee2e2"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.delete')}
+        confirmDanger
+        pending={removeMutation.isPending}
+        onConfirm={() => removeFor && removeMutation.mutate(removeFor.id)}
+        onCancel={() => setRemoveFor(null)}
+      >
+        {removeFor ? (
+          <Text style={styles.dialogText}>
+            {removeFor.startMonth.slice(0, 10) > thisMonthKey
+              ? t('auxPioneer.removeFuture', { name: removeFor.publisherName })
+              : t('auxPioneer.removeBegun', { name: removeFor.publisherName })}
+          </Text>
+        ) : null}
+      </Dialog>
 
       {/* Add modal */}
       <Dialog
@@ -550,7 +625,8 @@ function ServingCard({
   canManage: boolean;
   onEdit: () => void;
   onStop: () => void;
-  onRemove: () => void;
+  /** Absent when this reader may not delete the period. */
+  onRemove?: () => void;
   editLabel: string;
   stopLabel: string;
   removeLabel: string;
@@ -592,7 +668,12 @@ function ServingCard({
           <Text style={styles.hourUnit}> {t('common.hourUnit')}</Text>
         </Text>
         {canManage ? (
-          <Pressable hitSlop={8} onPress={() => setMenu(true)}>
+          <Pressable
+            hitSlop={8}
+            onPress={() => setMenu(true)}
+            testID={`aux-menu-${row.publisherName}`}
+            accessibilityLabel={row.publisherName}
+          >
             <Ionicons name="ellipsis-horizontal" size={18} color="#94a3b8" />
           </Pressable>
         ) : null}
@@ -630,6 +711,7 @@ function ServingCard({
                 <Text style={styles.sheetItemText}>{stopLabel}</Text>
               </Pressable>
             ) : null}
+{onRemove ? (
             <Pressable
               style={styles.sheetItem}
               onPress={() => {
@@ -642,6 +724,7 @@ function ServingCard({
                 {removeLabel}
               </Text>
             </Pressable>
+            ) : null}
           </View>
         </Pressable>
         {/* Its own strip: the root one is drawn under this window. */}
@@ -760,6 +843,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   sheetItemText: { fontSize: 15.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
+  dialogText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14.5, color: '#0f172a', marginBottom: 6, lineHeight: 20 },
   fieldLabel: {
     fontSize: 12.5,
     fontFamily: 'Manrope_600SemiBold',

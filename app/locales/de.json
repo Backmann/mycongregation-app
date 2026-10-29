@@ -3646,7 +3646,13 @@
       "intro": "In diesem Monat dienen als Hilfspioniere",
       "you": "Sie",
       "meetingsHint": "Wann Sie gemeinsam in den Dienst gehen können"
-    }
+    },
+    "stopTitle": "Dienst beenden",
+    "lastMonth": "Letzter Dienstmonat",
+    "lastMonthHint": "Die Monate davor bleiben im Verlauf. Einen abgeschlossenen Monat kann nur der Sekretär ändern.",
+    "removeTitle": "Zeitraum löschen?",
+    "removeFuture": "Der Zeitraum von {{name}} hat noch nicht begonnen und kann gelöscht werden.",
+    "removeBegun": "Der Zeitraum von {{name}} hat bereits begonnen. Löschen Sie nur einen versehentlich eingetragenen Eintrag: Seine Monate verschwinden aus dem Verlauf und aus den Berichten. Um den Dienst zu beenden, wählen Sie „Beenden“."
   },
   "weekDrawer": {
     "title": "Zur Zusammenkunft",
@@ -5466,7 +5472,11 @@
       "MONTH_INVALID": "Der Monat ist ungültig.",
       "ABSENCE_ENDS_BEFORE_START": "Eine Abwesenheit kann nicht vor ihrem Beginn enden.",
       "LOCAL_NEEDS_NO_PROGRAMME": "Für diese Woche gibt es noch kein Programm — das Thema lässt sich nur vormerken.",
-      "LOCAL_NEEDS_NOT_A_PART": "Ein Thema kann nur statt eines Punktes von „Unser Leben als Christ“ dieser Woche stehen."
+      "LOCAL_NEEDS_NOT_A_PART": "Ein Thema kann nur statt eines Punktes von „Unser Leben als Christ“ dieser Woche stehen.",
+      "AUX_OVERLAP": "Dieser Verkündiger dient im {{month}} bereits als Hilfspionier.",
+      "AUX_PERMANENT_PIONEER": "Im {{month}} ist dieser Verkündiger allgemeiner Pionier und kann kein Hilfspionier sein.",
+      "AUX_MONTH_CLOSED": "{{month}} ist abgeschlossen: Die Zahlen wurden bereits gesendet. Nur der Sekretär kann ihn ändern.",
+      "AUX_REMOVE_STARTED": "Dieser Zeitraum hat bereits begonnen – er kann beendet, aber nicht gelöscht werden. Einen versehentlich eingetragenen Eintrag kann der Sekretär löschen."
     }
   },
   "stage": {
