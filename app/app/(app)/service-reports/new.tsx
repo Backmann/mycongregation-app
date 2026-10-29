@@ -26,6 +26,8 @@ import { LoadFailure } from '../../../components/LoadFailure';
 import { formatMonthLabel } from '../../../lib/i18n';
 import { notify } from '../../../lib/error-bus';
 import { failsScreen } from '../../../lib/screen-failure';
+import { serviceLogApi } from '../../../lib/api';
+import { formatDuration } from '../../../lib/useServiceLog';
 
 // formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
@@ -248,6 +250,45 @@ export default function NewOrEditServiceReportScreen() {
         : (myPublisher?.pioneerType != null &&
             myPublisher.pioneerType !== 'none') ||
           iAmAuxThisMonth;
+  /**
+   * HIS OWN HOURS LOG, INTO THE REPORT (29 October 2026). Filing his own
+   * report for a month he kept the log in: the hours come in already
+   * written — whole hours by the rule — and credited hours as a line in the
+   * note. Everything stays his to change before he sends it. Filled once
+   * per month, and only into empty fields: nothing he typed is replaced.
+   */
+  const logQ = useQuery({
+    queryKey: ['service-log', 'month', reportMonth],
+    queryFn: () => serviceLogApi.month(reportMonth),
+    enabled: !isEditMode && !isOnBehalf && !!reportMonth,
+    retry: false,
+  });
+  const fromLog =
+    logQ.data && logQ.data.role !== null && !logQ.data.report && logQ.data.entries.length > 0
+      ? logQ.data
+      : null;
+  const [filledFrom, setFilledFrom] = useState<string | null>(null);
+  useEffect(() => {
+    if (!fromLog || filledFrom === fromLog.month) return;
+    setFilledFrom(fromLog.month);
+    if (fromLog.fieldMinutes > 0) setHours((h) => (h ? h : String(fromLog.reportHours)));
+    if (fromLog.creditMinutes > 0) {
+      const what = [
+        ...new Set(
+          fromLog.entries
+            .filter((e) => e.kind === 'credit' && e.note)
+            .map((e) => (e.note as string).trim()),
+        ),
+      ].join(', ');
+      const line = t(what ? 'hoursLog.report.creditNoteWhat' : 'hoursLog.report.creditNote', {
+        dur: formatDuration(fromLog.creditMinutes, t),
+        what,
+      });
+      setNotes((n) => (n ? n : line));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromLog?.month]);
+
   /** The studies of his latest report — offered while the field is empty. */
   const studiesHint =
     !isEditMode && !bibleStudies && (formQ.data?.lastStudies ?? 0) > 0 && servedThisMonth !== false
@@ -285,6 +326,8 @@ export default function NewOrEditServiceReportScreen() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-reports'] });
+      // The month's log now defers to the report.
+      queryClient.invalidateQueries({ queryKey: ['service-log'] });
       setSubmitted(true);
     },
     onError: (err) => {
@@ -595,6 +638,27 @@ export default function NewOrEditServiceReportScreen() {
           </View>
         )}
 
+        {fromLog && isPioneer ? (
+          <View style={styles.fromLog}>
+            <Ionicons name="time-outline" size={18} color="#0e7490" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.fromLogTitle}>
+                {t('hoursLog.report.fromLog', { dur: formatDuration(fromLog.fieldMinutes, t) })}
+              </Text>
+              <Text style={styles.fromLogSub}>
+                {[
+                  fromLog.creditMinutes > 0
+                    ? t('hoursLog.report.creditToNote', { dur: formatDuration(fromLog.creditMinutes, t) })
+                    : null,
+                  fromLog.fieldMinutes % 60 > 0 ? t('hoursLog.month.rounding') : null,
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.card}>
           {isPioneer ? (
             <>
@@ -854,6 +918,19 @@ export default function NewOrEditServiceReportScreen() {
 }
 
 const styles = StyleSheet.create({
+  fromLog: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
+  },
+  fromLogTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: '#0f172a' },
+  fromLogSub: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#475569', marginTop: 3, lineHeight: 18 },
   container: { padding: 16, paddingBottom: 24 },
   footer: {
     paddingHorizontal: 16,
