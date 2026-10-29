@@ -6,7 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   Switch,
+  Platform,
+  Share,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,15 +36,11 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { Dialog } from '../../../components/Dialog';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
+import { AuxYearHistory } from '../../../components/aux/AuxYearHistory';
+import { SIDE_NAV_FROM } from '../../../lib/screen-width';
 
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
-const QK_JOURNAL = ['aux-pioneers', 'journal'];
 
-const STATE_DOT: Record<string, string> = {
-  serving: '#1D9E75',
-  upcoming: '#2563eb',
-  finished: '#94a3b8',
-};
 
 export default function AuxiliaryPioneersScreen() {
   const { t, i18n } = useTranslation();
@@ -67,10 +66,6 @@ export default function AuxiliaryPioneersScreen() {
     queryFn: () => auxApplicationsApi.committee(),
   });
   const waiting = (appsQuery.data ?? []).filter((a) => a.status === 'pending');
-  const journalQuery = useQuery({
-    queryKey: QK_JOURNAL,
-    queryFn: () => auxiliaryPioneersApi.journal(),
-  });
 
   const [addOpen, setAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -136,7 +131,8 @@ export default function AuxiliaryPioneersScreen() {
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: QK_MONTH(monthParam) });
-    qc.invalidateQueries({ queryKey: QK_JOURNAL });
+    qc.invalidateQueries({ queryKey: ['aux-pioneers', 'journal'] });
+    qc.invalidateQueries({ queryKey: ['aux-pioneers', 'year'] });
     // What everybody is told — the row in «Служение», the marks in a group's
     // card and in the roster.
     qc.invalidateQueries({ queryKey: ['aux-pioneers', 'serving-now'] });
@@ -258,6 +254,10 @@ export default function AuxiliaryPioneersScreen() {
   // Формулировка живёт в lib/aux-pioneer-period.ts — теми же словами говорит
   // значок на главной. Здесь год не скрываем: журнал тянется через годы.
   const periodLabel = (r: PeriodLike) => auxPeriodLabel(t, i18n.language, r);
+  // Two columns on a computer (mockup screen 9): what is now on the left,
+  // the years on the right.
+  const { width } = useWindowDimensions();
+  const two = width >= SIDE_NAV_FROM;
 
   return (
     // A plain View, and deliberately.
@@ -274,6 +274,9 @@ export default function AuxiliaryPioneersScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
       >
+        {(() => {
+          const left = (
+            <>
         {committeeQuery.data && !committeeQuery.data.complete ? (
           <View style={styles.pastWarn}>
             <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
@@ -425,70 +428,31 @@ export default function AuxiliaryPioneersScreen() {
           ))
         )}
 
-        {/* History journal — grouped into serving / upcoming / finished */}
-        <View style={[styles.sectionHead, { marginTop: 22 }]}>
-          <Ionicons name="time-outline" size={15} color="#64748b" />
-          <Text style={styles.journalTitle}>{t('auxPioneer.journal')}</Text>
-        </View>
-        {(journalQuery.data ?? []).length === 0 ? (
-          <View style={styles.journalCard}>
-            <Text style={[styles.empty, { padding: 14 }]}>
-              {t('auxPioneer.journalEmpty')}
-            </Text>
-          </View>
-        ) : (
-          (['serving', 'upcoming', 'finished'] as const).map((state) => {
-            const items = (journalQuery.data ?? []).filter(
-              (j) => j.state === state,
-            );
-            if (items.length === 0) return null;
-            return (
-              <View key={state} style={styles.journalSection}>
-                <Text style={styles.journalSectionTitle}>
-                  {t(`auxPioneer.section.${state}`)}
-                </Text>
-                <View style={styles.journalCard}>
-                  {items.map((j, idx) => (
-                    <View
-                      key={j.id}
-                      style={[
-                        styles.journalRow,
-                        idx > 0 && styles.journalBorder,
-                      ]}
-                    >
-                      <View
-                        style={[styles.dot, { backgroundColor: STATE_DOT[state] }]}
-                      />
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.journalName}>
-                          {j.publisherName}
-                        </Text>
-                        <Text style={styles.journalPeriod}>
-                          {periodLabel(j)}
-                        </Text>
-                        {state === 'finished' &&
-                        j.currentPioneerType !== 'none' ? (
-                          <View style={styles.movedBadge}>
-                            <Ionicons
-                              name="arrow-forward"
-                              size={11}
-                              color="#0369a1"
-                            />
-                            <Text style={styles.movedBadgeText}>
-                              {t(
-                                `auxPioneer.movedTo.${j.currentPioneerType}`,
-                              )}
-                            </Text>
-                          </View>
-                        ) : null}
-                      </View>
-                    </View>
-                  ))}
-                </View>
+
+              <AnnounceCard month={monthParam} names={rows.map((r) => r.publisherName)} />
+            </>
+          );
+          const right = (
+            <>
+              <View style={[styles.sectionHead, { marginTop: two ? 0 : 22 }]}>
+                <Ionicons name="time-outline" size={15} color="#64748b" />
+                <Text style={styles.journalTitle}>{t('auxYear.historyTitle')}</Text>
               </View>
-            );
-          })
-        )}
+              <AuxYearHistory />
+            </>
+          );
+          return two ? (
+            <View style={styles.columns}>
+              <View style={styles.leftCol}>{left}</View>
+              <View style={styles.rightCol}>{right}</View>
+            </View>
+          ) : (
+            <>
+              {left}
+              {right}
+            </>
+          );
+        })()}
       </ScrollView>
 
       <Dialog
@@ -693,6 +657,45 @@ export default function AuxiliaryPioneersScreen() {
               return null;
             })()}
       </Dialog>
+    </View>
+  );
+}
+
+/**
+ * The sentence the announcement is read from — the month's auxiliary
+ * pioneers by name, ready to copy (mockup screen 9).
+ */
+function AnnounceCard({ month, names }: { month: string; names: string[] }) {
+  const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
+  const when = t(`auxYear.monthIn.${Number(month.slice(5, 7))}`);
+  const text =
+    names.length > 0
+      ? t('auxYear.announce', { when, names: names.join(', ') })
+      : t('auxYear.announceNone', { when });
+  const copy = () => {
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard) {
+      void navigator.clipboard
+        .writeText(text)
+        .then(() => setCopied(true))
+        .catch(() => void Share.share({ message: text }));
+    } else {
+      void Share.share({ message: text });
+    }
+  };
+  return (
+    <View style={styles.announce}>
+      <Text style={styles.announceKicker}>{t('auxYear.announceTitle')}</Text>
+      <Text style={styles.announceText} selectable>
+        {text}
+      </Text>
+      {names.length > 0 ? (
+        <Pressable onPress={copy} accessibilityRole="button" hitSlop={6}>
+          <Text style={styles.announceCopy}>
+            {copied ? t('auxYear.copied') : t('auxYear.copy')}
+          </Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -938,6 +941,27 @@ function ServingCard({
 }
 
 const styles = StyleSheet.create({
+  columns: { flexDirection: 'row', gap: 18, alignItems: 'flex-start' },
+  leftCol: { width: 380 },
+  rightCol: { flex: 1, minWidth: 0 },
+  announce: {
+    marginTop: 14,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    padding: 14,
+    gap: 6,
+  },
+  announceKicker: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.6,
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+  },
+  announceText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  announceCopy: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#0e7490' },
   safe: { flex: 1, backgroundColor: '#f1f5f9' },
   // Room to breathe at the end of the list, no more: the tab bar reserves its
   // own space, and this screen no longer reserves it a second time.

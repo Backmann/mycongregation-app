@@ -21,7 +21,8 @@ import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { Dialog } from '../../../components/Dialog';
 import { MonthPlaque, Chip, cardStyles, INK, MUTED, BRAND } from '../../../components/reports/ReportBits';
-import { capitalize, monthGoals, monthName, monthsLabel } from '../../../lib/aux-application';
+import { addMonths, capitalize, monthGoals, monthName, monthsLabel } from '../../../lib/aux-application';
+import { extractErrorMessage } from '../../../lib/api';
 import { formatDateISO } from '../../../lib/dates';
 
 /**
@@ -51,6 +52,20 @@ export default function MyAuxScreen() {
     queryFn: () => auxiliaryPioneersApi.mine(`${thisMonth}-01`),
   });
   const [takingBack, setTakingBack] = useState<MyAuxApplication | null>(null);
+  // He ends his own «until cancelled» (29 October 2026): no approval, the
+  // committee is told.
+  const [stopping, setStopping] = useState(false);
+  const [lastMonth, setLastMonth] = useState(thisMonth);
+  const [stopError, setStopError] = useState<string | null>(null);
+  const stop = useMutation({
+    mutationFn: () => auxApplicationsApi.stopMine(lastMonth),
+    onSuccess: () => {
+      setStopping(false);
+      void qc.invalidateQueries({ queryKey: ['aux-pioneers'] });
+      void qc.invalidateQueries({ queryKey: ['aux-applications'] });
+    },
+    onError: (e) => setStopError(extractErrorMessage(e)),
+  });
   const takeBack = useMutation({
     mutationFn: (id: string) => auxApplicationsApi.takeBack(id),
     onSuccess: () => {
@@ -86,8 +101,35 @@ export default function MyAuxScreen() {
   const canApply =
     !pending && !unbaptized && !permanent && !openEnded && appsQ.data.committeeComplete;
 
+  const stopOptions = serving?.current?.untilCancelled
+    ? [addMonths(thisMonth, -1), thisMonth, addMonths(thisMonth, 1)].filter(
+        (m) => m >= serving.current!.startMonth.slice(0, 7),
+      )
+    : [];
+  const endsLater =
+    serving?.current && !serving.current.untilCancelled && serving.current.endMonth
+      ? serving.current.endMonth.slice(0, 7)
+      : null;
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      {(appsQ.data.reportsWithoutHours ?? []).map((r) => (
+        <View key={r.reportId} style={[cardStyles.card, cardStyles.due]}>
+          <View style={styles.top}>
+            <MonthPlaque month={r.month} tone="due" />
+            <Text style={[styles.quiet, { flex: 1, marginTop: 0 }]}>
+              {t('auxApp.my.reportHours', { month: monthName(r.month, lang) })}
+            </Text>
+          </View>
+          <Pressable
+            style={styles.btn}
+            onPress={() => router.push(`/service-reports/new?id=${r.reportId}` as never)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.btnText}>{t('auxApp.my.reportHoursBtn')}</Text>
+          </Pressable>
+        </View>
+      ))}
       {pending ? (
         <View style={[cardStyles.card, cardStyles.due]}>
           <View style={styles.top}>
@@ -150,6 +192,24 @@ export default function MyAuxScreen() {
               ? t('auxApp.my.untilCancelled')
               : t('auxApp.my.reportHint')}
           </Text>
+          {endsLater && endsLater > thisMonth ? (
+            <Text style={styles.small}>
+              {t('auxApp.my.stoppedUntil', { month: monthName(endsLater, lang) })}
+            </Text>
+          ) : null}
+          {stopOptions.length > 0 ? (
+            <Pressable
+              style={[styles.ghost, styles.ghostGrey]}
+              onPress={() => {
+                setLastMonth(thisMonth);
+                setStopError(null);
+                setStopping(true);
+              }}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.ghostText, { color: MUTED }]}>{t('auxApp.my.stopBtn')}</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
 
@@ -226,6 +286,41 @@ export default function MyAuxScreen() {
       ) : null}
 
       <Dialog
+        visible={stopping}
+        title={t('auxApp.my.stopTitle')}
+        icon="stop-circle-outline"
+        iconTint="#b45309"
+        iconBg="#fef3c7"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('auxApp.my.stopConfirm')}
+        pending={stop.isPending}
+        onConfirm={() => stop.mutate()}
+        onCancel={() => setStopping(false)}
+      >
+        <Text style={styles.quiet}>{t('auxApp.my.stopText')}</Text>
+        <Text style={[styles.small, { marginTop: 10 }]}>{t('auxApp.my.lastMonth')}</Text>
+        <View style={styles.two}>
+          {stopOptions.map((m) => {
+            const on = m === lastMonth;
+            return (
+              <Pressable
+                key={m}
+                onPress={() => setLastMonth(m)}
+                style={[styles.ghost, { flex: 1 }, on ? styles.monthOn : styles.ghostGrey]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+              >
+                <Text style={[styles.ghostText, { color: on ? '#fff' : MUTED }]}>
+                  {capitalize(monthName(m, lang, false))}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        {stopError ? <Text style={styles.error}>{stopError}</Text> : null}
+      </Dialog>
+
+      <Dialog
         visible={!!takingBack}
         title={t('auxApp.my.takeBackTitle')}
         icon="arrow-undo-outline"
@@ -295,6 +390,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   ghostGrey: { borderColor: '#e2e8f0' },
+  monthOn: { borderColor: BRAND, backgroundColor: BRAND },
+  error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 8 },
   ghostText: { color: BRAND, fontFamily: 'Manrope_800ExtraBold', fontSize: 14.5 },
   sect: {
     fontFamily: 'Manrope_800ExtraBold',

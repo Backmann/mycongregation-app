@@ -3622,8 +3622,6 @@
     "servingThisMonth": "Serving this month · {{count}}",
     "add": "add",
     "noneThisMonth": "No one serves as an auxiliary pioneer this month",
-    "journal": "Service history",
-    "journalEmpty": "No records yet",
     "stop": "Stop",
     "untilCancelledSince": "until canceled · since {{month}}",
     "onlyMonth": "only {{month}}",
@@ -3638,16 +3636,6 @@
     "startMonth": "Start month",
     "endMonth": "End month",
     "editTitle": "Edit period",
-    "section": {
-      "serving": "Serving now",
-      "upcoming": "Upcoming",
-      "finished": "Finished"
-    },
-    "movedTo": {
-      "regular": "Regular pioneer",
-      "special": "Special pioneer",
-      "missionary": "Missionary"
-    },
     "currentMonth": "current",
     "pastPeriodWarning": "This period is already in the past — check the year.",
     "lateMonthWarning": "It is already day {{day}} of the month. The goal is still a full 30 hours for a partial month. Is that right?",
@@ -5518,7 +5506,9 @@
       "AUX_APP_NO_SEAT": "There is no place here for you to answer in.",
       "AUX_APP_TOO_EARLY": "A place can be opened when the brother has not answered for {{days}} days.",
       "AUX_APP_PAPER_SECRETARY": "A paper application is entered by the secretary or an admin.",
-      "AUX_APP_SIGNERS": "Name at least two brothers who signed, each once."
+      "AUX_APP_SIGNERS": "Name at least two brothers who signed, each once.",
+      "AUX_STOP_NONE": "You have no «until canceled» service.",
+      "AUX_STOP_MONTH": "That month cannot be the last one."
     }
   },
   "stage": {
@@ -5874,7 +5864,15 @@
       "approvedChip": "approved",
       "takeBackTitle": "Withdraw the application?",
       "takeBackText": "The application disappears and the committee will no longer see it. You can apply again at any time.",
-      "monthGoal": "{{month}} · {{n}} h"
+      "monthGoal": "{{month}} · {{n}} h",
+      "stopBtn": "End «until canceled»",
+      "stopTitle": "End «until canceled»?",
+      "stopText": "Choose your last month of service. The service committee will be notified.",
+      "stopConfirm": "End",
+      "lastMonth": "Last month",
+      "reportHours": "Your report for {{month}} came in without hours, and the month is now auxiliary pioneering. Please add the hours.",
+      "reportHoursBtn": "Add hours",
+      "stoppedUntil": "Serving until: {{month}}"
     },
     "form": {
       "title": "Application",
@@ -5948,5 +5946,57 @@
     "waitingTitle": "Awaiting a decision · {{count}}",
     "yourAnswer": "your answer",
     "waiting": "waiting"
+  },
+  "auxYear": {
+    "historyTitle": "History by service year",
+    "search": "Search by name",
+    "name": "Name",
+    "empty": "Nobody served as an auxiliary pioneer in this service year.",
+    "nobodyFound": "Nobody found.",
+    "cell": {
+      "pending": "pending",
+      "running": "now",
+      "awaiting": "due"
+    },
+    "legend": {
+      "reported": "goal · reported",
+      "ahead": "ahead",
+      "awaiting": "month over, no report",
+      "pending": "application pending"
+    },
+    "totals": "Year: {{people}} people · {{months}} mo. · {{hours}} h reported",
+    "untilCancelled": "until canceled",
+    "untilCancelledBar": "until canceled · {{goal}} h →",
+    "fromUntilCancelled": "{{month}} → until canceled",
+    "rowTotals": "{{months}} mo. · {{hours}} h",
+    "announceTitle": "For the congregation announcement",
+    "announce": "{{when}}, our auxiliary pioneers are: {{names}}.",
+    "announceNone": "{{when}}, there are no auxiliary pioneers.",
+    "monthIn": {
+      "1": "In January",
+      "2": "In February",
+      "3": "In March",
+      "4": "In April",
+      "5": "In May",
+      "6": "In June",
+      "7": "In July",
+      "8": "In August",
+      "9": "In September",
+      "10": "In October",
+      "11": "In November",
+      "12": "In December"
+    },
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "auxCard": {
+    "title": "Auxiliary pioneering",
+    "summary": "{{months}} mo. · since {{year}}",
+    "pending": "Application: {{months}}",
+    "pendingSub": "pending — not counted yet",
+    "year": "year",
+    "paper": "on paper",
+    "hoursUnit": "h",
+    "reported": "reported {{list}}"
   }
 }
