@@ -32,7 +32,18 @@ import { COUNTDOWN_FROM_SEC, stageTone, warnSecFor, type StageTone } from '../li
  * status bar — Lionel opened the stage account on his phone on 21 October
  * and could not find the way out of it.
  */
-export const StageChrome = createContext<{ menu: ReactNode; topInset: number } | null>(null);
+export const StageChrome = createContext<{
+  menu: ReactNode;
+  topInset: number;
+  /**
+   * Told while this screen is up, so app/stage.tsx knows its menu is shown
+   * here. Every other state of the meeting's screen (loading, no programme,
+   * no chairman, the timekeeper's hanging run) has no header of this kind:
+   * there the stage lays its own button on top — never a screen without a
+   * way out (Lionel, 29 October 2026).
+   */
+  shown?: (on: boolean) => void;
+} | null>(null);
 
 export interface StagePart {
   /** The programme section, as the programme names it («Сокровища из Слова Бога»). */
@@ -148,6 +159,11 @@ export function mmssSigned(seconds: number): string {
 export function ConductStage(p: StageProps) {
   const { t } = useTranslation();
   const chrome = useContext(StageChrome);
+  const shown = chrome?.shown;
+  useEffect(() => {
+    shown?.(true);
+    return () => shown?.(false);
+  }, [shown]);
   const { width, height } = useWindowDimensions();
   const wide = width >= 900;
   // The number must fit its column on one line — «+21:06» is six signs.

@@ -100,7 +100,9 @@ export default function MyHoursScreen() {
           </Pressable>
         </View>
 
-        {hint ? (
+        {/* «В начале месяца из них соберётся отчёт» is untrue of a month
+            with no log (before it began here, or not his to keep). */}
+        {hint && m.role !== null ? (
           <Pressable style={styles.hint} onPress={closeHint} accessibilityRole="button">
             <Ionicons name="lock-closed-outline" size={16} color={BRAND} />
             <Text style={styles.hintText}>{t('hoursLog.hint')}</Text>
