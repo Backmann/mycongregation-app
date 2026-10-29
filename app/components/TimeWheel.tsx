@@ -23,14 +23,17 @@ function pad2(n: number): string {
  * dark, neighbours fade, scale down and tilt away. Works with touch drag,
  * trackpad/mouse wheel (native browser scrolling) and tapping a value.
  */
-function Column({
+export function WheelColumn({
   values,
   index,
   onIndex,
+  format = pad2,
 }: {
   values: number[];
   index: number;
   onIndex: (i: number) => void;
+  /** How a value reads on the drum; the clock pads to two digits. */
+  format?: (n: number) => string;
 }) {
   const scrollRef = useRef<RNScrollView>(null);
   const scrollY = useRef(new Animated.Value(index * ITEM_H)).current;
@@ -150,7 +153,7 @@ function Column({
                   },
                 ]}
               >
-                <Text style={styles.text}>{pad2(v)}</Text>
+                <Text style={styles.text}>{format(v)}</Text>
               </Animated.View>
             </Pressable>
           );
@@ -194,13 +197,13 @@ export function TimeWheel({
 
   return (
     <View style={styles.wrap}>
-      <Column
+      <WheelColumn
         values={hours}
         index={h}
         onIndex={(i) => onChange(`${pad2(hours[i])}:${pad2(min)}`)}
       />
       <Text style={styles.colon}>:</Text>
-      <Column
+      <WheelColumn
         values={minutes}
         index={Math.max(0, minutes.indexOf(min))}
         onIndex={(i) => onChange(`${pad2(h)}:${pad2(minutes[i])}`)}

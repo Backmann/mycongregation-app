@@ -15,6 +15,8 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../lib/auth";
+import { Dialog } from "../../../components/Dialog";
+import { pendingOps } from "../../../lib/service-log-queue";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { LanguagePickerModal } from "../../../components/LanguagePicker";
 import { SignedInPlaces } from "../../../components/SignedInPlaces";
@@ -64,6 +66,7 @@ function useBuildLine(): string {
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const [unsentOnExit, setUnsentOnExit] = useState(0);
   // The lock is a property of THIS device, so its state is read from the device
   // rather than from the account.
   const [bioAvailable, setBioAvailable] = useState(false);
@@ -463,12 +466,38 @@ export default function ProfileScreen() {
               styles.logoutButton,
               pressed && { opacity: 0.7 },
             ]}
-            onPress={signOut}
+            onPress={() => {
+              // Hours written without a connection and not sent yet would be
+              // lost with the sign-out: he is told first (29 October 2026).
+              const unsent = pendingOps(user?.id).length;
+              if (unsent > 0) setUnsentOnExit(unsent);
+              else void signOut();
+            }}
           >
             <Ionicons name="log-out-outline" size={18} color="#dc2626" />
             <Text style={styles.logoutText}>{t("profile.signOut")}</Text>
           </Pressable>
         </View>
+
+        <Dialog
+          visible={unsentOnExit > 0}
+          title={t("hoursLog.exit.title")}
+          icon="cloud-offline-outline"
+          iconTint="#b45309"
+          iconBg="#fef3c7"
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("hoursLog.exit.confirm")}
+          confirmDanger
+          onConfirm={() => {
+            setUnsentOnExit(0);
+            void signOut();
+          }}
+          onCancel={() => setUnsentOnExit(0)}
+        >
+          <Text style={{ fontFamily: "Manrope_400Regular", fontSize: 14, color: "#475569", lineHeight: 20 }}>
+            {t("hoursLog.exit.text", { count: unsentOnExit })}
+          </Text>
+        </Dialog>
 
         {/* Which code is actually running. Without this there was no way to tell
           whether an over-the-air update had arrived — we were reduced to

@@ -1,3 +1,4 @@
+import { forgetQueue } from './service-log-queue';
 import {
   createContext,
   ReactNode,
@@ -382,6 +383,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await clearAuthTokens();
     await forgetUser();
     await forgetKept();
+    // His unsent hours go with him: the next person on this phone never sees them.
+    await forgetQueue();
     await forgetCache();
     forgetWelcome();
     // Where the person who leaves has been is not the next person's way back.
