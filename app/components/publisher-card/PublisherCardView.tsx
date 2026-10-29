@@ -14,6 +14,7 @@ import {
   responsibilitiesApi,
   serviceGroupsApi,
   serviceReportsApi,
+  auxYearApi,
   type Publisher,
 } from '../../lib/api';
 import { addWeeks, formatDateISO, startOfWeekMonday } from '../../lib/dates';
@@ -27,6 +28,7 @@ import { contactsCheckLine } from '../../lib/contacts-check';
 import { CAPABILITY_CATEGORIES, countActiveCapabilities } from '../../lib/capabilities';
 import { FONT } from '../../lib/typography';
 import { StatusReasonsModal } from '../StatusReasonsModal';
+import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 
 /**
  * THE PUBLISHER'S CARD, READ (28 October 2026, Lionel: «premium, convenient,
@@ -345,10 +347,11 @@ export function PublisherCardView({
 
   const service = pastoral && !removed ? <ServiceBlock publisher={publisher} onExplain={() => setExplain(true)} /> : null;
   const meetings = pastoral && !removed ? <MeetingsBlock publisherId={publisher.id} /> : null;
+  const aux = pastoral ? <AuxBlock publisherId={publisher.id} /> : null;
   const accessBlock = isAdmin ? <Block title={t('publishers.sections.appAccess')}>{access}</Block> : null;
 
   const left = [contacts, notes, personal, accessBlock];
-  const right = [service, congregation, meetings];
+  const right = [service, aux, congregation, meetings];
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={styles.wrap}>
@@ -361,7 +364,7 @@ export function PublisherCardView({
       ) : (
         // On a phone the order an elder reads in: how he serves, how to reach
         // him, what to remember, where he stands, what he has been given.
-        <View>{[service, contacts, notes, congregation, meetings, personal, accessBlock]}</View>
+        <View>{[service, aux, contacts, notes, congregation, meetings, personal, accessBlock]}</View>
       )}
       {footer}
       <StatusReasonsModal
@@ -508,6 +511,84 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
           </View>
         ))
       )}
+    </Block>
+  );
+}
+
+/**
+ * «Подсобное служение» (29 October 2026, mockup screen 10): kept for good —
+ * an application still before the committee, then every service year he
+ * served, with the goals and the hours that came in. Nothing when he never
+ * served and has nothing pending.
+ */
+function AuxBlock({ publisherId }: { publisherId: string }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const q = useQuery({
+    queryKey: ['aux-pioneers', 'card', publisherId],
+    queryFn: () => auxYearApi.card(publisherId),
+  });
+  const d = q.data;
+  if (!d || (d.totalMonths === 0 && !d.pending)) return null;
+  const shortYear = (y: number) => `${String(y).slice(2)}/${String(y + 1).slice(2)}`;
+  const yearMonths = (months: string[]) =>
+    capitalize(
+      runsOf(months)
+        .map((r) =>
+          r.start === r.end
+            ? monthName(r.start, lang, false)
+            : `${monthName(r.start, lang, false)}–${monthName(r.end, lang, false)}`,
+        )
+        .join(', '),
+    );
+  return (
+    <Block key="aux" title={t('auxCard.title')}>
+      {d.totalMonths > 0 && d.since !== null ? (
+        <View style={styles.auxSummary}>
+          <Text style={styles.auxSummaryText}>
+            {t('auxCard.summary', { months: d.totalMonths, year: d.since })}
+          </Text>
+        </View>
+      ) : null}
+      {d.pending ? (
+        <View style={[styles.auxTile, styles.auxTilePending]}>
+          <View style={[styles.auxBadge, { backgroundColor: '#fef3c7' }]}>
+            <Text style={[styles.auxBadgeTop, { color: '#92400e' }]}>
+              {monthName(d.pending.months[0], lang, false).slice(0, 3).toUpperCase()}
+            </Text>
+            <Text style={[styles.auxBadgeSub, { color: '#b45309' }]}>{d.pending.months[0].slice(0, 4)}</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.auxTitle}>
+              {t('auxCard.pending', { months: monthsLabel(d.pending.months, lang) })}
+            </Text>
+            <Text style={styles.auxSub}>{t('auxCard.pendingSub')}</Text>
+          </View>
+        </View>
+      ) : null}
+      {d.years.map((y) => {
+        const reported = y.cells.filter((c) => c.hours !== null);
+        const goals = `${y.cells.map((c) => c.goal).join(' · ')} ${t('auxCard.hoursUnit')}`;
+        const line = [
+          goals,
+          reported.length > 0 ? t('auxCard.reported', { list: reported.map((c) => c.hours).join(' · ') }) : null,
+          y.paper ? t('auxCard.paper') : null,
+        ]
+          .filter(Boolean)
+          .join(' — ');
+        return (
+          <View key={y.year} style={styles.auxTile}>
+            <View style={styles.auxBadge}>
+              <Text style={styles.auxBadgeTop}>{shortYear(y.year)}</Text>
+              <Text style={styles.auxBadgeSub}>{t('auxCard.year')}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.auxTitle}>{yearMonths(y.cells.map((c) => c.month))}</Text>
+              <Text style={styles.auxSub}>{line}</Text>
+            </View>
+          </View>
+        );
+      })}
     </Block>
   );
 }
@@ -676,6 +757,15 @@ const styles = StyleSheet.create({
   qTextOff: { color: '#cbd5e1' },
   cols: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
   col: { flex: 1, minWidth: 0 },
+  auxSummary: { alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 10, marginBottom: 8 },
+  auxSummaryText: { fontFamily: FONT.bold, fontSize: 12, color: '#166534' },
+  auxTile: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: LINE, borderRadius: 14, padding: 10, marginBottom: 8 },
+  auxTilePending: { borderColor: '#fde68a', backgroundColor: '#fffbeb' },
+  auxBadge: { width: 56, borderRadius: 10, backgroundColor: '#dcfce7', alignItems: 'center', paddingVertical: 6 },
+  auxBadgeTop: { fontFamily: FONT.extrabold, fontSize: 15, color: '#166534' },
+  auxBadgeSub: { fontFamily: FONT.semibold, fontSize: 10.5, color: '#15803d' },
+  auxTitle: { fontFamily: FONT.bold, fontSize: 14.5, color: '#0f172a' },
+  auxSub: { fontFamily: FONT.medium, fontSize: 12.5, color: SOFT, marginTop: 2 },
   block: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: LINE, paddingHorizontal: 16, paddingVertical: 14, marginBottom: 14 },
   blockHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   blockTitle: { fontFamily: FONT.extrabold, fontSize: 11.5, letterSpacing: 1, textTransform: 'uppercase', color: SOFT },

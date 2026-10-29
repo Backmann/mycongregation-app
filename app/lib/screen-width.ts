@@ -56,6 +56,8 @@ const OVERVIEW = new Set<string>([
   '/local-needs',
   // The person and his year beside his months (28 October 2026).
   '/service-reports/publisher-history',
+  // What is now beside the history by service years (29 October 2026).
+  '/cart/auxiliary-pioneers',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

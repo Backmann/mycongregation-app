@@ -5790,8 +5790,18 @@ export interface AuxApplicationInput {
 }
 
 export const auxApplicationsApi = {
-  async mine(): Promise<{ applications: MyAuxApplication[]; committeeComplete: boolean }> {
+  async mine(): Promise<{
+    applications: MyAuxApplication[];
+    committeeComplete: boolean;
+    /** His reports for months now auxiliary, without hours (29 October 2026). */
+    reportsWithoutHours?: { reportId: string; month: string }[];
+  }> {
     const { data } = await api.get("/aux-applications/mine");
+    return data;
+  },
+  /** He ends his own «until cancelled»; endMonth — the last month, YYYY-MM. */
+  async stopMine(endMonth: string): Promise<{ endMonth: string | null }> {
+    const { data } = await api.post("/aux-applications/stop-mine", { endMonth });
     return data;
   },
   async committee(): Promise<{ complete: boolean; missing: CommitteeSeat[] }> {
@@ -5856,6 +5866,68 @@ export const auxApplicationsApi = {
     }[]
   > {
     const { data } = await api.get(`/aux-applications/publisher/${publisherId}`);
+    return data;
+  },
+};
+
+// ---------------------------------------------------- Подсобные по годам
+
+/**
+ * One month of one person in the history by service years (29 October 2026):
+ * reported — hours came in; awaiting — begun, no hours yet; ahead — not
+ * begun; pending — in an application still before the committee.
+ */
+export interface AuxCell {
+  month: string;
+  goal: 15 | 30;
+  hours: number | null;
+  state: "reported" | "awaiting" | "ahead" | "pending";
+  untilCancelled: boolean;
+}
+
+export interface AuxYearRow {
+  publisherId: string;
+  name: string;
+  untilCancelled: boolean;
+  cells: AuxCell[];
+  months: number;
+  hours: number;
+}
+
+export interface AuxYearView {
+  year: number;
+  years: number[];
+  months: string[];
+  current: string;
+  reducible: { month: string; reasons: AuxReducedReason[] }[];
+  counts: { month: string; serving: number; pending: number }[];
+  rows: AuxYearRow[];
+  totals: { people: number; months: number; hours: number };
+}
+
+export interface AuxCardView {
+  totalMonths: number;
+  since: number | null;
+  pending: {
+    id: string;
+    months: string[];
+    untilCancelled: boolean;
+    reducedMonths: string[];
+  } | null;
+  years: { year: number; cells: AuxCell[]; hours: number; paper: boolean }[];
+}
+
+export const auxYearApi = {
+  async year(year?: number): Promise<AuxYearView> {
+    const { data } = await api.get<AuxYearView>("/auxiliary-pioneers/year", {
+      params: year ? { year } : {},
+    });
+    return data;
+  },
+  async card(publisherId: string): Promise<AuxCardView> {
+    const { data } = await api.get<AuxCardView>(
+      `/auxiliary-pioneers/publisher/${publisherId}`,
+    );
     return data;
   },
 };

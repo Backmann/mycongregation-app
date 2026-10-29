@@ -150,6 +150,15 @@ function routeForNotification(data) {
         : { path: '/home', params: {} };
     case 'aux_application_approved':
       return { path: '/cart/my-aux', params: {} };
+    // A publisher ended his own «until cancelled»: «Служение», where the
+    // committee's door to the list stands (a door that asks the screen).
+    case 'aux_stopped':
+      return { path: '/cart', params: {} };
+    // A month became auxiliary after his report came without hours.
+    case 'aux_report_hours':
+      return data.reportId
+        ? { path: '/service-reports/new', params: { id: data.reportId } }
+        : { path: '/cart/my-aux', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':

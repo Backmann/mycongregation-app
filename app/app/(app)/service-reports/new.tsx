@@ -154,11 +154,26 @@ export default function NewOrEditServiceReportScreen() {
    * hours for the month before he began. One question, one answerer now.
    * It also brings the studies of the latest report, offered as a hint.
    */
+  // Asked in edit mode too (29 October 2026): a month can become auxiliary
+  // after the report came in as «participated» — the report's own shape then
+  // says the wrong thing, and the server asks for the hours.
+  const formFor = isEditMode
+    ? editingReport && editingReport.publisherId !== myPublisher?.id
+      ? editingReport.publisherId
+      : undefined
+    : isOnBehalf
+      ? onBehalfPublisherId
+      : undefined;
+  const formMonth = isEditMode
+    ? editingReport
+      ? toYearMonth(editingReport.reportMonth)
+      : ''
+    : reportMonth;
   const formQ = useQuery({
-    queryKey: ['report-form', reportMonth, isOnBehalf ? onBehalfPublisherId : 'self'],
-    queryFn: () =>
-      serviceReportsApi.form(reportMonth, isOnBehalf ? onBehalfPublisherId : undefined),
-    enabled: !isEditMode && !!reportMonth,
+    queryKey: ['report-form', formMonth, formFor ?? 'self'],
+    queryFn: () => serviceReportsApi.form(formMonth, formFor),
+    enabled: !!formMonth && (!isEditMode || !!editingReport),
+    retry: false,
   });
   const iAmAuxThisMonth = formQ.data?.auxiliary === true;
 
@@ -223,7 +238,9 @@ export default function NewOrEditServiceReportScreen() {
   // - on-behalf: from the target publisher's flag passed in.
   // - self-create: own pioneerType, or auxiliary pioneer this month.
   const isPioneer = isEditMode
-    ? editingReport?.hoursReported != null
+    ? formQ.data
+      ? formQ.data.wantsHours
+      : editingReport?.hoursReported != null
     : formQ.data
       ? formQ.data.wantsHours
       : isOnBehalf

@@ -3622,8 +3622,6 @@
     "servingThisMonth": "Dienen diesen Monat · {{count}}",
     "add": "hinzufügen",
     "noneThisMonth": "Diesen Monat dient niemand als Hilfspionier",
-    "journal": "Dienstjournal",
-    "journalEmpty": "Noch keine Einträge",
     "stop": "Beenden",
     "untilCancelledSince": "bis auf Widerruf · seit {{month}}",
     "onlyMonth": "nur {{month}}",
@@ -3638,16 +3636,6 @@
     "startMonth": "Startmonat",
     "endMonth": "Endmonat",
     "editTitle": "Zeitraum bearbeiten",
-    "section": {
-      "serving": "Dienen jetzt",
-      "upcoming": "Bevorstehend",
-      "finished": "Abgeschlossen"
-    },
-    "movedTo": {
-      "regular": "Allgemeiner Pionier",
-      "special": "Sonderpionier",
-      "missionary": "Missionar"
-    },
     "currentMonth": "aktuell",
     "pastPeriodWarning": "Dieser Zeitraum liegt in der Vergangenheit — prüfen Sie das Jahr.",
     "lateMonthWarning": "Es ist bereits der {{day}}. Das Ziel sind volle 30 Stunden für einen angebrochenen Monat. Stimmt das?",
@@ -5518,7 +5506,9 @@
       "AUX_APP_NO_SEAT": "Hier gibt es keinen Platz, auf dem Sie antworten könnten.",
       "AUX_APP_TOO_EARLY": "Ein Platz kann geöffnet werden, wenn der Bruder {{days}} Tage nicht antwortet.",
       "AUX_APP_PAPER_SECRETARY": "Eine Bewerbung vom Papier trägt der Sekretär oder ein Administrator ein.",
-      "AUX_APP_SIGNERS": "Nennen Sie mindestens zwei Brüder, die unterschrieben haben, jeden einmal."
+      "AUX_APP_SIGNERS": "Nennen Sie mindestens zwei Brüder, die unterschrieben haben, jeden einmal.",
+      "AUX_STOP_NONE": "Sie haben keinen Dienst «bis auf Widerruf».",
+      "AUX_STOP_MONTH": "Dieser Monat kann nicht der letzte sein."
     }
   },
   "stage": {
@@ -5874,7 +5864,15 @@
       "approvedChip": "genehmigt",
       "takeBackTitle": "Bewerbung zurückziehen?",
       "takeBackText": "Die Bewerbung verschwindet, das Komitee sieht sie nicht mehr. Eine neue Bewerbung ist jederzeit möglich.",
-      "monthGoal": "{{month}} · {{n}} Std."
+      "monthGoal": "{{month}} · {{n}} Std.",
+      "stopBtn": "«Bis auf Widerruf» beenden",
+      "stopTitle": "«Bis auf Widerruf» beenden?",
+      "stopText": "Wählen Sie den letzten Monat des Dienstes. Das Dienstkomitee wird benachrichtigt.",
+      "stopConfirm": "Beenden",
+      "lastMonth": "Letzter Monat",
+      "reportHours": "Ihr Bericht für {{month}} kam ohne Stunden, und der Monat ist jetzt Hilfspionierdienst. Bitte tragen Sie die Stunden nach.",
+      "reportHoursBtn": "Stunden eintragen",
+      "stoppedUntil": "Dienst bis: {{month}}"
     },
     "form": {
       "title": "Bewerbung",
@@ -5948,5 +5946,57 @@
     "waitingTitle": "Warten auf Entscheidung · {{count}}",
     "yourAnswer": "Ihre Antwort",
     "waiting": "wartet"
+  },
+  "auxYear": {
+    "historyTitle": "Verlauf nach Dienstjahren",
+    "search": "Nach Namen suchen",
+    "name": "Name",
+    "empty": "In diesem Dienstjahr hat niemand als Hilfspionier gedient.",
+    "nobodyFound": "Niemand gefunden.",
+    "cell": {
+      "pending": "offen",
+      "running": "läuft",
+      "awaiting": "fällig"
+    },
+    "legend": {
+      "reported": "Ziel · berichtet",
+      "ahead": "geplant",
+      "awaiting": "Monat vorbei, kein Bericht",
+      "pending": "Bewerbung in Prüfung"
+    },
+    "totals": "Jahr: {{people}} Pers. · {{months}} Mon. · {{hours}} Std. berichtet",
+    "untilCancelled": "bis auf Widerruf",
+    "untilCancelledBar": "bis auf Widerruf · {{goal}} Std. →",
+    "fromUntilCancelled": "{{month}} → bis auf Widerruf",
+    "rowTotals": "{{months}} Mon. · {{hours}} Std.",
+    "announceTitle": "Für die Bekanntmachung in der Versammlung",
+    "announce": "{{when}} dienen als Hilfspioniere: {{names}}.",
+    "announceNone": "{{when}} gibt es keine Hilfspioniere.",
+    "monthIn": {
+      "1": "Im Januar",
+      "2": "Im Februar",
+      "3": "Im März",
+      "4": "Im April",
+      "5": "Im Mai",
+      "6": "Im Juni",
+      "7": "Im Juli",
+      "8": "Im August",
+      "9": "Im September",
+      "10": "Im Oktober",
+      "11": "Im November",
+      "12": "Im Dezember"
+    },
+    "copy": "Kopieren",
+    "copied": "Kopiert"
+  },
+  "auxCard": {
+    "title": "Hilfspionierdienst",
+    "summary": "{{months}} Mon. · seit {{year}}",
+    "pending": "Bewerbung: {{months}}",
+    "pendingSub": "in Prüfung — zählt noch nicht",
+    "year": "Jahr",
+    "paper": "auf Papier",
+    "hoursUnit": "Std.",
+    "reported": "berichtet {{list}}"
   }
 }
