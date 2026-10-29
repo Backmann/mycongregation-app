@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
@@ -198,15 +198,36 @@ export default function MyHoursScreen() {
 
       {m.open ? (
         <View style={styles.footer}>
-          <Pressable
-            style={styles.btn}
-            onPress={() => setSheet({ entry: null })}
-            accessibilityRole="button"
-            testID="hours-write"
-          >
-            <Ionicons name="add" size={20} color="#fff" />
-            <Text style={styles.btnText}>{t('hoursLog.sheet.title')}</Text>
-          </Pressable>
+          {m.month < current ? (
+            // The month is over: its report is the thing now; a late entry
+            // is still possible below it until the report goes in.
+            <>
+              <Pressable
+                style={styles.btn}
+                onPress={() => router.push(`/service-reports/new?reportMonth=${m.month}-01` as never)}
+                accessibilityRole="button"
+                testID="hours-submit"
+              >
+                <Ionicons name="paper-plane-outline" size={18} color="#fff" />
+                <Text style={styles.btnText}>
+                  {t('hoursLog.report.submitFor', { month: monthName(m.month, lang, false) })}
+                </Text>
+              </Pressable>
+              <Pressable onPress={() => setSheet({ entry: null })} accessibilityRole="button" hitSlop={6}>
+                <Text style={styles.lateLink}>{t('hoursLog.sheet.title')}</Text>
+              </Pressable>
+            </>
+          ) : (
+            <Pressable
+              style={styles.btn}
+              onPress={() => setSheet({ entry: null })}
+              accessibilityRole="button"
+              testID="hours-write"
+            >
+              <Ionicons name="add" size={20} color="#fff" />
+              <Text style={styles.btnText}>{t('hoursLog.sheet.title')}</Text>
+            </Pressable>
+          )}
         </View>
       ) : null}
 
@@ -356,4 +377,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   btnText: { color: '#fff', fontFamily: 'Manrope_800ExtraBold', fontSize: 15.5 },
+  lateLink: { textAlign: 'center', fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND, marginTop: 10 },
 });

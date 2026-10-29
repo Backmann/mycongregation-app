@@ -6128,6 +6128,13 @@
       "title": "My hours",
       "text": "Log your time after every outing in the ministry. At the start of next month your entries add up to your report. Only you see them.",
       "ok": "Got it"
+    },
+    "report": {
+      "fromLog": "From your log: {{dur}} of ministry",
+      "creditToNote": "Credit — {{dur}} — is written into the note.",
+      "creditNote": "Credit hours: {{dur}}",
+      "creditNoteWhat": "Credit hours: {{dur}} ({{what}})",
+      "submitFor": "Submit the report for {{month}}"
     }
   }
 }

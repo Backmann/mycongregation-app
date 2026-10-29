@@ -6128,6 +6128,13 @@
       "title": "Meine Stunden",
       "text": "Tragen Sie Ihre Zeit nach jedem Einsatz im Dienst ein. Am Anfang des nächsten Monats ergeben die Einträge Ihren Bericht. Nur Sie sehen sie.",
       "ok": "Verstanden"
+    },
+    "report": {
+      "fromLog": "Aus Ihren Einträgen: {{dur}} Dienst",
+      "creditToNote": "Gutschrift — {{dur}} — steht in der Notiz.",
+      "creditNote": "Gutschrift: {{dur}}",
+      "creditNoteWhat": "Gutschrift: {{dur}} ({{what}})",
+      "submitFor": "Bericht für {{month}} abgeben"
     }
   }
 }
