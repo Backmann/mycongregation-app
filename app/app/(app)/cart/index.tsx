@@ -248,6 +248,23 @@ export default function ServiceHubScreen() {
           },
         ]
       : [];
+  // One's own: the application and one's months (29 October 2026) — for a
+  // baptized publisher who is not a permanent pioneer.
+  const mayApply =
+    !!myPublisher &&
+    myPublisher.appointment !== 'unbaptized_publisher' &&
+    myPublisher.appointment !== 'student' &&
+    (!myPublisher.pioneerType || myPublisher.pioneerType === 'none');
+  const myAux: Door[] = mayApply
+    ? [
+        {
+          key: 'myAux',
+          title: t('auxApp.my.doorTitle'),
+          subtitle: t('auxApp.my.doorSubtitle'),
+          href: '/cart/my-aux',
+        },
+      ]
+    : [];
 
   const sections: DoorSection[] =
     perms.isElder || perms.isAdmin
@@ -255,7 +272,7 @@ export default function ServiceHubScreen() {
           { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart] },
           { key: 'reports', label: t('serviceHub.sections.reports'), doors: [reports, ...summary, ...attendance] },
           { key: 'visits', label: t('serviceHub.sections.visits'), doors: [serviceOverseer, ...coSchedule] },
-          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: auxPioneers },
+          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...auxPioneers, ...myAux] },
         ]
       : [
           {
@@ -263,7 +280,7 @@ export default function ServiceHubScreen() {
             label: null,
             // His own report first; then where he goes; then what a
             // responsibility of his adds, if he holds one.
-            doors: [reports, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers],
+            doors: [reports, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers, ...myAux],
           },
         ];
 

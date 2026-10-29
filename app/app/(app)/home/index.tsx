@@ -520,6 +520,19 @@ function TodoSection() {
         />
       ) : null}
       {pending?.items.map((item) => {
+        // An application waiting for this brother's answer (29 October 2026).
+        if (item.kind === "aux_application") {
+          return (
+            <Strip
+              key={`aux-${item.id}`}
+              icon="ribbon-outline"
+              text={t("home.pending.auxApplication", { name: item.title ?? "" })}
+              onPress={() =>
+                router.push(`/cart/aux-application/${item.id}` as never)
+              }
+            />
+          );
+        }
         const isTask = item.kind === "task";
         const label = isTask
           ? item.dueOn

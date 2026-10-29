@@ -22,6 +22,9 @@ import {
   type AuxReducedReason,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
+import { router } from 'expo-router';
+import { auxApplicationsApi } from '../../../lib/api';
+import { monthsLabel, capitalize } from '../../../lib/aux-application';
 import {
   auxPeriodLabel,
   type PeriodLike,
@@ -54,6 +57,16 @@ export default function AuxiliaryPioneersScreen() {
     queryKey: QK_MONTH(monthParam),
     queryFn: () => auxiliaryPioneersApi.listForMonth(monthParam),
   });
+  // Applications waiting, and whether the committee can take any (29 October 2026).
+  const appsQuery = useQuery({
+    queryKey: ['aux-applications', 'list'],
+    queryFn: () => auxApplicationsApi.list(),
+  });
+  const committeeQuery = useQuery({
+    queryKey: ['aux-applications', 'committee'],
+    queryFn: () => auxApplicationsApi.committee(),
+  });
+  const waiting = (appsQuery.data ?? []).filter((a) => a.status === 'pending');
   const journalQuery = useQuery({
     queryKey: QK_JOURNAL,
     queryFn: () => auxiliaryPioneersApi.journal(),
@@ -261,6 +274,63 @@ export default function AuxiliaryPioneersScreen() {
       <ScrollView
         contentContainerStyle={styles.content}
       >
+        {committeeQuery.data && !committeeQuery.data.complete ? (
+          <View style={styles.pastWarn}>
+            <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
+            <Text style={styles.pastWarnText}>
+              {committeeQuery.data.missing.length > 0
+                ? t('auxApp.committeeMissing', {
+                    who: committeeQuery.data.missing.map((m) => t(`auxApp.seat.${m}`)).join(', '),
+                  })
+                : t('auxApp.committeeMissingSomeone')}
+            </Text>
+          </View>
+        ) : null}
+        {waiting.length > 0 ? (
+          <>
+            <View style={styles.sectionHead}>
+              <Text style={styles.sectionTitle}>
+                {t('auxApp.waitingTitle', { count: waiting.length })}
+              </Text>
+            </View>
+            {waiting.map((a) => {
+              const done = a.seats.filter((x) => x.approved).length;
+              const mine = !!a.can.approveSeat || a.can.approveOpenSeats.length > 0;
+              return (
+                <Pressable
+                  key={a.id}
+                  style={[styles.appRow, mine && styles.appRowMine]}
+                  onPress={() => router.push(`/cart/aux-application/${a.id}` as never)}
+                  accessibilityRole="button"
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.appName}>{a.publisherName}</Text>
+                    <Text style={styles.appSub}>
+                      {(a.untilCancelled
+                        ? t('auxApp.my.fromUntilCancelled', { month: monthsLabel(a.months, i18n.language) })
+                        : capitalize(monthsLabel(a.months, i18n.language))) +
+                        ' · ' +
+                        t('auxApp.view.ofThree', { n: done })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.appChip, mine && styles.appChipMine]}>
+                    {mine ? t('auxApp.yourAnswer') : t('auxApp.waiting')}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </>
+        ) : null}
+        {canDeleteBegunAuxPeriod ? (
+          <Pressable
+            style={styles.paperBtn}
+            onPress={() => router.push('/cart/aux-paper' as never)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="document-text-outline" size={16} color="#0e7490" />
+            <Text style={styles.paperBtnText}>{t('auxApp.paper.enter')}</Text>
+          </Pressable>
+        ) : null}
         {/* Month selector */}
         <View style={styles.monthBar}>
           <Pressable
@@ -976,6 +1046,40 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   sheetItemText: { fontSize: 15.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
+  appRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 8,
+  },
+  appRowMine: { backgroundColor: '#fffbeb', borderColor: '#fde68a' },
+  appName: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: '#0f172a' },
+  appSub: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2 },
+  appChip: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 12,
+    color: '#0369a1',
+    backgroundColor: '#e0f2fe',
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  appChipMine: { color: '#92400e', backgroundColor: '#fef3c7' },
+  paperBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-end',
+    paddingVertical: 6,
+    marginBottom: 8,
+  },
+  paperBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#0e7490' },
   normBox: { marginTop: 12, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 4 },
   normPickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7 },
   normMonth: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0f172a', textTransform: 'capitalize' },

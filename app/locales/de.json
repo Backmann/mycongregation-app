@@ -2686,7 +2686,8 @@
       "contacts": "Kontaktdaten prüfen",
       "taskDue": "{{title}} · bis {{date}}",
       "taskOverdue": "{{title}} · überfällig seit {{date}}",
-      "more": "{{count}} weitere in meinen Aufgaben"
+      "more": "{{count}} weitere in meinen Aufgaben",
+      "auxApplication": "Bewerbung als Hilfspionier: {{name}}"
     },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
@@ -3820,7 +3821,8 @@
       "elder_task": "Aufgaben der Ältestenschaft",
       "meeting_settings": "Zeit & Ort der Zusammenkünfte",
       "annual_report": "Jahresbericht (S-10)",
-      "monthly_report": "Monatsübersicht (S-1)"
+      "monthly_report": "Monatsübersicht (S-1)",
+      "aux_application": "Bewerbungen als Hilfspionier"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -4041,7 +4043,11 @@
       "openingSong": "Anfangslied",
       "plannedWeek": "Vorgemerkt für die Woche",
       "durationMin": "Gedacht für (Min.)",
-      "reducedMonths": "Monate mit 15-Stunden-Ziel"
+      "reducedMonths": "Monate mit 15-Stunden-Ziel",
+      "months": "Monate",
+      "paperDate": "Datum der Unterschrift",
+      "approvedSeat": "Zugestimmt (Platz)",
+      "openedSeat": "Platz geöffnet"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5498,7 +5504,21 @@
       "AUX_MONTH_CLOSED": "{{month}} ist abgeschlossen: Die Zahlen wurden bereits gesendet. Nur der Sekretär kann ihn ändern.",
       "AUX_REMOVE_STARTED": "Dieser Zeitraum hat bereits begonnen – er kann beendet, aber nicht gelöscht werden. Einen versehentlich eingetragenen Eintrag kann der Sekretär löschen.",
       "AUX_NORM_NOT_ALLOWED": "{{month}}: In diesem Monat ist ein Ziel von 15 Stunden nicht vorgesehen.",
-      "AUX_NORM_OUTSIDE": "{{month}} gehört nicht zu diesem Zeitraum."
+      "AUX_NORM_OUTSIDE": "{{month}} gehört nicht zu diesem Zeitraum.",
+      "AUX_APP_MONTHS": "Wählen Sie die Monate — oder einen ersten Monat für „bis auf Widerruf“.",
+      "AUX_APP_MONTH_PAST": "{{month}} ist bereits vorbei.",
+      "AUX_APP_CONFIRM": "Bestätigen Sie die Bewerbung.",
+      "AUX_APP_COMMITTEE_INCOMPLETE": "Das Dienstkomitee ist nicht vollständig — Bewerbungen werden noch nicht angenommen.",
+      "AUX_APP_PENDING_EXISTS": "Sie haben bereits eine Bewerbung in Prüfung.",
+      "AUX_APP_ANSWERED": "Das Komitee prüft die Bewerbung bereits — Sie können sie nur zurückziehen und neu einreichen.",
+      "AUX_APP_COMMITTEE_ONLY": "Das kann nur das Dienstkomitee.",
+      "AUX_APP_DECIDED": "Die Bewerbung ist bereits genehmigt.",
+      "AUX_APP_OWN": "Auf die eigene Bewerbung antworten die anderen Brüder.",
+      "AUX_APP_ALREADY_ANSWERED": "Sie haben auf diese Bewerbung bereits geantwortet.",
+      "AUX_APP_NO_SEAT": "Hier gibt es keinen Platz, auf dem Sie antworten könnten.",
+      "AUX_APP_TOO_EARLY": "Ein Platz kann geöffnet werden, wenn der Bruder {{days}} Tage nicht antwortet.",
+      "AUX_APP_PAPER_SECRETARY": "Eine Bewerbung vom Papier trägt der Sekretär oder ein Administrator ein.",
+      "AUX_APP_SIGNERS": "Nennen Sie mindestens zwei Brüder, die unterschrieben haben, jeden einmal."
     }
   },
   "stage": {
@@ -5823,5 +5843,110 @@
     "removedCount": "Gelöschte Gruppen: {{count}}",
     "show": "anzeigen",
     "hide": "ausblenden"
+  },
+  "auxApp": {
+    "my": {
+      "screenTitle": "Mein Hilfspionierdienst",
+      "doorTitle": "Mein Hilfspionierdienst",
+      "doorSubtitle": "Bewerbung und meine Monate",
+      "applicationKicker": "Bewerbung",
+      "pending": "Wird geprüft",
+      "pendingText": "Das Dienstkomitee prüft Ihre Bewerbung. Sobald sie genehmigt ist, erscheint es hier und Sie werden benachrichtigt.",
+      "change": "Ändern",
+      "takeBack": "Zurückziehen",
+      "answered": "Das Komitee hat bereits begonnen — eine Änderung ist nicht mehr möglich. Sie können die Bewerbung zurückziehen und neu einreichen.",
+      "servingKicker": "Sie sind Hilfspionier",
+      "servingTitle": "{{month}} · Ziel {{n}} Std.",
+      "untilCancelled": "Sie dienen bis auf Widerruf. Der Bericht wird Anfang des nächsten Monats mit Stunden abgegeben.",
+      "reportHint": "Der Bericht wird Anfang des nächsten Monats mit Stunden abgegeben.",
+      "kicker": "Hilfspionierdienst",
+      "inviteTitle": "Möchten Sie als Hilfspionier dienen?",
+      "notBaptized": "Als Hilfspionier kann ein getaufter Verkündiger dienen.",
+      "permanent": "Sie dienen als allgemeiner Pionier — eine Bewerbung ist nicht nötig.",
+      "committeeIncomplete": "Eine Bewerbung in der App ist noch nicht möglich: Das Dienstkomitee ist nicht vollständig. Sie können das Formular dem Koordinator der Ältestenschaft geben.",
+      "inviteText": "Füllen Sie die Bewerbung aus — sie geht direkt an das Dienstkomitee. Wenn Ihnen Papier lieber ist, geben Sie das Formular dem Koordinator der Ältestenschaft.",
+      "apply": "Bewerben",
+      "applyMore": "Für weitere Monate bewerben",
+      "applyMoreSub": "Neue Bewerbung",
+      "approvedTitle": "Meine Bewerbungen",
+      "fromUntilCancelled": "Bis auf Widerruf, ab: {{month}}",
+      "approvedOn": "Genehmigt am {{date}}",
+      "approvedChip": "genehmigt",
+      "takeBackTitle": "Bewerbung zurückziehen?",
+      "takeBackText": "Die Bewerbung verschwindet, das Komitee sieht sie nicht mehr. Eine neue Bewerbung ist jederzeit möglich.",
+      "monthGoal": "{{month}} · {{n}} Std."
+    },
+    "form": {
+      "title": "Bewerbung",
+      "months": "Monat(e)",
+      "alreadyServing": "bereits im Dienst",
+      "late": "schon der {{day}}.",
+      "may15": "15 Std. möglich",
+      "hours": "{{n}} Std.",
+      "more": "Weitere Monate",
+      "untilCancelled": "Bis auf Widerruf",
+      "untilCancelledHint": "Jeden Monat dienen, bis Sie aufhören. Die gewählte Kachel ist der erste Monat.",
+      "goalTitle": "Ziel in Monaten, in denen 15 Stunden möglich sind",
+      "words1": "Ich möchte mich mehr am Predigtdienst beteiligen, weil ich Jehova liebe und anderen helfen möchte, ihn kennenzulernen. Deshalb möchte ich als Hilfspionier dienen.",
+      "words2": "Ich halte mich an hohe sittliche Maßstäbe und gute Gewohnheiten. Ich habe meine Zeit eingeplant, sodass ich das Stundenziel erreichen kann.",
+      "words2Sister": "Ich halte mich an hohe sittliche Maßstäbe und gute Gewohnheiten. Ich habe meine Zeit eingeplant, sodass ich das Stundenziel erreichen kann.",
+      "confirm": "Ich bestätige die Bewerbung",
+      "lateHint": "Das Formular bittet um die Bewerbung eine Woche vor Beginn. Sie können sich trotzdem jetzt bewerben — das Komitee entscheidet.",
+      "save": "Änderungen speichern",
+      "send": "An das Dienstkomitee senden",
+      "pickMonths": "Wählen Sie einen Monat",
+      "pickConfirm": "Bestätigen Sie die Bewerbung"
+    },
+    "view": {
+      "title": "Bewerbung",
+      "paper": "vom Papier, unterschrieben am {{date}}",
+      "sent": "eingereicht am {{date}}",
+      "approved": "genehmigt",
+      "ofThree": "{{n}} von 3",
+      "questionsTitle": "Für das Dienstkomitee",
+      "questions": "1. Ist der Bewerber ein vorbildlicher Christ mit hohen sittlichen Maßstäben? 2. Gibt es einen Grund, warum er nicht als Pionier dienen kann? 3. Haben Sie sich mit dem Gruppenaufseher beraten? Die Antworten werden nirgends gespeichert.",
+      "approve": "Ich stimme zu",
+      "approveInstead": "Ich stimme zu anstelle von: {{seat}}",
+      "openSeat": "Platz „{{seat}}“ für andere Älteste öffnen",
+      "pass": "An einen anderen Ältesten weitergeben",
+      "withdraw": "Still zurückziehen",
+      "passTitle": "Ihren Platz weitergeben?",
+      "withdrawTitle": "Bewerbung zurückziehen?",
+      "openTitle": "Platz öffnen?",
+      "passConfirm": "Weitergeben",
+      "withdrawConfirm": "Zurückziehen",
+      "openConfirm": "Öffnen",
+      "passText": "Jeder andere Älteste kann statt Ihrer antworten. Der Verkündiger erfährt nichts davon.",
+      "withdrawText": "Die Bewerbung verschwindet ohne Nachricht an den Verkündiger. Die beiden anderen Brüder des Komitees werden informiert. Sprechen Sie persönlich mit dem Verkündiger.",
+      "openText": "Der Bruder auf dem Platz „{{seat}}“ antwortet seit drei Tagen nicht. Jeder andere Älteste kann statt seiner antworten.",
+      "instead": "anstelle von: {{seat}}",
+      "approvedBy": "{{name}} · zugestimmt am {{date}}",
+      "unfillable": "niemand mehr da — zwei genügen",
+      "open": {
+        "applicant": "{{name}} bewirbt sich selbst — ein anderer Ältester antwortet",
+        "passed": "{{name}} hat weitergegeben · {{date}}",
+        "absent": "{{name}} ist abwesend — geöffnet am {{date}}",
+        "opened": "geöffnet am {{date}}"
+      },
+      "waiting": "{{name}} · Antwort ausstehend"
+    },
+    "seat": {
+      "body_coordinator": "Koordinator der Ältestenschaft",
+      "secretary": "Sekretär",
+      "service_overseer": "Dienstaufseher"
+    },
+    "paper": {
+      "title": "Bewerbung vom Papier",
+      "date": "Datum der Unterschrift",
+      "signed": "Unterschrieben von",
+      "hint": "Markieren Sie die Brüder, die das Formular unterschrieben haben — mindestens zwei. Die Bewerbung ist sofort genehmigt.",
+      "save": "Eintragen und genehmigen",
+      "enter": "Bewerbung vom Papier eintragen"
+    },
+    "committeeMissing": "Bewerbungen in der App werden nicht angenommen: niemand ist eingeteilt als {{who}}. Einteilen unter „Versammlung“ → „Aufgaben“.",
+    "committeeMissingSomeone": "Bewerbungen in der App werden nicht angenommen: Das Dienstkomitee ist nicht vollständig.",
+    "waitingTitle": "Warten auf Entscheidung · {{count}}",
+    "yourAnswer": "Ihre Antwort",
+    "waiting": "wartet"
   }
 }

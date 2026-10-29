@@ -180,6 +180,13 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // gives it to nobody else.
   '/cart/auxiliary-pioneers-month': 'all',
   '/cart/auxiliary-pioneers': 'auxPioneers',
+  // The application (29 October 2026): one's own — for everybody; one
+  // application — the server decides (the committee, an elder in an open
+  // place); a paper — those who keep the list, the server the secretary.
+  '/cart/my-aux': 'all',
+  '/cart/aux-apply': 'all',
+  '/cart/aux-application/[id]': 'self',
+  '/cart/aux-paper': 'auxPioneers',
   '/service-reports': 'all',
   '/service-reports/new': 'all',
   // Whoever oversees a group reads that group's reports — the server knows.
