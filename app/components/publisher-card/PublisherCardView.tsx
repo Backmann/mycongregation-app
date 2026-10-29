@@ -15,6 +15,7 @@ import {
   serviceGroupsApi,
   serviceReportsApi,
   auxYearApi,
+  auxApplicationsApi,
   type Publisher,
 } from '../../lib/api';
 import { addWeeks, formatDateISO, startOfWeekMonday } from '../../lib/dates';
@@ -28,6 +29,7 @@ import { contactsCheckLine } from '../../lib/contacts-check';
 import { CAPABILITY_CATEGORIES, countActiveCapabilities } from '../../lib/capabilities';
 import { FONT } from '../../lib/typography';
 import { StatusReasonsModal } from '../StatusReasonsModal';
+import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 
 /**
@@ -528,6 +530,15 @@ function AuxBlock({ publisherId }: { publisherId: string }) {
     queryKey: ['aux-pioneers', 'card', publisherId],
     queryFn: () => auxYearApi.card(publisherId),
   });
+  // The applications themselves, each with its S-205b — for those who keep
+  // the list (the committee and the admins); other elders see the years.
+  const { canManageAuxiliaryPioneers } = usePermissions();
+  const appsQ = useQuery({
+    queryKey: ['aux-applications', 'publisher', publisherId],
+    queryFn: () => auxApplicationsApi.forPublisher(publisherId),
+    enabled: canManageAuxiliaryPioneers,
+  });
+  const apps = appsQ.data ?? [];
   const d = q.data;
   if (!d || (d.totalMonths === 0 && !d.pending)) return null;
   const shortYear = (y: number) => `${String(y).slice(2)}/${String(y + 1).slice(2)}`;
@@ -589,6 +600,37 @@ function AuxBlock({ publisherId }: { publisherId: string }) {
           </View>
         );
       })}
+      {apps.length > 0 ? (
+        <>
+          <Text style={styles.subLabel}>{t('auxPrint.cardApps', { count: apps.length })}</Text>
+          {apps.map((a) => (
+            <Pressable
+              key={a.id}
+              style={styles.auxAppRow}
+              onPress={() => router.push(`/cart/aux-application/${a.id}` as never)}
+              accessibilityRole="link"
+            >
+              <Ionicons name="document-text-outline" size={16} color="#0369a1" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.auxTitle} numberOfLines={1}>
+                  {a.untilCancelled
+                    ? t('auxApp.my.fromUntilCancelled', { month: monthName(a.months[0], lang) })
+                    : capitalize(monthsLabel(a.months, lang))}
+                </Text>
+                <Text style={styles.auxSub}>
+                  {t('auxPrint.cardAppLine', {
+                    date: a.approvedAt
+                      ? new Date(a.approvedAt).toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' })
+                      : '—',
+                  })}
+                  {a.source === 'paper' ? ` · ${t('auxCard.paper')}` : ''}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+            </Pressable>
+          ))}
+        </>
+      ) : null}
     </Block>
   );
 }
@@ -760,6 +802,7 @@ const styles = StyleSheet.create({
   auxSummary: { alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 10, marginBottom: 8 },
   auxSummaryText: { fontFamily: FONT.bold, fontSize: 12, color: '#166534' },
   auxTile: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: LINE, borderRadius: 14, padding: 10, marginBottom: 8 },
+  auxAppRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
   auxTilePending: { borderColor: '#fde68a', backgroundColor: '#fffbeb' },
   auxBadge: { width: 56, borderRadius: 10, backgroundColor: '#dcfce7', alignItems: 'center', paddingVertical: 6 },
   auxBadgeTop: { fontFamily: FONT.extrabold, fontSize: 15, color: '#166534' },

@@ -5508,7 +5508,8 @@
       "AUX_APP_PAPER_SECRETARY": "Eine Bewerbung vom Papier trägt der Sekretär oder ein Administrator ein.",
       "AUX_APP_SIGNERS": "Nennen Sie mindestens zwei Brüder, die unterschrieben haben, jeden einmal.",
       "AUX_STOP_NONE": "Sie haben keinen Dienst «bis auf Widerruf».",
-      "AUX_STOP_MONTH": "Dieser Monat kann nicht der letzte sein."
+      "AUX_STOP_MONTH": "Dieser Monat kann nicht der letzte sein.",
+      "AUX_RANGE_TOO_LONG": "Höchstens zwölf Monate."
     }
   },
   "stage": {
@@ -5998,5 +5999,54 @@
     "paper": "auf Papier",
     "hoursUnit": "Std.",
     "reported": "berichtet {{list}}"
+  },
+  "auxPrint": {
+    "button": "PDF",
+    "title": "Verlauf drucken",
+    "period": "Zeitraum",
+    "serviceYear": "Dienstjahr {{year}}",
+    "range": "Von Monat bis Monat",
+    "from": "Von",
+    "to": "Bis",
+    "layout": "Ansicht",
+    "byPeople": "Nach Personen",
+    "byMonths": "Nach Monaten",
+    "print": "Drucken",
+    "tooLong": "Höchstens zwölf Monate.",
+    "kicker": "Hilfspionierdienst",
+    "yearTitle": "Dienstjahr {{year}}",
+    "printed": "gedruckt",
+    "people": "Personen haben gedient",
+    "months": "Dienstmonate",
+    "busiest": "am meisten · {{n}} Pers.",
+    "busiestNone": "niemand hat gedient",
+    "hours": "Stunden berichtet",
+    "name": "Name",
+    "monthsCol": "Mon.",
+    "hoursCol": "Std.",
+    "inMonth": "Im Monat",
+    "nobody": "In diesem Zeitraum hat niemand als Hilfspionier gedient.",
+    "personCount": "{{count}} Pers.",
+    "may15": "15 Std. möglich",
+    "note": "In der Zelle: Ziel / berichtete Stunden. Dokument der Versammlung — nicht zur Weitergabe.",
+    "s205": {
+      "button": "Formular S-205b (PDF)",
+      "kicker": "S-205b · Unterlagen der Versammlung",
+      "title": "Bewerbung für den Hilfspionierdienst",
+      "months": "Monat(e)",
+      "untilCancelled": "Hilfspionierdienst bis auf Widerruf",
+      "goals": "Ziel",
+      "date": "Datum",
+      "applicant": "Bewerber",
+      "confirmedInApp": "Vom Bewerber in der App bestätigt am {{date}}",
+      "signedOnPaper": "Auf dem Papierformular unterschrieben",
+      "approvedBy": "Genehmigt vom Dienstkomitee",
+      "instead": "stellvertretend",
+      "unfillable": "niemand zum Antworten — zwei genügen",
+      "note": "Die Bewerbung wird nicht an das Zweigbüro geschickt, sondern in den Unterlagen der Versammlung aufbewahrt. Die Antworten auf die Fragen des Dienstkomitees werden nirgends festgehalten."
+    },
+    "cardApps": "Bewerbungen · {{count}}",
+    "cardAppLine": "genehmigt {{date}}",
+    "noteMonths": "Neben dem Namen: Ziel und berichtete Stunden. Dokument der Versammlung — nicht zur Weitergabe."
   }
 }

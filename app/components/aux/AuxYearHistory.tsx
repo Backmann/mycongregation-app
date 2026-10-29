@@ -4,7 +4,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { auxYearApi, type AuxCell, type AuxYearRow } from '../../lib/api';
+import {
+  auxYearApi,
+  extractErrorMessage,
+  meetingSettingsApi,
+  type AuxCell,
+  type AuxYearRow,
+  type AuxYearView,
+} from '../../lib/api';
+import { Dialog } from '../Dialog';
+import { exportHtmlAsPdf, openPrintWindow } from '../../lib/pdf';
+import { appFontFaces } from '../../lib/print-fonts';
+import { buildAuxHistoryPdfHtml } from '../../lib/auxHistoryPdf';
+import { addMonths, capitalize, monthName } from '../../lib/aux-application';
 import { INK, MUTED, BRAND } from '../reports/ReportBits';
 
 /**
@@ -78,6 +90,7 @@ export function AuxYearHistory() {
     return (data?.rows ?? []).filter((r) => !s || r.name.toLowerCase().includes(s));
   }, [data, query]);
   const reducible = new Set((data?.reducible ?? []).map((x) => x.month));
+  const [printOpen, setPrintOpen] = useState(false);
   const table = width >= 600;
   const NAME_W = table ? Math.min(180, Math.max(130, width * 0.22)) : 0;
   const colW = table && inner > 0 ? Math.floor((inner - NAME_W) / 12) : 0;
@@ -103,6 +116,17 @@ export function AuxYearHistory() {
             );
           })}
         </View>
+        {data ? (
+          <Pressable
+            onPress={() => setPrintOpen(true)}
+            style={styles.pdfBtn}
+            accessibilityRole="button"
+            accessibilityLabel={t('auxPrint.title')}
+          >
+            <Ionicons name="document-text-outline" size={15} color={BRAND} />
+            <Text style={styles.pdfText}>{t('auxPrint.button')}</Text>
+          </Pressable>
+        ) : null}
         <View style={[styles.search, !table && { flexBasis: '100%' }]}>
           <Ionicons name="search" size={15} color="#94a3b8" />
           <TextInput
@@ -191,7 +215,167 @@ export function AuxYearHistory() {
           </View>
         </>
       )}
+      {data ? (
+        <PrintDialog visible={printOpen} view={data} onClose={() => setPrintOpen(false)} />
+      ) : null}
     </View>
+  );
+}
+
+/**
+ * What to print (29 October 2026, mockup screen 12): the service year on
+ * the screen, or any run of up to twelve months; by people or by months.
+ */
+function PrintDialog({ visible, view, onClose }: { visible: boolean; view: AuxYearView; onClose: () => void }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const [kind, setKind] = useState<'year' | 'range'>('year');
+  const [mode, setMode] = useState<'people' | 'months'>('people');
+  const [from, setFrom] = useState(view.months[0]);
+  const [to, setTo] = useState(view.months[view.months.length - 1]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const overview = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+    enabled: visible,
+  });
+  const span = (a: string, b: string) => {
+    const [ya, ma] = a.split('-').map(Number);
+    const [yb, mb] = b.split('-').map(Number);
+    return (yb - ya) * 12 + (mb - ma);
+  };
+  const rangeOk = span(from, to) >= 0 && span(from, to) <= 11;
+  const yearLabel = `${view.year}/${String(view.year + 1).slice(2)}`;
+
+  const print = async () => {
+    setError(null);
+    const win = openPrintWindow();
+    setBusy(true);
+    try {
+      const v = kind === 'year' ? view : await auxYearApi.range(from, to);
+      const first = v.months[0];
+      const last = v.months[v.months.length - 1];
+      // «сентябрь 2026», without the «г.» the Russian calendar adds.
+      const long = (m: string) => monthName(m, lang).replace(/\s?г\.$/, '');
+      const html = buildAuxHistoryPdfHtml({
+        view: v,
+        mode,
+        congregationName: overview.data?.congregation?.name ?? '',
+        title:
+          kind === 'year'
+            ? t('auxPrint.yearTitle', { year: yearLabel })
+            : `${capitalize(long(first))} — ${long(last)}`,
+        rangeLabel: `${long(first)} — ${long(last)}`,
+        printedOn: new Date().toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' }),
+        monthShort: (m) => shortMonth(m, lang),
+        monthLong: long,
+        monthOnly: (m) => monthName(m, lang, false),
+        reasonsOf: (m) =>
+          (v.reducible.find((x) => x.month === m)?.reasons ?? [])
+            .map((r) => t(`auxPioneer.reason.${r}`))
+            .join(', '),
+        fontFaces: appFontFaces(),
+        labels: {
+          kicker: t('auxPrint.kicker'),
+          printed: t('auxPrint.printed'),
+          people: t('auxPrint.people'),
+          months: t('auxPrint.months'),
+          busiest: t('auxPrint.busiest'),
+          busiestNone: t('auxPrint.busiestNone'),
+          hours: t('auxPrint.hours'),
+          name: t('auxPrint.name'),
+          monthsCol: t('auxPrint.monthsCol'),
+          hoursCol: t('auxPrint.hoursCol'),
+          inMonth: t('auxPrint.inMonth'),
+          nobody: t('auxPrint.nobody'),
+          personCount: (n) => t('auxPrint.personCount', { count: n }),
+          may15: t('auxPrint.may15'),
+          note: t('auxPrint.note'),
+          noteMonths: t('auxPrint.noteMonths'),
+        },
+      });
+      await exportHtmlAsPdf(html, { fileName: t('auxPrint.kicker'), preopenedWindow: win });
+      onClose();
+    } catch (e) {
+      win?.close();
+      setError(extractErrorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const Seg = <T extends string>({ value, options, onChange }: { value: T; options: { v: T; label: string }[]; onChange: (v: T) => void }) => (
+    <View style={styles.seg}>
+      {options.map((o) => {
+        const on = o.v === value;
+        return (
+          <Pressable
+            key={o.v}
+            onPress={() => onChange(o.v)}
+            style={[styles.segItem, on && styles.segOn]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+          >
+            <Text style={[styles.segText, on && styles.segTextOn]}>{o.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+  const Stepper = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+    <View style={styles.stepRow}>
+      <Text style={styles.stepLabel}>{label}</Text>
+      <Pressable onPress={() => onChange(addMonths(value, -1))} hitSlop={8} accessibilityRole="button">
+        <Ionicons name="chevron-back" size={18} color={MUTED} />
+      </Pressable>
+      <Text style={styles.stepValue}>{capitalize(monthName(value, lang))}</Text>
+      <Pressable onPress={() => onChange(addMonths(value, 1))} hitSlop={8} accessibilityRole="button">
+        <Ionicons name="chevron-forward" size={18} color={MUTED} />
+      </Pressable>
+    </View>
+  );
+
+  return (
+    <Dialog
+      visible={visible}
+      title={t('auxPrint.title')}
+      icon="document-text-outline"
+      cancelLabel={t('common.cancel')}
+      confirmLabel={t('auxPrint.print')}
+      confirmDisabled={kind === 'range' && !rangeOk}
+      pending={busy}
+      onConfirm={() => void print()}
+      onCancel={onClose}
+    >
+      <Text style={styles.dLabel}>{t('auxPrint.period')}</Text>
+      <Seg
+        value={kind}
+        onChange={setKind}
+        options={[
+          { v: 'year', label: t('auxPrint.serviceYear', { year: yearLabel }) },
+          { v: 'range', label: t('auxPrint.range') },
+        ]}
+      />
+      {kind === 'range' ? (
+        <View style={{ marginTop: 8 }}>
+          <Stepper label={t('auxPrint.from')} value={from} onChange={setFrom} />
+          <Stepper label={t('auxPrint.to')} value={to} onChange={setTo} />
+          {!rangeOk ? <Text style={styles.dError}>{t('auxPrint.tooLong')}</Text> : null}
+        </View>
+      ) : null}
+      <Text style={[styles.dLabel, { marginTop: 14 }]}>{t('auxPrint.layout')}</Text>
+      <Seg
+        value={mode}
+        onChange={setMode}
+        options={[
+          { v: 'people', label: t('auxPrint.byPeople') },
+          { v: 'months', label: t('auxPrint.byMonths') },
+        ]}
+      />
+      {error ? <Text style={styles.dError}>{error}</Text> : null}
+    </Dialog>
   );
 }
 
@@ -372,6 +556,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 7,
   },
+  pdfBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: '#ecfeff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+  },
+  pdfText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13, color: BRAND },
+  dLabel: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: MUTED, marginBottom: 6 },
+  dError: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#b91c1c', marginTop: 6 },
+  seg: { flexDirection: 'row', backgroundColor: '#f1f5f9', borderRadius: 12, padding: 3, gap: 3 },
+  segItem: { flex: 1, paddingVertical: 8, paddingHorizontal: 6, borderRadius: 9, alignItems: 'center' },
+  segOn: { backgroundColor: '#fff', shadowColor: '#0f172a', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 } },
+  segText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: MUTED, textAlign: 'center' },
+  segTextOn: { color: INK },
+  stepRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6 },
+  stepLabel: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: MUTED, width: 34 },
+  stepValue: { flex: 1, textAlign: 'center', fontFamily: 'Manrope_800ExtraBold', fontSize: 14.5, color: INK },
   stripCellWide: { flexBasis: 0, minWidth: 0 },
   stripCell15: { borderColor: '#fcd34d' },
   stripCellNow: { borderColor: BRAND, backgroundColor: '#ecfeff' },
