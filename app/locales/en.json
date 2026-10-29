@@ -6122,6 +6122,12 @@
       "confirm": "Sign out without them",
       "text_one": "{{count}} hours entry has not reached the server. Connect to send it, or sign out without it.",
       "text_other": "{{count}} hours entries have not reached the server. Connect to send them, or sign out without them."
+    },
+    "intro": {
+      "badge": "New",
+      "title": "My hours",
+      "text": "Log your time after every outing in the ministry. At the start of next month your entries add up to your report. Only you see them.",
+      "ok": "Got it"
     }
   }
 }

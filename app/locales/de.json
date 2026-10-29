@@ -6122,6 +6122,12 @@
       "confirm": "Ohne sie abmelden",
       "text_one": "{{count}} Stundeneintrag ist noch nicht auf dem Server. Verbinden Sie sich zum Senden oder melden Sie sich ohne ihn ab.",
       "text_other": "{{count}} Stundeneinträge sind noch nicht auf dem Server. Verbinden Sie sich zum Senden oder melden Sie sich ohne sie ab."
+    },
+    "intro": {
+      "badge": "Neu",
+      "title": "Meine Stunden",
+      "text": "Tragen Sie Ihre Zeit nach jedem Einsatz im Dienst ein. Am Anfang des nächsten Monats ergeben die Einträge Ihren Bericht. Nur Sie sehen sie.",
+      "ok": "Verstanden"
     }
   }
 }

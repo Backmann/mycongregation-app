@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +8,8 @@ import { formatDuration, useLogOverview } from '../../lib/useServiceLog';
 import { capitalize, monthName } from '../../lib/aux-application';
 import type { ServiceLogMonth } from '../../lib/api';
 import { LogSheet } from './LogSheet';
+
+const INTRO_KEY = 'mycongregation.hours-intro-seen';
 
 /** Days left in the month after today, today included. */
 export function daysLeft(today: string): number {
@@ -29,6 +32,22 @@ export function HoursCard({
   const { t, i18n } = useTranslation();
   const { months } = useLogOverview();
   const [open, setOpen] = useState(false);
+  // The first time the card appears, one line on what it is for (Lionel,
+  // 29 October 2026): written after every outing, summed into the report.
+  const [intro, setIntro] = useState(false);
+  const shown = !!months && months.length > 0;
+  useEffect(() => {
+    if (!shown) return;
+    void AsyncStorage.getItem(INTRO_KEY)
+      .then((v) => {
+        if (!v) setIntro(true);
+      })
+      .catch(() => undefined);
+  }, [shown]);
+  const closeIntro = () => {
+    setIntro(false);
+    void AsyncStorage.setItem(INTRO_KEY, '1').catch(() => undefined);
+  };
   if (!months || months.length === 0) return null;
   // This month first; the previous one only while it is still his to finish.
   const m: ServiceLogMonth & { pendingIds: string[] } =
@@ -55,6 +74,20 @@ export function HoursCard({
 
   return (
     <View>
+      {intro ? (
+        <View style={styles.intro}>
+          <View style={styles.introHead}>
+            <View style={styles.introBadge}>
+              <Text style={styles.introBadgeText}>{t('hoursLog.intro.badge')}</Text>
+            </View>
+            <Text style={styles.introTitle}>{t('hoursLog.intro.title')}</Text>
+          </View>
+          <Text style={styles.introText}>{t('hoursLog.intro.text')}</Text>
+          <Pressable onPress={closeIntro} accessibilityRole="button" hitSlop={6}>
+            <Text style={styles.introOk}>{t('hoursLog.intro.ok')}</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <View style={[styles.hero, aux && styles.heroAux]}>
       <Pressable
         onPress={() => router.push(`/cart/my-hours?month=${m.month}` as never)}
@@ -118,6 +151,21 @@ export function HoursCard({
 }
 
 const styles = StyleSheet.create({
+  intro: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#a5f3fc',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 10,
+    gap: 6,
+  },
+  introHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  introBadge: { backgroundColor: '#0e7490', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 9 },
+  introBadgeText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, color: '#fff', letterSpacing: 0.4 },
+  introTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: '#0f172a', flex: 1 },
+  introText: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: '#334155', lineHeight: 20 },
+  introOk: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: '#0e7490', alignSelf: 'flex-end' },
   hero: {
     backgroundColor: '#0e7490',
     borderRadius: 22,
