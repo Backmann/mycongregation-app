@@ -36,7 +36,7 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { Dialog } from '../../../components/Dialog';
 import { failsScreen } from '../../../lib/screen-failure';
 import { Toast } from '../../../components/ErrorToast';
-import { AuxYearHistory } from '../../../components/aux/AuxYearHistory';
+import { AuxYearHistory } from '../../../components/auxiliary/AuxYearHistory';
 import { SIDE_NAV_FROM } from '../../../lib/screen-width';
 
 const QK_MONTH = (m: string) => ['aux-pioneers', 'month', m];
