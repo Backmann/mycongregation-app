@@ -88,6 +88,11 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
           <Text style={styles.dateSoft}>{` · ${time}`}</Text>
         ) : null}
       </Text>
+      {/* A campaign that gives the auxiliary pioneers 15 hours says so to
+          everybody (29 October 2026) — the reason a month allows 15. */}
+      {kind === 'campaign' && event.auxReducedHours ? (
+        <Text style={styles.sub}>{t('specialEvents.page.auxReduced')}</Text>
+      ) : null}
     </View>
   );
 }

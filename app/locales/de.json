@@ -2378,7 +2378,8 @@
         "memorial": "Gedächtnismahl speichern",
         "branch_representative_visit": "Besuch speichern",
         "other": "Termin speichern",
-        "special_talk": "Speichern"
+        "special_talk": "Speichern",
+        "campaign": "Kampagne speichern"
       },
       "sum": {
         "title": "Was geschieht",
@@ -2389,7 +2390,11 @@
         "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
       },
       "titleExample": "Zum Beispiel Grundstückspflege",
-      "midweekHeld": "Die Zusammenkunft unter der Woche ({{day}}) ist schon vorbei – ihr Programm bleibt unverändert."
+      "midweekHeld": "Die Zusammenkunft unter der Woche ({{day}}) ist schon vorbei – ihr Programm bleibt unverändert.",
+      "auxTitle": "Hilfspioniere",
+      "auxReduced": "Hilfspioniere können 15 Stunden wählen",
+      "auxMonths": "Betroffene Monate: {{months}} — ein bereits gewähltes Ziel ändert sich nicht.",
+      "auxHint": "Wählen Sie die Tage der Kampagne – hier erscheinen dann die betroffenen Monate."
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -2398,7 +2403,8 @@
       "circuit_overseer_visit": "Besuch des Kreisaufsehers",
       "branch_representative_visit": "Besuch des Zweigvertreters",
       "other": "Sonstige",
-      "special_talk": "Sondervortrag"
+      "special_talk": "Sondervortrag",
+      "campaign": "Kampagne"
     },
     "weekTitle": "Termine diese Woche",
     "replaced": {
@@ -2501,7 +2507,8 @@
         "regional_convention": "Mehrere Tage; in dieser Woche keine Zusammenkünfte",
         "memorial": "Tritt an die Stelle einer Zusammenkunft; das Programm wird beim Gedächtnismahl selbst geplant",
         "branch_representative_visit": "Die Zusammenkunft findet meist mit Änderungen statt — welche, geben Sie im nächsten Schritt an",
-        "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn Sie es angeben"
+        "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn Sie es angeben",
+        "campaign": "Tage oder Wochen; die Zusammenkünfte bleiben, wie sie sind. Hilfspioniere können 15 Stunden wählen dürfen"
       },
       "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein – im Vortragsplan unter „Zu uns“, mit dem Redner.",
       "openLog": "Protokoll öffnen ›"
@@ -2549,7 +2556,8 @@
       "addToCalendar": "In meinen Kalender eintragen",
       "midweekKept": "Die Zusammenkunft war schon vorbei, als der Besuch eingetragen wurde – das Programm blieb, wie es war: Versammlungsbibelstudium, ohne Vortrag des Kreisaufsehers.",
       "setAside": "Wegen des Besuchs zurückgestellt: {{name}}",
-      "setAsideOpen": "im Vortragsplan"
+      "setAsideOpen": "im Vortragsplan",
+      "auxReduced": "In diesen Monaten können Hilfspioniere mit einem Ziel von 15 Stunden dienen."
     }
   },
   "calendar": {
@@ -3652,7 +3660,18 @@
     "lastMonthHint": "Die Monate davor bleiben im Verlauf. Einen abgeschlossenen Monat kann nur der Sekretär ändern.",
     "removeTitle": "Zeitraum löschen?",
     "removeFuture": "Der Zeitraum von {{name}} hat noch nicht begonnen und kann gelöscht werden.",
-    "removeBegun": "Der Zeitraum von {{name}} hat bereits begonnen. Löschen Sie nur einen versehentlich eingetragenen Eintrag: Seine Monate verschwinden aus dem Verlauf und aus den Berichten. Um den Dienst zu beenden, wählen Sie „Beenden“."
+    "removeBegun": "Der Zeitraum von {{name}} hat bereits begonnen. Löschen Sie nur einen versehentlich eingetragenen Eintrag: Seine Monate verschwinden aus dem Verlauf und aus den Berichten. Um den Dienst zu beenden, wählen Sie „Beenden“.",
+    "reason": {
+      "march_april": "März und April",
+      "memorial": "Gedächtnismahl",
+      "co_visit": "Besuch des Kreisaufsehers",
+      "campaign": "Kampagne"
+    },
+    "reducibleMonth": "15 Std. möglich · {{why}}",
+    "normTo15": "{{month}}: 15 Stunden wählen",
+    "normTo30": "{{month}}: wieder 30 Stunden",
+    "normTitle": "Ziel in Monaten, in denen 15 Stunden möglich sind",
+    "hours": "{{n}} Std."
   },
   "weekDrawer": {
     "title": "Zur Zusammenkunft",
@@ -4021,7 +4040,8 @@
       "setAsideBy": "Vom Kreisaufseherbesuch zurückgestellt",
       "openingSong": "Anfangslied",
       "plannedWeek": "Vorgemerkt für die Woche",
-      "durationMin": "Gedacht für (Min.)"
+      "durationMin": "Gedacht für (Min.)",
+      "reducedMonths": "Monate mit 15-Stunden-Ziel"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5476,7 +5496,9 @@
       "AUX_OVERLAP": "Dieser Verkündiger dient im {{month}} bereits als Hilfspionier.",
       "AUX_PERMANENT_PIONEER": "Im {{month}} ist dieser Verkündiger allgemeiner Pionier und kann kein Hilfspionier sein.",
       "AUX_MONTH_CLOSED": "{{month}} ist abgeschlossen: Die Zahlen wurden bereits gesendet. Nur der Sekretär kann ihn ändern.",
-      "AUX_REMOVE_STARTED": "Dieser Zeitraum hat bereits begonnen – er kann beendet, aber nicht gelöscht werden. Einen versehentlich eingetragenen Eintrag kann der Sekretär löschen."
+      "AUX_REMOVE_STARTED": "Dieser Zeitraum hat bereits begonnen – er kann beendet, aber nicht gelöscht werden. Einen versehentlich eingetragenen Eintrag kann der Sekretär löschen.",
+      "AUX_NORM_NOT_ALLOWED": "{{month}}: In diesem Monat ist ein Ziel von 15 Stunden nicht vorgesehen.",
+      "AUX_NORM_OUTSIDE": "{{month}} gehört nicht zu diesem Zeitraum."
     }
   },
   "stage": {

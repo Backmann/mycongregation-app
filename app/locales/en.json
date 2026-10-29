@@ -2378,7 +2378,8 @@
         "memorial": "Save Memorial",
         "branch_representative_visit": "Save visit",
         "other": "Save event",
-        "special_talk": "Save"
+        "special_talk": "Save",
+        "campaign": "Save campaign"
       },
       "sum": {
         "title": "What will happen",
@@ -2389,7 +2390,11 @@
         "notifyEdit": "If the days, time, place or meeting change, everyone is notified"
       },
       "titleExample": "For example, grounds cleaning",
-      "midweekHeld": "The midweek meeting ({{day}}) is already past — its program stays as it was."
+      "midweekHeld": "The midweek meeting ({{day}}) is already past — its program stays as it was.",
+      "auxTitle": "Auxiliary pioneers",
+      "auxReduced": "Auxiliary pioneers may take 15 hours",
+      "auxMonths": "Months it touches: {{months}} — a goal already chosen does not change.",
+      "auxHint": "Choose the campaign's days — the months it touches will show here."
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -2398,7 +2403,8 @@
       "circuit_overseer_visit": "Circuit overseer visit",
       "branch_representative_visit": "Branch representative visit",
       "other": "Other",
-      "special_talk": "Special talk"
+      "special_talk": "Special talk",
+      "campaign": "Campaign"
     },
     "weekTitle": "This week's events",
     "replaced": {
@@ -2501,7 +2507,8 @@
         "regional_convention": "Several days; no congregation meetings that week",
         "memorial": "Takes the place of one meeting; its program is set in the Memorial section",
         "branch_representative_visit": "The meeting usually takes place, with changes — you will be asked which",
-        "other": "A cleanup day, a group gathering… Does not affect meetings unless you specify it"
+        "other": "A cleanup day, a group gathering… Does not affect meetings unless you specify it",
+        "campaign": "Days or weeks; meetings stay as they are. Can let auxiliary pioneers take 15 hours"
       },
       "specialTalk": "A special talk is recorded by the talk coordinator — in the Incoming / Outgoing log, with its speaker.",
       "openLog": "Open the log ›"
@@ -2549,7 +2556,8 @@
       "addToCalendar": "Add to my calendar",
       "midweekKept": "The meeting was held before the visit was entered — its program stayed as it was: the Bible study, without the circuit overseer’s talk.",
       "setAside": "Set aside for the visit: {{name}}",
-      "setAsideOpen": "in the talk log"
+      "setAsideOpen": "in the talk log",
+      "auxReduced": "In these months auxiliary pioneers may serve with a goal of 15 hours."
     }
   },
   "calendar": {
@@ -3652,7 +3660,18 @@
     "lastMonthHint": "The months before it stay in the history. Only the secretary can change a closed month.",
     "removeTitle": "Delete the period?",
     "removeFuture": "{{name}}'s period has not started yet, so it can be deleted.",
-    "removeBegun": "{{name}}'s period has already started. Delete only a record entered by mistake: its months will disappear from the history and the reports. To end the service, choose “Stop”."
+    "removeBegun": "{{name}}'s period has already started. Delete only a record entered by mistake: its months will disappear from the history and the reports. To end the service, choose “Stop”.",
+    "reason": {
+      "march_april": "March and April",
+      "memorial": "the Memorial",
+      "co_visit": "circuit overseer's visit",
+      "campaign": "campaign"
+    },
+    "reducibleMonth": "15 h possible · {{why}}",
+    "normTo15": "{{month}}: take 15 hours",
+    "normTo30": "{{month}}: back to 30 hours",
+    "normTitle": "Goal in the months that allow 15 hours",
+    "hours": "{{n}} h"
   },
   "weekDrawer": {
     "title": "Jump to a meeting",
@@ -4021,7 +4040,8 @@
       "setAsideBy": "Set aside by the circuit visit",
       "openingSong": "Opening song",
       "plannedWeek": "Planned for the week",
-      "durationMin": "Meant for (min)"
+      "durationMin": "Meant for (min)",
+      "reducedMonths": "Months with a 15-hour goal"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -5476,7 +5496,9 @@
       "AUX_OVERLAP": "This publisher already serves as an auxiliary pioneer in {{month}}.",
       "AUX_PERMANENT_PIONEER": "In {{month}} this publisher is a regular pioneer and cannot be an auxiliary pioneer.",
       "AUX_MONTH_CLOSED": "{{month}} is closed: its figures have been sent. Only the secretary can change it.",
-      "AUX_REMOVE_STARTED": "This period has already started — it can be stopped, not deleted. The secretary can delete a record entered by mistake."
+      "AUX_REMOVE_STARTED": "This period has already started — it can be stopped, not deleted. The secretary can delete a record entered by mistake.",
+      "AUX_NORM_NOT_ALLOWED": "{{month}}: this month does not allow a 15-hour goal.",
+      "AUX_NORM_OUTSIDE": "{{month}} is not part of this period."
     }
   },
   "stage": {

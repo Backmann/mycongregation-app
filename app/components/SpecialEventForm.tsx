@@ -89,6 +89,8 @@ export interface EventFormValue {
   coRole: string;
   coAccommodationAddress: string;
   coMidweekDow: number;
+  /** A campaign: auxiliary pioneers may take 15 hours in its months. */
+  auxReducedHours: boolean;
 }
 
 const CIRCUIT_OVERSEER_VISIT_TYPE_KEY = 'circuit_overseer_visit';
@@ -116,6 +118,7 @@ export function emptyEventForm(): EventFormValue {
     coRole: 'overseer',
     coAccommodationAddress: '',
     coMidweekDow: 2,
+    auxReducedHours: false,
   };
 }
 
@@ -174,6 +177,22 @@ export function eventFormProblem(
 
 const CONGRESS = new Set(['regional_convention', 'circuit_assembly']);
 
+/**
+ * The months a campaign touches, in words — «июнь 2027 г., июль 2027 г.». A
+ * campaign from the middle of a month opens 15 hours in both, as a visit
+ * does (the server's rule, auxiliary-pioneer-hours.ts).
+ */
+export function campaignMonths(from: string, to: string, locale: string): string {
+  const out: string[] = [];
+  let d = dayjs(`${from.slice(0, 7)}-01`);
+  const end = dayjs(`${(to || from).slice(0, 7)}-01`);
+  for (let i = 0; i < 24 && !d.isAfter(end); i++) {
+    out.push(d.toDate().toLocaleDateString(locale, { month: 'long', year: 'numeric' }));
+    d = d.add(1, 'month');
+  }
+  return out.join(', ');
+}
+
 /** The form's kind, as the rest of the events screen names kinds. */
 export function formKind(v: EventFormValue): KindKey {
   const k = v.type || 'other';
@@ -220,6 +239,7 @@ function asEvent(v: EventFormValue): SpecialEvent {
     coAccommodationAddress: null,
     coAccommodationPublisherId: null,
     coMidweekDow: v.coMidweekDow,
+    auxReducedHours: v.type === 'campaign' && v.auxReducedHours,
     replacesMeeting: meeting.replacesMeeting,
     meetingMode: meeting.meetingMode,
     meetingNote: meeting.meetingNote,
@@ -349,6 +369,8 @@ export function SpecialEventForm({
   const isCongress = CONGRESS.has(kind);
   const isMemorial = kind === 'memorial';
   const isOther = kind === 'other';
+  // A campaign runs for days or weeks; it changes no meeting (29 October).
+  const isCampaign = kind === 'campaign';
 
   const set = (patch: Partial<EventFormValue>) =>
     onChange({ ...value, ...patch });
@@ -362,7 +384,7 @@ export function SpecialEventForm({
   const congressLength = value.endDate
     ? dayjs(value.endDate).diff(dayjs(value.date), 'day') + 1
     : 1;
-  const multiDay = isCoVisit
+  const multiDay = isCoVisit || isCampaign
     ? true
     : isCongress
       ? congressLength > 1
@@ -511,7 +533,7 @@ export function SpecialEventForm({
       setShowDate(false);
       return;
     }
-    if (isOther && otherMultiDay) {
+    if ((isOther && otherMultiDay) || isCampaign) {
       // Two taps: the first day, then the last.
       if (!value.date || value.endDate || iso < value.date) {
         set({ date: iso, endDate: '' });
@@ -846,7 +868,7 @@ export function SpecialEventForm({
                 ? t('specialEvents.form.weekHint')
                 : isCongress
                   ? t('specialEvents.form.congressHint')
-                  : isOther && otherMultiDay
+                  : (isOther && otherMultiDay) || isCampaign
                     ? t('specialEvents.form.rangeHint')
                     : ''}
             </Text>
@@ -918,6 +940,26 @@ export function SpecialEventForm({
             allowNone={!isMemorial}
             onChange={(x) => set({ time: x, timeEnd: '' })}
           />
+        </Section>
+      ) : isCampaign ? (
+        <Section label={t('specialEvents.form.auxTitle')}>
+          <View style={styles.switchRow}>
+            <Text style={[styles.switchLabel, { flex: 1 }]}>
+              {t('specialEvents.form.auxReduced')}
+            </Text>
+            <Switch
+              value={value.auxReducedHours}
+              disabled={pastLocked}
+              onValueChange={(on) => set({ auxReducedHours: on })}
+            />
+          </View>
+          <Text style={styles.calendarHint}>
+            {value.date
+              ? t('specialEvents.form.auxMonths', {
+                  months: campaignMonths(value.date, value.endDate || value.date, locale),
+                })
+              : t('specialEvents.form.auxHint')}
+          </Text>
         </Section>
       ) : !isCoVisit ? (
         <Section label={t('specialEvents.form.time')}>

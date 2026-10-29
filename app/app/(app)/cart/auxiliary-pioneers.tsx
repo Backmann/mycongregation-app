@@ -19,6 +19,7 @@ import {
   auxiliaryPioneersApi,
   extractErrorMessage,
   AuxPioneerMonthRow,
+  type AuxReducedReason,
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import {
@@ -66,6 +67,12 @@ export default function AuxiliaryPioneersScreen() {
   const [startMonthSel, setStartMonthSel] = useState(monthParam);
   const [endMonthSel, setEndMonthSel] = useState(monthParam);
   const [addError, setAddError] = useState<string | null>(null);
+  /**
+   * The months the person takes 15 hours in (29 October 2026). null: not
+   * touched — every month that allows 15 shows 15, and the server is left
+   * to decide the same.
+   */
+  const [reducedSel, setReducedSel] = useState<string[] | null>(null);
 
   // Month options: 24 months back … 12 months forward from today.
   const monthOptions = useMemo(() => {
@@ -89,6 +96,8 @@ export default function AuxiliaryPioneersScreen() {
     setUntilCancelled(false);
     setStartMonthSel(monthParam);
     setEndMonthSel(monthParam);
+    setReducedSel(null);
+    setReducedKept([]);
     setAddOpen(true);
   };
 
@@ -98,8 +107,11 @@ export default function AuxiliaryPioneersScreen() {
     startMonth: string;
     endMonth: string | null;
     untilCancelled: boolean;
+    reducedMonths?: string[];
   }) => {
     setAddError(null);
+    setReducedSel(r.reducedMonths ?? null);
+    setReducedKept(r.reducedMonths ?? []);
     setEditingId(r.id);
     setEditingName(r.publisherName);
     setNewPublisher(null);
@@ -117,6 +129,45 @@ export default function AuxiliaryPioneersScreen() {
     qc.invalidateQueries({ queryKey: ['aux-pioneers', 'serving-now'] });
   };
 
+  // Which months of the chosen range allow 15 hours, and why — asked of the
+  // server, which keeps the rule (March, April, the Memorial, a visit, a
+  // campaign). An open period is shown a year ahead.
+  const rangeEnd = untilCancelled
+    ? dayjs(startMonthSel).add(11, 'month').format('YYYY-MM-01')
+    : endMonthSel;
+  const reducibleQ = useQuery({
+    queryKey: ['aux-pioneers', 'reducible', startMonthSel, rangeEnd],
+    queryFn: () => auxiliaryPioneersApi.reducible(startMonthSel, rangeEnd),
+    enabled: addOpen && rangeEnd >= startMonthSel,
+    staleTime: 60 * 1000,
+  });
+  const reducible = reducibleQ.data ?? [];
+  const takes15 = (m: string) =>
+    reducedSel === null ? true : reducedSel.includes(m);
+  const setTakes = (m: string, on: boolean) => {
+    const base =
+      reducedSel === null ? reducible.map((x) => x.month) : reducedSel;
+    setReducedSel(
+      on ? [...new Set([...base, m])] : base.filter((x) => x !== m),
+    );
+  };
+  // What is sent: the choice within the range, or nothing when untouched.
+  // A choice already kept stays even where 15 is no longer open (a visit
+  // moved away) — it was allowed when it was made. An open period keeps its
+  // months beyond the year shown.
+  const [reducedKept, setReducedKept] = useState<string[]>([]);
+  const reducedOut = () =>
+    reducedSel === null
+      ? undefined
+      : reducedSel.filter(
+          (m) =>
+            reducible.some((x) => x.month === m) ||
+            reducedKept.includes(m) ||
+            (untilCancelled && m > rangeEnd.slice(0, 7)),
+        );
+  const reasonText = (rs: AuxReducedReason[]) =>
+    rs.map((r) => t(`auxPioneer.reason.${r}`)).join(', ');
+
   const createMutation = useMutation({
     mutationFn: () =>
       auxiliaryPioneersApi.create({
@@ -124,6 +175,7 @@ export default function AuxiliaryPioneersScreen() {
         startMonth: startMonthSel,
         untilCancelled,
         endMonth: untilCancelled ? undefined : endMonthSel,
+        reducedMonths: reducedOut(),
       }),
     onSuccess: () => {
       invalidate();
@@ -141,6 +193,7 @@ export default function AuxiliaryPioneersScreen() {
         startMonth: startMonthSel,
         untilCancelled,
         endMonth: untilCancelled ? undefined : endMonthSel,
+        reducedMonths: reducedOut(),
       }),
     onSuccess: () => {
       invalidate();
@@ -167,6 +220,11 @@ export default function AuxiliaryPioneersScreen() {
       setStopFor(null);
     },
   });
+  const normMutation = useMutation({
+    mutationFn: (v: { id: string; hours: 15 | 30 }) =>
+      auxiliaryPioneersApi.setNorm(v.id, monthParam, v.hours),
+    onSuccess: invalidate,
+  });
   const removeMutation = useMutation({
     mutationFn: (id: string) => auxiliaryPioneersApi.remove(id),
     onSuccess: () => {
@@ -177,7 +235,11 @@ export default function AuxiliaryPioneersScreen() {
   const mayRemove = (r: AuxPioneerMonthRow) =>
     canDeleteBegunAuxPeriod || r.startMonth.slice(0, 10) > thisMonthKey;
 
-  const reduced = (monthQuery.data?.hourGoal ?? 30) === 15;
+  // The month allows 15 — each person's own goal is on his row.
+  const reasons = monthQuery.data?.reasons;
+  const reduced = reasons
+    ? reasons.length > 0
+    : (monthQuery.data?.hourGoal ?? 30) === 15;
   const rows = monthQuery.data?.rows ?? [];
 
   // Формулировка живёт в lib/aux-pioneer-period.ts — теми же словами говорит
@@ -221,7 +283,9 @@ export default function AuxiliaryPioneersScreen() {
                 style={[styles.normText, reduced && styles.normTextReduced]}
               >
                 {reduced
-                  ? t('auxPioneer.reducedNorm')
+                  ? reasons && reasons.length > 0
+                    ? t('auxPioneer.reducibleMonth', { why: reasonText(reasons) })
+                    : t('auxPioneer.reducedNorm')
                   : t('auxPioneer.standardNorm')}
               </Text>
             </View>
@@ -268,6 +332,22 @@ export default function AuxiliaryPioneersScreen() {
                 setStopFor(r);
               }}
               onRemove={mayRemove(r) ? () => setRemoveFor(r) : undefined}
+              normLabel={
+                reasons && reasons.length > 0
+                  ? t(r.hourGoal === 15 ? 'auxPioneer.normTo30' : 'auxPioneer.normTo15', {
+                      month: (() => {
+                        const m = monthDate.format('MMMM');
+                        return m.charAt(0).toUpperCase() + m.slice(1);
+                      })(),
+                    })
+                  : undefined
+              }
+              onNorm={() =>
+                normMutation.mutate({
+                  id: r.id,
+                  hours: r.hourGoal === 15 ? 30 : 15,
+                })
+              }
               editLabel={t('common.edit')}
               stopLabel={t('auxPioneer.stop')}
               removeLabel={t('common.delete')}
@@ -467,6 +547,42 @@ export default function AuxiliaryPioneersScreen() {
                 thumbColor={untilCancelled ? '#0284c7' : '#f4f4f5'}
               />
             </View>
+            {reducible.length > 0 ? (
+              <View style={styles.normBox}>
+                <Text style={styles.fieldLabel}>{t('auxPioneer.normTitle')}</Text>
+                {reducible.map((x) => {
+                  const on = takes15(x.month);
+                  return (
+                    <View key={x.month} style={styles.normPickRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.normMonth}>
+                          {dayjs(`${x.month}-01`).locale(i18n.language).format('MMMM YYYY')}
+                        </Text>
+                        <Text style={styles.normWhy}>{reasonText(x.reasons)}</Text>
+                      </View>
+                      <View style={styles.normSeg}>
+                        {[15, 30].map((h) => {
+                          const active = (h === 15) === on;
+                          return (
+                            <Pressable
+                              key={h}
+                              onPress={() => setTakes(x.month, h === 15)}
+                              style={[styles.normSegItem, active && styles.normSegOn]}
+                              accessibilityRole="button"
+                              accessibilityState={{ selected: active }}
+                            >
+                              <Text style={[styles.normSegText, active && styles.normSegTextOn]}>
+                                {t('auxPioneer.hours', { n: h })}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
             {addError ? <Text style={styles.error}>{addError}</Text> : null}
 
             {/* Not a block — a distant past month is sometimes intended — but a
@@ -616,6 +732,8 @@ function ServingCard({
   onEdit,
   onStop,
   onRemove,
+  normLabel,
+  onNorm,
   editLabel,
   stopLabel,
   removeLabel,
@@ -627,6 +745,9 @@ function ServingCard({
   onStop: () => void;
   /** Absent when this reader may not delete the period. */
   onRemove?: () => void;
+  /** The month allows 15: switch his goal. */
+  normLabel?: string;
+  onNorm?: () => void;
   editLabel: string;
   stopLabel: string;
   removeLabel: string;
@@ -699,6 +820,18 @@ function ServingCard({
               <Ionicons name="create-outline" size={19} color="#334155" />
               <Text style={styles.sheetItemText}>{editLabel}</Text>
             </Pressable>
+            {normLabel && onNorm ? (
+              <Pressable
+                style={styles.sheetItem}
+                onPress={() => {
+                  setMenu(false);
+                  onNorm();
+                }}
+              >
+                <Ionicons name="swap-horizontal-outline" size={19} color="#0e7490" />
+                <Text style={styles.sheetItemText}>{normLabel}</Text>
+              </Pressable>
+            ) : null}
             {openEnded ? (
               <Pressable
                 style={styles.sheetItem}
@@ -843,6 +976,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   sheetItemText: { fontSize: 15.5, color: '#334155', fontFamily: 'Manrope_500Medium' },
+  normBox: { marginTop: 12, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 4 },
+  normPickRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7 },
+  normMonth: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0f172a', textTransform: 'capitalize' },
+  normWhy: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: '#b45309', marginTop: 1 },
+  normSeg: { flexDirection: 'row', backgroundColor: '#f1f5f9', borderRadius: 10, padding: 3 },
+  normSegItem: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
+  normSegOn: { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } },
+  normSegText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: '#64748b' },
+  normSegTextOn: { color: '#0f172a' },
   dialogText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14.5, color: '#0f172a', marginBottom: 6, lineHeight: 20 },
   fieldLabel: {
     fontSize: 12.5,

@@ -3690,6 +3690,8 @@ export interface SpecialEvent {
    * это и есть replacesMeeting).
    */
   meetingMode?: MeetingMode;
+  /** A campaign only: auxiliary pioneers may take 15 hours in its months. */
+  auxReducedHours?: boolean;
   /** «С изменениями»: что меняется, время и место встречи в этот день. */
   meetingNote?: string | null;
   meetingTime?: string | null;
@@ -3702,6 +3704,8 @@ export interface SpecialEvent {
 }
 
 export interface CreateSpecialEventInput {
+  /** A campaign only (29 October 2026). */
+  auxReducedHours?: boolean;
   title: string;
   type?: string;
   date: string;
@@ -5588,8 +5592,14 @@ export interface AuxPioneerMonthRow {
   startMonth: string;
   endMonth: string | null;
   untilCancelled: boolean;
+  /** HIS goal this month: 15 when he took the reduced one, else 30. */
   hourGoal: number;
+  /** Months of the period with 15 hours («YYYY-MM»); absent from older servers. */
+  reducedMonths?: string[];
 }
+
+/** Why a month allows an auxiliary pioneer 15 hours (29 October 2026). */
+export type AuxReducedReason = "march_april" | "memorial" | "co_visit" | "campaign";
 
 export interface AuxPioneerJournalRow {
   id: string;
@@ -5640,6 +5650,8 @@ export const auxiliaryPioneersApi = {
   async listForMonth(monthIso: string): Promise<{
     month: string;
     hourGoal: number;
+    /** Why this month allows 15 hours; empty when it does not. Older servers leave it out. */
+    reasons?: AuxReducedReason[];
     rows: AuxPioneerMonthRow[];
   }> {
     const { data } = await api.get("/auxiliary-pioneers", {
@@ -5670,8 +5682,24 @@ export const auxiliaryPioneersApi = {
     endMonth?: string;
     untilCancelled?: boolean;
     note?: string;
+    /** Months taking 15 hours; left out, the server takes 15 wherever it is open. */
+    reducedMonths?: string[];
   }): Promise<void> {
     await api.post("/auxiliary-pioneers", input);
+  },
+  /** One month's goal of a period — 15 or 30 — where the month allows 15. */
+  async setNorm(id: string, month: string, hours: 15 | 30): Promise<void> {
+    await api.patch(`/auxiliary-pioneers/${id}/norm`, { month, hours });
+  },
+  /** Which months from `from` to `to` allow 15 hours, and why. */
+  async reducible(
+    from: string,
+    to: string,
+  ): Promise<{ month: string; reasons: AuxReducedReason[] }[]> {
+    const { data } = await api.get("/auxiliary-pioneers/reducible", {
+      params: { from: from.slice(0, 7), to: to.slice(0, 7) },
+    });
+    return data;
   },
   async stop(id: string, endMonth?: string): Promise<void> {
     await api.patch(`/auxiliary-pioneers/${id}/stop`, { endMonth });
@@ -5682,6 +5710,7 @@ export const auxiliaryPioneersApi = {
       startMonth?: string;
       endMonth?: string;
       untilCancelled?: boolean;
+      reducedMonths?: string[];
     },
   ): Promise<void> {
     await api.patch(`/auxiliary-pioneers/${id}`, input);
