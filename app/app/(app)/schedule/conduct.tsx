@@ -1609,8 +1609,10 @@ export default function ConductScreen({
     ) : null;
 
   // --- что показывать -------------------------------------------------
+  // On the stage these states keep its dark ground — a white screen at the
+  // lectern in a dimmed hall stands out (29 October 2026).
   if (!week) {
-    return <Notice text={t('conduct.noWeek')} />;
+    return <Notice text={t('conduct.noWeek')} dark={stageDisplay} />;
   }
   if (
     (assignmentsQuery.isLoading && !kept) ||
@@ -1618,13 +1620,13 @@ export default function ConductScreen({
     (liveQuery.isLoading && !liveGaveUp)
   ) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator color="#0ea5e9" />
+      <View style={[styles.center, stageDisplay && styles.stageDark]}>
+        <ActivityIndicator color={stageDisplay ? '#94a3b8' : '#0ea5e9'} />
       </View>
     );
   }
   if (segments.length === 0) {
-    return <Notice text={t('conduct.noProgramme')} />;
+    return <Notice text={t('conduct.noProgramme')} dark={stageDisplay} />;
   }
 
   // The result: this device's own run, or the one saved on the server.
@@ -1666,7 +1668,9 @@ export default function ConductScreen({
     return (
       <Notice
         text={t('conduct.noChairman')}
-        action={{ label: t('conduct.toSchedule'), onPress: () => goBack('/schedule') }}
+        dark={stageDisplay}
+        // The stage has no programme to go to: it would land on itself again.
+        action={stageDisplay ? undefined : { label: t('conduct.toSchedule'), onPress: () => goBack('/schedule') }}
       />
     );
   }
@@ -2365,13 +2369,16 @@ function SegmentHeadline({
 function Notice({
   text,
   action,
+  dark,
 }: {
   text: string;
   action?: { label: string; onPress: () => void };
+  /** The screen on the stage: its dark ground. */
+  dark?: boolean;
 }) {
   return (
-    <View style={styles.center}>
-      <Text style={styles.notice}>{text}</Text>
+    <View style={[styles.center, dark && styles.stageDark]}>
+      <Text style={[styles.notice, dark && styles.noticeDark]}>{text}</Text>
       {action ? (
         <Pressable style={styles.ghostBtn} onPress={action.onPress}>
           <Text style={styles.ghostBtnText}>{action.label}</Text>
@@ -2580,6 +2587,8 @@ const styles = StyleSheet.create({
   keepNoteError: { color: '#b91c1c' },
 
   notice: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', textAlign: 'center' },
+  stageDark: { backgroundColor: '#0b1220' },
+  noticeDark: { color: '#94a3b8', fontSize: 20, lineHeight: 28 },
 
   practiceNote: {
     flexDirection: 'row',

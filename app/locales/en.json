@@ -5586,6 +5586,7 @@
       "check": "Check the display",
       "signOut": "Sign out on this device",
       "back": "Back to the meeting",
+      "close": "Close",
       "closesItself": "The menu closes automatically after 20 seconds without a tap"
     }
   },

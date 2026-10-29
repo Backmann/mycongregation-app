@@ -112,6 +112,9 @@ export default function StageScreen() {
     setDone(null);
   }, [todays?.week, todays?.kind]);
   const insets = useSafeAreaInsets();
+  // Whether the meeting's screen shows our menu in its header right now.
+  const [chromeShown, setChromeShown] = useState(false);
+  const chrome = useMemo(() => ({ shown: setChromeShown }), []);
 
   // ── the menu, behind the digits ───────────────────────────────────────
   const [menu, setMenu] = useState<'closed' | 'pin' | 'open'>('closed');
@@ -191,7 +194,7 @@ export default function StageScreen() {
         // Kept mounted after the end, out of sight: an «Вернуть» on the
         // timekeeper's device brings the meeting back.
         <View style={ended ? { display: 'none' } : { flex: 1 }}>
-          <StageChrome.Provider value={{ menu: menuButton, topInset: insets.top }}>
+          <StageChrome.Provider value={{ menu: menuButton, topInset: insets.top, shown: chrome.shown }}>
             <ConductScreen stageCheckAt={checkAt} onStageFinished={onStageFinished} />
           </StageChrome.Provider>
         </View>
@@ -207,6 +210,14 @@ export default function StageScreen() {
           topInset={insets.top}
           endedAt={ended ? (done?.endedAt ?? null) : null}
         />
+      ) : null}
+
+      {/* The meeting's screen in a state without its header (loading, no
+          programme, no chairman…): the way out stays, top right. */}
+      {showMeeting && !ended && !chromeShown ? (
+        <View style={[s.floatMenu, { top: 16 + insets.top }]} testID="stage-float-menu">
+          {menuButton}
+        </View>
       ) : null}
 
       {menu !== 'closed' ? (
@@ -265,7 +276,10 @@ export default function StageScreen() {
               </>
             )}
             <Pressable onPress={closeMenu} style={s.back} accessibilityRole="button">
-              <Text style={s.backText}>{t('stage.screen.back')}</Text>
+              <Text style={s.backText}>
+                {/* «Вернуться к встрече» only where a meeting is on screen. */}
+                {showMeeting && !ended ? t('stage.screen.back') : t('stage.screen.close')}
+              </Text>
             </Pressable>
             <Text style={s.small}>{t('stage.screen.closesItself')}</Text>
           </View>
@@ -519,6 +533,7 @@ const s = StyleSheet.create({
   },
   actionDanger: { backgroundColor: 'transparent', borderColor: '#7f1d1d' },
   actionText: { fontFamily: 'Manrope_600SemiBold', fontSize: 17, color: '#e2e8f0' },
+  floatMenu: { position: 'absolute', right: 16 },
   back: { height: 46, alignItems: 'center', justifyContent: 'center' },
   backText: { fontFamily: 'Manrope_600SemiBold', fontSize: 17, color: '#94a3b8' },
 });
