@@ -141,6 +141,15 @@ function routeForNotification(data) {
     // reminder opens the screen with the weeks ahead (28 October 2026).
     case 'local_needs_reminder':
       return { path: '/local-needs', params: {} };
+    // An application to serve as an auxiliary pioneer (29 October 2026): the
+    // committee and an elder in an open place open it; a withdrawal carries
+    // no id and opens Home — it may reach an elder who does not keep the list. Its approval opens one's own screen.
+    case 'aux_application':
+      return data.applicationId
+        ? { path: `/cart/aux-application/${data.applicationId}`, params: {} }
+        : { path: '/home', params: {} };
+    case 'aux_application_approved':
+      return { path: '/cart/my-aux', params: {} };
     // Cleaning has its own screen: the reminder opens the week it is about.
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':

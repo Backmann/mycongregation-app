@@ -3873,6 +3873,8 @@ export interface MyPublisherLite {
   pioneerType: string | null;
   /** Own appointment — not private; the roster shows it to everyone anyway. */
   appointment: string | null;
+  /** Own: 'brother' | 'sister' — the application's words follow it. Absent from older servers. */
+  gender?: string | null;
   serviceGroupId: string | null;
   /** Own contacts — the publisher keeps these up to date themselves. */
   mobilePhone: string | null;
@@ -3941,7 +3943,8 @@ export type NotificationCategory = keyof NotificationPreferences;
  * its own on the home screen. A task carries the title a brother gave it.
  */
 export interface MePendingItem {
-  kind: "contacts" | "task";
+  /** 'aux_application': an application waiting for this brother's answer (29 October 2026); `title` is the applicant's name. */
+  kind: "contacts" | "task" | "aux_application";
   id?: string;
   title?: string;
   dueOn: string | null;
@@ -5627,6 +5630,8 @@ export interface MyAuxPioneerStatus {
   serving: boolean;
   current: MyAuxPioneerPeriod | null;
   upcoming: MyAuxPioneerPeriod | null;
+  /** His goal in the month asked about (29 October 2026); absent from older servers. */
+  hourGoal?: number | null;
 }
 
 /** This month's auxiliary pioneers, as everybody is told: names only. */
@@ -5717,6 +5722,141 @@ export const auxiliaryPioneersApi = {
   },
   async remove(id: string): Promise<void> {
     await api.delete(`/auxiliary-pioneers/${id}`);
+  },
+};
+
+// ---- The S-205b application online (29 October 2026) ----
+
+export type CommitteeSeat = "body_coordinator" | "secretary" | "service_overseer";
+export const COMMITTEE_SEATS: CommitteeSeat[] = [
+  "body_coordinator",
+  "secretary",
+  "service_overseer",
+];
+
+/** The applicant's own view: no brothers, no places. */
+export interface MyAuxApplication {
+  id: string;
+  months: string[];
+  untilCancelled: boolean;
+  reducedMonths: string[];
+  status: "pending" | "approved";
+  createdAt: string;
+  approvedAt: string | null;
+  /** A brother has answered: it can no longer be changed. */
+  answered: boolean;
+}
+
+export interface AuxSeatView {
+  seat: CommitteeSeat;
+  holders: { userId: string; name: string }[];
+  open: boolean;
+  openReason: "applicant" | "passed" | "absent" | "opened" | null;
+  openedAt: string | null;
+  approved: boolean;
+  approvedAt: string | null;
+  approverName: string | null;
+  unfillable: boolean;
+}
+
+export interface AuxApplicationView {
+  id: string;
+  publisherId: string;
+  publisherName: string;
+  groupName: string | null;
+  months: string[];
+  untilCancelled: boolean;
+  reducedMonths: string[];
+  status: "pending" | "approved";
+  source: "app" | "paper";
+  paperDate: string | null;
+  createdAt: string;
+  approvedAt: string | null;
+  seats: AuxSeatView[];
+  can: {
+    approveSeat: CommitteeSeat | null;
+    approveOpenSeats: CommitteeSeat[];
+    pass: boolean;
+    openSeats: CommitteeSeat[];
+    withdraw: boolean;
+  };
+}
+
+export interface AuxApplicationInput {
+  months: string[];
+  untilCancelled?: boolean;
+  reducedMonths?: string[];
+  confirmed: boolean;
+}
+
+export const auxApplicationsApi = {
+  async mine(): Promise<{ applications: MyAuxApplication[]; committeeComplete: boolean }> {
+    const { data } = await api.get("/aux-applications/mine");
+    return data;
+  },
+  async committee(): Promise<{ complete: boolean; missing: CommitteeSeat[] }> {
+    const { data } = await api.get("/aux-applications/committee");
+    return data;
+  },
+  async list(): Promise<AuxApplicationView[]> {
+    const { data } = await api.get<AuxApplicationView[]>("/aux-applications");
+    return data;
+  },
+  async get(id: string): Promise<AuxApplicationView> {
+    const { data } = await api.get<AuxApplicationView>(`/aux-applications/${id}`);
+    return data;
+  },
+  async apply(input: AuxApplicationInput): Promise<MyAuxApplication> {
+    const { data } = await api.post("/aux-applications", input);
+    return data;
+  },
+  async change(id: string, input: AuxApplicationInput): Promise<MyAuxApplication> {
+    const { data } = await api.patch(`/aux-applications/${id}`, input);
+    return data;
+  },
+  async takeBack(id: string): Promise<void> {
+    await api.delete(`/aux-applications/${id}`);
+  },
+  async approve(id: string, seat?: CommitteeSeat): Promise<AuxApplicationView> {
+    const { data } = await api.post(`/aux-applications/${id}/approve`, seat ? { seat } : {});
+    return data;
+  },
+  async pass(id: string): Promise<AuxApplicationView> {
+    const { data } = await api.post(`/aux-applications/${id}/pass`);
+    return data;
+  },
+  async openSeat(id: string, seat: CommitteeSeat): Promise<AuxApplicationView> {
+    const { data } = await api.post(`/aux-applications/${id}/open/${seat}`);
+    return data;
+  },
+  async withdraw(id: string): Promise<void> {
+    await api.post(`/aux-applications/${id}/withdraw`);
+  },
+  async paper(input: {
+    publisherId: string;
+    months: string[];
+    untilCancelled?: boolean;
+    reducedMonths?: string[];
+    paperDate: string;
+    signers: { seat: CommitteeSeat; userId?: string; name?: string }[];
+  }): Promise<AuxApplicationView> {
+    const { data } = await api.post("/aux-applications/paper", input);
+    return data;
+  },
+  async forPublisher(publisherId: string): Promise<
+    {
+      id: string;
+      months: string[];
+      untilCancelled: boolean;
+      reducedMonths: string[];
+      source: "app" | "paper";
+      paperDate: string | null;
+      approvedAt: string | null;
+      signers: string[];
+    }[]
+  > {
+    const { data } = await api.get(`/aux-applications/publisher/${publisherId}`);
+    return data;
   },
 };
 

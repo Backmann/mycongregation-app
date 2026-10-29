@@ -2686,7 +2686,8 @@
       "contacts": "Check your contact details",
       "taskDue": "{{title}} · due {{date}}",
       "taskOverdue": "{{title}} · overdue since {{date}}",
-      "more": "{{count}} more in my tasks"
+      "more": "{{count}} more in my tasks",
+      "auxApplication": "Auxiliary pioneer application: {{name}}"
     },
     "weekOf": "Week of {{date}}",
     "kinds": {
@@ -3820,7 +3821,8 @@
       "elder_task": "Elders' tasks",
       "meeting_settings": "Meeting time & place",
       "annual_report": "Annual report (S-10)",
-      "monthly_report": "Monthly summary (S-1)"
+      "monthly_report": "Monthly summary (S-1)",
+      "aux_application": "Auxiliary pioneer applications"
     },
     "actions": {
       "CREATE": "added",
@@ -4041,7 +4043,11 @@
       "openingSong": "Opening song",
       "plannedWeek": "Planned for the week",
       "durationMin": "Meant for (min)",
-      "reducedMonths": "Months with a 15-hour goal"
+      "reducedMonths": "Months with a 15-hour goal",
+      "months": "Months",
+      "paperDate": "Date signed",
+      "approvedSeat": "Approved (place)",
+      "openedSeat": "Place opened"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -5498,7 +5504,21 @@
       "AUX_MONTH_CLOSED": "{{month}} is closed: its figures have been sent. Only the secretary can change it.",
       "AUX_REMOVE_STARTED": "This period has already started — it can be stopped, not deleted. The secretary can delete a record entered by mistake.",
       "AUX_NORM_NOT_ALLOWED": "{{month}}: this month does not allow a 15-hour goal.",
-      "AUX_NORM_OUTSIDE": "{{month}} is not part of this period."
+      "AUX_NORM_OUTSIDE": "{{month}} is not part of this period.",
+      "AUX_APP_MONTHS": "Choose the months — or one first month for “until canceled”.",
+      "AUX_APP_MONTH_PAST": "{{month}} is already over.",
+      "AUX_APP_CONFIRM": "Confirm the application.",
+      "AUX_APP_COMMITTEE_INCOMPLETE": "The service committee is not complete — applications are not accepted yet.",
+      "AUX_APP_PENDING_EXISTS": "You already have an application under consideration.",
+      "AUX_APP_ANSWERED": "The committee has begun to consider it — you can only withdraw it and apply again.",
+      "AUX_APP_COMMITTEE_ONLY": "Only the service committee can do this.",
+      "AUX_APP_DECIDED": "The application has already been approved.",
+      "AUX_APP_OWN": "Your own application is answered by the other brothers.",
+      "AUX_APP_ALREADY_ANSWERED": "You have already answered this application.",
+      "AUX_APP_NO_SEAT": "There is no place here for you to answer in.",
+      "AUX_APP_TOO_EARLY": "A place can be opened when the brother has not answered for {{days}} days.",
+      "AUX_APP_PAPER_SECRETARY": "A paper application is entered by the secretary or an admin.",
+      "AUX_APP_SIGNERS": "Name at least two brothers who signed, each once."
     }
   },
   "stage": {
@@ -5823,5 +5843,110 @@
     "removedCount": "Removed groups: {{count}}",
     "show": "show",
     "hide": "hide"
+  },
+  "auxApp": {
+    "my": {
+      "screenTitle": "My auxiliary pioneering",
+      "doorTitle": "My auxiliary pioneering",
+      "doorSubtitle": "Application and my months",
+      "applicationKicker": "Application",
+      "pending": "Under consideration",
+      "pendingText": "The service committee is considering your application. When it is approved, it will show here and you will be notified.",
+      "change": "Change",
+      "takeBack": "Withdraw",
+      "answered": "The committee has begun — it can no longer be changed. You can withdraw it and apply again.",
+      "servingKicker": "You are an auxiliary pioneer",
+      "servingTitle": "{{month}} · {{n}} h goal",
+      "untilCancelled": "You serve until canceled. The month's report is submitted early next month, with hours.",
+      "reportHint": "The month's report is submitted early next month, with hours.",
+      "kicker": "Auxiliary pioneer service",
+      "inviteTitle": "Would you like to serve as an auxiliary pioneer?",
+      "notBaptized": "A baptized publisher may serve as an auxiliary pioneer.",
+      "permanent": "You serve as a regular pioneer — no auxiliary application is needed.",
+      "committeeIncomplete": "Applying in the app is not possible yet: the service committee is not complete. You can give the paper form to the coordinator of the body of elders.",
+      "inviteText": "Fill in the application — it goes straight to the service committee. If you prefer paper, give the form to the coordinator of the body of elders.",
+      "apply": "Apply",
+      "applyMore": "Apply for other months",
+      "applyMoreSub": "A new application",
+      "approvedTitle": "My applications",
+      "fromUntilCancelled": "Until canceled, from: {{month}}",
+      "approvedOn": "Approved {{date}}",
+      "approvedChip": "approved",
+      "takeBackTitle": "Withdraw the application?",
+      "takeBackText": "The application disappears and the committee will no longer see it. You can apply again at any time.",
+      "monthGoal": "{{month}} · {{n}} h"
+    },
+    "form": {
+      "title": "Application",
+      "months": "Month(s)",
+      "alreadyServing": "already serving",
+      "late": "already the {{day}}th",
+      "may15": "15 h possible",
+      "hours": "{{n}} h",
+      "more": "More months",
+      "untilCancelled": "Until canceled",
+      "untilCancelledHint": "Serve every month until you stop. The chosen tile is the first month.",
+      "goalTitle": "Goal in the months that allow 15 hours",
+      "words1": "I would like to share more fully in the ministry because I love Jehovah and want to help others learn about him. So I would like to serve as an auxiliary pioneer.",
+      "words2": "I maintain high moral standards and good habits. I have planned my time so that I can meet the hour requirement.",
+      "words2Sister": "I maintain high moral standards and good habits. I have planned my time so that I can meet the hour requirement.",
+      "confirm": "I confirm this application",
+      "lateHint": "The form asks for the application a week before you begin. You can still apply now — the committee will decide.",
+      "save": "Save changes",
+      "send": "Send to the service committee",
+      "pickMonths": "Choose a month",
+      "pickConfirm": "Confirm the application"
+    },
+    "view": {
+      "title": "Application",
+      "paper": "from paper, signed {{date}}",
+      "sent": "sent {{date}}",
+      "approved": "approved",
+      "ofThree": "{{n}} of 3",
+      "questionsTitle": "For the service committee",
+      "questions": "1. Is the applicant an exemplary Christian with high moral standards? 2. Is there any reason he may not serve as a pioneer? 3. Have you consulted the applicant's group overseer? The answers are not recorded anywhere.",
+      "approve": "I approve",
+      "approveInstead": "I approve instead of: {{seat}}",
+      "openSeat": "Open the place “{{seat}}” to other elders",
+      "pass": "Pass to another elder",
+      "withdraw": "Withdraw quietly",
+      "passTitle": "Pass your place on?",
+      "withdrawTitle": "Withdraw the application?",
+      "openTitle": "Open the place?",
+      "passConfirm": "Pass on",
+      "withdrawConfirm": "Withdraw",
+      "openConfirm": "Open",
+      "passText": "Any other elder will be able to answer instead of you. The publisher will not be told.",
+      "withdrawText": "The application disappears without notifying the publisher. The other two brothers of the committee will be told. Speak with the publisher personally.",
+      "openText": "The brother in the place “{{seat}}” has not answered for three days. Any other elder will be able to answer instead.",
+      "instead": "instead of: {{seat}}",
+      "approvedBy": "{{name}} · approved {{date}}",
+      "unfillable": "nobody left to answer — two are enough",
+      "open": {
+        "applicant": "{{name}} is the applicant — another elder answers",
+        "passed": "{{name}} passed it on · {{date}}",
+        "absent": "{{name}} is away — opened {{date}}",
+        "opened": "opened {{date}}"
+      },
+      "waiting": "{{name}} · awaiting answer"
+    },
+    "seat": {
+      "body_coordinator": "Coordinator of the body of elders",
+      "secretary": "Secretary",
+      "service_overseer": "Service overseer"
+    },
+    "paper": {
+      "title": "Paper application",
+      "date": "Date signed",
+      "signed": "Signed by",
+      "hint": "Mark the brothers who signed the form — at least two. The application is approved at once.",
+      "save": "Enter and approve",
+      "enter": "Enter a paper application"
+    },
+    "committeeMissing": "Applications in the app are not accepted: no one is assigned as {{who}}. Assign in “Congregation” → “Responsibilities”.",
+    "committeeMissingSomeone": "Applications in the app are not accepted: the service committee is not complete.",
+    "waitingTitle": "Awaiting a decision · {{count}}",
+    "yourAnswer": "your answer",
+    "waiting": "waiting"
   }
 }
