@@ -5508,7 +5508,8 @@
       "AUX_APP_PAPER_SECRETARY": "A paper application is entered by the secretary or an admin.",
       "AUX_APP_SIGNERS": "Name at least two brothers who signed, each once.",
       "AUX_STOP_NONE": "You have no «until canceled» service.",
-      "AUX_STOP_MONTH": "That month cannot be the last one."
+      "AUX_STOP_MONTH": "That month cannot be the last one.",
+      "AUX_RANGE_TOO_LONG": "Twelve months at most."
     }
   },
   "stage": {
@@ -5998,5 +5999,54 @@
     "paper": "on paper",
     "hoursUnit": "h",
     "reported": "reported {{list}}"
+  },
+  "auxPrint": {
+    "button": "PDF",
+    "title": "Print the history",
+    "period": "Period",
+    "serviceYear": "Service year {{year}}",
+    "range": "From month to month",
+    "from": "From",
+    "to": "To",
+    "layout": "Layout",
+    "byPeople": "By person",
+    "byMonths": "By month",
+    "print": "Print",
+    "tooLong": "Twelve months at most.",
+    "kicker": "Auxiliary pioneering",
+    "yearTitle": "Service year {{year}}",
+    "printed": "printed",
+    "people": "people served",
+    "months": "months of service",
+    "busiest": "most · {{n}} people",
+    "busiestNone": "nobody served",
+    "hours": "hours reported",
+    "name": "Name",
+    "monthsCol": "Mo.",
+    "hoursCol": "Hours",
+    "inMonth": "In the month",
+    "nobody": "Nobody served as an auxiliary pioneer in this period.",
+    "personCount": "{{count}} people",
+    "may15": "15 h allowed",
+    "note": "In each cell: goal / hours reported. A congregation document — not for passing on.",
+    "s205": {
+      "button": "S-205b form (PDF)",
+      "kicker": "S-205b · congregation file",
+      "title": "Application for auxiliary pioneer service",
+      "months": "Month(s)",
+      "untilCancelled": "Serve as an auxiliary pioneer until canceled",
+      "goals": "Goal",
+      "date": "Date",
+      "applicant": "Applicant",
+      "confirmedInApp": "Confirmed by the applicant in the app on {{date}}",
+      "signedOnPaper": "Signed on the paper form",
+      "approvedBy": "Approved by the service committee",
+      "instead": "in place",
+      "unfillable": "nobody to answer — two are enough",
+      "note": "This application is not sent to the branch office; it is kept in the congregation files. The service committee’s answers to the questions are not recorded anywhere."
+    },
+    "cardApps": "Applications · {{count}}",
+    "cardAppLine": "approved {{date}}",
+    "noteMonths": "Beside each name: goal and hours reported. A congregation document — not for passing on."
   }
 }

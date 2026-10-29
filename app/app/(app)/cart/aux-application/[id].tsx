@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   auxApplicationsApi,
+  meetingSettingsApi,
   type AuxApplicationView,
   type AuxSeatView,
   type CommitteeSeat,
@@ -21,7 +22,10 @@ import { failsScreen } from '../../../../lib/screen-failure';
 import { LoadFailure } from '../../../../components/LoadFailure';
 import { Dialog } from '../../../../components/Dialog';
 import { cardStyles, Chip, INK, MUTED, BRAND } from '../../../../components/reports/ReportBits';
-import { capitalize, monthGoals, monthName } from '../../../../lib/aux-application';
+import { capitalize, monthGoals, monthName, monthsLabel } from '../../../../lib/aux-application';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../../lib/pdf';
+import { appFontFaces } from '../../../../lib/print-fonts';
+import { buildS205bHtml } from '../../../../lib/auxApplicationPdf';
 
 /**
  * AN APPLICATION, FOR THE COMMITTEE (29 October 2026).
@@ -45,6 +49,11 @@ export default function AuxApplicationScreen() {
     enabled: !!id,
   });
   const [ask, setAsk] = useState<null | 'pass' | 'withdraw' | { open: CommitteeSeat }>(null);
+  const overview = useQuery({
+    queryKey: ['meeting-settings', 'overview'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 10 * 60 * 1000,
+  });
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: ['aux-applications'] });
     void qc.invalidateQueries({ queryKey: ['me', 'pending'] });
@@ -89,6 +98,56 @@ export default function AuxApplicationScreen() {
   const a: AuxApplicationView = q.data;
   const seatName = (s: CommitteeSeat) => t(`auxApp.seat.${s}`);
   const approvedCount = a.seats.filter((s) => s.approved).length;
+
+  // The S-205b as approved, with the brothers' initials — for the
+  // congregation's files (mockup screen 8).
+  const printForm = () => {
+    const win = openPrintWindow();
+    const day = (iso: string) =>
+      new Date(iso.length === 10 ? `${iso}T12:00:00` : iso).toLocaleDateString(lang, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    const goalMonths = a.untilCancelled
+      ? [...new Set([a.months[0], ...a.reducedMonths])]
+      : a.months;
+    const html = buildS205bHtml({
+      app: a,
+      congregationName: overview.data?.congregation?.name ?? '',
+      printedOn: day(new Date().toISOString()),
+      monthsLabel: a.untilCancelled
+        ? t('auxApp.my.fromUntilCancelled', { month: monthName(a.months[0], lang) })
+        : capitalize(monthsLabel(a.months, lang)),
+      goals: monthGoals(goalMonths, a.reducedMonths, lang).map((g) => ({
+        month: g.label,
+        hours: g.hours,
+      })),
+      fontFaces: appFontFaces(),
+      day,
+      labels: {
+        kicker: t('auxPrint.s205.kicker'),
+        title: t('auxPrint.s205.title'),
+        words1: t('auxApp.form.words1'),
+        words2: t(a.publisherGender === 'sister' ? 'auxApp.form.words2Sister' : 'auxApp.form.words2'),
+        months: t('auxPrint.s205.months'),
+        untilCancelled: t('auxPrint.s205.untilCancelled'),
+        goals: t('auxPrint.s205.goals'),
+        hoursUnit: t('auxCard.hoursUnit'),
+        date: t('auxPrint.s205.date'),
+        applicant: t('auxPrint.s205.applicant'),
+        confirmedInApp: t('auxPrint.s205.confirmedInApp', { date: day(a.createdAt) }),
+        signedOnPaper: t('auxPrint.s205.signedOnPaper'),
+        approvedBy: t('auxPrint.s205.approvedBy'),
+        seat: (x) => seatName(x),
+        instead: t('auxPrint.s205.instead'),
+        unfillable: t('auxPrint.s205.unfillable'),
+        note: t('auxPrint.s205.note'),
+        printed: t('auxPrint.printed'),
+      },
+    });
+    void exportHtmlAsPdf(html, { fileName: `S-205b ${a.publisherName}`, preopenedWindow: win });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -154,6 +213,12 @@ export default function AuxApplicationScreen() {
           <Seat key={s.seat} s={s} first={i === 0} name={seatName(s.seat)} lang={lang} />
         ))}
       </View>
+
+      {a.status === 'approved' ? (
+        <Pressable style={styles.ghost} onPress={printForm} accessibilityRole="button">
+          <Text style={styles.ghostText}>{t('auxPrint.s205.button')}</Text>
+        </Pressable>
+      ) : null}
 
       {a.status === 'pending' ? (
         <View style={styles.memo}>

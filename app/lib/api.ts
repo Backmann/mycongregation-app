@@ -5763,6 +5763,8 @@ export interface AuxApplicationView {
   id: string;
   publisherId: string;
   publisherName: string;
+  /** For the S-205b print: «спланировал» or «спланировала». */
+  publisherGender?: string | null;
   groupName: string | null;
   months: string[];
   untilCancelled: boolean;
@@ -5921,6 +5923,13 @@ export const auxYearApi = {
   async year(year?: number): Promise<AuxYearView> {
     const { data } = await api.get<AuxYearView>("/auxiliary-pioneers/year", {
       params: year ? { year } : {},
+    });
+    return data;
+  },
+  /** «С месяца по месяц», YYYY-MM, at most twelve months — for the print. */
+  async range(from: string, to: string): Promise<AuxYearView> {
+    const { data } = await api.get<AuxYearView>("/auxiliary-pioneers/range", {
+      params: { from, to },
     });
     return data;
   },
