@@ -5509,7 +5509,13 @@
       "AUX_APP_SIGNERS": "Nennen Sie mindestens zwei Brüder, die unterschrieben haben, jeden einmal.",
       "AUX_STOP_NONE": "Sie haben keinen Dienst «bis auf Widerruf».",
       "AUX_STOP_MONTH": "Dieser Monat kann nicht der letzte sein.",
-      "AUX_RANGE_TOO_LONG": "Höchstens zwölf Monate."
+      "AUX_RANGE_TOO_LONG": "Höchstens zwölf Monate.",
+      "SERVICE_LOG_NO_CARD": "Ihr Zugang ist mit keiner Verkündigerkarte verbunden.",
+      "SERVICE_LOG_DAY_FULL": "Ein Tag hat höchstens 24 Stunden.",
+      "SERVICE_LOG_FUTURE": "Dieser Tag ist noch nicht gekommen.",
+      "SERVICE_LOG_MONTH_CLOSED": "Der Monat {{month}} ist für Einträge geschlossen.",
+      "SERVICE_LOG_NOT_YOURS": "Ihr Bericht für {{month}} hat keine Stunden.",
+      "SERVICE_LOG_REPORTED": "Der Bericht für {{month}} ist schon abgegeben."
     }
   },
   "stage": {
@@ -6048,5 +6054,80 @@
     "cardApps": "Bewerbungen · {{count}}",
     "cardAppLine": "genehmigt {{date}}",
     "noteMonths": "Neben dem Namen: Ziel und berichtete Stunden. Dokument der Versammlung — nicht zur Weitergabe."
+  },
+  "hoursLog": {
+    "title": "Meine Stunden",
+    "onlyYou": "Nur Sie sehen diese Einträge",
+    "unitH": "Std.",
+    "unitM": "Min.",
+    "hint": "Nur Sie sehen diese Einträge. Am Monatsanfang ergeben sie Ihren Bericht.",
+    "dur": {
+      "hm": "{{h}} Std. {{m}} Min.",
+      "h": "{{h}} Std.",
+      "m": "{{m}} Min."
+    },
+    "kind": {
+      "field": "Dienst",
+      "credit": "Gutschrift",
+      "creditShort": "Gutschrift"
+    },
+    "home": {
+      "kicker": "meine Stunden",
+      "kickerAux": "Hilfspionierdienst",
+      "of": "von {{n}}",
+      "daysLeft_one": "noch {{count}} Tag im Monat",
+      "daysLeft_other": "noch {{count}} Tage im Monat",
+      "goalReached": "Ziel erreicht ✓",
+      "reportDue": "Bericht noch nicht abgegeben",
+      "credit": "+ Gutschrift {{dur}}",
+      "add": "Zeit",
+      "reported": "Bericht abgegeben · {{n}} Std."
+    },
+    "sheet": {
+      "title": "Zeit eintragen",
+      "editTitle": "Eintrag ändern",
+      "write": "Eintragen",
+      "save": "Speichern",
+      "remove": "Eintrag löschen",
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "otherDay": "Anderer Tag",
+      "notePlaceholder": "Notiz (optional) — nur Sie sehen sie",
+      "creditHint": "Zum Beispiel ein Bauprojekt oder ein Kongress. Sie kommen als Zeile in die Notiz des Berichts."
+    },
+    "month": {
+      "prev": "Vorheriger Monat",
+      "next": "Nächster Monat",
+      "notYours": "Ihr Bericht hat in diesem Monat keine Stunden — keine Einträge nötig.",
+      "inReport": "Im Bericht",
+      "toReport": "Für den Bericht",
+      "hours": "{{n}} Std.",
+      "rounding": "Angefangene Stunden werden nicht übertragen; unter einer Stunde im Monat zählt als 1 Std.",
+      "byOther": "Ihr Bericht wurde für Sie abgegeben: {{n}} Std. Eingetragen sind {{dur}}. Zum Korrigieren wenden Sie sich an Ihren Gruppenaufseher.",
+      "empty": "Noch keine Einträge",
+      "pending_one": "{{count}} Eintrag noch nicht gesendet — er geht, sobald eine Verbindung besteht.",
+      "pending_other": "{{count}} Einträge noch nicht gesendet — sie gehen, sobald eine Verbindung besteht."
+    },
+    "undo": {
+      "written": "Eingetragen {{dur}}",
+      "removed": "Eintrag gelöscht · {{dur}}"
+    },
+    "refused": "Eintrag nicht gespeichert: {{why}}",
+    "door": {
+      "title": "Meine Stunden",
+      "subtitle": "{{month}}: {{dur}}"
+    },
+    "exit": {
+      "title": "Einträge nicht gesendet",
+      "confirm": "Ohne sie abmelden",
+      "text_one": "{{count}} Stundeneintrag ist noch nicht auf dem Server. Verbinden Sie sich zum Senden oder melden Sie sich ohne ihn ab.",
+      "text_other": "{{count}} Stundeneinträge sind noch nicht auf dem Server. Verbinden Sie sich zum Senden oder melden Sie sich ohne sie ab."
+    },
+    "intro": {
+      "badge": "Neu",
+      "title": "Meine Stunden",
+      "text": "Tragen Sie Ihre Zeit nach jedem Einsatz im Dienst ein. Am Anfang des nächsten Monats ergeben die Einträge Ihren Bericht. Nur Sie sehen sie.",
+      "ok": "Verstanden"
+    }
   }
 }

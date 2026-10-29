@@ -5509,7 +5509,13 @@
       "AUX_APP_SIGNERS": "Name at least two brothers who signed, each once.",
       "AUX_STOP_NONE": "You have no «until canceled» service.",
       "AUX_STOP_MONTH": "That month cannot be the last one.",
-      "AUX_RANGE_TOO_LONG": "Twelve months at most."
+      "AUX_RANGE_TOO_LONG": "Twelve months at most.",
+      "SERVICE_LOG_NO_CARD": "Your sign-in is not linked to a publisher card.",
+      "SERVICE_LOG_DAY_FULL": "A day has no more than 24 hours.",
+      "SERVICE_LOG_FUTURE": "That day has not come yet.",
+      "SERVICE_LOG_MONTH_CLOSED": "{{month}} is closed for entries.",
+      "SERVICE_LOG_NOT_YOURS": "Your report for {{month}} has no hours.",
+      "SERVICE_LOG_REPORTED": "The report for {{month}} is already submitted."
     }
   },
   "stage": {
@@ -6048,5 +6054,80 @@
     "cardApps": "Applications · {{count}}",
     "cardAppLine": "approved {{date}}",
     "noteMonths": "Beside each name: goal and hours reported. A congregation document — not for passing on."
+  },
+  "hoursLog": {
+    "title": "My hours",
+    "onlyYou": "Only you see this log",
+    "unitH": "h",
+    "unitM": "min",
+    "hint": "Only you see these entries. At the start of the month they add up to your report.",
+    "dur": {
+      "hm": "{{h}} h {{m}} min",
+      "h": "{{h}} h",
+      "m": "{{m}} min"
+    },
+    "kind": {
+      "field": "Ministry",
+      "credit": "Credit",
+      "creditShort": "credit"
+    },
+    "home": {
+      "kicker": "my hours",
+      "kickerAux": "auxiliary pioneering",
+      "of": "of {{n}}",
+      "daysLeft_one": "{{count}} day left this month",
+      "daysLeft_other": "{{count}} days left this month",
+      "goalReached": "goal reached ✓",
+      "reportDue": "report not submitted yet",
+      "credit": "+ credit {{dur}}",
+      "add": "Time",
+      "reported": "Report submitted · {{n}} h"
+    },
+    "sheet": {
+      "title": "Log time",
+      "editTitle": "Change entry",
+      "write": "Log",
+      "save": "Save",
+      "remove": "Remove entry",
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "otherDay": "Another day",
+      "notePlaceholder": "Note (optional) — only you see it",
+      "creditHint": "For example a construction project or a convention. They go into the report as a line in the note."
+    },
+    "month": {
+      "prev": "Previous month",
+      "next": "Next month",
+      "notYours": "Your report this month has no hours — no log needed.",
+      "inReport": "In the report",
+      "toReport": "For the report",
+      "hours": "{{n}} h",
+      "rounding": "A part of an hour is not carried over; under an hour in the month counts as 1 h.",
+      "byOther": "Your report was submitted for you: {{n}} h. Your log has {{dur}}. To correct it, ask your group overseer.",
+      "empty": "No entries yet",
+      "pending_one": "{{count}} entry not sent yet — it will go once there is a connection.",
+      "pending_other": "{{count}} entries not sent yet — they will go once there is a connection."
+    },
+    "undo": {
+      "written": "Logged {{dur}}",
+      "removed": "Entry removed · {{dur}}"
+    },
+    "refused": "Entry not saved: {{why}}",
+    "door": {
+      "title": "My hours",
+      "subtitle": "{{month}}: {{dur}}"
+    },
+    "exit": {
+      "title": "Entries not sent",
+      "confirm": "Sign out without them",
+      "text_one": "{{count}} hours entry has not reached the server. Connect to send it, or sign out without it.",
+      "text_other": "{{count}} hours entries have not reached the server. Connect to send them, or sign out without them."
+    },
+    "intro": {
+      "badge": "New",
+      "title": "My hours",
+      "text": "Log your time after every outing in the ministry. At the start of next month your entries add up to your report. Only you see them.",
+      "ok": "Got it"
+    }
   }
 }

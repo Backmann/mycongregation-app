@@ -6715,3 +6715,63 @@ export const tasksApi = {
     return data;
   },
 };
+
+// ---------------------------------------------------------------- Мой учёт часов
+
+/** One entry of a pioneer's own hours log (29 October 2026). */
+export interface ServiceLogEntry {
+  id: string;
+  day: string; // YYYY-MM-DD
+  minutes: number;
+  kind: "field" | "credit";
+  note: string | null;
+}
+
+export type ServiceLogRole =
+  | "regular"
+  | "special"
+  | "missionary"
+  | "aux"
+  | "aux_pending";
+
+export interface ServiceLogMonth {
+  month: string; // YYYY-MM
+  /** Null: his report does not ask for hours that month — no log. */
+  role: ServiceLogRole | null;
+  /** Entries may still be written, changed and removed. */
+  open: boolean;
+  goal: number | null;
+  entries: ServiceLogEntry[];
+  fieldMinutes: number;
+  creditMinutes: number;
+  reportHours: number;
+  report: { hours: number | null; byOther: boolean } | null;
+  today: string;
+}
+
+export interface ServiceLogEntryInput {
+  day: string;
+  minutes: number;
+  kind: "field" | "credit";
+  note?: string | null;
+}
+
+export const serviceLogApi = {
+  async overview(): Promise<{ months: ServiceLogMonth[] }> {
+    const { data } = await api.get("/service-log");
+    return data;
+  },
+  async month(month?: string): Promise<ServiceLogMonth> {
+    const { data } = await api.get("/service-log/month", {
+      params: month ? { month } : {},
+    });
+    return data;
+  },
+  async put(id: string, input: ServiceLogEntryInput): Promise<ServiceLogEntry> {
+    const { data } = await api.put(`/service-log/entries/${id}`, input);
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/service-log/entries/${id}`);
+  },
+};

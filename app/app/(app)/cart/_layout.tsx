@@ -61,6 +61,7 @@ export default function CartLayout() {
       />
       {/* The application, online (29 October 2026). */}
       <Stack.Screen name="my-aux" options={{ title: t('auxApp.my.screenTitle') }} />
+      <Stack.Screen name="my-hours" options={{ title: t('hoursLog.title') }} />
       <Stack.Screen name="aux-apply" options={{ title: t('auxApp.form.title') }} />
       <Stack.Screen name="aux-application/[id]" options={{ title: t('auxApp.view.title') }} />
       <Stack.Screen name="aux-paper" options={{ title: t('auxApp.paper.title') }} />

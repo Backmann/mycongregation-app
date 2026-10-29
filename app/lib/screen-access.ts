@@ -184,6 +184,8 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // application — the server decides (the committee, an elder in an open
   // place); a paper — those who keep the list, the server the secretary.
   '/cart/my-aux': 'all',
+  // His own hours log; the server answers only about the one asking.
+  '/cart/my-hours': 'all',
   '/cart/aux-apply': 'all',
   '/cart/aux-application/[id]': 'self',
   '/cart/aux-paper': 'auxPioneers',

@@ -18,6 +18,8 @@ import { serviceLines, type ServiceLine } from '../../../lib/service-lines';
 import { useReportCollectionAsked } from '../../../components/ReportCollectionCard';
 import { PartlyShown } from '../../../components/ConnectionState';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
+import { formatDuration, useLogOverview } from '../../../lib/useServiceLog';
+import { capitalize as capitalizeFirst, monthName } from '../../../lib/aux-application';
 
 /**
  * The contents of «Служение» — every door into the ministry's side of the
@@ -266,13 +268,30 @@ export default function ServiceHubScreen() {
       ]
     : [];
 
+  // His own hours log — for those whose report asks for hours (29 October 2026).
+  const logQ = useLogOverview();
+  const logNow = logQ.months?.find((x) => x.month === x.today.slice(0, 7)) ?? logQ.months?.[0];
+  const myHours: Door[] = logNow
+    ? [
+        {
+          key: 'myHours',
+          title: t('hoursLog.door.title'),
+          subtitle: t('hoursLog.door.subtitle', {
+            month: capitalizeFirst(monthName(logNow.month, i18n.language, false)),
+            dur: formatDuration(logNow.fieldMinutes, t),
+          }),
+          href: '/cart/my-hours',
+        },
+      ]
+    : [];
+
   const sections: DoorSection[] =
     perms.isElder || perms.isAdmin
       ? [
           { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart] },
           { key: 'reports', label: t('serviceHub.sections.reports'), doors: [reports, ...summary, ...attendance] },
           { key: 'visits', label: t('serviceHub.sections.visits'), doors: [serviceOverseer, ...coSchedule] },
-          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...auxPioneers, ...myAux] },
+          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...myHours, ...auxPioneers, ...myAux] },
         ]
       : [
           {
@@ -280,13 +299,13 @@ export default function ServiceHubScreen() {
             label: null,
             // His own report first; then where he goes; then what a
             // responsibility of his adds, if he holds one.
-            doors: [reports, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers, ...myAux],
+            doors: [reports, ...myHours, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers, ...myAux],
           },
         ];
 
   // Every request a line here is read from: when one did not come, the
   // screen says that it is not showing everything (9 October 2026).
-  const asked = [standingQ, collectionQ, attendanceQ, fieldQ, ...cartQs, visitsQ, eventsQ, auxQ, servingQ];
+  const asked = [standingQ, collectionQ, attendanceQ, fieldQ, ...cartQs, visitsQ, eventsQ, auxQ, servingQ, logQ];
   const retryFailed = () => {
     for (const q of asked) if (q.isError) void q.refetch();
   };

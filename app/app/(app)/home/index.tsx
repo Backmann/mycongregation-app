@@ -1,3 +1,5 @@
+import { HoursCard } from "../../../components/hours/HoursCard";
+import { useLogUndo } from "../../../components/hours/useLogUndo";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -2194,6 +2196,8 @@ function useHomeData(todayISO: string) {
 export default function HomeScreen() {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
+  // «Записано · Отменить» after an entry written from Home's hours card.
+  const logUndo = useLogUndo();
   const now = useNow();
   const todayISO = formatDateISO(now);
   const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
@@ -2400,6 +2404,7 @@ export default function HomeScreen() {
                 <GreetingHeader now={now} />
                 <WelcomeCard />
                 <ReportDone />
+                <HoursCard onSaved={logUndo.saved} />
                 <ConductLiveCard />
                 <ConductLiveCard kind="weekend" />
                 {next}
@@ -2413,6 +2418,7 @@ export default function HomeScreen() {
               <GreetingHeader now={now} />
               <WelcomeCard />
               <ReportDone />
+              <HoursCard onSaved={logUndo.saved} />
               <ConductLiveCard />
               <ConductLiveCard kind="weekend" />
               {next}
@@ -2424,6 +2430,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       <WindowsPlanDialog windows={windows} onClose={() => setWindows(null)} />
+      {logUndo.undoBar}
     </>
   );
 }
