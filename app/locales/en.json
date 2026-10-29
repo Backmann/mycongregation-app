@@ -3646,7 +3646,13 @@
       "intro": "Serving as auxiliary pioneers this month",
       "you": "you",
       "meetingsHint": "See when you can go out in the ministry together"
-    }
+    },
+    "stopTitle": "Stop serving",
+    "lastMonth": "Last month of service",
+    "lastMonthHint": "The months before it stay in the history. Only the secretary can change a closed month.",
+    "removeTitle": "Delete the period?",
+    "removeFuture": "{{name}}'s period has not started yet, so it can be deleted.",
+    "removeBegun": "{{name}}'s period has already started. Delete only a record entered by mistake: its months will disappear from the history and the reports. To end the service, choose “Stop”."
   },
   "weekDrawer": {
     "title": "Jump to a meeting",
@@ -5466,7 +5472,11 @@
       "MONTH_INVALID": "The month is not valid.",
       "ABSENCE_ENDS_BEFORE_START": "An absence cannot end before it starts.",
       "LOCAL_NEEDS_NO_PROGRAMME": "This week has no program yet — the topic can only be planned.",
-      "LOCAL_NEEDS_NOT_A_PART": "A topic can only take the place of a “Living as Christians” part of that week."
+      "LOCAL_NEEDS_NOT_A_PART": "A topic can only take the place of a “Living as Christians” part of that week.",
+      "AUX_OVERLAP": "This publisher already serves as an auxiliary pioneer in {{month}}.",
+      "AUX_PERMANENT_PIONEER": "In {{month}} this publisher is a regular pioneer and cannot be an auxiliary pioneer.",
+      "AUX_MONTH_CLOSED": "{{month}} is closed: its figures have been sent. Only the secretary can change it.",
+      "AUX_REMOVE_STARTED": "This period has already started — it can be stopped, not deleted. The secretary can delete a record entered by mistake."
     }
   },
   "stage": {
