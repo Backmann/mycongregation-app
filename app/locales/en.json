@@ -734,7 +734,8 @@
       "openHint": "Publishers and group overseers can enter reports while their editing window is open.",
       "closureAffectsStatus": "Closing the month also finalizes the publishers’ statuses.",
       "closeMonth": "Close month",
-      "reopenMonth": "Reopen month"
+      "reopenMonth": "Reopen month",
+      "closeWhenSent": "Close the month on the day you send the report in JW Hub: anything entered after closing goes into the next month’s report."
     },
     "done": {
       "accepted": "Report accepted",
@@ -3761,7 +3762,19 @@
       "missionary": "Missionaries"
     },
     "inactiveUnknown_one": "{{count}} more cannot be determined from the app’s records: no reports entered, or the six months before this one are not stored in the app. Not counted as inactive — check the S-21 cards:",
-    "inactiveUnknown_other": "{{count}} more cannot be determined from the app’s records: no reports entered, or the six months before this one are not stored in the app. Not counted as inactive — check the S-21 cards:"
+    "inactiveUnknown_other": "{{count}} more cannot be determined from the app’s records: no reports entered, or the six months before this one are not stored in the app. Not counted as inactive — check the S-21 cards:",
+    "directToBranch": "Not for the form — they report to the branch directly",
+    "carriedInTitle_one": "Including {{count}} late report",
+    "carriedInTitle_other": "Including {{count}} late reports",
+    "carriedInLine": "{{name}} — for {{month}} ({{line}})",
+    "carriedInHint": "Submitted after their own month was sent to the branch. By the instruction they go into this month’s report — already counted in the lines above.",
+    "lateOutTitle_one": "{{count}} report submitted after sending",
+    "lateOutTitle_other": "{{count}} reports submitted after sending",
+    "lateOutPending": "{{name}} — goes into the report for {{month}}",
+    "lateOutKept": "{{name}} — in the sent report for {{month}}",
+    "lateOutHint": "A late reporter is not counted irregular: the report goes into the next month’s report. There is no need to reopen this month.",
+    "directToBranchShort": "They report to the branch directly",
+    "lateOutMissed": "{{name}} — the report is in no sent report: submitted before late reports were carried over"
   },
   "journal": {
     "title": "Activity log",
@@ -5105,12 +5118,13 @@
     "monthDriftTitle": "By the reports now",
     "monthDriftLine": "{{label}}: {{now}} (sent {{sent}})",
     "monthLateTitle": "Entered after closing",
-    "monthReopenHint": "To correct what was sent: reopen the month, fix the reports and close it again.",
+    "monthReopenHint": "To correct a report already counted: reopen the month, fix it and close it again. Reports submitted after sending are not added this way — they go into the next month.",
     "attendanceNow": "By the attendance record now: midweek {{midweek}}, weekend {{weekend}}.",
     "lastMonthCount": "Reports for {{month}}: {{received}} of {{expected}}.",
     "lastMonthDecides": "Not yet submitted for {{month}} — and that one report decides whether they count as active:",
     "lastMonthOthers_one": "{{count}} more has not submitted a report — it does not change “Active”.",
-    "lastMonthOthers_other": "{{count}} more have not submitted a report — it does not change “Active”."
+    "lastMonthOthers_other": "{{count}} more have not submitted a report — it does not change “Active”.",
+    "notCounted": "“did not share” — not counted in the report"
   },
   "notifyDevice": {
     "strip": {

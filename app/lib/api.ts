@@ -942,6 +942,40 @@ export interface ServiceReportSummaryCategory {
   count: number;
   hours: number | null;
   bibleStudies: number;
+  /**
+   * A block of the S-1 form. Special pioneers and missionaries are not: they
+   * report to the branch themselves (instruction, point 14). Absent from a
+   * server older than 30 October 2026 — see onS1Form.
+   */
+  onForm?: boolean;
+}
+
+/** Is this line a block of the S-1 form? */
+export function onS1Form(c: ServiceReportSummaryCategory): boolean {
+  return c.onForm ?? (c.pioneerType !== "special" && c.pioneerType !== "missionary");
+}
+
+/** A late report of an earlier month, counted on this month's sheet. */
+export interface CarriedInReport {
+  publisherId: string;
+  name: string;
+  /** The month the report is for, YYYY-MM-01. */
+  reportMonth: string;
+  category: ServiceSummaryCategoryKey;
+}
+
+/** A report of this month handed in after the month was sent. */
+export interface LateOutReport {
+  publisherId: string;
+  name: string;
+  filedAt: string;
+  /**
+   * The month whose sheet takes it, YYYY-MM-01 — null when it went into no
+   * sheet (handed in before late reports were carried over).
+   */
+  carriedTo: string | null;
+  /** True when that month is already sent with it. */
+  carriedKept: boolean;
 }
 
 export interface S21MonthRow {
@@ -992,6 +1026,10 @@ export interface ServiceReportSummary {
    * the records. Named, not counted. Absent on an older server.
    */
   inactiveUnknown?: { id: string; name: string }[];
+  /** Late reports of earlier months this month's sheet takes in. */
+  carriedIn?: CarriedInReport[];
+  /** This month's reports handed in after it was sent, and where they go. */
+  lateOut?: LateOutReport[];
   averages: {
     pioneerHours: number;
     bibleStudies: number;
@@ -1007,8 +1045,11 @@ export interface ServiceReportSummary {
   sent?: SentMeta | null;
   /** The lines where what was sent and what the reports say now differ. */
   drift?: MonthlyDrift[];
-  /** What was entered after the month was kept, by whom it concerns. */
-  late?: (LateFact & { name: string })[];
+  /**
+   * What was entered after the month was kept, by whom it concerns.
+   * `notCounted`: a report of this month handed in late as «did not share».
+   */
+  late?: (LateFact & { name: string; notCounted?: boolean })[];
 }
 
 /** Who kept a sheet as sent, and when. */

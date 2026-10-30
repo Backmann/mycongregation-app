@@ -734,7 +734,8 @@
       "openHint": "Verkündiger und Gruppenaufseher können Berichte in ihrem Zeitfenster eintragen.",
       "closureAffectsStatus": "Mit dem Abschluss werden auch die Status der Verkündiger festgeschrieben.",
       "closeMonth": "Monat abschließen",
-      "reopenMonth": "Monat öffnen"
+      "reopenMonth": "Monat öffnen",
+      "closeWhenSent": "Schließen Sie den Monat am selben Tag ab, an dem Sie den Bericht in JW Hub gesendet haben: Alles, was danach eingetragen wird, geht in den Bericht des nächsten Monats."
     },
     "done": {
       "accepted": "Bericht angenommen",
@@ -3761,7 +3762,19 @@
       "missionary": "Missionare"
     },
     "inactiveUnknown_one": "{{count}} weiterer lässt sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:",
-    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:"
+    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:",
+    "directToBranch": "Nicht für das Formular – berichten direkt an das Zweigbüro",
+    "carriedInTitle_one": "Darin enthalten: {{count}} verspäteter Bericht",
+    "carriedInTitle_other": "Darin enthalten: {{count}} verspätete Berichte",
+    "carriedInLine": "{{name}} – für {{month}} ({{line}})",
+    "carriedInHint": "Abgegeben, nachdem ihr Monat an das Zweigbüro gesendet war. Laut Anweisung gehören sie in den Bericht dieses Monats – oben bereits mitgezählt.",
+    "lateOutTitle_one": "{{count}} Bericht nach dem Senden abgegeben",
+    "lateOutTitle_other": "{{count}} Berichte nach dem Senden abgegeben",
+    "lateOutPending": "{{name}} – kommt in den Bericht für {{month}}",
+    "lateOutKept": "{{name}} – im gesendeten Bericht für {{month}}",
+    "lateOutHint": "Wer verspätet berichtet, gilt nicht als unregelmäßig: Der Bericht kommt in den Bericht des nächsten Monats. Diesen Monat nicht erneut öffnen.",
+    "directToBranchShort": "Berichten direkt an das Zweigbüro",
+    "lateOutMissed": "{{name}} – der Bericht ist in keinem gesendeten Bericht enthalten: abgegeben, bevor verspätete Berichte übertragen wurden"
   },
   "journal": {
     "title": "Änderungsprotokoll",
@@ -5105,12 +5118,13 @@
     "monthDriftTitle": "Laut Berichten jetzt",
     "monthDriftLine": "{{label}}: {{now}} (gesendet {{sent}})",
     "monthLateTitle": "Nach dem Abschließen erfasst",
-    "monthReopenHint": "Gesendetes korrigieren: Monat öffnen, Berichte korrigieren und wieder abschließen.",
+    "monthReopenHint": "Um einen bereits gezählten Bericht zu korrigieren: Monat öffnen, korrigieren und wieder abschließen. Nach dem Senden abgegebene Berichte kommen dabei nicht hinzu – sie gehen in den nächsten Monat.",
     "attendanceNow": "Laut Anwesenheitsliste jetzt: unter der Woche {{midweek}}, Wochenende {{weekend}}.",
     "lastMonthCount": "Berichte für {{month}}: {{received}} von {{expected}}.",
     "lastMonthDecides": "Für {{month}} fehlt noch — und nur dieser Bericht entscheidet, ob sie als aktiv zählen:",
     "lastMonthOthers_one": "{{count}} weiterer fehlt noch — an „Aktive“ ändert das nichts.",
-    "lastMonthOthers_other": "{{count}} weitere fehlen noch — an „Aktive“ ändert das nichts."
+    "lastMonthOthers_other": "{{count}} weitere fehlen noch — an „Aktive“ ändert das nichts.",
+    "notCounted": "„nicht beteiligt“ – geht nicht in den Bericht ein"
   },
   "notifyDevice": {
     "strip": {
