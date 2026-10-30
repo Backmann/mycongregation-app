@@ -788,7 +788,18 @@
       "hoursIn": "im Jahr · {{n}} Mon.",
       "paceGoal": "Tempo Ziel {{n}}",
       "paceMinimum": "Tempo Mindestmaß {{n}}",
-      "eldersLine": "Bis zum Tempo des Mindestmaßes fehlen {{min}} Std., bis zum Ziel {{goal}} Std."
+      "eldersLine": "Bis zum Tempo des Mindestmaßes fehlen {{min}} Std., bis zum Ziel {{goal}} Std.",
+      "noQuotaBadge": "ohne Stundenziel",
+      "endedBadge": "Pionier bis {{month}}",
+      "noQuotaLine": "Sie dienen als allgemeiner Pionier ohne Stundenziel — so viel die Kraft erlaubt.",
+      "noQuotaElders": "Kein Maßstab: ohne Stundenziel, Beschluss vom {{date}}",
+      "endedLine": "Allgemeiner Pionier bis {{month}}. Danach Bericht wie ein Verkündiger.",
+      "startedLine": "Das Jahresziel: {{pace}} Std. für jeden Dienstmonat ab {{month}} — insgesamt {{n}} Std.",
+      "hoursAsPioneer": "Stunden als Pionier",
+      "monthsServed_one": "Dienstmonat",
+      "monthsServed_other": "Dienstmonate",
+      "monthsIn_one": "Monat berichtet",
+      "monthsIn_other": "Monate berichtet"
     },
     "allIn": {
       "title": "Alle Berichte abgegeben",
@@ -4053,7 +4064,8 @@
       "openedSeat": "Platz geöffnet",
       "pioneerMonthGoal": "Monatliches Stundenziel",
       "spiritualStatus": "Geistlicher Status",
-      "pioneerHistory": "Pionierdienst – Verlauf"
+      "pioneerHistory": "Pionierdienst – Verlauf",
+      "pioneerNoQuota": "Ohne Stundenziel"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -4542,7 +4554,15 @@
     "toMinimumOwn": "Für {{months}} Monate Dienst liegt das Minimum bei {{expected}} Std.: {{count}} Std. fehlen",
     "meetsOwn": "Für {{months}} Monate Dienst ist das Minimum von {{expected}} Std. erreicht",
     "yearLeftOwn": "Bis zu seinem Jahresmaß ({{total}} Std.) fehlen {{count}} Std. — {{perMonth}} im Monat",
-    "noHoursYet": "Berichte sind da, aber noch ohne Stunden"
+    "noHoursYet": "Berichte sind da, aber noch ohne Stunden",
+    "noQuotaTag": "ohne Stundenziel",
+    "noQuotaSince": "Beschluss vom {{date}}",
+    "noQuotaHeading": "Ohne Stundenziel — kein Maßstab",
+    "noQuotaHint": "Erfüllt Alter und Dienstjahre für den Dienst ohne Stundenziel (Punkt 9)",
+    "noQuotaHintBody": "{{age}} · {{span}} Pionierdienst. Gesundheit und Wunsch beurteilen die Ältesten.",
+    "age_one": "{{count}} Jahr alt",
+    "age_other": "{{count}} Jahre alt",
+    "pendingCount": "Zu wenig nach dem Eingegangenen, Berichte fehlen noch: {{count}} von {{total}}"
   },
   "memorial": {
     "title": "Gedächtnismahl",
@@ -5545,7 +5565,9 @@
       "PRINT_DOC_EMPTY": "Das Druckblatt ist leer — es gibt nichts zu drucken.",
       "PRINT_DOC_TOO_LARGE": "Das Blatt ist zu groß, um es an Safari zu übergeben. Öffnen Sie die Seite in Safari und drucken Sie von dort.",
       "PIONEER_END_BEFORE_START": "Der letzte Monat des Dienstes kann nicht vor seinem Beginn liegen ({{start}}).",
-      "PIONEER_END_FUTURE": "Der letzte Monat des Dienstes ist spätestens dieser Monat."
+      "PIONEER_END_FUTURE": "Der letzte Monat des Dienstes ist spätestens dieser Monat.",
+      "PIONEER_NO_QUOTA_NOT_REGULAR": "Ohne Stundenziel kann nur ein allgemeiner Pionier dienen, der jetzt dient.",
+      "PIONEER_NO_QUOTA_DATE": "Das Datum des Beschlusses liegt in seinem jetzigen Pionierdienst und spätestens heute."
     }
   },
   "stage": {
@@ -6282,5 +6304,27 @@
     "formRow": "Letzter Monat des Dienstes: {{month}}",
     "change": "Ändern",
     "link": "Dienst beendet…"
+  },
+  "noQuota": {
+    "title": "Dienst ohne Stundenziel",
+    "lead": "Für vorbildliche Pioniere, deren Gesundheit das Stundenziel nicht zulässt. Die Ältesten entscheiden nach Rücksprache mit dem Kreisaufseher (Punkt 9).",
+    "age": "Über 50 Jahre",
+    "ageUnknown": "Kein Geburtsdatum auf der Karte",
+    "ageIs": "{{age}} — nach dem Geburtsdatum auf der Karte",
+    "years": "15 Jahre oder länger Pionier",
+    "yearsIs": "{{span}} laut Dienstverlauf. Erster bekannter Monat: {{month}}; Jahre auf Papierkarten können hinzukommen.",
+    "wish": "Wünscht von Herzen weiterzumachen",
+    "wishSub": "Die Ältesten entscheiden",
+    "decidedOn": "Beschluss vom",
+    "note": "Das ganze Dienstjahr des Beschlusses ist ohne Stundenziel, ebenso jedes folgende, bis die Markierung entfernt wird. Dem Zweigbüro wird nichts gemeldet. Die S-21 vermerkt es unter Bemerkungen.",
+    "mark": "Markieren",
+    "tag": "ohne Stundenziel",
+    "from": "seit {{from}}",
+    "fromTo": "seit {{from}} · entfernt {{to}}",
+    "link": "Ohne Stundenziel…",
+    "endLink": "Markierung «ohne Stundenziel» entfernen",
+    "endTitle": "Markierung entfernen?",
+    "endBody": "Dieses Dienstjahr bleibt ohne Stundenziel; ab dem nächsten gilt es wieder.",
+    "endConfirm": "Entfernen"
   }
 }

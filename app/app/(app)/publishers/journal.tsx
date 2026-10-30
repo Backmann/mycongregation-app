@@ -17,6 +17,7 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { formatDayRange } from '../../../lib/date-range';
 import { readerTitle } from '../../../lib/reader-titles';
 // Locales are opt-in per file in dayjs: without these the dates come out in
 // English however the app is set, which is exactly what happened here.
@@ -507,6 +508,14 @@ function fieldWord(
       return `${t(`publishers.pioneer.detail.${m[1]}`, { defaultValue: m[1] })} · ${month(m[2])} – ${
         m[3] ? month(m[3]) : '…'
       }`;
+    }
+    // Point 9 (30 October 2026): «2027-01-18–» or «2027-01-18–2028-03-02».
+    if (field === 'pioneerNoQuota') {
+      const m = /^(\d{4}-\d{2}-\d{2})–(\d{4}-\d{2}-\d{2})?$/.exec(v);
+      if (!m) return '';
+      return m[2]
+        ? formatDayRange(m[1], m[2], language, { year: 'always' })
+        : t('noQuota.from', { from: dayjs(m[1]).locale(language).format('D MMMM YYYY') });
     }
     // Journaled from 30 October 2026 — the form's own words.
     if (field === 'spiritualStatus') {

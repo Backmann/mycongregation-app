@@ -34,7 +34,9 @@ import { CAPABILITY_CATEGORIES, countActiveCapabilities } from '../../lib/capabi
 import { FONT } from '../../lib/typography';
 import { StatusReasonsModal } from '../StatusReasonsModal';
 import { PioneerSpellSheet } from './PioneerSpellSheet';
+import { confirm } from '../ConfirmHost';
 import { PioneerEndSheet } from './PioneerEndSheet';
+import { NoQuotaSheet } from './NoQuotaSheet';
 import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 
@@ -553,6 +555,7 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
   const [ending, setEnding] = useState<PioneerHistorySpell | null>(null);
   const [endBusy, setEndBusy] = useState(false);
   const [endError, setEndError] = useState<string | null>(null);
+  const [noQuotaOpen, setNoQuotaOpen] = useState(false);
   const thisMonth = formatDateISO(new Date()).slice(0, 7);
   const d = q.data;
   const canEdit = canEditPublishers && baptised;
@@ -592,6 +595,29 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
     }
   };
   const yy = (ym: string) => ym.slice(2, 4);
+  const today = formatDateISO(new Date());
+  const day = (iso: string) => formatDay(iso, lang, { year: 'always' });
+  // Point 9 on the running regular spell (30 October 2026).
+  const setNoQuota = async (decidedOn: string) => {
+    try {
+      return done(await publishersApi.setPioneerNoQuota(publisherId, decidedOn));
+    } catch (e) {
+      return extractErrorMessage(e);
+    }
+  };
+  const endNoQuota = async () => {
+    const ok = await confirm({
+      title: t('noQuota.endTitle'),
+      body: t('noQuota.endBody'),
+      confirmLabel: t('noQuota.endConfirm'),
+    });
+    if (!ok) return;
+    try {
+      done(await publishersApi.endPioneerNoQuota(publisherId));
+    } catch (e) {
+      setEndError(extractErrorMessage(e));
+    }
+  };
   // The same save as the card's form makes: the kind goes, the last month
   // goes with it, and the server closes the spell there.
   const end = async (lastMonth: string) => {
@@ -648,10 +674,45 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
                 {editable ? <Ionicons name="create-outline" size={16} color="#94a3b8" /> : null}
               </>
             );
+            const freeNow = !sp.end && !!sp.noQuotaDecidedOn && !sp.noQuotaEndedOn;
+            const freeLine = sp.noQuotaDecidedOn ? (
+              <View style={styles.freeLine}>
+                <View style={styles.freeTag}>
+                  <Text style={styles.freeTagText}>{t('noQuota.tag')}</Text>
+                </View>
+                <Text style={styles.freeSub}>
+                  {sp.noQuotaEndedOn
+                    ? t('noQuota.fromTo', { from: day(sp.noQuotaDecidedOn), to: day(sp.noQuotaEndedOn) })
+                    : t('noQuota.from', { from: day(sp.noQuotaDecidedOn) })}
+                </Text>
+              </View>
+            ) : null;
+            if (!sp.end && !canEdit && freeLine) {
+              return (
+                <View key={sp.id}>
+                  <View style={styles.auxTile}>{tile}</View>
+                  {freeLine}
+                </View>
+              );
+            }
             if (!sp.end && canEdit) {
               return (
                 <View key={sp.id}>
                   <View style={styles.auxTile}>{tile}</View>
+                  {freeLine}
+                  {sp.kind === 'regular' ? (
+                    <Pressable
+                      onPress={() => (freeNow ? void endNoQuota() : setNoQuotaOpen(true))}
+                      style={styles.endLink}
+                      accessibilityRole="button"
+                      hitSlop={4}
+                    >
+                      <Ionicons name={freeNow ? 'remove-circle-outline' : 'leaf-outline'} size={14} color="#0e7490" />
+                      <Text style={[styles.endLinkText, { color: '#0e7490' }]}>
+                        {t(freeNow ? 'noQuota.endLink' : 'noQuota.link')}
+                      </Text>
+                    </Pressable>
+                  ) : null}
                   <Pressable
                     onPress={() => {
                       setEndError(null);
@@ -692,6 +753,15 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
           ) : null}
         </>
       )}
+      {canEdit && noQuotaOpen ? (
+        <NoQuotaSheet
+          visible
+          history={d}
+          today={today}
+          onClose={() => setNoQuotaOpen(false)}
+          onSave={setNoQuota}
+        />
+      ) : null}
       {canEdit && ending ? (
         <PioneerEndSheet
           visible
@@ -1002,6 +1072,10 @@ const styles = StyleSheet.create({
   col: { flex: 1, minWidth: 0 },
   historyBadge: { width: 64, paddingVertical: 10 },
   historySpan: { fontFamily: FONT.bold, fontSize: 12.5, color: '#166534', marginTop: 2 },
+  freeLine: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: -2, marginBottom: 8, marginLeft: 4 },
+  freeTag: { backgroundColor: '#ecfeff', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 9 },
+  freeTagText: { fontFamily: FONT.extrabold, fontSize: 11.5, color: '#0e7490' },
+  freeSub: { fontFamily: FONT.semibold, fontSize: 12.5, color: '#64748b' },
   endLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: -2, marginBottom: 10, marginLeft: 4 },
   endLinkText: { fontFamily: FONT.bold, fontSize: 13, color: '#475569' },
   endError: { fontFamily: FONT.bold, fontSize: 13, color: '#b91c1c', marginBottom: 8 },

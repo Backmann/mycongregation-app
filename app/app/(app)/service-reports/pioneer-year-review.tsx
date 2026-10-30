@@ -119,7 +119,13 @@ export default function PioneerYearReviewScreen() {
   const finalYear = !part && complete;
   const expectedGoal = data.expectedGoal ?? 600;
   const expectedMin = data.expectedMinimum ?? 560;
-  const shortCount = data.rows.filter((r) => r.short).length;
+  // Those without the norm are measured against nothing (point 9) — they
+  // are neither «short» nor «passing» and stay out of the count.
+  const measuredRows = data.rows.filter((r) => !r.noQuota);
+  const shortCount = measuredRows.filter((r) => r.short).length;
+  // Below by what is in, with reports still missing: not «all pass» either
+  // (30 October 2026 — a pioneer with no report at all read as passing).
+  const pendingCount = measuredRows.filter((r) => r.shortSoFar).length;
   const now = new Date();
   const runningYear =
     now.getMonth() >= 8 ? now.getFullYear() + 1 : now.getFullYear();
@@ -187,6 +193,19 @@ export default function PioneerYearReviewScreen() {
           {t("pioneerReview.hours", { count: row.hours })}
         </Text>
       </View>
+      {/* Point 9: no measure at all — said once, plainly (30 October 2026). */}
+      {row.noQuota ? (
+        <View style={styles.freeRow}>
+          <View style={styles.freeTag}>
+            <Text style={styles.freeTagText}>{t("pioneerReview.noQuotaTag")}</Text>
+          </View>
+          <Text style={styles.freeSince}>
+            {t("pioneerReview.noQuotaSince", {
+              date: dayjs(row.noQuota).locale(i18n.language).format("D MMMM YYYY"),
+            })}
+          </Text>
+        </View>
+      ) : null}
 
       {/*
         Темп — наверх: он отвечает на вопрос, ради которого экран открывают, —
@@ -248,6 +267,27 @@ export default function PioneerYearReviewScreen() {
             count: row.missingMonths.length,
           })}
         </Text>
+      ) : null}
+
+      {row.noQuotaHint ? (
+        <View style={styles.hint}>
+          <Text style={styles.hintHead}>{t("pioneerReview.noQuotaHint")}</Text>
+          <Text style={styles.hintBody}>
+            {t("pioneerReview.noQuotaHintBody", {
+              age: t("pioneerReview.age", { count: row.noQuotaHint.age }),
+              span: [
+                Math.floor(row.noQuotaHint.servedMonths / 12) > 0
+                  ? t("pioneerHistory.years", { count: Math.floor(row.noQuotaHint.servedMonths / 12) })
+                  : null,
+                row.noQuotaHint.servedMonths % 12 > 0
+                  ? t("pioneerHistory.months", { count: row.noQuotaHint.servedMonths % 12 })
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" "),
+            })}
+          </Text>
+        </View>
       ) : null}
 
       {row.endedIn ? (
@@ -507,16 +547,31 @@ export default function PioneerYearReviewScreen() {
                   finalYear
                     ? "pioneerReview.shortCount"
                     : "pioneerReview.shortCountPart",
-                  { count: shortCount, total: data.rows.length },
+                  { count: shortCount, total: measuredRows.length },
                 )
-              : t(
-                  finalYear
-                    ? "pioneerReview.allFine"
-                    : "pioneerReview.allFinePart",
-                  { count: data.rows.length },
-                )}
+              : pendingCount > 0
+                ? t("pioneerReview.pendingCount", {
+                    count: pendingCount,
+                    total: measuredRows.length,
+                  })
+                : measuredRows.length > 0
+                  ? t(
+                      finalYear
+                        ? "pioneerReview.allFine"
+                        : "pioneerReview.allFinePart",
+                      { count: measuredRows.length },
+                    )
+                  : ""}
           </Text>
-          {data.rows.map(card)}
+          {data.rows.map((row, i) => (
+            <View key={row.publisherId}>
+              {/* Those without the norm stand apart: nothing to measure. */}
+              {row.noQuota && !data.rows[i - 1]?.noQuota ? (
+                <Text style={styles.freeHeading}>{t("pioneerReview.noQuotaHeading")}</Text>
+              ) : null}
+              {card(row)}
+            </View>
+          ))}
         </>
       )}
     </ScrollView>
@@ -640,6 +695,23 @@ const styles = StyleSheet.create({
   meets: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#15803d" },
   toGoal: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
   since: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569", marginTop: 6 },
+  freeRow: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 6 },
+  freeTag: { backgroundColor: "#ecfeff", borderRadius: 999, paddingVertical: 3, paddingHorizontal: 9 },
+  freeTagText: { fontFamily: "Manrope_800ExtraBold", fontSize: 11.5, color: "#0e7490" },
+  freeSince: { fontFamily: "Manrope_600SemiBold", fontSize: 12.5, color: "#64748b" },
+  freeHeading: {
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 11,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    color: "#94a3b8",
+    marginTop: 10,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  hint: { backgroundColor: "#ecfeff", borderRadius: 12, paddingVertical: 9, paddingHorizontal: 11, marginTop: 8, gap: 2 },
+  hintHead: { fontFamily: "Manrope_800ExtraBold", fontSize: 12.5, color: "#0e7490" },
+  hintBody: { fontFamily: "Manrope_600SemiBold", fontSize: 12, color: "#155e75", lineHeight: 17 },
   unknownSince: {
     fontFamily: "Manrope_400Regular",
     fontSize: 12.5,

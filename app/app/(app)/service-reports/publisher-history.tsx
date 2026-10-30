@@ -586,7 +586,7 @@ export default function PublisherHistoryScreen() {
       {trendPoints.length >= 2 ? (
         <HistoryTrendChart
           points={trendPoints}
-          paceLine={data?.pioneerYear ? data.pioneerYear.pace : null}
+          paceLine={data?.pioneerYear && !data.pioneerYear.noQuota ? data.pioneerYear.pace : null}
         />
       ) : null}
     </View>
