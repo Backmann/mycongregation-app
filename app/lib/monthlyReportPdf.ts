@@ -1,12 +1,14 @@
-import { ServiceReportSummary } from './api';
+import { onS1Form, ServiceReportSummary } from './api';
 
 /**
  * The monthly report (S-1) as a sheet to copy from.
  *
  * The secretary types this into JW Hub by the 20th. The form asks, in this
  * order: all active publishers, the average weekend attendance, then a block
- * per category — ordinary publishers with reports and studies, then auxiliary,
- * regular, special pioneers and missionaries with hours as well. The sheet is
+ * per category — ordinary publishers with reports and studies, then auxiliary
+ * and regular pioneers with hours as well. Special pioneers and missionaries
+ * are not on the form: they report to the branch themselves (instruction,
+ * point 14; the form as filed for September 2026). The sheet is
  * laid out in the SAME order, so it is read top to bottom against the form
  * without hunting; a figure copied from the wrong line is the whole risk here.
  *
@@ -28,6 +30,10 @@ export function buildMonthlyReportPdfHtml(opts: {
     weekendAverage: string;
     midweekAverage: string;
     notForForm: string;
+    /** «{{name}} — за сентябрь», built by the screen. */
+    carriedIn: string[];
+    carriedInTitle: string;
+    directToBranch: string;
     categories: Record<string, string>;
     count: string;
     hours: string;
@@ -53,18 +59,21 @@ export function buildMonthlyReportPdfHtml(opts: {
       String(value),
     )}</td></tr>`;
 
-  const categories = summary.categories
-    .map(
-      (c) => `<section class="cat">
+  const block = (c: ServiceReportSummary['categories'][number]) => `<section class="cat">
       <h2>${esc(labels.categories[c.pioneerType] ?? c.pioneerType)}</h2>
       <table class="card">
         ${row(labels.count, c.count)}
         ${c.hours !== null ? row(labels.hours, c.hours) : ''}
         ${row(labels.studies, c.bibleStudies)}
       </table>
-    </section>`,
-    )
-    .join('');
+    </section>`;
+  // The form's blocks only; late reports of earlier months are already in
+  // their figures (instruction, point 14) and are named below the form.
+  const categories = summary.categories.filter(onS1Form).map(block).join('');
+  const direct = summary.categories.filter(
+    (c) => !onS1Form(c) && (c.count > 0 || c.bibleStudies > 0),
+  );
+
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
     labels.title,
@@ -157,6 +166,24 @@ export function buildMonthlyReportPdfHtml(opts: {
     <table>
       ${row(labels.midweekAverage, attendance.midweek ?? '—')}
     </table>
+    ${
+      labels.carriedIn.length > 0
+        ? `<div style="margin-top:9px">
+      <h2>${esc(labels.carriedInTitle)}</h2>
+      <div class="names">${labels.carriedIn
+        .map((n) => esc(n))
+        .join('<span class="sep">·</span>')}</div>
+    </div>`
+        : ''
+    }
+    ${
+      direct.length > 0
+        ? `<div style="margin-top:9px">
+      <h2>${esc(labels.directToBranch)}</h2>
+      ${direct.map(block).join('')}
+    </div>`
+        : ''
+    }
     ${
       missing.length > 0
         ? `<div style="margin-top:9px">

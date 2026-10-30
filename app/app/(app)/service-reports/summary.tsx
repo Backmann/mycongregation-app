@@ -15,7 +15,9 @@ import {
   extractErrorMessage,
   attendanceApi,
   meetingSettingsApi,
+  onS1Form,
   serviceReportsApi,
+  type ServiceReportSummaryCategory,
 } from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { usePermissions } from '../../../lib/permissions';
@@ -130,6 +132,18 @@ export default function ServiceSummaryScreen() {
         weekendAverage: t('serviceSummary.weekendAverage'),
         midweekAverage: t('serviceSummary.midweekAverage'),
         notForForm: t('serviceSummary.notForForm'),
+        carriedIn: (data.carriedIn ?? []).map((c) =>
+          t('serviceSummary.carriedInLine', {
+            name: c.name,
+            month: formatMonthLabel(c.reportMonth),
+            line: t(`serviceSummary.categories.${c.category}`),
+          }),
+        ),
+        carriedInTitle: t('serviceSummary.carriedInTitle', {
+          count: (data.carriedIn ?? []).length,
+        }),
+        // Inside the «Не для бланка» box already — the short words.
+        directToBranch: t('serviceSummary.directToBranchShort'),
         categories: {
           none: t('serviceSummary.categories.none'),
           auxiliary: t('serviceSummary.categories.auxiliary'),
@@ -168,6 +182,40 @@ export default function ServiceSummaryScreen() {
       });
     },
   });
+
+  // The form's blocks, and the lines that report to the branch directly —
+  // shown only when someone is on them.
+  const formLines = (data?.categories ?? []).filter(onS1Form);
+  const directLines = (data?.categories ?? []).filter(
+    (c) => !onS1Form(c) && (c.count > 0 || c.bibleStudies > 0),
+  );
+  const carriedIn = data?.carriedIn ?? [];
+  const lateOut = data?.lateOut ?? [];
+  const renderLine = (cat: ServiceReportSummaryCategory) => (
+    <View key={cat.pioneerType} style={styles.card}>
+      <Text style={styles.cardTitle}>
+        {t(`serviceSummary.categories.${cat.pioneerType}`, {
+          defaultValue: cat.pioneerType,
+        })}
+      </Text>
+      <View style={styles.statsRow}>
+        <View style={styles.statBox}>
+          <Text style={styles.statBig}>{cat.count}</Text>
+          <Text style={styles.statLabel}>{t('serviceSummary.count')}</Text>
+        </View>
+        {cat.hours !== null && (
+          <View style={styles.statBox}>
+            <Text style={styles.statBig}>{cat.hours}</Text>
+            <Text style={styles.statLabel}>{t('serviceSummary.hours')}</Text>
+          </View>
+        )}
+        <View style={styles.statBox}>
+          <Text style={styles.statBig}>{cat.bibleStudies}</Text>
+          <Text style={styles.statLabel}>{t('serviceSummary.studies')}</Text>
+        </View>
+      </View>
+    </View>
+  );
 
   if (isLoading) {
     return (
@@ -378,31 +426,62 @@ export default function ServiceSummaryScreen() {
           </View>
         ) : null}
 
-        {data?.categories.map((cat) => (
-          <View key={cat.pioneerType} style={styles.card}>
+        {/* The S-1 form's blocks only, in its order (instruction, point 14;
+            the form as filed for September 2026). Special pioneers and
+            missionaries report to the branch themselves — their lines stand
+            below, said to be not for the form. */}
+        {formLines.map(renderLine)}
+
+        {/* Late reports of earlier months this sheet takes in — already
+            counted in the lines above, named so the figure can be read. */}
+        {carriedIn.length > 0 ? (
+          <View style={[styles.card, styles.lateCard]}>
             <Text style={styles.cardTitle}>
-              {t(`serviceSummary.categories.${cat.pioneerType}`, {
-                defaultValue: cat.pioneerType,
-              })}
+              {t('serviceSummary.carriedInTitle', { count: carriedIn.length })}
             </Text>
-            <View style={styles.statsRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statBig}>{cat.count}</Text>
-                <Text style={styles.statLabel}>{t('serviceSummary.count')}</Text>
-              </View>
-              {cat.hours !== null && (
-                <View style={styles.statBox}>
-                  <Text style={styles.statBig}>{cat.hours}</Text>
-                  <Text style={styles.statLabel}>{t('serviceSummary.hours')}</Text>
-                </View>
-              )}
-              <View style={styles.statBox}>
-                <Text style={styles.statBig}>{cat.bibleStudies}</Text>
-                <Text style={styles.statLabel}>{t('serviceSummary.studies')}</Text>
-              </View>
-            </View>
+            {carriedIn.map((c) => (
+              <Text key={`${c.publisherId}@${c.reportMonth}`} style={styles.driftPerson}>
+                · {t('serviceSummary.carriedInLine', {
+                  name: c.name,
+                  month: formatMonthLabel(c.reportMonth),
+                  line: t(`serviceSummary.categories.${c.category}`),
+                })}
+              </Text>
+            ))}
+            <Text style={styles.totalsHint}>{t('serviceSummary.carriedInHint')}</Text>
           </View>
-        ))}
+        ) : null}
+
+        {/* This month's reports handed in after it was sent: not on its
+            sheet, and where they go instead — never «reopen and close
+            again», which would put a late report in the wrong month. */}
+        {lateOut.length > 0 ? (
+          <View style={[styles.card, styles.lateCard]}>
+            <Text style={styles.cardTitle}>
+              {t('serviceSummary.lateOutTitle', { count: lateOut.length })}
+            </Text>
+            {lateOut.map((l) => (
+              <Text key={l.publisherId} style={styles.driftPerson}>
+                · {t(
+                  l.carriedKept
+                    ? 'serviceSummary.lateOutKept'
+                    : 'serviceSummary.lateOutPending',
+                  { name: l.name, month: formatMonthLabel(l.carriedTo) },
+                )}
+              </Text>
+            ))}
+            <Text style={styles.totalsHint}>{t('serviceSummary.lateOutHint')}</Text>
+          </View>
+        ) : null}
+
+        {directLines.length > 0 ? (
+          <>
+            <Text style={styles.sectionNote}>
+              {t('serviceSummary.directToBranch')}
+            </Text>
+            {directLines.map(renderLine)}
+          </>
+        ) : null}
 
         <View style={[styles.card, styles.totalsCard]}>
           <Text style={styles.cardTitle}>{t('serviceSummary.sizeTitle')}</Text>
@@ -529,6 +608,15 @@ const styles = StyleSheet.create({
   unknownName: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569', marginTop: 2, marginLeft: 4 },
   frozenCard: { borderColor: '#cbd5e1', backgroundColor: '#f8fafc' },
   driftCard: { borderColor: '#fde68a', backgroundColor: '#fffbeb' },
+  lateCard: { borderColor: '#bae6fd', backgroundColor: '#f0f9ff' },
+  sectionNote: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 8,
+    marginBottom: 6,
+    marginHorizontal: 4,
+  },
   driftLine: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#92400e', lineHeight: 20 },
   driftPerson: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569', lineHeight: 19, marginLeft: 4 },
   openCard: { borderColor: '#bae6fd', backgroundColor: '#f0f9ff' },

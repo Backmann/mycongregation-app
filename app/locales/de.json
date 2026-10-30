@@ -3761,7 +3761,18 @@
       "missionary": "Missionare"
     },
     "inactiveUnknown_one": "{{count}} weiterer lässt sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:",
-    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:"
+    "inactiveUnknown_other": "{{count}} weitere lassen sich aus den Daten der App nicht bestimmen: keine Berichte erfasst oder die sechs Monate davor sind nicht in der App. Nicht als inaktiv gezählt — bitte anhand der S-21-Karten prüfen:",
+    "directToBranch": "Nicht für das Formular – berichten direkt an das Zweigbüro",
+    "carriedInTitle_one": "Darin enthalten: {{count}} verspäteter Bericht",
+    "carriedInTitle_other": "Darin enthalten: {{count}} verspätete Berichte",
+    "carriedInLine": "{{name}} – für {{month}} ({{line}})",
+    "carriedInHint": "Abgegeben, nachdem ihr Monat an das Zweigbüro gesendet war. Laut Anweisung gehören sie in den Bericht dieses Monats – oben bereits mitgezählt.",
+    "lateOutTitle_one": "{{count}} Bericht nach dem Senden abgegeben",
+    "lateOutTitle_other": "{{count}} Berichte nach dem Senden abgegeben",
+    "lateOutPending": "{{name}} – kommt in den Bericht für {{month}}",
+    "lateOutKept": "{{name}} – im gesendeten Bericht für {{month}}",
+    "lateOutHint": "Wer verspätet berichtet, gilt nicht als unregelmäßig: Der Bericht kommt in den Bericht des nächsten Monats. Diesen Monat nicht erneut öffnen.",
+    "directToBranchShort": "Berichten direkt an das Zweigbüro"
   },
   "journal": {
     "title": "Änderungsprotokoll",
