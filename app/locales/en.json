@@ -4950,7 +4950,8 @@
     },
     "sub": {
       "summary": "The month's totals for the congregation",
-      "attendance": "How many attended the meetings"
+      "attendance": "How many attended the meetings",
+      "s21Totals": "Three totals cards for the service year"
     },
     "live": {
       "reportDue": "{{month}}: report not submitted",
@@ -6157,5 +6158,61 @@
       "creditNoteWhat": "Credit hours: {{dur}} ({{what}})",
       "submitFor": "Submit the report for {{month}}"
     }
+  },
+  "s21Totals": {
+    "title": "S-21 totals cards",
+    "yearShort": "{{from}}/{{to}}",
+    "yearLong": "Service year {{from}}/{{to}}",
+    "print": {
+      "formTitle": "Congregation’s publisher record · totals card",
+      "count": "Reports submitted",
+      "studies": "Bible studies",
+      "hours": "Hours",
+      "remarks": "Remarks",
+      "total": "Total",
+      "late_one": "incl. late: {{count}}",
+      "late_other": "incl. late: {{count}}",
+      "direct_one": "incl. reporting to the branch: {{count}}",
+      "direct_other": "incl. reporting to the branch: {{count}}",
+      "collecting": "reports still coming in",
+      "open": "not sent",
+      "frozen": "frozen by the app",
+      "foot": "S-21 · each month as it went to the branch; a late report in the month whose report it went into.",
+      "closed": "closed; figures from the reports (what was sent was not kept then)"
+    },
+    "intro": "Each month’s totals on three cards — as the month went to the branch. A late report stands in the month whose report it went into; on the person’s own S-21 it stays in its own month.",
+    "cards": {
+      "pioneers": {
+        "kicker": "Card 1 · in the field",
+        "title": "Regular pioneers, special pioneers and missionaries"
+      },
+      "auxiliary": {
+        "kicker": "Card 2",
+        "title": "Auxiliary pioneers"
+      },
+      "publishers": {
+        "kicker": "Card 3",
+        "title": "All other publishers"
+      }
+    },
+    "col": {
+      "month": "Month",
+      "count": "Reports",
+      "hours": "Hours",
+      "studies": "Studies"
+    },
+    "lateTag_one": "incl. {{count}} late",
+    "lateTag_other": "incl. {{count}} late",
+    "directTag_one": "to the branch: {{count}}",
+    "directTag_other": "to the branch: {{count}}",
+    "legend": {
+      "sent": "sent",
+      "frozen": "frozen by the app",
+      "collecting": "reports coming in",
+      "open": "not sent",
+      "closed": "closed · figures from the reports"
+    },
+    "lateHint": "By the instruction a late report goes into the next month’s report — so here it stands in the month it was sent in. Special pioneers and missionaries are not in the congregation’s report, but card 1 counts them.",
+    "totalHours": "Hours in the year"
   }
 }

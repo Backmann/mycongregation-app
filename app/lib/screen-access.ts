@@ -194,6 +194,8 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // Whoever oversees a group reads that group's reports — the server knows.
   '/service-reports/group': 'self',
   '/service-reports/summary': 'summary',
+  // The three totals cards (S-21): every elder reads, as the summary.
+  '/service-reports/s21-totals': 'summary',
   '/service-reports/annual': 'annual',
   '/service-reports/attendance': 'attendance',
   '/service-reports/activity': 'elders',

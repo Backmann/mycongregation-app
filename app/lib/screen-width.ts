@@ -34,6 +34,8 @@ const OVERVIEW = new Set<string>([
   '/service-reports/summary',
   '/service-reports/attendance',
   '/service-reports/annual',
+  // Three cards side by side (30 October 2026).
+  '/service-reports/s21-totals',
   '/talk-coordinator/log',
   // A list beside the chosen item's detail: two panes need the room.
   '/publishers/duties',

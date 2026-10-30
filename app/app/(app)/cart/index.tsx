@@ -209,6 +209,12 @@ export default function ServiceHubScreen() {
       subtitle: t('serviceHub.sub.summary'),
       href: '/service-reports/summary',
     },
+    {
+      key: 's21Totals',
+      title: t('s21Totals.title'),
+      subtitle: t('serviceHub.sub.s21Totals'),
+      href: '/service-reports/s21-totals',
+    },
   ];
   const attendance: Door[] = [
     {

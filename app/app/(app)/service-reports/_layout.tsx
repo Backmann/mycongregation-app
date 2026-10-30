@@ -47,6 +47,10 @@ export default function ServiceReportsLayout() {
         options={{ title: t('annualReport.pageTitle') }}
       />
       <Stack.Screen
+        name="s21-totals"
+        options={{ title: t('s21Totals.title') }}
+      />
+      <Stack.Screen
         name="pioneer-year-review"
         options={{ title: t('pioneerReview.title') }}
       />
