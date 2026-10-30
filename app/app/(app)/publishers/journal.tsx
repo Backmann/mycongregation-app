@@ -498,6 +498,16 @@ function fieldWord(
     if (field === 'removalReason') {
       return t(`publishers.removal.${v}`, { defaultValue: '' });
     }
+    // A stretch of the pioneer history (30 October 2026), written by the
+    // server as «regular 1995-09–1999-08»: said as the card says it.
+    if (field === 'pioneerHistory') {
+      const m = /^(\w+) (\d{4}-\d{2})–(\d{4}-\d{2})?$/.exec(v);
+      if (!m) return '';
+      const month = (ym: string) => dayjs(`${ym}-01`).locale(language).format('MMMM YYYY');
+      return `${t(`publishers.pioneer.detail.${m[1]}`, { defaultValue: m[1] })} · ${month(m[2])} – ${
+        m[3] ? month(m[3]) : '…'
+      }`;
+    }
     // Journaled from 30 October 2026 — the form's own words.
     if (field === 'spiritualStatus') {
       const key = { other_sheep: 'otherSheep', anointed: 'anointed', unknown: 'unknown' }[v];
