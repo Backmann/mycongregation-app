@@ -1,4 +1,4 @@
-import type { S21DataResponse } from './api';
+import type { S21DataResponse, S21Remark } from './api';
 
 const MONTHS_ORDER = [8, 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7]; // Sep..Aug (0-based)
 
@@ -148,6 +148,45 @@ export function availableServiceYears(now = new Date()): number[] {
 
 const CB = (on: boolean) => (on ? '☑' : '☐');
 
+/** «18.01.2027» — the day as the paper card writes it. */
+function dmy(iso: string): string {
+  const [y, m, d] = iso.slice(0, 10).split('-');
+  return `${d}.${m}.${y}`;
+}
+
+/**
+ * What «Примечания» says of a month besides the report's own note (30
+ * October 2026): pioneering began or ended there, or the elders' decision of
+ * point 9 was made or taken back.
+ */
+function remarkText(r: S21Remark, lang: S21Lang): string {
+  const L = S21_TEXT[lang];
+  const kind =
+    r.pioneerType === 'special' ? L.special : r.pioneerType === 'missionary' ? L.missionary : L.regular;
+  const date = r.date ? dmy(r.date) : '';
+  const words: Record<S21Lang, Record<S21Remark['kind'], string>> = {
+    ru: {
+      pioneerFrom: `${kind} с этого месяца`,
+      pioneerUntil: `${kind} по этот месяц`,
+      noQuota: `Без нормы часов — решение совета от ${date}`,
+      noQuotaEnded: `Отметка «без нормы» снята ${date}; норма — со следующего служебного года`,
+    },
+    de: {
+      pioneerFrom: `${kind} ab diesem Monat`,
+      pioneerUntil: `${kind} bis zu diesem Monat`,
+      noQuota: `Ohne Stundenziel — Beschluss vom ${date}`,
+      noQuotaEnded: `Markierung «ohne Stundenziel» entfernt am ${date}; Ziel ab dem nächsten Dienstjahr`,
+    },
+    en: {
+      pioneerFrom: `${kind} from this month`,
+      pioneerUntil: `${kind} through this month`,
+      noQuota: `No hours requirement — committee decision of ${date}`,
+      noQuotaEnded: `«No requirement» taken off ${date}; requirement from the next service year`,
+    },
+  };
+  return words[lang][r.kind];
+}
+
 /** Build one S-21 card block from the server's S-21 data package. */
 function cardHtml(data: S21DataResponse, lang: S21Lang): string {
   const L = S21_TEXT[lang];
@@ -182,7 +221,13 @@ function cardHtml(data: S21DataResponse, lang: S21Lang): string {
     const hours =
       r?.hoursReported != null && isPioneerMonth ? r.hoursReported : '';
     if (typeof hours === 'number') totalHours += hours;
-    const notes = esc(r?.notes ?? '');
+    const notes = [
+      ...(data.remarks ?? []).filter((x) => x.month === ym).map((x) => remarkText(x, lang)),
+      r?.notes ?? '',
+    ]
+      .filter(Boolean)
+      .map(esc)
+      .join('<br/>');
 
     return `<tr>
       <td class="mon">${monthLabel(monthIdx, lang)}</td>
@@ -224,6 +269,18 @@ function cardHtml(data: S21DataResponse, lang: S21Lang): string {
       <span>${CB(isSpecial)} ${L.special}</span>
       <span>${CB(isMissionary)} ${L.missionary}</span>
     </div>
+    ${
+      // Years after the decision say it at the top; the year of it says it
+      // in the month it was made.
+      data.noQuota && !(data.remarks ?? []).some((x) => x.kind === 'noQuota')
+        ? `<div class="idrow"><span>${esc(
+            remarkText(
+              { month: '', kind: 'noQuota', pioneerType: 'regular', date: data.noQuota },
+              lang,
+            ),
+          )}</span></div>`
+        : ''
+    }
     <table>
       <thead>
         <tr>

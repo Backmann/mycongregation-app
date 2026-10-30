@@ -1014,6 +1014,18 @@ export interface S21DataResponse {
     pioneerType: PioneerType;
   };
   months: S21MonthRow[];
+  /** What the months' «Примечания» carry besides the reports' notes. */
+  remarks?: S21Remark[];
+  /** Point 9: the decision that frees THIS year of the norm. */
+  noQuota?: string | null;
+}
+
+export interface S21Remark {
+  /** YYYY-MM */
+  month: string;
+  kind: 'pioneerFrom' | 'pioneerUntil' | 'noQuota' | 'noQuotaEnded';
+  pioneerType: PioneerType;
+  date?: string;
 }
 
 /** Where the collection of the month's reports stands — the home card. */
@@ -3513,6 +3525,9 @@ export interface PioneerHistorySpell {
   /** YYYY-MM; null for the spell running now — it follows the card. */
   end: string | null;
   months: number;
+  /** Point 9: the day the elders decided, and the day it was taken back. */
+  noQuotaDecidedOn?: string | null;
+  noQuotaEndedOn?: string | null;
 }
 
 export interface PioneerHistory {
@@ -3522,6 +3537,15 @@ export interface PioneerHistory {
   totalMonths: number;
   /** The earliest month the app knows of. */
   knownFrom: string | null;
+  /** Points 1 and 2 of point 9, as far as the app knows. */
+  eligibility?: {
+    age: number | null;
+    ageOk: boolean;
+    servedMonths: number;
+    yearsOk: boolean;
+    knownFrom: string | null;
+    eligible: boolean;
+  };
 }
 
 export interface PastPioneerSpellInput {
@@ -3609,6 +3633,21 @@ export const publishersApi = {
       sentAsPioneer: string[];
       reportedHours: string[];
     }>(`/publishers/${id}/pioneer-end-impact`, { params: { lastMonth } });
+    return data;
+  },
+  /** Point 9: he serves without the hours requirement from this decision. */
+  async setPioneerNoQuota(id: string, decidedOn: string): Promise<PioneerHistory> {
+    const { data } = await api.put<PioneerHistory>(
+      `/publishers/${id}/pioneer-no-quota`,
+      { decidedOn },
+    );
+    return data;
+  },
+  /** The decision taken back: this year stays free, then the norm returns. */
+  async endPioneerNoQuota(id: string): Promise<PioneerHistory> {
+    const { data } = await api.delete<PioneerHistory>(
+      `/publishers/${id}/pioneer-no-quota`,
+    );
     return data;
   },
   /** A past spell, copied in from the paper S-21 (the secretary). */
@@ -5146,7 +5185,18 @@ export interface ReportFormVariant {
  */
 export interface PioneerYearCard {
   serviceYear: number;
-  goal: number;
+  /**
+   * 50 for each month of the year he is a regular pioneer (600 for a whole
+   * year). Null when he serves without the norm (point 9) or his pioneering
+   * ended within the year — then only his hours are shown.
+   */
+  goal: number | null;
+  /** Point 9: the elders' decision, when this year is free of the norm. */
+  noQuota?: string | null;
+  /** YYYY-MM: his last month, when pioneering ended within the year. */
+  endedIn?: string | null;
+  /** YYYY-MM: his first month, when pioneering began within the year. */
+  startedIn?: string | null;
   pace: number;
   hours: number;
   countedMonths: number;
@@ -5181,6 +5231,10 @@ export interface PioneerMonthLine {
 }
 
 export interface PioneerYearRow {
+  /** Point 9: the decision that frees this year of the norm — no measure. */
+  noQuota?: string | null;
+  /** Below the measure, 50+ and 15 years of pioneering: a hint for elders. */
+  noQuotaHint?: { age: number; servedMonths: number } | null;
   publisherId: string;
   displayName: string;
   pioneerSince: string | null;

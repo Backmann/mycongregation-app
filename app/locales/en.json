@@ -788,7 +788,18 @@
       "hoursIn": "this year · {{n}} mo.",
       "paceGoal": "goal pace {{n}}",
       "paceMinimum": "minimum pace {{n}}",
-      "eldersLine": "{{min}} h short of the minimum’s pace, {{goal}} h short of the goal’s."
+      "eldersLine": "{{min}} h short of the minimum’s pace, {{goal}} h short of the goal’s.",
+      "noQuotaBadge": "no hours requirement",
+      "endedBadge": "pioneer until {{month}}",
+      "noQuotaLine": "You serve as a regular pioneer without an hours requirement — as your strength allows.",
+      "noQuotaElders": "No measure: no hours requirement, committee decision of {{date}}",
+      "endedLine": "Regular pioneer until {{month}}. After that the report is a publisher’s.",
+      "startedLine": "The year’s goal is {{pace}} h for each month of service from {{month}}: {{n}} h in all.",
+      "hoursAsPioneer": "hours as pioneer",
+      "monthsServed_one": "month of service",
+      "monthsServed_other": "months of service",
+      "monthsIn_one": "month reported",
+      "monthsIn_other": "months reported"
     },
     "allIn": {
       "title": "All reports are submitted",
@@ -4053,7 +4064,8 @@
       "openedSeat": "Place opened",
       "pioneerMonthGoal": "Monthly hours goal",
       "spiritualStatus": "Spiritual status",
-      "pioneerHistory": "Pioneer service history"
+      "pioneerHistory": "Pioneer service history",
+      "pioneerNoQuota": "No hours requirement"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -4542,7 +4554,15 @@
     "toMinimumOwn": "For {{months}} months of service the minimum is {{expected}} h: {{count}} h short",
     "meetsOwn": "For {{months}} months of service the minimum of {{expected}} h is met",
     "yearLeftOwn": "{{count}} h left to his requirement for the year ({{total}} h) — {{perMonth}} a month",
-    "noHoursYet": "Reports are in, with no hours yet"
+    "noHoursYet": "Reports are in, with no hours yet",
+    "noQuotaTag": "no hours requirement",
+    "noQuotaSince": "committee decision of {{date}}",
+    "noQuotaHeading": "No hours requirement — no measure",
+    "noQuotaHint": "Meets the age and years for service without the requirement (point 9)",
+    "noQuotaHintBody": "{{age}} · {{span}} pioneering. Health and the wish to go on are for the elders.",
+    "age_one": "{{count}} year old",
+    "age_other": "{{count}} years old",
+    "pendingCount": "Short on what is in, reports still missing: {{count}} of {{total}}"
   },
   "memorial": {
     "title": "Memorial",
@@ -5545,7 +5565,9 @@
       "PRINT_DOC_EMPTY": "The sheet to print is empty — there is nothing to print.",
       "PRINT_DOC_TOO_LARGE": "The sheet is too large to hand over to Safari. Open the site in Safari and print from there.",
       "PIONEER_END_BEFORE_START": "The last month of service cannot be before it began ({{start}}).",
-      "PIONEER_END_FUTURE": "The last month of service is this month at the latest."
+      "PIONEER_END_FUTURE": "The last month of service is this month at the latest.",
+      "PIONEER_NO_QUOTA_NOT_REGULAR": "Only a regular pioneer serving now can serve without the hours requirement.",
+      "PIONEER_NO_QUOTA_DATE": "The decision is a day of his present pioneering, today at the latest."
     }
   },
   "stage": {
@@ -6282,5 +6304,27 @@
     "formRow": "Last month of service: {{month}}",
     "change": "Change",
     "link": "Service ended…"
+  },
+  "noQuota": {
+    "title": "Service without an hours requirement",
+    "lead": "For exemplary pioneers whose health keeps them from the requirement. The elders decide, after speaking with the circuit overseer (point 9).",
+    "age": "Over 50",
+    "ageUnknown": "No birth date on the card",
+    "ageIs": "{{age}} — by the birth date on the card",
+    "years": "Pioneering 15 years or more",
+    "yearsIs": "{{span}} by the service history. First known month: {{month}}; years on paper cards may add to it.",
+    "wish": "Wholeheartedly wishes to continue",
+    "wishSub": "The elders decide",
+    "decidedOn": "Committee decision of",
+    "note": "The whole service year of the decision is free of the requirement, and every year after until the mark is taken off. The branch is not told. The S-21 notes it under remarks.",
+    "mark": "Mark",
+    "tag": "no hours requirement",
+    "from": "since {{from}}",
+    "fromTo": "since {{from}} · taken off {{to}}",
+    "link": "No hours requirement…",
+    "endLink": "Take off «no requirement»",
+    "endTitle": "Take off «no requirement»?",
+    "endBody": "This service year stays free; the requirement returns with the next one.",
+    "endConfirm": "Take off"
   }
 }

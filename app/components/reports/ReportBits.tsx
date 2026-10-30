@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { PioneerYearCard } from '../../lib/api';
+import { formatDay } from '../../lib/date-range';
 
 /**
  * The pieces the Reports screens share (28 October 2026) — in the language of
@@ -84,22 +85,62 @@ export function Tile({ value, label }: { value: string; label: string }) {
  */
 export function PioneerYear({ year, title }: { year: PioneerYearCard; title?: string }) {
   const { t, i18n } = useTranslation();
-  const left = Math.max(0, Math.round((year.goal - year.hours) * 10) / 10);
+  const lang = i18n.language;
   const letter = (m: string) =>
     new Date(`${m.slice(0, 7)}-01T12:00:00`)
-      .toLocaleDateString(i18n.language, { month: 'narrow' })
+      .toLocaleDateString(lang, { month: 'narrow' })
       .toUpperCase();
-  const e = year.elders;
+  const monthLong = (ym: string) =>
+    new Date(`${ym}-15T12:00:00Z`).toLocaleDateString(lang, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  // Point 9 (30 October 2026): a year without the norm is measured against
+  // nothing — hours by month, no goal, no «осталось». A pioneering that ended
+  // within the year shows the months he served and no goal either.
+  const free = !!year.noQuota;
+  const ended = !!year.endedIn;
+  const goal = year.goal;
+  const e = free ? undefined : year.elders;
+  const pioneerMonths = year.months.filter((m) => m.state !== 'notPioneer');
+  const reported = pioneerMonths.filter((m) => m.state === 'reported' || m.state === 'zero').length;
+  const left = goal !== null ? Math.max(0, Math.round((goal - year.hours) * 10) / 10) : 0;
+  const badge = free
+    ? t('reports.year.noQuotaBadge')
+    : ended
+      ? t('reports.year.endedBadge', { month: monthLong(year.endedIn!) })
+      : null;
+  const quiet = free
+    ? e === undefined && year.elders
+      ? t('reports.year.noQuotaElders', { date: formatDay(year.noQuota!, lang, { year: 'always' }) })
+      : t('reports.year.noQuotaLine')
+    : ended
+      ? t('reports.year.endedLine', { month: monthLong(year.endedIn!) })
+      : e && e.toMinimum !== null && e.toGoal !== null
+        ? t('reports.year.eldersLine', { min: e.toMinimum, goal: e.toGoal })
+        : goal !== null && year.startedIn
+          ? t('reports.year.startedLine', { month: monthLong(year.startedIn), n: goal, pace: year.pace })
+          : t('reports.year.paceLine', { n: year.pace });
   return (
     <View>
-      <Text style={styles.kicker}>
-        {title ??
-          t('reports.year.title', { from: year.serviceYear - 1, to: year.serviceYear })}
-      </Text>
+      <View style={styles.kickRow}>
+        <Text style={styles.kicker}>
+          {title ??
+            t('reports.year.title', { from: year.serviceYear - 1, to: year.serviceYear })}
+        </Text>
+        {badge ? (
+          <View style={[styles.badge, ended && !free && styles.badgeEnded]}>
+            <Text style={[styles.badgeText, ended && !free && styles.badgeTextEnded]}>{badge}</Text>
+          </View>
+        ) : null}
+      </View>
       <View style={styles.segs}>
         {year.months.map((m) => {
           const share =
-            m.state === 'notPioneer' ? 0 : Math.min(1, (m.hours ?? 0) / year.pace);
+            m.state === 'notPioneer'
+              ? 0
+              : free
+                ? m.state === 'reported'
+                  ? 1
+                  : 0
+                : Math.min(1, (m.hours ?? 0) / year.pace);
           return (
             <View
               key={m.reportMonth}
@@ -108,7 +149,7 @@ export function PioneerYear({ year, title }: { year: PioneerYearCard; title?: st
                 m.hours !== null ? `${letter(m.reportMonth)} ${m.hours}` : undefined
               }
             >
-              <View style={[styles.segFill, { width: `${share * 100}%` }]} />
+              <View style={[styles.segFill, free && styles.segFillFree, { width: `${share * 100}%` }]} />
             </View>
           );
         })}
@@ -120,30 +161,50 @@ export function PioneerYear({ year, title }: { year: PioneerYearCard; title?: st
           </Text>
         ))}
       </View>
-      {e ? (
+      {free ? (
+        <View style={[styles.segs, { marginTop: 1 }]}>
+          {year.months.map((m) => (
+            <Text key={m.reportMonth} style={styles.segHours}>
+              {m.state === 'reported' && m.hours !== null ? String(m.hours) : ''}
+            </Text>
+          ))}
+        </View>
+      ) : null}
+      {e && !ended ? (
         <View style={styles.tiles}>
           <Tile value={t('reports.year.h', { n: year.hours })} label={t('reports.year.hoursIn', { n: year.countedMonths })} />
           <Tile
             value={e.expectedGoal !== null ? t('reports.year.h', { n: e.expectedGoal }) : '—'}
-            label={t('reports.year.paceGoal', { n: year.goal })}
+            label={t('reports.year.paceGoal', { n: goal ?? 600 })}
           />
           <Tile
             value={e.expectedMinimum !== null ? t('reports.year.h', { n: e.expectedMinimum }) : '—'}
             label={t('reports.year.paceMinimum', { n: e.yearMinimum })}
           />
         </View>
+      ) : goal === null ? (
+        <View style={styles.tiles}>
+          <Tile
+            value={String(year.hours)}
+            label={ended ? t('reports.year.hoursAsPioneer') : t('reports.year.hoursYear')}
+          />
+          <Tile
+            value={String(ended ? pioneerMonths.length : reported)}
+            label={
+              ended
+                ? t('reports.year.monthsServed', { count: pioneerMonths.length })
+                : t('reports.year.monthsIn', { count: reported })
+            }
+          />
+        </View>
       ) : (
         <View style={styles.tiles}>
           <Tile value={String(year.hours)} label={t('reports.year.hoursYear')} />
-          <Tile value={String(year.goal)} label={t('reports.year.goal')} />
+          <Tile value={String(goal)} label={t('reports.year.goal')} />
           <Tile value={String(left)} label={t('reports.year.left')} />
         </View>
       )}
-      <Text style={styles.quiet}>
-        {e && e.toMinimum !== null && e.toGoal !== null
-          ? t('reports.year.eldersLine', { min: e.toMinimum, goal: e.toGoal })
-          : t('reports.year.paceLine', { n: year.pace })}
-      </Text>
+      <Text style={styles.quiet}>{quiet}</Text>
     </View>
   );
 }
@@ -199,6 +260,19 @@ const styles = StyleSheet.create({
   seg: { flex: 1, height: 10, borderRadius: 4, backgroundColor: LINE, overflow: 'hidden' },
   segOff: { backgroundColor: '#f8fafc' },
   segFill: { height: '100%', backgroundColor: BRAND },
+  segFillFree: { backgroundColor: '#67b7c9' },
+  segHours: {
+    flex: 1,
+    textAlign: 'center',
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 10,
+    color: '#334155',
+  },
+  kickRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  badge: { backgroundColor: '#ecfeff', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 9 },
+  badgeEnded: { backgroundColor: '#f1f5f9' },
+  badgeText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11.5, color: BRAND },
+  badgeTextEnded: { color: '#475569' },
   segLetter: {
     flex: 1,
     textAlign: 'center',
