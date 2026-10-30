@@ -231,6 +231,9 @@ export function taskVisual(
     case 'guest_lunch':
       // The guest speaker's lunch bag: the same hue as the visit's lunches.
       return { color: '#7c3aed', bg: '#f5f3ff', icon: 'bag-handle-outline' };
+    case 'pioneer_meeting':
+      // The pioneers' own colour — the cyan of their hours and their year.
+      return { color: '#0e7490', bg: '#ecfeff', icon: 'people-circle-outline' };
     default:
       return {
         color: meeting.color,
@@ -369,6 +372,12 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     }
     return parts.join(' · ');
   }
+  // The annual meeting with the pioneers: his part in it is the title.
+  if (item.kind === 'pioneer_meeting') {
+    return item.label === 'conduct'
+      ? t('home.pioneerMeeting.conduct')
+      : t('home.pioneerMeeting.invited');
+  }
   // Whom it is for, in the title: Home often shows only the title, inside
   // the meeting of that day (26 October 2026).
   if (item.kind === 'guest_lunch') {
@@ -422,6 +431,12 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
       r.item.eventType === 'memorial')
   ) {
     bits.push(t(`home.eventTypes.${r.item.eventType}`));
+  } else if (r.item.kind === 'pioneer_meeting') {
+    // Where, and — for the invited — who conducts it.
+    if (r.item.location) bits.push(r.item.location);
+    if (r.item.label !== 'conduct' && r.item.partnerName) {
+      bits.push(t('home.pioneerMeeting.by', { name: r.item.partnerName }));
+    }
   } else if (r.item.kind === 'guest_lunch') {
     // Where he comes from, and where to bring it.
     if (r.item.congregationName) {

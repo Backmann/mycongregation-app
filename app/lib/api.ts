@@ -4032,7 +4032,12 @@ export type MyAssignmentKind =
   | "talk_exchange_attention"
   | "co_lunch"
   /** The lunch bag one brings for the guest speaker (26 October 2026). */
-  | "guest_lunch";
+  | "guest_lunch"
+  /**
+   * The annual meeting of the elders with the pioneers (30 October 2026):
+   * `label` «invited» or «conduct»; `partnerName` — who conducts it.
+   */
+  | "pioneer_meeting";
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
@@ -6815,6 +6820,7 @@ export interface ElderTask {
     | "service_overseer_visits"
     | "annual_report_sent"
     | "field_service_month"
+    | "pioneer_meeting"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
@@ -7021,5 +7027,63 @@ export const printDocsApi = {
       headers: { "Content-Type": "text/html" },
     });
     return `${String(api.defaults.baseURL ?? "").replace(/\/$/, "")}/print-docs/${data.token}`;
+  },
+};
+
+// ---- The annual meeting of the elders with the pioneers (S-211) ----------
+
+export interface PioneerMeetingView {
+  id: string;
+  date: string;
+  timeStart: string | null;
+  timeEnd: string | null;
+  place: string | null;
+  note: string | null;
+  serviceYear: number;
+  conductor: { id: string; name: string };
+  invitedCount: number;
+}
+
+export type PioneerMeetingWarning =
+  | { kind: "outsideSeason" }
+  | { kind: "event"; eventType: string; title: string }
+  | { kind: "conductorAway" };
+
+export interface PioneerMeetingDetail extends PioneerMeetingView {
+  invited: { id: string; name: string; kind: string; away: boolean }[];
+  warnings: PioneerMeetingWarning[];
+  canManage: boolean;
+}
+
+export interface PioneerMeetingInput {
+  date: string;
+  timeStart?: string | null;
+  timeEnd?: string | null;
+  place?: string | null;
+  conductorPublisherId: string;
+  note?: string | null;
+}
+
+export const pioneerMeetingsApi = {
+  async list(): Promise<{ canManage: boolean; meetings: PioneerMeetingView[] }> {
+    const { data } = await api.get<{ canManage: boolean; meetings: PioneerMeetingView[] }>(
+      "/pioneer-meetings",
+    );
+    return data;
+  },
+  async get(id: string): Promise<PioneerMeetingDetail> {
+    const { data } = await api.get<PioneerMeetingDetail>(`/pioneer-meetings/${id}`);
+    return data;
+  },
+  async create(input: PioneerMeetingInput): Promise<PioneerMeetingDetail> {
+    const { data } = await api.post<PioneerMeetingDetail>("/pioneer-meetings", input);
+    return data;
+  },
+  async update(id: string, input: PioneerMeetingInput): Promise<PioneerMeetingDetail> {
+    const { data } = await api.patch<PioneerMeetingDetail>(`/pioneer-meetings/${id}`, input);
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/pioneer-meetings/${id}`);
   },
 };

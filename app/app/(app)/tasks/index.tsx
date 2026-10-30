@@ -343,6 +343,18 @@ export default function TasksScreen() {
           </Pressable>
         ) : null}
 
+        {/* «Who conducts the meeting with the pioneers»: set it there. */}
+        {task.kind === "pioneer_meeting" ? (
+          <Pressable
+            onPress={() =>
+              router.push("/service-reports/pioneer-meetings?new=1" as never)
+            }
+            hitSlop={6}
+          >
+            <Text style={styles.openScreen}>{t("pioneerMeeting.fromTask")}</Text>
+          </Pressable>
+        ) : null}
+
         {/* The draft month waits on its own page: check it, publish it. */}
         {task.kind === "field_service_month" ? (
           <Pressable

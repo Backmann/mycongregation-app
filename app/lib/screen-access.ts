@@ -204,6 +204,10 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/service-reports/audit-log': 'self',
   '/service-reports/publisher-history': 'self',
   '/service-reports/pioneer-year-review': 'elders',
+  // The annual meeting with the pioneers: the elders' list; one meeting —
+  // the server decides (the elders, and the elder who conducts it).
+  '/service-reports/pioneer-meetings': 'elders',
+  '/service-reports/pioneer-meeting': 'self',
 
   // ── Профиль ──────────────────────────────────────────────────────────
   '/profile': 'all',

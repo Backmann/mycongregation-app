@@ -54,6 +54,14 @@ export default function ServiceReportsLayout() {
         name="pioneer-year-review"
         options={{ title: t('pioneerReview.title') }}
       />
+      <Stack.Screen
+        name="pioneer-meetings"
+        options={{ title: t('pioneerMeeting.short') }}
+      />
+      <Stack.Screen
+        name="pioneer-meeting"
+        options={{ title: t('pioneerMeeting.short') }}
+      />
 </Stack>
   );
 }
