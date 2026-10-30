@@ -1063,7 +1063,18 @@ export interface ServiceReportSummary {
 export interface S21TotalsMonth {
   /** YYYY-MM. */
   month: string;
-  state: "sent" | "frozen" | "collecting" | "open" | "none" | "future";
+  /**
+   * closed — closed but never kept (sheets began 1 October 2026): figures are
+   * the reports as they are now.
+   */
+  state:
+    | "sent"
+    | "frozen"
+    | "collecting"
+    | "closed"
+    | "open"
+    | "none"
+    | "future";
   /** Card 1: regular, special pioneers and missionaries in the field. */
   pioneers: {
     count: number;

@@ -45,6 +45,7 @@ function page(
         r.state === 'collecting' ? t('s21Totals.print.collecting') : '',
         r.state === 'open' ? t('s21Totals.print.open') : '',
         r.state === 'frozen' ? t('s21Totals.print.frozen') : '',
+        r.state === 'closed' ? t('s21Totals.print.closed') : '',
       ]
         .filter(Boolean)
         .join(' · ');

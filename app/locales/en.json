@@ -6177,7 +6177,8 @@
       "collecting": "reports still coming in",
       "open": "not sent",
       "frozen": "frozen by the app",
-      "foot": "S-21 · each month as it went to the branch; a late report in the month whose report it went into."
+      "foot": "S-21 · each month as it went to the branch; a late report in the month whose report it went into.",
+      "closed": "closed; figures from the reports (what was sent was not kept then)"
     },
     "intro": "Each month’s totals on three cards — as the month went to the branch. A late report stands in the month whose report it went into; on the person’s own S-21 it stays in its own month.",
     "cards": {
@@ -6208,7 +6209,8 @@
       "sent": "sent",
       "frozen": "frozen by the app",
       "collecting": "reports coming in",
-      "open": "not sent"
+      "open": "not sent",
+      "closed": "closed · figures from the reports"
     },
     "lateHint": "By the instruction a late report goes into the next month’s report — so here it stands in the month it was sent in. Special pioneers and missionaries are not in the congregation’s report, but card 1 counts them.",
     "totalHours": "Hours in the year"

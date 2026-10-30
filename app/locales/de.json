@@ -6177,7 +6177,8 @@
       "collecting": "Berichte kommen noch herein",
       "open": "nicht gesendet",
       "frozen": "von der App festgehalten",
-      "foot": "S-21 · Monat wie an das Zweigbüro gesendet; verspäteter Bericht im Monat, in dessen Bericht er einging."
+      "foot": "S-21 · Monat wie an das Zweigbüro gesendet; verspäteter Bericht im Monat, in dessen Bericht er einging.",
+      "closed": "abgeschlossen; Zahlen nach den Berichten (das Gesendete wurde damals nicht festgehalten)"
     },
     "intro": "Die Summe jedes Monats auf drei Karten – so, wie der Monat an das Zweigbüro ging. Ein verspäteter Bericht steht in dem Monat, in dessen Bericht er einging; auf der persönlichen Karte S-21 bleibt er in seinem eigenen Monat.",
     "cards": {
@@ -6208,7 +6209,8 @@
       "sent": "gesendet",
       "frozen": "von der App festgehalten",
       "collecting": "Berichte kommen herein",
-      "open": "nicht gesendet"
+      "open": "nicht gesendet",
+      "closed": "abgeschlossen · Zahlen nach Berichten"
     },
     "lateHint": "Laut Anweisung geht ein verspäteter Bericht in den Bericht des nächsten Monats ein – deshalb steht er hier im Monat des Sendens. Sonderpioniere und Missionare sind nicht im Bericht der Versammlung, auf Karte 1 aber mitgezählt.",
     "totalHours": "Stunden im Jahr"

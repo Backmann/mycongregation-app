@@ -148,6 +148,7 @@ export default function S21TotalsScreen() {
             <LegendItem dot="#0e7490" text={t('s21Totals.legend.sent')} />
             <LegendItem dot="#94a3b8" text={t('s21Totals.legend.frozen')} />
             <LegendItem dot="#f59e0b" text={t('s21Totals.legend.collecting')} />
+            <LegendItem dot="#475569" text={t('s21Totals.legend.closed')} />
             <LegendItem dot="#e11d48" text={t('s21Totals.legend.open')} />
           </View>
           <Text style={styles.foot}>{t('s21Totals.lateHint')}</Text>
@@ -170,6 +171,7 @@ const STATE_DOT: Record<string, string> = {
   sent: '#0e7490',
   frozen: '#94a3b8',
   collecting: '#f59e0b',
+  closed: '#475569',
   open: '#e11d48',
 };
 
