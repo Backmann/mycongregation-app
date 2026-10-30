@@ -2835,6 +2835,11 @@
       "titleFor": "Lunch bag for Brother {{name}}",
       "from": "{{cong}} congregation",
       "where": "to the Kingdom Hall by the start"
+    },
+    "pioneerMeeting": {
+      "conduct": "You conduct the meeting with the pioneers",
+      "invited": "Annual meeting of the elders with the pioneers",
+      "by": "conducted by {{name}}"
     }
   },
   "halls": {
@@ -3836,7 +3841,8 @@
       "meeting_settings": "Meeting time & place",
       "annual_report": "Annual report (S-10)",
       "monthly_report": "Monthly summary (S-1)",
-      "aux_application": "Auxiliary pioneer applications"
+      "aux_application": "Auxiliary pioneer applications",
+      "pioneer_meeting": "Meeting with the pioneers"
     },
     "actions": {
       "CREATE": "added",
@@ -4330,7 +4336,8 @@
       },
       "service_overseer_visits": "Plan the visits to the groups",
       "annual_report_sent": "Save the annual report as sent",
-      "field_service_month": "Check the field service meetings"
+      "field_service_month": "Check the field service meetings",
+      "pioneer_meeting": "Annual meeting with the pioneers — who conducts it"
     },
     "mine": {
       "title": "My tasks",
@@ -4972,7 +4979,8 @@
     "sub": {
       "summary": "The month's totals for the congregation",
       "attendance": "How many attended the meetings",
-      "s21Totals": "Three totals cards for the service year"
+      "s21Totals": "Three totals cards for the service year",
+      "pioneerMeeting": "Conductor, date, who is invited"
     },
     "live": {
       "reportDue": "{{month}}: report not submitted",
@@ -5567,7 +5575,10 @@
       "PIONEER_END_BEFORE_START": "The last month of service cannot be before it began ({{start}}).",
       "PIONEER_END_FUTURE": "The last month of service is this month at the latest.",
       "PIONEER_NO_QUOTA_NOT_REGULAR": "Only a regular pioneer serving now can serve without the hours requirement.",
-      "PIONEER_NO_QUOTA_DATE": "The decision is a day of his present pioneering, today at the latest."
+      "PIONEER_NO_QUOTA_DATE": "The decision is a day of his present pioneering, today at the latest.",
+      "PIONEER_MEETING_NOT_FOUND": "There is no such meeting — refresh the screen.",
+      "PIONEER_MEETING_INVALID": "A date is needed, and a time as HH:MM that ends after it starts.",
+      "PIONEER_MEETING_NOT_ELDER": "The meeting with the pioneers is conducted by an elder."
     }
   },
   "stage": {
@@ -6326,5 +6337,45 @@
     "endTitle": "Take off «no requirement»?",
     "endBody": "This service year stays free; the requirement returns with the next one.",
     "endConfirm": "Take off"
+  },
+  "pioneerMeeting": {
+    "title": "Annual meeting of the elders with the pioneers",
+    "short": "Meeting with the pioneers",
+    "about": "Once a year, in December or January, an elder chosen by the body meets the regular and special pioneers and the missionaries serving in the field — on the outline S-211.",
+    "noneComing": "No meeting set yet.",
+    "setNew": "Set the meeting",
+    "past": "Earlier meetings",
+    "conductedBy": "Conducted by {{name}}",
+    "invitedCount_one": "{{count}} invited",
+    "invitedCount_other": "{{count}} invited",
+    "awayCount_one": "{{count}} away",
+    "awayCount_other": "{{count}} away",
+    "away": "away",
+    "nobody": "No pioneers on that day.",
+    "whoHint": "Invited are the regular and special pioneers and missionaries serving on the day of the meeting. The list keeps itself: a pioneer appointed later is invited too.",
+    "outline": "On the outline S-211.",
+    "newTitle": "Set the meeting",
+    "editTitle": "Change the meeting",
+    "lead": "The invited and the conducting elder are notified, and reminded the evening before. The conductor is also reminded a week ahead.",
+    "date": "Date",
+    "from": "From",
+    "to": "To",
+    "place": "Place",
+    "placeHint": "For example, Kingdom Hall",
+    "conductor": "Conducted by (elder)",
+    "note": "Note",
+    "set": "Set and notify",
+    "save": "Save",
+    "edit": "Change",
+    "cancel": "Cancel the meeting",
+    "cancelTitle": "Cancel the meeting?",
+    "cancelBody": "The invited and the conductor are told it is canceled.",
+    "cancelConfirm": "Cancel the meeting",
+    "fromTask": "Set the meeting ›",
+    "warn": {
+      "outsideSeason": "The instructions place the meeting in December or January.",
+      "conductorAway": "The conductor is away that day.",
+      "event": "That day: {{title}}."
+    }
   }
 }

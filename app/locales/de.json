@@ -2835,6 +2835,11 @@
       "titleFor": "Lunchpaket für Bruder {{name}}",
       "from": "Versammlung {{cong}}",
       "where": "in den Königreichssaal zum Beginn"
+    },
+    "pioneerMeeting": {
+      "conduct": "Sie leiten das Treffen mit den Pionieren",
+      "invited": "Jährliches Treffen der Ältesten mit den Pionieren",
+      "by": "Leitung: {{name}}"
     }
   },
   "halls": {
@@ -3836,7 +3841,8 @@
       "meeting_settings": "Zeit & Ort der Zusammenkünfte",
       "annual_report": "Jahresbericht (S-10)",
       "monthly_report": "Monatsübersicht (S-1)",
-      "aux_application": "Bewerbungen als Hilfspionier"
+      "aux_application": "Bewerbungen als Hilfspionier",
+      "pioneer_meeting": "Treffen mit den Pionieren"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -4330,7 +4336,8 @@
       },
       "service_overseer_visits": "Besuche der Gruppen planen",
       "annual_report_sent": "Gesendeten Jahresbericht speichern",
-      "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen"
+      "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen",
+      "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -4972,7 +4979,8 @@
     "sub": {
       "summary": "Monatsergebnis der Versammlung",
       "attendance": "Wie viele die Zusammenkünfte besuchten",
-      "s21Totals": "Drei Sammelkarten für das Dienstjahr"
+      "s21Totals": "Drei Sammelkarten für das Dienstjahr",
+      "pioneerMeeting": "Wer leitet, wann, wer eingeladen ist"
     },
     "live": {
       "reportDue": "{{month}}: Bericht nicht abgegeben",
@@ -5567,7 +5575,10 @@
       "PIONEER_END_BEFORE_START": "Der letzte Monat des Dienstes kann nicht vor seinem Beginn liegen ({{start}}).",
       "PIONEER_END_FUTURE": "Der letzte Monat des Dienstes ist spätestens dieser Monat.",
       "PIONEER_NO_QUOTA_NOT_REGULAR": "Ohne Stundenziel kann nur ein allgemeiner Pionier dienen, der jetzt dient.",
-      "PIONEER_NO_QUOTA_DATE": "Das Datum des Beschlusses liegt in seinem jetzigen Pionierdienst und spätestens heute."
+      "PIONEER_NO_QUOTA_DATE": "Das Datum des Beschlusses liegt in seinem jetzigen Pionierdienst und spätestens heute.",
+      "PIONEER_MEETING_NOT_FOUND": "Dieses Treffen gibt es nicht — bitte neu laden.",
+      "PIONEER_MEETING_INVALID": "Ein Datum ist nötig, die Zeit als HH:MM, und das Ende nach dem Beginn.",
+      "PIONEER_MEETING_NOT_ELDER": "Das Treffen mit den Pionieren leitet ein Ältester."
     }
   },
   "stage": {
@@ -6326,5 +6337,45 @@
     "endTitle": "Markierung entfernen?",
     "endBody": "Dieses Dienstjahr bleibt ohne Stundenziel; ab dem nächsten gilt es wieder.",
     "endConfirm": "Entfernen"
+  },
+  "pioneerMeeting": {
+    "title": "Jährliches Treffen der Ältesten mit den Pionieren",
+    "short": "Treffen mit den Pionieren",
+    "about": "Einmal im Jahr, im Dezember oder Januar, trifft sich ein von der Ältestenschaft bestimmter Ältester mit den allgemeinen Pionieren, Sonderpionieren und Missionaren im Feld — nach der Gliederung S-211.",
+    "noneComing": "Noch kein Treffen festgelegt.",
+    "setNew": "Treffen festlegen",
+    "past": "Frühere Treffen",
+    "conductedBy": "Leitung: {{name}}",
+    "invitedCount_one": "{{count}} eingeladen",
+    "invitedCount_other": "{{count}} eingeladen",
+    "awayCount_one": "{{count}} abwesend",
+    "awayCount_other": "{{count}} abwesend",
+    "away": "abwesend",
+    "nobody": "An diesem Tag gibt es keine Pioniere.",
+    "whoHint": "Eingeladen sind die allgemeinen Pioniere, Sonderpioniere und Missionare, die am Tag des Treffens dienen. Die Liste ergänzt sich selbst: ein später ernannter Pionier wird auch eingeladen.",
+    "outline": "Nach der Gliederung S-211.",
+    "newTitle": "Treffen festlegen",
+    "editTitle": "Treffen ändern",
+    "lead": "Die Eingeladenen und der leitende Älteste werden benachrichtigt und am Vorabend erinnert. Den Leitenden erinnern wir auch eine Woche vorher.",
+    "date": "Datum",
+    "from": "Beginn",
+    "to": "Ende",
+    "place": "Ort",
+    "placeHint": "Zum Beispiel Königreichssaal",
+    "conductor": "Leitung (Ältester)",
+    "note": "Notiz",
+    "set": "Festlegen und benachrichtigen",
+    "save": "Speichern",
+    "edit": "Ändern",
+    "cancel": "Treffen absagen",
+    "cancelTitle": "Treffen absagen?",
+    "cancelBody": "Die Eingeladenen und der Leitende erfahren, dass es ausfällt.",
+    "cancelConfirm": "Treffen absagen",
+    "fromTask": "Treffen festlegen ›",
+    "warn": {
+      "outsideSeason": "Laut den Anweisungen findet das Treffen im Dezember oder Januar statt.",
+      "conductorAway": "Der Leitende ist an diesem Tag abwesend.",
+      "event": "An diesem Tag: {{title}}."
+    }
   }
 }

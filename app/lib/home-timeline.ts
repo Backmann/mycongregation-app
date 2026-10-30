@@ -470,6 +470,8 @@ const OWN_ROW_TASK_KINDS = new Set<MyAssignmentItem['kind']>([
   'outgoing_talk',
   'co_lunch',
   'guest_lunch',
+  // The annual meeting with the pioneers — invited, or conducting it.
+  'pioneer_meeting',
   // A field-service meeting speaks inside its own background row — but that
   // row exists only for the three weeks the home screen loads. Beyond them a
   // meeting the person is recorded in fell between two rules: no background

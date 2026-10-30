@@ -224,6 +224,13 @@ export default function ServiceHubScreen() {
       href: '/service-reports/attendance',
     },
   ];
+  // The annual meeting of the elders with the pioneers (S-211).
+  const pioneerMeeting: Door = {
+    key: 'pioneerMeeting',
+    title: t('pioneerMeeting.title'),
+    subtitle: t('serviceHub.sub.pioneerMeeting'),
+    href: '/service-reports/pioneer-meetings',
+  };
   const coSchedule: Door[] = [
     {
       key: 'coSchedule',
@@ -297,7 +304,7 @@ export default function ServiceHubScreen() {
           { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart] },
           { key: 'reports', label: t('serviceHub.sections.reports'), doors: [reports, ...summary, ...attendance] },
           { key: 'visits', label: t('serviceHub.sections.visits'), doors: [serviceOverseer, ...coSchedule] },
-          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...myHours, ...auxPioneers, ...myAux] },
+          { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...myHours, ...auxPioneers, ...myAux, pioneerMeeting] },
         ]
       : [
           {

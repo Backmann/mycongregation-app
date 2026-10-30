@@ -266,6 +266,12 @@ export function routeForNotification(
     // committee's door to the list stands (a door that asks the screen).
     case 'aux_stopped':
       return { path: '/cart', params: {} };
+    // The annual meeting with the pioneers: the conducting elder opens it,
+    // with who is invited; a pioneer finds it on Home.
+    case 'pioneer_meeting':
+      return data.role === 'c' && data.meetingId
+        ? { path: '/service-reports/pioneer-meeting', params: { id: data.meetingId } }
+        : { path: '/home', params: {} };
     // A month became auxiliary after his report came without hours.
     case 'aux_report_hours':
       return data.reportId
