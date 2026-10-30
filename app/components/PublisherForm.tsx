@@ -28,6 +28,8 @@ import i18n from '../lib/i18n';
 import { formatDay } from '../lib/date-range';
 import { Ionicons } from '@expo/vector-icons';
 import { confirm } from './ConfirmHost';
+import { PioneerEndSheet } from './publisher-card/PioneerEndSheet';
+import { monthName } from '../lib/aux-application';
 
 interface Props {
   initial?: Partial<CreatePublisherInput>;
@@ -40,6 +42,8 @@ interface Props {
    * months (23 October 2026). Only offered when editing a current pioneer.
    */
   onCorrectPioneerKind?: (kind: PioneerType) => Promise<unknown>;
+  /** The card being edited — for what ending a pioneer's service would meet. */
+  publisherId?: string;
 }
 
 const PERMANENT_KINDS: PioneerType[] = ['regular', 'special', 'missionary'];
@@ -56,6 +60,7 @@ export function PublisherForm({
   initial,
   onSubmit,
   onCorrectPioneerKind,
+  publisherId,
   onCancel,
   isSubmitting,
   submitLabel,
@@ -123,6 +128,13 @@ export function PublisherForm({
   const [error, setError] = useState<string | null>(null);
   const [correctOpen, setCorrectOpen] = useState(false);
   const [correcting, setCorrecting] = useState(false);
+  /**
+   * Ending a pioneer's service is one step with one question — his last
+   * month (30 October 2026). Picking «Нет» on a pioneer's card asks it; the
+   * answer goes with the save.
+   */
+  const [endSheet, setEndSheet] = useState(false);
+  const [endMonth, setEndMonth] = useState<string | null>(null);
   /**
    * A change of kind is a new appointment from a month on (23 October 2026):
    * the old date stayed in the field, the server took it as the new start,
@@ -197,7 +209,11 @@ export function PublisherForm({
       return;
     }
     try {
-      await onSubmit(form);
+      await onSubmit(
+        endMonth && wasPermanent && form.pioneerType === 'none'
+          ? { ...form, pioneerEndMonth: endMonth }
+          : form,
+      );
     } catch (e) {
       setError(extractErrorMessage(e));
     }
@@ -368,7 +384,13 @@ export function PublisherForm({
               label={t('publishers.fields.pioneerType')}
               value={form.pioneerType}
               options={PIONEER_OPTIONS}
-              onChange={(v) =>
+              onChange={(v) => {
+                // A pioneer's service ending asks for its last month first.
+                if (wasPermanent && v === 'none' && form.pioneerType !== 'none') {
+                  setEndSheet(true);
+                  return;
+                }
+                if (v !== 'none') setEndMonth(null);
                 setForm((prev) => ({
                   ...prev,
                   pioneerType: v,
@@ -380,8 +402,32 @@ export function PublisherForm({
                         : wasPermanent && PERMANENT_KINDS.includes(v)
                           ? firstOfThisMonth()
                           : prev.pioneerSince,
-                }))
-              }
+                }));
+              }}
+            />
+            {wasPermanent && form.pioneerType === 'none' && endMonth ? (
+              <View style={styles.kindHint}>
+                <Ionicons name="flag-outline" size={16} color="#475569" />
+                <Text style={styles.kindHintText}>
+                  {t('pioneerEnd.formRow', { month: monthName(endMonth, i18n.language) })}
+                </Text>
+                <Pressable onPress={() => setEndSheet(true)} hitSlop={6}>
+                  <Text style={styles.correctLinkText}>{t('pioneerEnd.change')}</Text>
+                </Pressable>
+              </View>
+            ) : null}
+            <PioneerEndSheet
+              visible={endSheet}
+              publisherId={publisherId ?? null}
+              kind={initialKind}
+              since={initial?.pioneerSince ? initial.pioneerSince.slice(0, 7) : null}
+              thisMonth={firstOfThisMonth().slice(0, 7)}
+              onClose={() => setEndSheet(false)}
+              onConfirm={(m) => {
+                setEndMonth(m);
+                setEndSheet(false);
+                setForm((prev) => ({ ...prev, pioneerType: 'none', pioneerSince: '' }));
+              }}
             />
             {form.pioneerType !== 'none' && (
               <DateField
