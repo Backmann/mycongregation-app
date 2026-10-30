@@ -128,10 +128,6 @@ export function PioneerSpellSheet({
     </Pressable>
   );
 
-  const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
-  const yearNum = Number(year);
-  const canNext = `${yearNum + 1}-01` <= thisMonth;
-
   return (
     <Sheet
       visible={visible}
@@ -182,73 +178,111 @@ export function PioneerSpellSheet({
           {endPill('end', end)}
         </View>
 
-        <View style={styles.grid}>
-          <View style={styles.yearRow}>
-            <Pressable
-              onPress={() => setYear(String(yearNum - 1))}
-              style={styles.yearBtn}
-              accessibilityRole="button"
-              accessibilityLabel={t('pioneerHistory.prevYear')}
-              hitSlop={6}
-            >
-              <Ionicons name="chevron-back" size={18} color={INK} />
-            </Pressable>
-            <Text style={styles.year}>{year}</Text>
-            <Pressable
-              onPress={() => canNext && setYear(String(yearNum + 1))}
-              disabled={!canNext}
-              style={[styles.yearBtn, !canNext && { opacity: 0.3 }]}
-              accessibilityRole="button"
-              accessibilityLabel={t('pioneerHistory.nextYear')}
-              hitSlop={6}
-            >
-              <Ionicons name="chevron-forward" size={18} color={INK} />
-            </Pressable>
-          </View>
-          <View style={styles.monthWrap}>
-            {months.map((ym) => {
-              const future = ym > thisMonth;
-              const on = ym === start || ym === end;
-              const inside = !!start && !!end && ym > start && ym < end;
-              return (
-                <Pressable
-                  key={ym}
-                  onPress={() => !future && pick(ym)}
-                  disabled={future}
-                  style={[styles.month, inside && styles.monthIn, on && styles.monthOn, future && { opacity: 0.3 }]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on, disabled: future }}
-                >
-                  <Text style={[styles.monthText, on && styles.monthTextOn]}>
-                    {new Date(`${ym}-15T12:00:00Z`)
-                      .toLocaleDateString(lang, { month: 'short', timeZone: 'UTC' })
-                      .replace('.', '')}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <View style={styles.jump}>
-            {[-10, 10].map((n) => {
-              const target = shiftYear(`${year}-01`, n);
-              const off = target > thisMonth;
-              return (
-                <Pressable
-                  key={n}
-                  onPress={() => !off && setYear(target.slice(0, 4))}
-                  disabled={off}
-                  style={[styles.jumpBtn, off && { opacity: 0.3 }]}
-                  accessibilityRole="button"
-                >
-                  <Text style={styles.jumpText}>{n > 0 ? `+${n}` : String(n)}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
+        <MonthGrid
+          year={year}
+          onYear={setYear}
+          thisMonth={thisMonth}
+          isOn={(ym) => ym === start || ym === end}
+          isInside={(ym) => !!start && !!end && ym > start && ym < end}
+          onPick={pick}
+        />
         <Text style={styles.hint}>{t('pioneerHistory.hint')}</Text>
       </View>
     </Sheet>
+  );
+}
+
+/**
+ * A year with its twelve months, and the years around it a tap away — for
+ * months long past as much as this one. Nothing after `thisMonth`.
+ */
+export function MonthGrid({
+  year,
+  onYear,
+  thisMonth,
+  isOn,
+  isInside,
+  onPick,
+}: {
+  year: string;
+  onYear: (y: string) => void;
+  thisMonth: string;
+  isOn: (ym: string) => boolean;
+  isInside?: (ym: string) => boolean;
+  onPick: (ym: string) => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const months = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+  const yearNum = Number(year);
+  const canNext = `${yearNum + 1}-01` <= thisMonth;
+  const setYear = onYear;
+  const pick = onPick;
+  return (
+    <View style={styles.grid}>
+      <View style={styles.yearRow}>
+        <Pressable
+          onPress={() => setYear(String(yearNum - 1))}
+          style={styles.yearBtn}
+          accessibilityRole="button"
+          accessibilityLabel={t('pioneerHistory.prevYear')}
+          hitSlop={6}
+        >
+          <Ionicons name="chevron-back" size={18} color={INK} />
+        </Pressable>
+        <Text style={styles.year}>{year}</Text>
+        <Pressable
+          onPress={() => canNext && setYear(String(yearNum + 1))}
+          disabled={!canNext}
+          style={[styles.yearBtn, !canNext && { opacity: 0.3 }]}
+          accessibilityRole="button"
+          accessibilityLabel={t('pioneerHistory.nextYear')}
+          hitSlop={6}
+        >
+          <Ionicons name="chevron-forward" size={18} color={INK} />
+        </Pressable>
+      </View>
+      <View style={styles.monthWrap}>
+        {months.map((ym) => {
+          const future = ym > thisMonth;
+          const on = isOn(ym);
+          const inside = isInside ? isInside(ym) : false;
+          return (
+            <Pressable
+              key={ym}
+              onPress={() => !future && pick(ym)}
+              disabled={future}
+              style={[styles.month, inside && styles.monthIn, on && styles.monthOn, future && { opacity: 0.3 }]}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on, disabled: future }}
+            >
+              <Text style={[styles.monthText, on && styles.monthTextOn]}>
+                {new Date(`${ym}-15T12:00:00Z`)
+                  .toLocaleDateString(lang, { month: 'short', timeZone: 'UTC' })
+                  .replace('.', '')}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <View style={styles.jump}>
+        {[-10, 10].map((n) => {
+          const target = shiftYear(`${year}-01`, n);
+          const off = target > thisMonth;
+          return (
+            <Pressable
+              key={n}
+              onPress={() => !off && setYear(target.slice(0, 4))}
+              disabled={off}
+              style={[styles.jumpBtn, off && { opacity: 0.3 }]}
+              accessibilityRole="button"
+            >
+              <Text style={styles.jumpText}>{n > 0 ? `+${n}` : String(n)}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
   );
 }
 

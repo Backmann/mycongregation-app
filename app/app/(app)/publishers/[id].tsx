@@ -300,6 +300,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           capabilities: publisher.capabilities ?? {},
         }}
         onSubmit={updateMutation.mutateAsync}
+        publisherId={id}
         onCorrectPioneerKind={async (kind) => {
           await publishersApi.correctPioneerKind(id!, kind);
           await queryClient.invalidateQueries({ queryKey: ['publisher', id] });

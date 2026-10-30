@@ -34,6 +34,7 @@ import { CAPABILITY_CATEGORIES, countActiveCapabilities } from '../../lib/capabi
 import { FONT } from '../../lib/typography';
 import { StatusReasonsModal } from '../StatusReasonsModal';
 import { PioneerSpellSheet } from './PioneerSpellSheet';
+import { PioneerEndSheet } from './PioneerEndSheet';
 import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 
@@ -549,6 +550,9 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
     queryFn: () => publishersApi.pioneerHistory(publisherId),
   });
   const [sheet, setSheet] = useState<{ spell: PioneerHistorySpell | null } | null>(null);
+  const [ending, setEnding] = useState<PioneerHistorySpell | null>(null);
+  const [endBusy, setEndBusy] = useState(false);
+  const [endError, setEndError] = useState<string | null>(null);
   const thisMonth = formatDateISO(new Date()).slice(0, 7);
   const d = q.data;
   const canEdit = canEditPublishers && baptised;
@@ -588,6 +592,28 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
     }
   };
   const yy = (ym: string) => ym.slice(2, 4);
+  // The same save as the card's form makes: the kind goes, the last month
+  // goes with it, and the server closes the spell there.
+  const end = async (lastMonth: string) => {
+    setEndBusy(true);
+    setEndError(null);
+    try {
+      await publishersApi.update(publisherId, {
+        pioneerType: 'none',
+        pioneerEndMonth: lastMonth,
+      });
+      setEnding(null);
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ['pioneer-history', publisherId] }),
+        qc.invalidateQueries({ queryKey: ['publisher', publisherId] }),
+        qc.invalidateQueries({ queryKey: ['publishers'] }),
+      ]);
+    } catch (e) {
+      setEndError(extractErrorMessage(e));
+    } finally {
+      setEndBusy(false);
+    }
+  };
 
   return (
     <Block
@@ -622,6 +648,26 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
                 {editable ? <Ionicons name="create-outline" size={16} color="#94a3b8" /> : null}
               </>
             );
+            if (!sp.end && canEdit) {
+              return (
+                <View key={sp.id}>
+                  <View style={styles.auxTile}>{tile}</View>
+                  <Pressable
+                    onPress={() => {
+                      setEndError(null);
+                      setEnding(sp);
+                    }}
+                    style={styles.endLink}
+                    accessibilityRole="button"
+                    hitSlop={4}
+                  >
+                    <Ionicons name="flag-outline" size={14} color="#475569" />
+                    <Text style={styles.endLinkText}>{t('pioneerEnd.link')}</Text>
+                  </Pressable>
+                  {endError ? <Text style={styles.endError}>{endError}</Text> : null}
+                </View>
+              );
+            }
             return editable ? (
               <Pressable
                 key={sp.id}
@@ -646,6 +692,18 @@ function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; b
           ) : null}
         </>
       )}
+      {canEdit && ending ? (
+        <PioneerEndSheet
+          visible
+          publisherId={publisherId}
+          kind={ending.kind}
+          since={ending.start}
+          thisMonth={thisMonth}
+          onClose={() => setEnding(null)}
+          onConfirm={(m) => void end(m)}
+          busy={endBusy}
+        />
+      ) : null}
       {canEdit ? (
         <PioneerSpellSheet
           visible={!!sheet}
@@ -944,6 +1002,9 @@ const styles = StyleSheet.create({
   col: { flex: 1, minWidth: 0 },
   historyBadge: { width: 64, paddingVertical: 10 },
   historySpan: { fontFamily: FONT.bold, fontSize: 12.5, color: '#166534', marginTop: 2 },
+  endLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginTop: -2, marginBottom: 10, marginLeft: 4 },
+  endLinkText: { fontFamily: FONT.bold, fontSize: 13, color: '#475569' },
+  endError: { fontFamily: FONT.bold, fontSize: 13, color: '#b91c1c', marginBottom: 8 },
   historyNote: { fontFamily: FONT.medium, fontSize: 12.5, color: '#94a3b8', marginTop: 2, lineHeight: 18 },
   auxSummary: { alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 10, marginBottom: 8 },
   auxSummaryText: { fontFamily: FONT.bold, fontSize: 12, color: '#166534' },

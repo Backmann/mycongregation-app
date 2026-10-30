@@ -449,6 +449,11 @@ export interface CreatePublisherInput {
   pioneerSince?: string;
   /** 100 (the usual) or 90 — special pioneers and missionaries only. */
   pioneerMonthGoal?: number | null;
+  /**
+   * Editing only: when the card stops being a pioneer's, his last month,
+   * YYYY-MM (30 October 2026). Left out, the server takes this month.
+   */
+  pioneerEndMonth?: string;
   notes?: string;
   // Circumstances the annual congregation report asks about. The server
   // sends these only to admins and elders.
@@ -3590,6 +3595,20 @@ export const publishersApi = {
     const { data } = await api.get<PioneerHistory>(
       `/publishers/${id}/pioneer-history`,
     );
+    return data;
+  },
+  /**
+   * What ending his pioneering with this last month would meet: months
+   * already sent with him on a pioneer line, and later reports with hours.
+   */
+  async pioneerEndImpact(
+    id: string,
+    lastMonth: string,
+  ): Promise<{ sentAsPioneer: string[]; reportedHours: string[] }> {
+    const { data } = await api.get<{
+      sentAsPioneer: string[];
+      reportedHours: string[];
+    }>(`/publishers/${id}/pioneer-end-impact`, { params: { lastMonth } });
     return data;
   },
   /** A past spell, copied in from the paper S-21 (the secretary). */

@@ -5543,7 +5543,9 @@
       "PIONEER_SPELL_FUTURE": "Earlier service ends this month at the latest. The service running now is set on the card.",
       "PIONEER_SPELL_OVERLAP": "These months are already in another stretch — from {{start}}.",
       "PRINT_DOC_EMPTY": "The sheet to print is empty — there is nothing to print.",
-      "PRINT_DOC_TOO_LARGE": "The sheet is too large to hand over to Safari. Open the site in Safari and print from there."
+      "PRINT_DOC_TOO_LARGE": "The sheet is too large to hand over to Safari. Open the site in Safari and print from there.",
+      "PIONEER_END_BEFORE_START": "The last month of service cannot be before it began ({{start}}).",
+      "PIONEER_END_FUTURE": "The last month of service is this month at the latest."
     }
   },
   "stage": {
@@ -6261,5 +6263,24 @@
     "remove": "Delete stretch",
     "removeTitle": "Delete this stretch?",
     "removeBody": "{{kind}}, {{range}}. Delete it only if it was entered by mistake."
+  },
+  "pioneerEnd": {
+    "title": "Pioneer service ended",
+    "lastMonth": "Last month of service",
+    "other": "Other…",
+    "beforeStart": "Service began in {{month}} — the last month cannot be earlier.",
+    "whatChanges": "What changes",
+    "reports": "From {{month}} on — a publisher’s report, without hours",
+    "s1": "On the S-1 — on the publishers’ line, not the regular pioneers’",
+    "s1Special": "The report goes to the congregation and onto the publishers’ line of the S-1",
+    "year": "The committee measures the service year only by the months he pioneered",
+    "history": "In the service history the «{{kind}}» stretch closes with {{month}}",
+    "sent": "The S-1 for {{months}} has already gone with him on a pioneer line. What was sent stays as it was.",
+    "hours": "The reports for {{months}} came with hours — they stay as they are.",
+    "hint": "If he starts again, a new appointment on the card opens a new stretch.",
+    "confirm": "Confirm",
+    "formRow": "Last month of service: {{month}}",
+    "change": "Change",
+    "link": "Service ended…"
   }
 }

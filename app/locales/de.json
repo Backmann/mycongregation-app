@@ -5543,7 +5543,9 @@
       "PIONEER_SPELL_FUTURE": "Früherer Dienst endet spätestens in diesem Monat. Der laufende Dienst wird auf der Karte festgelegt.",
       "PIONEER_SPELL_OVERLAP": "Diese Monate gehören schon zu einem anderen Abschnitt — ab {{start}}.",
       "PRINT_DOC_EMPTY": "Das Druckblatt ist leer — es gibt nichts zu drucken.",
-      "PRINT_DOC_TOO_LARGE": "Das Blatt ist zu groß, um es an Safari zu übergeben. Öffnen Sie die Seite in Safari und drucken Sie von dort."
+      "PRINT_DOC_TOO_LARGE": "Das Blatt ist zu groß, um es an Safari zu übergeben. Öffnen Sie die Seite in Safari und drucken Sie von dort.",
+      "PIONEER_END_BEFORE_START": "Der letzte Monat des Dienstes kann nicht vor seinem Beginn liegen ({{start}}).",
+      "PIONEER_END_FUTURE": "Der letzte Monat des Dienstes ist spätestens dieser Monat."
     }
   },
   "stage": {
@@ -6261,5 +6263,24 @@
     "remove": "Abschnitt löschen",
     "removeTitle": "Abschnitt löschen?",
     "removeBody": "{{kind}}, {{range}}. Nur löschen, wenn er versehentlich eingetragen wurde."
+  },
+  "pioneerEnd": {
+    "title": "Pionierdienst beendet",
+    "lastMonth": "Letzter Monat des Dienstes",
+    "other": "Anderer…",
+    "beforeStart": "Der Dienst begann im {{month}} — der letzte Monat kann nicht früher liegen.",
+    "whatChanges": "Was sich ändert",
+    "reports": "Ab {{month}} — Bericht wie ein Verkündiger, ohne Stunden",
+    "s1": "Im S-1 — in der Zeile der Verkündiger, nicht der allgemeinen Pioniere",
+    "s1Special": "Der Bericht geht an die Versammlung und in die Verkündigerzeile des S-1",
+    "year": "Das Dienstjahr misst das Komitee nur an den Monaten als Pionier",
+    "history": "Im Dienstverlauf endet der Abschnitt «{{kind}}» mit {{month}}",
+    "sent": "Der S-1 für {{months}} ist bereits mit ihm in einer Pionierzeile gesendet. Gesendetes bleibt, wie es war.",
+    "hours": "Die Berichte für {{months}} kamen mit Stunden — sie bleiben, wie sie sind.",
+    "hint": "Beginnt er wieder, öffnet eine neue Ernennung auf der Karte einen neuen Abschnitt.",
+    "confirm": "Bestätigen",
+    "formRow": "Letzter Monat des Dienstes: {{month}}",
+    "change": "Ändern",
+    "link": "Dienst beendet…"
   }
 }
