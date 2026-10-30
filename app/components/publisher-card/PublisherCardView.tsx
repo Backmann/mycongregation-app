@@ -326,7 +326,13 @@ export function PublisherCardView({
       <Row
         key="p"
         label={t(`publishers.pioneer.detail.${pioneer}`)}
-        value={t('publisherCard.since', { date: formatDay(publisher.pioneerSince, lang, { year: 'always' }) })}
+        value={
+          t('publisherCard.since', { date: formatDay(publisher.pioneerSince, lang, { year: 'always' }) }) +
+          // 90 a month is said; the usual 100 is not, so the card stays quiet.
+          (publisher.pioneerMonthGoal === 90
+            ? ` · ${t('publisherCard.monthGoal', { n: 90 })}`
+            : '')
+        }
       />
     ) : null,
     // Shown only when there is something, and only to elders: an empty line

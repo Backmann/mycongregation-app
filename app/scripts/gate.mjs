@@ -35,6 +35,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** Every step, in the order CI runs them. */
 const STEPS = [
   ['Пути для Windows', 'node', ['scripts/check-windows-paths.mjs']],
+  // The edit screen must hand the form every field it keeps, or a save
+  // writes the form's default back (spiritual status, 13 July–30 October).
+  ['Поля формы карточки', 'node', ['scripts/check-publisher-form-initial.mjs']],
   ['Типы маршрутов', 'node', ['scripts/gen-route-types.mjs']],
   ['Проверка типов', 'npx', ['tsc', '--noEmit']],
   ['expo lint', 'npm', ['run', 'lint']],

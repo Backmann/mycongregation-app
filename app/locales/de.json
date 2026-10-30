@@ -310,7 +310,8 @@
       "spiritualStatus": "Geistlicher Status",
       "isDeaf": "Gehörlos (braucht Gebärdensprache)",
       "isBlind": "Blind",
-      "isImprisoned": "In Haft"
+      "isImprisoned": "In Haft",
+      "pioneerMonthGoal": "Monatliches Stundenziel"
     },
     "appointment": {
       "publisher": "Verkündiger",
@@ -342,7 +343,8 @@
       "correctPick": "Welche Art ist richtig? Sie ersetzt die bisherige für alle Monate, ohne neuen Abschnitt.",
       "correctTitle": "Art für die ganze Zeit korrigieren?",
       "correctBody": "„{{from}}“ seit {{since}} wird für alle diese Monate zu „{{to}}“. Nur wenn die Art falsch eingetragen war.",
-      "correctConfirm": "Korrigieren"
+      "correctConfirm": "Korrigieren",
+      "monthGoal": "{{n}} Std."
     },
     "gender": {
       "brother": "Männlich",
@@ -4048,7 +4050,9 @@
       "months": "Monate",
       "paperDate": "Datum der Unterschrift",
       "approvedSeat": "Zugestimmt (Platz)",
-      "openedSeat": "Platz geöffnet"
+      "openedSeat": "Platz geöffnet",
+      "pioneerMonthGoal": "Monatliches Stundenziel",
+      "spiritualStatus": "Geistlicher Status"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5831,7 +5835,8 @@
     "assistant": "Partner",
     "ahead": "geplant",
     "week": "Woche {{date}}",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "monthGoal": "Ziel {{n}} Std. im Monat"
   },
   "groupCard": {
     "nextMeeting": "Zusammenkunft für den Predigtdienst",
