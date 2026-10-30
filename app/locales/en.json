@@ -310,7 +310,8 @@
       "spiritualStatus": "Theocratic status",
       "isDeaf": "Deaf (needs sign language)",
       "isBlind": "Blind",
-      "isImprisoned": "In prison"
+      "isImprisoned": "In prison",
+      "pioneerMonthGoal": "Monthly hours"
     },
     "appointment": {
       "publisher": "Publisher",
@@ -342,7 +343,8 @@
       "correctPick": "Which kind is right? It replaces the old one for every month, without a new period.",
       "correctTitle": "Correct the kind for all time?",
       "correctBody": "“{{from}}” since {{since}} becomes “{{to}}” for all those months. Only when the kind was entered wrong.",
-      "correctConfirm": "Correct"
+      "correctConfirm": "Correct",
+      "monthGoal": "{{n}} h"
     },
     "gender": {
       "brother": "Male",
@@ -4048,7 +4050,9 @@
       "months": "Months",
       "paperDate": "Date signed",
       "approvedSeat": "Approved (place)",
-      "openedSeat": "Place opened"
+      "openedSeat": "Place opened",
+      "pioneerMonthGoal": "Monthly hours goal",
+      "spiritualStatus": "Spiritual status"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -5831,7 +5835,8 @@
     "assistant": "assistant",
     "ahead": "ahead",
     "week": "week of {{date}}",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "monthGoal": "{{n}} h a month"
   },
   "groupCard": {
     "nextMeeting": "Field service meeting",

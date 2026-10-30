@@ -312,7 +312,8 @@
       "spiritualStatus": "Духовный статус",
       "isDeaf": "Глухой (нужен жестовый язык)",
       "isBlind": "Слепой",
-      "isImprisoned": "Находится в заключении"
+      "isImprisoned": "Находится в заключении",
+      "pioneerMonthGoal": "Норма в месяц"
     },
     "appointment": {
       "publisher": "Возвещатель",
@@ -344,7 +345,8 @@
       "correctPick": "Какой вид правильный? Он заменит прежний за все месяцы, без нового отрезка.",
       "correctTitle": "Исправить вид за всё время?",
       "correctBody": "Вид «{{from}}» с {{since}} станет «{{to}}» за все эти месяцы. Так делают, только если вид был записан неверно.",
-      "correctConfirm": "Исправить"
+      "correctConfirm": "Исправить",
+      "monthGoal": "{{n}} ч"
     },
     "gender": {
       "brother": "Мужской",
@@ -4154,7 +4156,9 @@
       "months": "Месяцы",
       "paperDate": "Дата подписи",
       "approvedSeat": "Одобрено (место)",
-      "openedSeat": "Открыто место"
+      "openedSeat": "Открыто место",
+      "pioneerMonthGoal": "Норма часов в месяц",
+      "spiritualStatus": "Духовный статус"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",
@@ -5969,7 +5973,8 @@
     "assistant": "помощник",
     "ahead": "впереди",
     "week": "нед. {{date}}",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "monthGoal": "норма {{n}} ч в месяц"
   },
   "groupCard": {
     "nextMeeting": "Встреча для проповеди",

@@ -285,9 +285,16 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           address: publisher.address ?? undefined,
           appointment: publisher.appointment,
           baptismDate: publisher.baptismDate ?? undefined,
+          // Missing since the field came (13 July 2026): the form started at
+          // «Не указано», and saving the card for any reason wiped what was
+          // set — the mark the S-21 prints. Found 30 October 2026.
+          spiritualStatus: publisher.spiritualStatus ?? undefined,
           ministryStartDate: publisher.ministryStartDate ?? undefined,
           pioneerType: publisher.pioneerType,
           pioneerSince: publisher.pioneerSince ?? undefined,
+          // Without it the form starts at 100, and saving anything on the
+          // card would quietly take a 90 back to 100.
+          pioneerMonthGoal: publisher.pioneerMonthGoal ?? null,
           isActive: publisher.isActive,
           notes: publisher.notes ?? undefined,
           capabilities: publisher.capabilities ?? {},

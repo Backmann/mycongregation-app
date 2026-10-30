@@ -406,6 +406,11 @@ export interface Publisher {
    */
   pioneerActive?: boolean;
   pioneerSince: string | null;
+  /**
+   * A special pioneer's or missionary's monthly hours when not the usual
+   * 100: 90, or null. Private — elders and admins only.
+   */
+  pioneerMonthGoal?: number | null;
   notes: string | null;
   capabilities: Capabilities;
   removalReason: RemovalReason | null;
@@ -442,6 +447,8 @@ export interface CreatePublisherInput {
   ministryStartDate?: string;
   pioneerType?: PioneerType;
   pioneerSince?: string;
+  /** 100 (the usual) or 90 — special pioneers and missionaries only. */
+  pioneerMonthGoal?: number | null;
   notes?: string;
   // Circumstances the annual congregation report asks about. The server
   // sends these only to admins and elders.

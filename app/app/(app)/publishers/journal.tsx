@@ -498,6 +498,11 @@ function fieldWord(
     if (field === 'removalReason') {
       return t(`publishers.removal.${v}`, { defaultValue: '' });
     }
+    // Journaled from 30 October 2026 — the form's own words.
+    if (field === 'spiritualStatus') {
+      const key = { other_sheep: 'otherSheep', anointed: 'anointed', unknown: 'unknown' }[v];
+      return key ? t(`publishers.spiritualStatus.${key}`) : '';
+    }
     return '';
   }
   if (entityType === 'meeting_settings') {

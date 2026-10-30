@@ -112,6 +112,7 @@ export function PublisherForm({
     ministryStartDate: initial?.ministryStartDate ?? '',
     pioneerType: initial?.pioneerType ?? 'none',
     pioneerSince: initial?.pioneerSince ?? '',
+    pioneerMonthGoal: initial?.pioneerMonthGoal ?? 100,
     isActive: initial?.isActive ?? true,
     notes: initial?.notes ?? '',
     capabilities:
@@ -390,6 +391,20 @@ export function PublisherForm({
                 placeholder={t('publishers.placeholders.date')}
               />
             )}
+            {/* Special pioneers and missionaries: 100 hours a month, or 90
+                (Lionel, 30 October 2026). The server keeps it for these two
+                kinds only and forgets it when the kind changes. */}
+            {form.pioneerType === 'special' || form.pioneerType === 'missionary' ? (
+              <FormChips
+                label={t('publishers.fields.pioneerMonthGoal')}
+                value={form.pioneerMonthGoal === 90 ? 90 : 100}
+                options={[
+                  { value: 100, label: t('publishers.pioneer.monthGoal', { n: 100 }) },
+                  { value: 90, label: t('publishers.pioneer.monthGoal', { n: 90 }) },
+                ]}
+                onChange={(v) => setForm((prev) => ({ ...prev, pioneerMonthGoal: v }))}
+              />
+            ) : null}
             {kindChanged ? (
               <View style={styles.kindHint}>
                 <Ionicons name="time-outline" size={16} color="#475569" />
