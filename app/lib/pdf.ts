@@ -2,6 +2,9 @@ import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { fontsReady } from './print-fonts';
+import i18n from './i18n';
+import { confirm } from '../components/ConfirmHost';
+import { printDocsApi } from './api';
 
 /**
  * Open a blank print window synchronously — call this inside a click handler,
@@ -36,6 +39,25 @@ function printsInPlace(): boolean {
     (window.matchMedia?.('(display-mode: standalone)').matches ?? false) ||
     (navigator as { standalone?: boolean }).standalone === true;
   return isIOS || standalone;
+}
+
+/**
+ * True on an iPhone or iPad running the app from the Home Screen.
+ *
+ * There iOS ignores print() altogether — in the page and in a frame alike —
+ * so every printer button in the app did nothing at all (Lionel, iPad, 30
+ * October 2026; in a Safari tab the same button prints). Said, not silent.
+ */
+function iosHomeScreen(): boolean {
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && 'ontouchend' in document);
+  const standalone =
+    (window.matchMedia?.('(display-mode: standalone)').matches ?? false) ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return isIOS && standalone;
 }
 
 /**
@@ -108,6 +130,40 @@ export async function exportHtmlAsPdf(
   },
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
+    if (iosHomeScreen()) {
+      // The sheet goes to Safari, which prints: the server keeps it ten
+      // minutes behind a one-off link (print-docs). The link is opened in
+      // the tap on «Открыть в Safari» itself — after a wait iOS blocks it.
+      const titled = html.includes('<title>')
+        ? html
+        : html.replace('<head>', `<head><title>${opts?.fileName ?? 'document'}</title>`);
+      let url: string | null = null;
+      try {
+        url = await printDocsApi.create(titled);
+      } catch {
+        url = null;
+      }
+      if (url) {
+        const link = url;
+        await confirm({
+          title: i18n.t('print.viaSafari.title'),
+          body: i18n.t('print.viaSafari.body'),
+          confirmLabel: i18n.t('print.viaSafari.open'),
+          onConfirmTap: () => {
+            window.open(link, '_blank');
+          },
+        });
+        return { ok: true, reason: 'via_safari' };
+      }
+      // No link (offline, or an older server): say how to print at all.
+      await confirm({
+        title: i18n.t('print.iosHomeScreen.title'),
+        body: i18n.t('print.iosHomeScreen.body'),
+        confirmLabel: i18n.t('print.iosHomeScreen.ok'),
+        info: true,
+      });
+      return { ok: false, reason: 'ios_home_screen' };
+    }
     if (printsInPlace()) {
       const title = opts?.fileName ?? 'document';
       const withTitle = html.includes('<title>')

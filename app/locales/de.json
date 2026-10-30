@@ -6214,5 +6214,17 @@
     },
     "lateHint": "Laut Anweisung geht ein verspäteter Bericht in den Bericht des nächsten Monats ein – deshalb steht er hier im Monat des Sendens. Sonderpioniere und Missionare sind nicht im Bericht der Versammlung, auf Karte 1 aber mitgezählt.",
     "totalHours": "Stunden im Jahr"
+  },
+  "print": {
+    "iosHomeScreen": {
+      "title": "Drucken über Safari",
+      "body": "In der App, die über das Symbol auf dem Home-Bildschirm geöffnet ist, lassen iPhone und iPad nicht drucken – eine Einschränkung von iOS. Öffnen Sie mycongregation.org in Safari und tippen Sie dort auf den Drucker: Das Drucken funktioniert.",
+      "ok": "Verstanden"
+    },
+    "viaSafari": {
+      "title": "Dokument bereit zum Drucken",
+      "body": "Es öffnet sich in Safari, dort erscheint sofort das Druckfenster. Der Link gilt 10 Minuten.",
+      "open": "In Safari öffnen"
+    }
   }
 }
