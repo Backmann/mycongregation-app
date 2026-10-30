@@ -3499,6 +3499,32 @@ export interface RemovalImpact {
   responsibilities: string[];
 }
 
+/** A spell of regular, special or missionary pioneering (30 October 2026). */
+export interface PioneerHistorySpell {
+  id: string;
+  kind: PioneerType;
+  /** YYYY-MM */
+  start: string;
+  /** YYYY-MM; null for the spell running now — it follows the card. */
+  end: string | null;
+  months: number;
+}
+
+export interface PioneerHistory {
+  /** Newest first. */
+  spells: PioneerHistorySpell[];
+  /** Every permanent month, counted once, up to this month. */
+  totalMonths: number;
+  /** The earliest month the app knows of. */
+  knownFrom: string | null;
+}
+
+export interface PastPioneerSpellInput {
+  kind: PioneerType;
+  start: string;
+  end: string;
+}
+
 export const publishersApi = {
   /** "These contacts are still correct" — for a publisher who doesn't use the app. */
   async confirmContacts(id: string): Promise<Publisher> {
@@ -3559,6 +3585,44 @@ export const publishersApi = {
     return data;
   },
   /** The pioneer kind was written down wrong: corrected for all its months. */
+  /** The pioneer history on the card: every permanent spell and the sum. */
+  async pioneerHistory(id: string): Promise<PioneerHistory> {
+    const { data } = await api.get<PioneerHistory>(
+      `/publishers/${id}/pioneer-history`,
+    );
+    return data;
+  },
+  /** A past spell, copied in from the paper S-21 (the secretary). */
+  async addPastPioneerSpell(
+    id: string,
+    input: PastPioneerSpellInput,
+  ): Promise<PioneerHistory> {
+    const { data } = await api.post<PioneerHistory>(
+      `/publishers/${id}/pioneer-history`,
+      input,
+    );
+    return data;
+  },
+  async updatePastPioneerSpell(
+    id: string,
+    spellId: string,
+    input: PastPioneerSpellInput,
+  ): Promise<PioneerHistory> {
+    const { data } = await api.patch<PioneerHistory>(
+      `/publishers/${id}/pioneer-history/${spellId}`,
+      input,
+    );
+    return data;
+  },
+  async removePastPioneerSpell(
+    id: string,
+    spellId: string,
+  ): Promise<PioneerHistory> {
+    const { data } = await api.delete<PioneerHistory>(
+      `/publishers/${id}/pioneer-history/${spellId}`,
+    );
+    return data;
+  },
   async correctPioneerKind(
     id: string,
     pioneerType: PioneerType,

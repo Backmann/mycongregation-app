@@ -4052,7 +4052,8 @@
       "approvedSeat": "Zugestimmt (Platz)",
       "openedSeat": "Platz geöffnet",
       "pioneerMonthGoal": "Monatliches Stundenziel",
-      "spiritualStatus": "Geistlicher Status"
+      "spiritualStatus": "Geistlicher Status",
+      "pioneerHistory": "Pionierdienst – Verlauf"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5534,7 +5535,15 @@
       "SERVICE_LOG_FUTURE": "Dieser Tag ist noch nicht gekommen.",
       "SERVICE_LOG_MONTH_CLOSED": "Der Monat {{month}} ist für Einträge geschlossen.",
       "SERVICE_LOG_NOT_YOURS": "Ihr Bericht für {{month}} hat keine Stunden.",
-      "SERVICE_LOG_REPORTED": "Der Bericht für {{month}} ist schon abgegeben."
+      "SERVICE_LOG_REPORTED": "Der Bericht für {{month}} ist schon abgegeben.",
+      "PIONEER_SPELL_NOT_FOUND": "Diesen Abschnitt gibt es auf der Karte nicht — bitte neu laden.",
+      "PIONEER_SPELL_OPEN": "Der laufende Dienst wird auf der Karte selbst geändert, nicht im Verlauf.",
+      "PIONEER_SPELL_INVALID": "Ein Abschnitt ist Dienst als allgemeiner Pionier, Sonderpionier oder Missionar mit erstem und letztem Monat.",
+      "PIONEER_SPELL_ORDER": "Der erste Monat darf nicht nach dem letzten liegen.",
+      "PIONEER_SPELL_FUTURE": "Früherer Dienst endet spätestens in diesem Monat. Der laufende Dienst wird auf der Karte festgelegt.",
+      "PIONEER_SPELL_OVERLAP": "Diese Monate gehören schon zu einem anderen Abschnitt — ab {{start}}.",
+      "PRINT_DOC_EMPTY": "Das Druckblatt ist leer — es gibt nichts zu drucken.",
+      "PRINT_DOC_TOO_LARGE": "Das Blatt ist zu groß, um es an Safari zu übergeben. Öffnen Sie die Seite in Safari und drucken Sie von dort."
     }
   },
   "stage": {
@@ -6226,5 +6235,31 @@
       "body": "Es öffnet sich in Safari, dort erscheint sofort das Druckfenster. Der Link gilt 10 Minuten.",
       "open": "In Safari öffnen"
     }
+  },
+  "pioneerHistory": {
+    "title": "Pionierdienst – Verlauf",
+    "addShort": "Hinzufügen",
+    "addTitle": "Früherer Dienst",
+    "editTitle": "Abschnitt korrigieren",
+    "empty": "Nie im allgemeinen Pionierdienst — oder der frühere Dienst ist noch nicht von der Papierkarte S-21 übertragen.",
+    "total": "Insgesamt {{span}}",
+    "years_one": "{{count}} Jahr",
+    "years_other": "{{count}} Jahre",
+    "months_one": "{{count}} Mon.",
+    "months_other": "{{count}} Mon.",
+    "sinceNow": "{{month}} — jetzt",
+    "knownFrom": "Erster bekannter Monat: {{month}}",
+    "knownFromEdit": "Früherer Dienst — von der Papierkarte S-21 und aus früheren Versammlungen — kann ergänzt werden. Erster bekannter Monat: {{month}}",
+    "from": "Beginn",
+    "to": "Ende",
+    "pick": "Monat wählen",
+    "prevYear": "Vorheriges Jahr",
+    "nextYear": "Nächstes Jahr",
+    "hint": "Allgemeiner Pionier, Sonderpionier oder Missionar — von der Papierkarte S-21. Hilfspionierdienst wird anderswo geführt. Der laufende Dienst wird auf der Karte selbst geändert.",
+    "add": "Hinzufügen",
+    "save": "Speichern",
+    "remove": "Abschnitt löschen",
+    "removeTitle": "Abschnitt löschen?",
+    "removeBody": "{{kind}}, {{range}}. Nur löschen, wenn er versehentlich eingetragen wurde."
   }
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -16,6 +16,10 @@ import {
   serviceReportsApi,
   auxYearApi,
   auxApplicationsApi,
+  extractErrorMessage,
+  type PastPioneerSpellInput,
+  type PioneerHistory,
+  type PioneerHistorySpell,
   type Publisher,
 } from '../../lib/api';
 import { addWeeks, formatDateISO, startOfWeekMonday } from '../../lib/dates';
@@ -29,6 +33,7 @@ import { contactsCheckLine } from '../../lib/contacts-check';
 import { CAPABILITY_CATEGORIES, countActiveCapabilities } from '../../lib/capabilities';
 import { FONT } from '../../lib/typography';
 import { StatusReasonsModal } from '../StatusReasonsModal';
+import { PioneerSpellSheet } from './PioneerSpellSheet';
 import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 
@@ -356,10 +361,13 @@ export function PublisherCardView({
   const service = pastoral && !removed ? <ServiceBlock publisher={publisher} onExplain={() => setExplain(true)} /> : null;
   const meetings = pastoral && !removed ? <MeetingsBlock publisherId={publisher.id} /> : null;
   const aux = pastoral ? <AuxBlock publisherId={publisher.id} /> : null;
+  const pioneerHistory = pastoral && !removed ? (
+    <PioneerHistoryBlock key="ph" publisherId={publisher.id} baptised={isBaptised} />
+  ) : null;
   const accessBlock = isAdmin ? <Block title={t('publishers.sections.appAccess')}>{access}</Block> : null;
 
   const left = [contacts, notes, personal, accessBlock];
-  const right = [service, aux, congregation, meetings];
+  const right = [service, aux, congregation, meetings, pioneerHistory];
 
   return (
     <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)} style={styles.wrap}>
@@ -372,7 +380,7 @@ export function PublisherCardView({
       ) : (
         // On a phone the order an elder reads in: how he serves, how to reach
         // him, what to remember, where he stands, what he has been given.
-        <View>{[service, aux, contacts, notes, congregation, meetings, personal, accessBlock]}</View>
+        <View>{[service, aux, contacts, notes, congregation, meetings, pioneerHistory, personal, accessBlock]}</View>
       )}
       {footer}
       <StatusReasonsModal
@@ -519,6 +527,135 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
           </View>
         ))
       )}
+    </Block>
+  );
+}
+
+/**
+ * «История пионерского служения» (30 October 2026): every stretch of regular,
+ * special and missionary pioneering, newest first, and the months in all —
+ * the years point 9 of the instructions asks about. What the app knows only
+ * from the card is said as such: «известно с марта 2012» until the secretary
+ * copies earlier stretches in from the paper S-21. Nothing for somebody who
+ * never pioneered — except to the secretary, who may need to write it in.
+ */
+function PioneerHistoryBlock({ publisherId, baptised }: { publisherId: string; baptised: boolean }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const qc = useQueryClient();
+  const { canEditPublishers } = usePermissions();
+  const q = useQuery({
+    queryKey: ['pioneer-history', publisherId],
+    queryFn: () => publishersApi.pioneerHistory(publisherId),
+  });
+  const [sheet, setSheet] = useState<{ spell: PioneerHistorySpell | null } | null>(null);
+  const thisMonth = formatDateISO(new Date()).slice(0, 7);
+  const d = q.data;
+  const canEdit = canEditPublishers && baptised;
+  if (!d || (d.spells.length === 0 && !canEdit)) return null;
+
+  const span = (months: number) => {
+    const y = Math.floor(months / 12);
+    const m = months % 12;
+    return [y > 0 ? t('pioneerHistory.years', { count: y }) : null, m > 0 || y === 0 ? t('pioneerHistory.months', { count: m }) : null]
+      .filter(Boolean)
+      .join(' ');
+  };
+  const done = (next: PioneerHistory) => {
+    qc.setQueryData(['pioneer-history', publisherId], next);
+    // The history decides which months are a pioneer's: the year and the
+    // reports read it too.
+    void qc.invalidateQueries({ queryKey: ['publisher-history', publisherId] });
+    void qc.invalidateQueries({ queryKey: ['publisher', publisherId] });
+    return null;
+  };
+  const save = async (input: PastPioneerSpellInput) => {
+    try {
+      return done(
+        sheet?.spell
+          ? await publishersApi.updatePastPioneerSpell(publisherId, sheet.spell.id, input)
+          : await publishersApi.addPastPioneerSpell(publisherId, input),
+      );
+    } catch (e) {
+      return extractErrorMessage(e);
+    }
+  };
+  const remove = async (spell: PioneerHistorySpell) => {
+    try {
+      return done(await publishersApi.removePastPioneerSpell(publisherId, spell.id));
+    } catch (e) {
+      return extractErrorMessage(e);
+    }
+  };
+  const yy = (ym: string) => ym.slice(2, 4);
+
+  return (
+    <Block
+      key="ph"
+      title={t('pioneerHistory.title')}
+      action={canEdit ? { label: t('pioneerHistory.addShort'), onPress: () => setSheet({ spell: null }) } : undefined}
+    >
+      {d.spells.length === 0 ? (
+        <Text style={styles.emptyText}>{t('pioneerHistory.empty')}</Text>
+      ) : (
+        <>
+          <View style={styles.auxSummary}>
+            <Text style={styles.auxSummaryText}>{t('pioneerHistory.total', { span: span(d.totalMonths) })}</Text>
+          </View>
+          {d.spells.map((sp) => {
+            const editable = canEdit && sp.end !== null;
+            const range = sp.end
+              ? `${capitalize(monthName(sp.start, lang))} – ${monthName(sp.end, lang)}`
+              : t('pioneerHistory.sinceNow', { month: capitalize(monthName(sp.start, lang)) });
+            const tile = (
+              <>
+                <View style={[styles.auxBadge, styles.historyBadge]}>
+                  <Text style={styles.auxBadgeTop}>
+                    {sp.end ? (yy(sp.start) === yy(sp.end) ? yy(sp.start) : `${yy(sp.start)}–${yy(sp.end)}`) : `${yy(sp.start)}–`}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.auxTitle}>{t(`publishers.pioneer.detail.${sp.kind}`)}</Text>
+                  <Text style={styles.auxSub}>{range}</Text>
+                  <Text style={styles.historySpan}>{span(sp.months)}</Text>
+                </View>
+                {editable ? <Ionicons name="create-outline" size={16} color="#94a3b8" /> : null}
+              </>
+            );
+            return editable ? (
+              <Pressable
+                key={sp.id}
+                style={({ pressed }) => [styles.auxTile, pressed && styles.pressed]}
+                onPress={() => setSheet({ spell: sp })}
+                accessibilityRole="button"
+              >
+                {tile}
+              </Pressable>
+            ) : (
+              <View key={sp.id} style={styles.auxTile}>
+                {tile}
+              </View>
+            );
+          })}
+          {d.knownFrom ? (
+            <Text style={styles.historyNote}>
+              {t(canEdit ? 'pioneerHistory.knownFromEdit' : 'pioneerHistory.knownFrom', {
+                month: monthName(d.knownFrom, lang),
+              })}
+            </Text>
+          ) : null}
+        </>
+      )}
+      {canEdit ? (
+        <PioneerSpellSheet
+          visible={!!sheet}
+          spell={sheet?.spell ?? null}
+          thisMonth={thisMonth}
+          onClose={() => setSheet(null)}
+          onSave={save}
+          onRemove={remove}
+        />
+      ) : null}
     </Block>
   );
 }
@@ -805,6 +942,9 @@ const styles = StyleSheet.create({
   qTextOff: { color: '#cbd5e1' },
   cols: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
   col: { flex: 1, minWidth: 0 },
+  historyBadge: { width: 64, paddingVertical: 10 },
+  historySpan: { fontFamily: FONT.bold, fontSize: 12.5, color: '#166534', marginTop: 2 },
+  historyNote: { fontFamily: FONT.medium, fontSize: 12.5, color: '#94a3b8', marginTop: 2, lineHeight: 18 },
   auxSummary: { alignSelf: 'flex-start', backgroundColor: '#dcfce7', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 10, marginBottom: 8 },
   auxSummaryText: { fontFamily: FONT.bold, fontSize: 12, color: '#166534' },
   auxTile: { flexDirection: 'row', alignItems: 'center', gap: 12, borderWidth: 1, borderColor: LINE, borderRadius: 14, padding: 10, marginBottom: 8 },
