@@ -335,6 +335,14 @@ export default function ServiceSummaryScreen() {
               {t('reports.summary.closureAffectsStatus')}
             </Text>
           ) : null}
+          {/* Closing is what the app takes for «sent»: a report entered after
+              it goes into the next month (instruction, point 14). So it must
+              be the same day as JW Hub, or the two disagree. */}
+          {canManageServiceSummary && !data?.closed ? (
+            <Text style={styles.closureHint}>
+              {t('reports.summary.closeWhenSent')}
+            </Text>
+          ) : null}
           {canManageServiceSummary ? (
           <Pressable
             onPress={() =>
@@ -418,6 +426,7 @@ export default function ServiceSummaryScreen() {
                         ? dayjs(f.day).locale(i18nInstance.language).format('D MMMM YYYY')
                         : '',
                     })}
+                    {f.notCounted ? ` — ${t('sent.notCounted')}` : ''}
                   </Text>
                 ))}
               </>
@@ -462,15 +471,21 @@ export default function ServiceSummaryScreen() {
             </Text>
             {lateOut.map((l) => (
               <Text key={l.publisherId} style={styles.driftPerson}>
-                · {t(
-                  l.carriedKept
-                    ? 'serviceSummary.lateOutKept'
-                    : 'serviceSummary.lateOutPending',
-                  { name: l.name, month: formatMonthLabel(l.carriedTo) },
-                )}
+                · {l.carriedTo
+                  ? t(
+                      l.carriedKept
+                        ? 'serviceSummary.lateOutKept'
+                        : 'serviceSummary.lateOutPending',
+                      { name: l.name, month: formatMonthLabel(l.carriedTo) },
+                    )
+                  : t('serviceSummary.lateOutMissed', { name: l.name })}
               </Text>
             ))}
-            <Text style={styles.totalsHint}>{t('serviceSummary.lateOutHint')}</Text>
+            {/* «Goes into the next month» only where one does: an old late
+                report that went into no sheet says so on its own line. */}
+            {lateOut.some((l) => l.carriedTo) ? (
+              <Text style={styles.totalsHint}>{t('serviceSummary.lateOutHint')}</Text>
+            ) : null}
           </View>
         ) : null}
 

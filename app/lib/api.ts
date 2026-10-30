@@ -969,8 +969,11 @@ export interface LateOutReport {
   publisherId: string;
   name: string;
   filedAt: string;
-  /** The month whose sheet takes it, YYYY-MM-01. */
-  carriedTo: string;
+  /**
+   * The month whose sheet takes it, YYYY-MM-01 — null when it went into no
+   * sheet (handed in before late reports were carried over).
+   */
+  carriedTo: string | null;
   /** True when that month is already sent with it. */
   carriedKept: boolean;
 }
@@ -1042,8 +1045,11 @@ export interface ServiceReportSummary {
   sent?: SentMeta | null;
   /** The lines where what was sent and what the reports say now differ. */
   drift?: MonthlyDrift[];
-  /** What was entered after the month was kept, by whom it concerns. */
-  late?: (LateFact & { name: string })[];
+  /**
+   * What was entered after the month was kept, by whom it concerns.
+   * `notCounted`: a report of this month handed in late as «did not share».
+   */
+  late?: (LateFact & { name: string; notCounted?: boolean })[];
 }
 
 /** Who kept a sheet as sent, and when. */
