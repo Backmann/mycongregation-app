@@ -6214,5 +6214,12 @@
     },
     "lateHint": "By the instruction a late report goes into the next month’s report — so here it stands in the month it was sent in. Special pioneers and missionaries are not in the congregation’s report, but card 1 counts them.",
     "totalHours": "Hours in the year"
+  },
+  "print": {
+    "iosHomeScreen": {
+      "title": "Print from Safari",
+      "body": "In the app opened from the Home Screen icon, iPhone and iPad do not allow printing — an iOS limitation. Open mycongregation.org in Safari and tap the printer there: printing works.",
+      "ok": "Got it"
+    }
   }
 }

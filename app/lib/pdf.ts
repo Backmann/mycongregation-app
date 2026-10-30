@@ -2,6 +2,8 @@ import { Platform } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { fontsReady } from './print-fonts';
+import i18n from './i18n';
+import { confirm } from '../components/ConfirmHost';
 
 /**
  * Open a blank print window synchronously — call this inside a click handler,
@@ -36,6 +38,25 @@ function printsInPlace(): boolean {
     (window.matchMedia?.('(display-mode: standalone)').matches ?? false) ||
     (navigator as { standalone?: boolean }).standalone === true;
   return isIOS || standalone;
+}
+
+/**
+ * True on an iPhone or iPad running the app from the Home Screen.
+ *
+ * There iOS ignores print() altogether — in the page and in a frame alike —
+ * so every printer button in the app did nothing at all (Lionel, iPad, 30
+ * October 2026; in a Safari tab the same button prints). Said, not silent.
+ */
+function iosHomeScreen(): boolean {
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const isIOS =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && 'ontouchend' in document);
+  const standalone =
+    (window.matchMedia?.('(display-mode: standalone)').matches ?? false) ||
+    (navigator as { standalone?: boolean }).standalone === true;
+  return isIOS && standalone;
 }
 
 /**
@@ -108,6 +129,15 @@ export async function exportHtmlAsPdf(
   },
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
+    if (iosHomeScreen()) {
+      await confirm({
+        title: i18n.t('print.iosHomeScreen.title'),
+        body: i18n.t('print.iosHomeScreen.body'),
+        confirmLabel: i18n.t('print.iosHomeScreen.ok'),
+        info: true,
+      });
+      return { ok: false, reason: 'ios_home_screen' };
+    }
     if (printsInPlace()) {
       const title = opts?.fileName ?? 'document';
       const withTitle = html.includes('<title>')
