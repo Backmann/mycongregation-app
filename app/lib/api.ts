@@ -1059,6 +1059,35 @@ export interface ServiceReportSummary {
   late?: (LateFact & { name: string; notCounted?: boolean })[];
 }
 
+/** One month on the three totals cards (S-21), as it went to the branch. */
+export interface S21TotalsMonth {
+  /** YYYY-MM. */
+  month: string;
+  state: "sent" | "frozen" | "collecting" | "open" | "none" | "future";
+  /** Card 1: regular, special pioneers and missionaries in the field. */
+  pioneers: {
+    count: number;
+    hours: number;
+    studies: number;
+    /** Of the count: special pioneers and missionaries. */
+    directToBranch: number;
+  };
+  /** Card 2: auxiliary pioneers. */
+  auxiliary: { count: number; hours: number; studies: number };
+  /** Card 3: all other publishers. */
+  publishers: { count: number; studies: number };
+  /** Late reports of earlier months counted in this month, per card. */
+  late: { pioneers: number; auxiliary: number; publishers: number };
+}
+
+export interface S21Totals {
+  /** Named by its end: 2027 is September 2026–August 2027. */
+  serviceYear: number;
+  /** The month whose reports are being handed in now, YYYY-MM. */
+  collecting: string;
+  months: S21TotalsMonth[];
+}
+
 /** Who kept a sheet as sent, and when. */
 export interface SentMeta {
   /** false — nobody saved it; the app froze its own figures. */
@@ -5200,6 +5229,13 @@ export const serviceReportsApi = {
     const { data } = await api.get<ReportCollection>(
       "/service-reports/collection",
     );
+    return data;
+  },
+  /** The three totals cards (S-21) of a service year, as the months went. */
+  async getS21Totals(year?: number): Promise<S21Totals> {
+    const { data } = await api.get<S21Totals>("/service-reports/s21-totals", {
+      params: year ? { year } : {},
+    });
     return data;
   },
   async getSummary(reportMonth: string): Promise<ServiceReportSummary> {

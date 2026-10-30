@@ -4950,7 +4950,8 @@
     },
     "sub": {
       "summary": "Monatsergebnis der Versammlung",
-      "attendance": "Wie viele die Zusammenkünfte besuchten"
+      "attendance": "Wie viele die Zusammenkünfte besuchten",
+      "s21Totals": "Drei Sammelkarten für das Dienstjahr"
     },
     "live": {
       "reportDue": "{{month}}: Bericht nicht abgegeben",
@@ -6157,5 +6158,59 @@
       "creditNoteWhat": "Gutschrift: {{dur}} ({{what}})",
       "submitFor": "Bericht für {{month}} abgeben"
     }
+  },
+  "s21Totals": {
+    "title": "Sammelkarten S-21",
+    "yearShort": "{{from}}/{{to}}",
+    "yearLong": "Dienstjahr {{from}}/{{to}}",
+    "print": {
+      "formTitle": "Verkündigerkarte der Versammlung · Sammelkarte",
+      "count": "Berichte",
+      "studies": "Bibelstudien",
+      "hours": "Stunden",
+      "remarks": "Bemerkungen",
+      "total": "Summe",
+      "late_one": "davon verspätet: {{count}}",
+      "late_other": "davon verspätet: {{count}}",
+      "direct_one": "davon ans Zweigbüro: {{count}}",
+      "direct_other": "davon ans Zweigbüro: {{count}}",
+      "collecting": "Berichte kommen noch herein",
+      "open": "nicht gesendet",
+      "frozen": "von der App festgehalten",
+      "foot": "S-21 · Monat wie an das Zweigbüro gesendet; verspäteter Bericht im Monat, in dessen Bericht er einging."
+    },
+    "intro": "Die Summe jedes Monats auf drei Karten – so, wie der Monat an das Zweigbüro ging. Ein verspäteter Bericht steht in dem Monat, in dessen Bericht er einging; auf der persönlichen Karte S-21 bleibt er in seinem eigenen Monat.",
+    "cards": {
+      "pioneers": {
+        "kicker": "Karte 1 · im Feld tätig",
+        "title": "Allgemeine Pioniere, Sonderpioniere und Missionare"
+      },
+      "auxiliary": {
+        "kicker": "Karte 2",
+        "title": "Hilfspioniere"
+      },
+      "publishers": {
+        "kicker": "Karte 3",
+        "title": "Übrige Verkündiger"
+      }
+    },
+    "col": {
+      "month": "Monat",
+      "count": "Berichte",
+      "hours": "Std.",
+      "studies": "Bibelst."
+    },
+    "lateTag_one": "davon {{count}} verspätet",
+    "lateTag_other": "davon {{count}} verspätet",
+    "directTag_one": "davon ans Zweigbüro: {{count}}",
+    "directTag_other": "davon ans Zweigbüro: {{count}}",
+    "legend": {
+      "sent": "gesendet",
+      "frozen": "von der App festgehalten",
+      "collecting": "Berichte kommen herein",
+      "open": "nicht gesendet"
+    },
+    "lateHint": "Laut Anweisung geht ein verspäteter Bericht in den Bericht des nächsten Monats ein – deshalb steht er hier im Monat des Sendens. Sonderpioniere und Missionare sind nicht im Bericht der Versammlung, auf Karte 1 aber mitgezählt.",
+    "totalHours": "Stunden im Jahr"
   }
 }
