@@ -4,6 +4,7 @@ import * as Sharing from 'expo-sharing';
 import { fontsReady } from './print-fonts';
 import i18n from './i18n';
 import { confirm } from '../components/ConfirmHost';
+import { printDocsApi } from './api';
 
 /**
  * Open a blank print window synchronously — call this inside a click handler,
@@ -130,6 +131,31 @@ export async function exportHtmlAsPdf(
 ): Promise<{ ok: boolean; reason?: string }> {
   if (Platform.OS === 'web') {
     if (iosHomeScreen()) {
+      // The sheet goes to Safari, which prints: the server keeps it ten
+      // minutes behind a one-off link (print-docs). The link is opened in
+      // the tap on «Открыть в Safari» itself — after a wait iOS blocks it.
+      const titled = html.includes('<title>')
+        ? html
+        : html.replace('<head>', `<head><title>${opts?.fileName ?? 'document'}</title>`);
+      let url: string | null = null;
+      try {
+        url = await printDocsApi.create(titled);
+      } catch {
+        url = null;
+      }
+      if (url) {
+        const link = url;
+        await confirm({
+          title: i18n.t('print.viaSafari.title'),
+          body: i18n.t('print.viaSafari.body'),
+          confirmLabel: i18n.t('print.viaSafari.open'),
+          onConfirmTap: () => {
+            window.open(link, '_blank');
+          },
+        });
+        return { ok: true, reason: 'via_safari' };
+      }
+      // No link (offline, or an older server): say how to print at all.
       await confirm({
         title: i18n.t('print.iosHomeScreen.title'),
         body: i18n.t('print.iosHomeScreen.body'),

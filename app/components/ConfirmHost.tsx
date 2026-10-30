@@ -28,6 +28,11 @@ export interface ConfirmRequest {
   danger?: boolean;
   /** A notice with one button, not a question: no «Отмена» beside it. */
   info?: boolean;
+  /**
+   * Run inside the tap on the confirm button itself, before anything waits.
+   * Opening a window must happen there, or the browser blocks it.
+   */
+  onConfirmTap?: () => void;
 }
 
 type Pending = ConfirmRequest & { resolve: (ok: boolean) => void };
@@ -83,7 +88,10 @@ export function ConfirmHost() {
       iconBg={pending.danger ? '#fee2e2' : '#e0f2fe'}
       confirmLabel={pending.confirmLabel}
       confirmDanger={pending.danger}
-      onConfirm={() => close(true)}
+      onConfirm={() => {
+        pending.onConfirmTap?.();
+        close(true);
+      }}
       cancelLabel={pending.info ? undefined : (pending.cancelLabel ?? t('common.cancel'))}
       onCancel={() => close(false)}
     >

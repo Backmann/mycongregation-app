@@ -6872,3 +6872,17 @@ export const serviceLogApi = {
     await api.delete(`/service-log/entries/${id}`);
   },
 };
+
+/**
+ * A sheet handed to the server for Safari to print (30 October 2026): iOS
+ * does not print in an app opened from the Home Screen. The link lives ten
+ * minutes and opens without signing in; the server serves it sandboxed.
+ */
+export const printDocsApi = {
+  async create(html: string): Promise<string> {
+    const { data } = await api.post<{ token: string }>("/print-docs", html, {
+      headers: { "Content-Type": "text/html" },
+    });
+    return `${String(api.defaults.baseURL ?? "").replace(/\/$/, "")}/print-docs/${data.token}`;
+  },
+};

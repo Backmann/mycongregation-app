@@ -6220,6 +6220,11 @@
       "title": "Print from Safari",
       "body": "In the app opened from the Home Screen icon, iPhone and iPad do not allow printing — an iOS limitation. Open mycongregation.org in Safari and tap the printer there: printing works.",
       "ok": "Got it"
+    },
+    "viaSafari": {
+      "title": "Ready to print",
+      "body": "It opens in Safari, where the print window appears at once. The link works for 10 minutes.",
+      "open": "Open in Safari"
     }
   }
 }
