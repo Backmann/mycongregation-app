@@ -169,7 +169,7 @@ export default function AttendanceScreen() {
       monthName: (m) => capitalizeFirst(dayjs(m).locale(i18n.language).format('MMMM')),
       monthYearName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
       dayName: (d) => dayjs(d).locale(i18n.language).format('D MMMM'),
-      reasonName: (r) => (r ? t(`attendance.reason.${r}`) : null),
+      reasonName: (r) => (r ? t(`attendance.reason.${r}`).toLocaleLowerCase(i18n.language) : null),
       printedOn: dayjs().locale(i18n.language).format('D MMMM YYYY'),
       serviceYearLabel: (y) => t('attendance.serviceYear', { from: y, to: y + 1 }),
       labels: printLabels(),
