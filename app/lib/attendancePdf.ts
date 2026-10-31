@@ -86,7 +86,7 @@ const STYLE = `
   th { font-size: 7.5pt; font-weight: 700; line-height: 1.2; }
   td.mn { text-align: left; font-size: 9.5pt; }
   td.gap, th.gap { border-left: 2.5px solid #0f172a; }
-  td.foot { text-align: right; font-weight: 700; letter-spacing: .3px; }
+  td.avgline { text-align: right; font-weight: 700; letter-spacing: .3px; }
   td.avg { font-weight: 700; }
   .part { display: block; font-size: 6.5pt; color: #b45309; font-weight: 700; }
   td.nh { color: #94a3b8; }
@@ -160,8 +160,8 @@ export function buildS88Html(opts: {
         )}</tr></thead>
         <tbody>${body}
           <tr>
-            <td class="foot" colspan="3">${esc(L.perMonth)}</td><td class="avg">${yearly(year, kind)}</td>
-            <td class="foot gap" colspan="3">${esc(L.perMonth)}</td><td class="avg">${yearly(previous, kind)}</td>
+            <td class="avgline" colspan="3">${esc(L.perMonth)}</td><td class="avg">${yearly(year, kind)}</td>
+            <td class="avgline gap" colspan="3">${esc(L.perMonth)}</td><td class="avg">${yearly(previous, kind)}</td>
           </tr>
         </tbody>
       </table>`;
