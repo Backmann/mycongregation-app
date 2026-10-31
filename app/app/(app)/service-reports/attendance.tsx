@@ -40,10 +40,16 @@ const LINE = '#e2e8f0';
 const BRAND = '#0e7490';
 const AMBER = '#b45309';
 
-/** From this width the year is the S-3 sheet itself — a table. */
-const TABLE_FROM = 720;
+/**
+ * From this width the year is the S-3 sheet itself — a table. Ten week cells
+ * of ~40 points, the month column and four totals need about 770 points; on
+ * an iPad with the side panel beside it the row ran past its card and the
+ * year's line slid out from under its column (31 October 2026, Lionel's
+ * photo). So each width is chosen for what has to fit, not guessed.
+ */
+const TABLE_FROM = 820;
 /** …and from this one the gaps and the run of months stand beside it. */
-const SIDE_FROM = 1040;
+const SIDE_FROM = 1120;
 
 type Kind = 'midweek' | 'weekend';
 
@@ -498,6 +504,7 @@ function Sheet3({
   const { t } = useTranslation();
   const memorial = data.months.flatMap((m) => m.memorial ?? []);
   const y = data.yearly;
+  const ahead = data.months.filter((m) => m.month > thisMonth);
   return (
     <View style={styles.sheet}>
       <View style={styles.tr}>
@@ -514,33 +521,41 @@ function Sheet3({
         <View style={styles.gapCol} />
         <HeadCells />
       </View>
-      {data.months.map((m) => {
-        const future = m.month > thisMonth;
+      {data.months
+        .filter((m) => m.month <= thisMonth)
+        .map((m) => {
         return (
           <View
             key={m.month}
             style={[styles.tr, styles.monthRow, m.month === thisMonth && styles.curRow]}
           >
             <View style={styles.mnCell}>
-              <Text style={[styles.mn, future && { color: '#cbd5e1' }]}>
+              <Text style={styles.mn}>
                 {capitalizeFirst(dayjs(m.month).locale(language).format('MMMM YYYY'))}
               </Text>
               {m.month === thisMonth ? (
                 <Text style={styles.nowPill}>{t('attendance.page.now')}</Text>
               ) : null}
             </View>
-            {future ? (
-              <Text style={styles.ahead}>{t('attendance.page.ahead')}</Text>
-            ) : (
-              <>
-                <KindCells month={m} kind="midweek" onOpen={onOpen} language={language} prev={data.previous} />
-                <View style={styles.gapCol} />
-                <KindCells month={m} kind="weekend" onOpen={onOpen} language={language} prev={data.previous} />
-              </>
-            )}
+            <KindCells month={m} kind="midweek" onOpen={onOpen} language={language} prev={data.previous} />
+            <View style={styles.gapCol} />
+            <KindCells month={m} kind="weekend" onOpen={onOpen} language={language} prev={data.previous} />
           </View>
         );
       })}
+      {/* The months still ahead, as one line — ten rows of «впереди» pushed
+          the year's line below the fold (31 October 2026). The printed
+          sheet keeps all twelve. */}
+      {ahead.length ? (
+        <View style={[styles.tr, styles.monthRow]}>
+          <Text style={styles.ahead}>
+            {t('attendance.page.aheadMonths', {
+              from: dayjs(ahead[0].month).locale(language).format('MMMM'),
+              to: dayjs(ahead[ahead.length - 1].month).locale(language).format('MMMM'),
+            })}
+          </Text>
+        </View>
+      ) : null}
       <View style={[styles.tr, styles.footRow]}>
         <Text style={[styles.footLabel, styles.mnCell]}>
           {t('attendance.yearAverageRow')}
@@ -678,7 +693,7 @@ function Cell({
       >
         {row.notHeld ? '—' : row.recorded ? row.count : t('attendance.page.enterShort')}
       </Text>
-      <Text style={styles.cellDay}>
+      <Text style={styles.cellDay} numberOfLines={1}>
         {day}
         {row.offSchedule || row.note ? ' •' : ''}
       </Text>
@@ -928,7 +943,7 @@ const styles = StyleSheet.create({
   },
   // «Всего» and «Среднее» in capitals ran into each other in their columns.
   thWord: { textTransform: 'none', letterSpacing: 0, fontSize: 11 },
-  mnCell: { width: 132, paddingLeft: 8, flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  mnCell: { width: 124, paddingLeft: 8, flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
   mn: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: INK },
   nowPill: {
     fontFamily: 'Manrope_700Bold',
@@ -953,7 +968,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   kindCells: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  cellW: { flex: 1, minWidth: CELL - 6, marginHorizontal: 1.5 },
+  // No floor on the width: a floor is what pushed the row past its card.
+  cellW: { flex: 1, minWidth: 0, marginHorizontal: 1.5 },
   totW: { width: 50, marginLeft: 4 },
   avgW: { width: 62, marginLeft: 4, alignItems: 'center' },
   monthRow: { paddingVertical: 3, borderRadius: 10 },
@@ -978,7 +994,7 @@ const styles = StyleSheet.create({
   avg: { fontFamily: 'Manrope_800ExtraBold', fontSize: 16, color: BRAND },
   partial: { fontFamily: 'Manrope_700Bold', fontSize: 9.5, color: AMBER },
   prevAvg: { fontFamily: 'Manrope_500Medium', fontSize: 9.5, color: FAINT },
-  ahead: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 12, color: '#cbd5e1', paddingLeft: 8, paddingVertical: 6 },
+  ahead: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: FAINT, paddingLeft: 8, paddingVertical: 10 },
   footRow: { borderTopWidth: 2, borderTopColor: LINE, marginTop: 6, paddingTop: 10 },
   footLabel: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: MUTED },
   footNote: { fontFamily: 'Manrope_500Medium', fontSize: 11, color: FAINT, textAlign: 'right', paddingRight: 8 },
