@@ -562,8 +562,8 @@ export default function PublisherHistoryScreen() {
                   stands where he does — so the badge answers here too. */}
               {data && (
                 <StatusBadge
-                  status={data.publisher.status}
-                  isOverridden={data.publisher.statusManuallyOverridden}
+                  status={data.publisher.status ?? null}
+                  isOverridden={data.publisher.statusManuallyOverridden ?? false}
                   onPress={
                     canSeeStatuses && publisherId ? () => setExplain(true) : undefined
                   }

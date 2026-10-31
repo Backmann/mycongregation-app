@@ -479,6 +479,10 @@ function FilterSheet({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  // The service status comes to elders and admins only (31 October 2026):
+  // for anyone else the filter would have nothing to filter by.
+  const readsStatus = user?.role === 'admin' || user?.role === 'elder';
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) =>
     onChange({ ...filters, [key]: filters[key] === value ? null : value });
 
@@ -586,24 +590,28 @@ function FilterSheet({
               />
             </View>
 
-            <Text style={styles.filterSection}>{t('publishers.filter.statusSection')}</Text>
-            <View style={styles.chipWrap}>
-              <Chip
-                label={t('publishers.status.active')}
-                active={filters.status === 'active'}
-                onPress={() => set('status', 'active')}
-              />
-              <Chip
-                label={t('publishers.status.irregular')}
-                active={filters.status === 'irregular'}
-                onPress={() => set('status', 'irregular')}
-              />
-              <Chip
-                label={t('publishers.status.inactive')}
-                active={filters.status === 'inactive'}
-                onPress={() => set('status', 'inactive')}
-              />
-            </View>
+            {readsStatus ? (
+              <>
+                <Text style={styles.filterSection}>{t('publishers.filter.statusSection')}</Text>
+                <View style={styles.chipWrap}>
+                  <Chip
+                    label={t('publishers.status.active')}
+                    active={filters.status === 'active'}
+                    onPress={() => set('status', 'active')}
+                  />
+                  <Chip
+                    label={t('publishers.status.irregular')}
+                    active={filters.status === 'irregular'}
+                    onPress={() => set('status', 'irregular')}
+                  />
+                  <Chip
+                    label={t('publishers.status.inactive')}
+                    active={filters.status === 'inactive'}
+                    onPress={() => set('status', 'inactive')}
+                  />
+                </View>
+              </>
+            ) : null}
 
             <Text style={styles.filterSection}>{t('publishers.filter.standingSection')}</Text>
             <View style={styles.chipWrap}>
