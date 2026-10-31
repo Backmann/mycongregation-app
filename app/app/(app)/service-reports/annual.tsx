@@ -103,7 +103,7 @@ export default function AnnualReportScreen() {
   });
 
   // The year's line comes counted from the server — the one place it is
-  // counted, so this page, the S-3 sheet and the snapshot of what was sent
+  // counted, so this page, the S-88 sheet and the snapshot of what was sent
   // cannot disagree (31 October 2026). A month that has begun and holds no
   // figure at all is a gap to go and fill; one with only some of its meetings
   // entered is said too, since its average rests on fewer meetings.

@@ -4186,7 +4186,7 @@
       "inHall": "Im Saal",
       "online": "Per Video",
       "total": "Gesamt",
-      "sumHint": "In S-3, S-1 und S-10 geht nur die Gesamtzahl ein. Die Aufteilung dient dem Überblick; „per Video“ kann leer bleiben.",
+      "sumHint": "Zählen Sie einmal, in der Mitte der Zusammenkunft, zusammen mit denen, zu denen das Programm übertragen wird. In S-3, S-88, S-1 und S-10 geht die Gesamtzahl ein; die Aufteilung dient dem Überblick, „per Video“ kann leer bleiben.",
       "why": "Warum",
       "notHeldHint": "Eine Zusammenkunft, die nicht stattfand, zieht den Durchschnitt nicht nach unten — der Monat wird nach den abgehaltenen gerechnet.",
       "note": "Notiz",
@@ -4222,7 +4222,7 @@
       "lastEntry": "Letzter Eintrag",
       "prevYear": "Vorheriges Dienstjahr",
       "nextYear": "Nächstes Dienstjahr",
-      "print": "S-3 drucken",
+      "print": "Drucken",
       "sentAnnual": "S-10 für dieses Jahr gesendet mit {{midweek}} / {{weekend}}",
       "midweekYear": "Unter der Woche · Jahresdurchschnitt",
       "weekendYear": "Wochenende · Jahresdurchschnitt",
@@ -4252,8 +4252,33 @@
       "aheadMonths": "Bevorstehend: {{from}} – {{to}}"
     },
     "print": {
-      "basis": "aus {{count}} Monaten",
       "incomplete": "fehlt: {{count}}"
+    },
+    "forms": {
+      "printTitle": "Formulare drucken",
+      "s88Choice": "S-88 — Anwesenheit im Jahr",
+      "s88ChoiceSub": "{{year}} neben {{previous}}, wie im Formular: Anzahl der Zusammenkünfte, Anwesende insgesamt, Durchschnitt pro Woche",
+      "s3Choice": "S-3 — Bericht für einen Monat",
+      "s3ChoiceSub": "Wochen 1–5, Summe und Durchschnitt — unter der Woche und am Wochenende.",
+      "s88Title": "ANWESENHEIT BEI DEN ZUSAMMENKÜNFTEN DER VERSAMMLUNG",
+      "s3Title": "ANWESENHEIT BEI DEN ZUSAMMENKÜNFTEN",
+      "s3Hint": "(Zählen Sie die Anwesenden einmal in der Mitte jeder Zusammenkunft. Denken Sie auch an die, zu denen das Programm übertragen wird, weil sie weit entfernt wohnen oder das Haus nicht verlassen können.)",
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Zusammenkunft am Wochenende",
+      "midweekShort": "Unter der Woche",
+      "weekendShort": "Wochenende",
+      "meetings": "Anzahl der Zusammenkünfte",
+      "attended": "Anwesende insgesamt",
+      "perWeek": "Durchschnitt pro Woche",
+      "perMonth": "Durchschnitt pro Monat",
+      "notesTitle": "Bemerkungen:",
+      "incompleteMonth": "{{month}} — nicht erfasst: {{count}}",
+      "notHeld": "{{day}} — fand nicht statt",
+      "notHeldWhy": "{{day}} — fand nicht statt ({{reason}})",
+      "memorial": "Gedächtnismahl {{day}} — {{count}}",
+      "congregation": "Versammlung",
+      "month": "Monat",
+      "week": "{{n}}. Woche"
     }
   },
   "annualReport": {

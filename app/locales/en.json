@@ -4186,7 +4186,7 @@
       "inHall": "In the hall",
       "online": "By video",
       "total": "Total",
-      "sumHint": "Only the total goes into the S-3, S-1 and S-10. The split is for understanding; “by video” may stay empty.",
+      "sumHint": "Count once, in the middle of the meeting, including those the program is streamed to. The S-3, S-88, S-1 and S-10 take the total; the split is for understanding, “by video” may stay empty.",
       "why": "Why",
       "notHeldHint": "A meeting that was not held does not pull the average down — the month is counted by the meetings held.",
       "note": "Note",
@@ -4222,7 +4222,7 @@
       "lastEntry": "Last entry",
       "prevYear": "Previous service year",
       "nextYear": "Next service year",
-      "print": "Print S-3",
+      "print": "Print",
       "sentAnnual": "S-10 for this year sent with {{midweek}} / {{weekend}}",
       "midweekYear": "Midweek · year average",
       "weekendYear": "Weekend · year average",
@@ -4252,8 +4252,33 @@
       "aheadMonths": "Ahead: {{from}} – {{to}}"
     },
     "print": {
-      "basis": "over {{count}} months",
       "incomplete": "missing: {{count}}"
+    },
+    "forms": {
+      "printTitle": "Print forms",
+      "s88Choice": "S-88 — attendance for the year",
+      "s88ChoiceSub": "{{year}} beside {{previous}}, as on the form: number of meetings, total attendance, average each week",
+      "s3Choice": "S-3 — report for a month",
+      "s3ChoiceSub": "Weeks 1–5, total and average — midweek and weekend meetings.",
+      "s88Title": "CONGREGATION MEETING ATTENDANCE RECORD",
+      "s3Title": "MEETING ATTENDANCE REPORT",
+      "s3Hint": "(Count attendance once in the middle of each meeting. Remember to include those to whom the program is streamed because they live far away or cannot leave home.)",
+      "midweek": "Midweek meeting",
+      "weekend": "Weekend meeting",
+      "midweekShort": "Midweek",
+      "weekendShort": "Weekend",
+      "meetings": "Number of meetings",
+      "attended": "Total attendance",
+      "perWeek": "Average attendance each week",
+      "perMonth": "Average attendance each month",
+      "notesTitle": "Notes:",
+      "incompleteMonth": "{{month}} — not entered: {{count}}",
+      "notHeld": "{{day}} — not held",
+      "notHeldWhy": "{{day}} — not held ({{reason}})",
+      "memorial": "Memorial {{day}} — {{count}}",
+      "congregation": "Congregation",
+      "month": "Month",
+      "week": "Week {{n}}"
     }
   },
   "annualReport": {

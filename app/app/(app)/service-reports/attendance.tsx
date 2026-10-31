@@ -24,7 +24,12 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { LoadFailure } from '../../../components/LoadFailure';
-import { buildAttendancePdfHtml } from '../../../lib/attendancePdf';
+import {
+  buildS3Html,
+  buildS88Html,
+  type AttendancePrintLabels,
+} from '../../../lib/attendancePdf';
+import { Sheet } from '../../../components/Sheet';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { failsScreen } from '../../../lib/screen-failure';
 import { capitalizeFirst } from '../../../lib/relative-time';
@@ -54,7 +59,7 @@ const SIDE_FROM = 1120;
 type Kind = 'midweek' | 'weekend';
 
 /**
- * Meeting attendance for a service year — form S-3 (rebuilt 31 October 2026).
+ * Meeting attendance for a service year — form S-88, and S-3 for a month (rebuilt 31 October 2026).
  *
  * One page, two uses: it is where a figure is entered or corrected AND it is
  * the sheet handed to the circuit overseer. On a wide screen it IS the sheet
@@ -114,33 +119,80 @@ export default function AttendanceScreen() {
 
   const refresh = () => void qc.invalidateQueries({ queryKey: ['attendance'] });
 
-  const print = () => {
+  const [printing, setPrinting] = useState(false);
+  const congregationName = overview.data?.congregation?.name ?? '';
+  const printLabels = (): AttendancePrintLabels => ({
+    s88Title: t('attendance.forms.s88Title'),
+    midweek: t('attendance.forms.midweek'),
+    weekend: t('attendance.forms.weekend'),
+    meetings: t('attendance.forms.meetings'),
+    attended: t('attendance.forms.attended'),
+    perWeek: t('attendance.forms.perWeek'),
+    perMonth: t('attendance.forms.perMonth'),
+    notesTitle: t('attendance.forms.notesTitle'),
+    incomplete: (n) => t('attendance.print.incomplete', { count: n }),
+    incompleteMonth: (month, n) => t('attendance.forms.incompleteMonth', { month, count: n }),
+    notHeld: (day, reason) =>
+      reason
+        ? t('attendance.forms.notHeldWhy', { day, reason })
+        : t('attendance.forms.notHeld', { day }),
+    memorial: (day, count) => t('attendance.forms.memorial', { day, count }),
+    s3Title: t('attendance.forms.s3Title'),
+    s3Hint: t('attendance.forms.s3Hint'),
+    congregation: t('attendance.forms.congregation'),
+    month: t('attendance.forms.month'),
+    week: (n) => t('attendance.forms.week', { n }),
+    total: t('attendance.totalShort'),
+    average: t('attendance.averageShort'),
+    midweekShort: t('attendance.forms.midweekShort'),
+    weekendShort: t('attendance.forms.weekendShort'),
+    legend: t('attendance.printLegend'),
+    printed: t('attendance.printedOn'),
+  });
+
+  /** S-88 — this service year beside the one before it. */
+  const printS88 = async () => {
     if (!data) return;
-    // Opened inside the click so the browser does not treat it as a popup.
+    // Opened inside the tap so the browser does not treat it as a popup.
     const preopened = openPrintWindow();
-    const html = buildAttendancePdfHtml({
+    setPrinting(false);
+    const previous = await qc
+      .fetchQuery({
+        queryKey: ['attendance', 'year', year - 1],
+        queryFn: () => attendanceApi.serviceYear(year - 1),
+      })
+      .catch(() => null);
+    const html = buildS88Html({
       year: data,
-      congregationName: overview.data?.congregation?.name ?? '',
-      monthName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
+      previous,
+      congregationName,
+      monthName: (m) => capitalizeFirst(dayjs(m).locale(i18n.language).format('MMMM')),
+      monthYearName: (m) => dayjs(m).locale(i18n.language).format('MMMM YYYY'),
       dayName: (d) => dayjs(d).locale(i18n.language).format('D MMMM'),
+      reasonName: (r) => (r ? t(`attendance.reason.${r}`) : null),
       printedOn: dayjs().locale(i18n.language).format('D MMMM YYYY'),
-      labels: {
-        title: t('attendance.pageTitle'),
-        serviceYear: t('attendance.serviceYear', { from: year, to: year + 1 }),
-        month: t('attendance.monthColumn'),
-        total: t('attendance.totalShort'),
-        average: t('attendance.averageShort'),
-        midweek: t('eventTypes.midweek'),
-        weekend: t('eventTypes.weekend'),
-        notHeld: t('attendance.printLegend'),
-        memorial: t('eventTypes.memorial'),
-        printed: t('attendance.printedOn'),
-        yearAverage: t('attendance.yearAverageRow'),
-        months: (n: number) => t('attendance.print.basis', { count: n }),
-        incomplete: (n: number) => t('attendance.print.incomplete', { count: n }),
-      },
+      serviceYearLabel: (y) => t('attendance.serviceYear', { from: y, to: y + 1 }),
+      labels: printLabels(),
     });
-    void exportHtmlAsPdf(html, { fileName: 'S-3', preopenedWindow: preopened });
+    void exportHtmlAsPdf(html, { fileName: 'S-88', preopenedWindow: preopened });
+  };
+
+  /** S-3 — one month, as the slip. */
+  const printS3 = (m: AttendanceMonth) => {
+    const preopened = openPrintWindow();
+    setPrinting(false);
+    const html = buildS3Html({
+      month: m,
+      congregationName,
+      monthLabel: capitalizeFirst(dayjs(m.month).locale(i18n.language).format('MMMM YYYY')),
+      printedOn: dayjs().locale(i18n.language).format('D MMMM YYYY'),
+      labels: printLabels(),
+    });
+    void exportHtmlAsPdf(html, {
+      fileName: `S-3-${m.month.slice(0, 7)}`,
+      preopenedWindow: preopened,
+      landscape: true,
+    });
   };
 
   if (query.isLoading) {
@@ -225,7 +277,7 @@ export default function AttendanceScreen() {
               />
             </Pressable>
           </View>
-          <Pressable onPress={print} style={styles.printBtn} accessibilityRole="button">
+          <Pressable onPress={() => setPrinting(true)} style={styles.printBtn} accessibilityRole="button">
             <Ionicons name="print-outline" size={16} color={BRAND} />
             {table ? <Text style={styles.printText}>{t('attendance.page.print')}</Text> : null}
           </Pressable>
@@ -278,6 +330,44 @@ export default function AttendanceScreen() {
           </>
         )}
       </ScrollView>
+
+      <Sheet
+        visible={printing}
+        title={t('attendance.forms.printTitle')}
+        onClose={() => setPrinting(false)}
+        variant={width >= TABLE_FROM ? 'centered' : 'bottom'}
+      >
+        <View style={{ gap: 10 }}>
+          <Pressable style={styles.printChoice} onPress={() => void printS88()} accessibilityRole="button">
+            <Text style={styles.printChoiceTitle}>{t('attendance.forms.s88Choice')}</Text>
+            <Text style={styles.printChoiceSub}>
+              {t('attendance.forms.s88ChoiceSub', {
+                year: t('attendance.serviceYear', { from: year, to: year + 1 }),
+                previous: t('attendance.serviceYear', { from: year - 1, to: year }),
+              })}
+            </Text>
+          </Pressable>
+          <Text style={styles.printGroup}>{t('attendance.forms.s3Choice')}</Text>
+          <View style={styles.printMonths}>
+            {data.months
+              .filter((m) => m.month <= thisMonth)
+              .reverse()
+              .map((m) => (
+                <Pressable
+                  key={m.month}
+                  style={styles.printMonth}
+                  onPress={() => printS3(m)}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.printMonthText}>
+                    {capitalizeFirst(dayjs(m.month).locale(i18n.language).format('MMMM YYYY'))}
+                  </Text>
+                </Pressable>
+              ))}
+          </View>
+          <Text style={styles.printChoiceSub}>{t('attendance.forms.s3ChoiceSub')}</Text>
+        </View>
+      </Sheet>
 
       <AttendanceEditor
         visible={!!open}
@@ -864,6 +954,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   printText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
+  printChoice: { backgroundColor: '#fff', borderWidth: 1, borderColor: LINE, borderRadius: 14, padding: 14 },
+  printChoiceTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: INK },
+  printChoiceSub: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, lineHeight: 18, color: MUTED, marginTop: 2 },
+  printGroup: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 6 },
+  printMonths: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  printMonth: { backgroundColor: '#fff', borderWidth: 1, borderColor: LINE, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 13 },
+  printMonthText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: BRAND },
 
   kpis: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   kpi: {
