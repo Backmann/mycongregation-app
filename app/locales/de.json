@@ -3792,7 +3792,8 @@
     "lateOutKept": "{{name}} – im gesendeten Bericht für {{month}}",
     "lateOutHint": "Wer verspätet berichtet, gilt nicht als unregelmäßig: Der Bericht kommt in den Bericht des nächsten Monats. Diesen Monat nicht erneut öffnen.",
     "directToBranchShort": "Berichten direkt an das Zweigbüro",
-    "lateOutMissed": "{{name}} – der Bericht ist in keinem gesendeten Bericht enthalten: abgegeben, bevor verspätete Berichte übertragen wurden"
+    "lateOutMissed": "{{name}} – der Bericht ist in keinem gesendeten Bericht enthalten: abgegeben, bevor verspätete Berichte übertragen wurden",
+    "attendanceIncomplete": "In diesem Monat fehlt die Anwesenheit von {{count}} Zusammenkunft/Zusammenkünften — der Durchschnitt ist aus den übrigen gerechnet. Tragen Sie sie vor dem Senden unter „Anwesenheit der Zusammenkünfte“ ein."
   },
   "journal": {
     "title": "Änderungsprotokoll",
@@ -4143,13 +4144,7 @@
     "saved": "Erfasst",
     "pageTitle": "Zusammenkunftsbesuch",
     "serviceYear": "Dienstjahr {{from}}/{{to}}",
-    "average": "Durchschnitt",
     "nothingYet": "Nichts erfasst",
-    "notHeldShort": "fand nicht statt",
-    "yearAverageNote": "Jahresdurchschnitt · Monate: {{count}}",
-    "notHeldConfirmTitle": "Die Zusammenkunft fand nicht statt?",
-    "notHeldConfirmBody": "Erfassen, dass am {{date}} keine Zusammenkunft stattfand. Das lässt sich auf der Besuchsseite korrigieren.",
-    "backlog": "Noch {{count}} ohne Eintrag im Dienstjahr",
     "missing": "nicht erfasst",
     "corrected": "geändert",
     "monthColumn": "Monat",
@@ -4158,7 +4153,109 @@
     "printLegend": "— fand nicht statt · gelbe Zelle — nicht erfasst",
     "printedOn": "Gedruckt",
     "yearAverageRow": "Durchschnitt des Dienstjahres",
-    "offSchedule": "Tag ohne planmäßige Zusammenkunft"
+    "queued": "Keine Verbindung — die Zahl ist auf dem Telefon gespeichert und wird von selbst gesendet",
+    "queueSent": "Die ohne Verbindung gespeicherten Zahlen wurden gesendet",
+    "backlog_one": "Anwesenheit: {{count}} Zusammenkunft ohne Eintrag",
+    "backlog_other": "Anwesenheit: {{count}} Zusammenkünfte ohne Eintrag",
+    "backlogWithPrevious_one": "Anwesenheit: {{count}} Zusammenkunft ohne Eintrag, davon {{previous}} aus dem Vorjahr — für den S-10 nötig",
+    "backlogWithPrevious_other": "Anwesenheit: {{count}} Zusammenkünfte ohne Eintrag, davon {{previous}} aus dem Vorjahr — für den S-10 nötig",
+    "split": "im Saal {{hall}} · per Video {{online}}",
+    "check": {
+      "zeroTitle": "Niemand anwesend?",
+      "zeroBody": "Die Zusammenkunft fand statt, aber mit 0 Anwesenden. Wenn sie nicht stattfand, wählen Sie „Fand nicht statt“ — dann zieht sie den Durchschnitt nicht nach unten.",
+      "zeroYes": "Ja, 0 eintragen",
+      "bigTitle": "Wirklich {{count}}?",
+      "bigBody": "Üblich sind bei dieser Zusammenkunft etwa {{typical}}. {{count}} ist mehr als das Doppelte — vielleicht eine Ziffer zu viel.",
+      "bigYes": "Ja, {{count}}",
+      "sentTitle": "Bericht schon gesendet",
+      "sentYes": "Trotzdem ändern",
+      "sentAnnual": "Der Jahresbericht S-10 für dieses Dienstjahr wurde schon mit den Durchschnitten {{midweek}} (unter der Woche) und {{weekend}} (Wochenende) gesendet. Nach der Änderung weicht die Tabelle davon ab.",
+      "sentMonthly": "Der Bericht S-1 für {{month}} wurde schon gesendet — mit dem bisherigen Durchschnitt."
+    },
+    "conflict": {
+      "title": "Schon eingetragen",
+      "body": "{{name}} hat schon eingetragen: {{count}} ({{when}}).",
+      "bodyNotHeld": "{{name}} hat schon eingetragen, dass sie nicht stattfand ({{when}}).",
+      "someone": "Ein anderer Bruder",
+      "replace": "Durch {{count}} ersetzen",
+      "replaceNotHeld": "Ersetzen: fand nicht statt",
+      "dropped": "Die Zahl für den {{date}} wurde nicht gesendet: {{name}} hat schon {{count}} eingetragen."
+    },
+    "editor": {
+      "held": "Fand statt",
+      "inHall": "Im Saal",
+      "online": "Per Video",
+      "total": "Gesamt",
+      "sumHint": "In S-3, S-1 und S-10 geht nur die Gesamtzahl ein. Die Aufteilung dient dem Überblick; „per Video“ kann leer bleiben.",
+      "why": "Warum",
+      "notHeldHint": "Eine Zusammenkunft, die nicht stattfand, zieht den Durchschnitt nicht nach unten — der Monat wird nach den abgehaltenen gerechnet.",
+      "note": "Notiz",
+      "notePlaceholder": "Zum Beispiel: Saal geschlossen, nur per Video",
+      "addNote": "+ Notiz",
+      "moveTo": "Diese Zahl verschieben auf die Zusammenkunft",
+      "offSchedule": "Nach dem jetzigen Plan gibt es an diesem Tag keine solche Zusammenkunft — der Tag hat sich nach dem Eintrag geändert. Die Zahl zählt im Monat; Sie können sie auf die richtige Zusammenkunft verschieben oder löschen.",
+      "saveCount": "Speichern · {{count}}",
+      "saveNotHeld": "Eintragen: fand nicht statt",
+      "remove": "Eintrag löschen",
+      "removeTitle": "Eintrag löschen?",
+      "removeBody": "{{kind}}, {{date}} wird wieder „nicht erfasst“. Im Protokoll bleibt, was eingetragen war.",
+      "removed": "Eintrag gelöscht",
+      "moved": "Zahl verschoben"
+    },
+    "reason": {
+      "weather": "Wetter",
+      "hall": "Saal nicht verfügbar",
+      "other": "Anderes"
+    },
+    "card": {
+      "addOnline": "+ per Video",
+      "sumHint": "Gespeichert wird die Summe",
+      "done": "Eingetragen: {{count}}",
+      "doneSplit": "Eingetragen: {{count}}, davon {{online}} per Video",
+      "doneNotHeld": "Eingetragen: fand nicht statt",
+      "change": "Ändern",
+      "waiting_one": "{{count}} Zahl wartet auf Verbindung und wird von selbst gesendet",
+      "waiting_other": "{{count}} Zahlen warten auf Verbindung und werden von selbst gesendet"
+    },
+    "page": {
+      "basis": "aus {{count}} Monaten mit Einträgen",
+      "lastEntry": "Letzter Eintrag",
+      "prevYear": "Vorheriges Dienstjahr",
+      "nextYear": "Nächstes Dienstjahr",
+      "print": "S-3 drucken",
+      "sentAnnual": "S-10 für dieses Jahr gesendet mit {{midweek}} / {{weekend}}",
+      "midweekYear": "Unter der Woche · Jahresdurchschnitt",
+      "weekendYear": "Wochenende · Jahresdurchschnitt",
+      "lastYear": "Vorjahr {{value}}",
+      "onlineShare": "per Video ~{{value}}",
+      "recorded": "Erfasst",
+      "ofMeetings_one": "von {{count}} Zusammenkunft",
+      "ofMeetings_other": "von {{count}} Zusammenkünften",
+      "memorialAhead": "noch bevorstehend",
+      "toEnter": "Einzutragen · {{count}}",
+      "enter": "Eintragen",
+      "look": "Öffnen",
+      "moreGaps": "und {{count}} weitere — gelb in der Tabelle",
+      "gapsNote": "Solange sie fehlen, ist der Durchschnitt dieser Monate aus weniger Zusammenkünften gerechnet — im S-1 wie im S-10.",
+      "byMonth": "Nach Monaten",
+      "prevYearMark": "Vorjahr",
+      "now": "jetzt",
+      "ahead": "bevorstehend",
+      "enterShort": "eintragen",
+      "group": {
+        "midweek": "Unter der Woche",
+        "weekend": "Wochenende"
+      },
+      "ofHeld": "{{count}} von {{total}}",
+      "prevShort": "Vj. {{value}}",
+      "monthAvg": "Ø {{midweek}} / {{weekend}}",
+      "incomplete": "unvollständig",
+      "aheadMonths": "Bevorstehend: {{from}} – {{to}}"
+    },
+    "print": {
+      "basis": "aus {{count}} Monaten",
+      "incomplete": "fehlt: {{count}}"
+    }
   },
   "annualReport": {
     "pageTitle": "Jahresbericht der Versammlung",
@@ -4185,7 +4282,8 @@
     "byHandTerritories": "Gesamtzahl der Gebiete",
     "byHandUnworked": "Nicht bearbeitete Gebiete im Jahr",
     "byHandBranchHelp": "Bereit, Hilfe vom Zweigbüro anzunehmen",
-    "averageBasis": "Durchschnitt · Monate mit Einträgen: {{count}}"
+    "averageBasis": "Durchschnitt · Monate mit Einträgen: {{count}}",
+    "partialMonths": "In {{count}} Monaten sind nicht alle Zusammenkünfte erfasst — ihr Durchschnitt ist aus weniger Zusammenkünften gerechnet."
   },
   "notificationPrefs": {
     "title": "Benachrichtigungen",
@@ -5578,7 +5676,14 @@
       "PIONEER_NO_QUOTA_DATE": "Das Datum des Beschlusses liegt in seinem jetzigen Pionierdienst und spätestens heute.",
       "PIONEER_MEETING_NOT_FOUND": "Dieses Treffen gibt es nicht — bitte neu laden.",
       "PIONEER_MEETING_INVALID": "Ein Datum ist nötig, die Zeit als HH:MM, und das Ende nach dem Beginn.",
-      "PIONEER_MEETING_NOT_ELDER": "Das Treffen mit den Pionieren leitet ein Ältester."
+      "PIONEER_MEETING_NOT_ELDER": "Das Treffen mit den Pionieren leitet ein Ältester.",
+      "ATTENDANCE_ONLINE_TOO_MANY": "Die per Video Verbundenen gehören zur Gesamtzahl und können nicht mehr sein als sie.",
+      "ATTENDANCE_NOT_FOUND": "Diesen Eintrag gibt es nicht — vielleicht wurde er schon gelöscht.",
+      "ATTENDANCE_MOVE_TARGET": "Diese Zusammenkunft hat schon ihre eigene Zahl.",
+      "ATTENDANCE_ALREADY_RECORDED": "Diese Zusammenkunft hat schon ein anderer Bruder eingetragen.",
+      "ATTENDANCE_FUTURE": "Diese Zusammenkunft hat noch nicht stattgefunden.",
+      "ATTENDANCE_NOT_A_MEETING": "An diesem Tag gibt es keine solche Zusammenkunft.",
+      "ATTENDANCE_YEAR_INVALID": "Dieses Dienstjahr gibt es nicht."
     }
   },
   "stage": {

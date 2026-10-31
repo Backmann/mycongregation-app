@@ -160,6 +160,10 @@ function routeForNotification(data) {
       return data.role === 'c' && data.meetingId
         ? { path: '/service-reports/pioneer-meeting', params: { id: data.meetingId } }
         : { path: '/home', params: {} };
+    // Today's meeting still without its attendance figure (20:00): the card
+    // on Home takes it in one field.
+    case 'attendance_due':
+      return { path: '/home', params: {} };
     // A month became auxiliary after his report came without hours.
     case 'aux_report_hours':
       return data.reportId
