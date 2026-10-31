@@ -190,13 +190,17 @@ export function usePermissions(): Permissions {
         holds("attendance_recorder") ||
         // The figure is entered while it is still in somebody's hand; one
         // brother away on a Thursday should not cost the week its record.
-        holds("attendance_recorder_assistant"),
+        holds("attendance_recorder_assistant") ||
+        // Lionel, 31 October 2026.
+        holds("duties_coordinator"),
+      // The elders read it and change nothing.
       canViewAttendance:
         isAdmin ||
         isElder ||
         holds("secretary") ||
         holds("attendance_recorder") ||
-        holds("attendance_recorder_assistant"),
+        holds("attendance_recorder_assistant") ||
+        holds("duties_coordinator"),
       canSubmitReportForOthers: isAdmin || isElder,
       canGenerateS21: isAdmin || isElder,
 

@@ -3792,7 +3792,8 @@
     "lateOutKept": "{{name}} — in the sent report for {{month}}",
     "lateOutHint": "A late reporter is not counted irregular: the report goes into the next month’s report. There is no need to reopen this month.",
     "directToBranchShort": "They report to the branch directly",
-    "lateOutMissed": "{{name}} — the report is in no sent report: submitted before late reports were carried over"
+    "lateOutMissed": "{{name}} — the report is in no sent report: submitted before late reports were carried over",
+    "attendanceIncomplete": "Attendance of {{count}} meeting(s) this month is not entered — the average is counted from the rest. Enter them in “Meeting attendance” before sending."
   },
   "journal": {
     "title": "Activity log",
@@ -4143,13 +4144,7 @@
     "saved": "Recorded",
     "pageTitle": "Meeting attendance",
     "serviceYear": "Service year {{from}}/{{to}}",
-    "average": "average",
     "nothingYet": "Nothing recorded",
-    "notHeldShort": "not held",
-    "yearAverageNote": "Yearly average over {{count}} months",
-    "notHeldConfirmTitle": "The meeting was not held?",
-    "notHeldConfirmBody": "Record that no meeting took place on {{date}}. You can correct this on the attendance page.",
-    "backlog": "{{count}} more unrecorded this service year",
     "missing": "not entered",
     "corrected": "corrected",
     "monthColumn": "Month",
@@ -4158,7 +4153,109 @@
     "printLegend": "— meeting not held · yellow cell — not entered",
     "printedOn": "Printed",
     "yearAverageRow": "Average for the service year",
-    "offSchedule": "day without a scheduled meeting"
+    "queued": "No connection — the figure is kept on the phone and will be sent by itself",
+    "queueSent": "The figures kept without a connection have been sent",
+    "backlog_one": "Attendance: {{count}} meeting not recorded",
+    "backlog_other": "Attendance: {{count}} meetings not recorded",
+    "backlogWithPrevious_one": "Attendance: {{count}} meeting not recorded, {{previous}} of them last year — needed for the S-10",
+    "backlogWithPrevious_other": "Attendance: {{count}} meetings not recorded, {{previous}} of them last year — needed for the S-10",
+    "split": "in the hall {{hall}} · by video {{online}}",
+    "check": {
+      "zeroTitle": "Nobody there?",
+      "zeroBody": "The meeting was held, with 0 present. If it was not held, choose “Not held” — then it does not pull the average down.",
+      "zeroYes": "Yes, record 0",
+      "bigTitle": "Really {{count}}?",
+      "bigBody": "This meeting usually has about {{typical}}. {{count}} is more than twice that — perhaps an extra digit.",
+      "bigYes": "Yes, {{count}}",
+      "sentTitle": "Report already sent",
+      "sentYes": "Change anyway",
+      "sentAnnual": "The S-10 for this service year was already sent with averages {{midweek}} (midweek) and {{weekend}} (weekend). After the change the sheet will differ from it.",
+      "sentMonthly": "The S-1 for {{month}} was already sent — with the previous average."
+    },
+    "conflict": {
+      "title": "Already recorded",
+      "body": "{{name}} already recorded {{count}} ({{when}}).",
+      "bodyNotHeld": "{{name}} already recorded that it was not held ({{when}}).",
+      "someone": "Another brother",
+      "replace": "Replace with {{count}}",
+      "replaceNotHeld": "Replace: not held",
+      "dropped": "The figure for {{date}} was not sent: {{name}} already recorded {{count}}."
+    },
+    "editor": {
+      "held": "Held",
+      "inHall": "In the hall",
+      "online": "By video",
+      "total": "Total",
+      "sumHint": "Only the total goes into the S-3, S-1 and S-10. The split is for understanding; “by video” may stay empty.",
+      "why": "Why",
+      "notHeldHint": "A meeting that was not held does not pull the average down — the month is counted by the meetings held.",
+      "note": "Note",
+      "notePlaceholder": "For example: hall closed, the meeting was by video only",
+      "addNote": "+ Note",
+      "moveTo": "Move this figure to the meeting",
+      "offSchedule": "By the current schedule there is no such meeting on this day — the meeting day changed after the figure was entered. It counts in the month; you can move it to the right meeting or delete it.",
+      "saveCount": "Save · {{count}}",
+      "saveNotHeld": "Record: not held",
+      "remove": "Delete entry",
+      "removeTitle": "Delete the entry?",
+      "removeBody": "{{kind}}, {{date}} becomes “not entered” again. The journal keeps what was recorded.",
+      "removed": "Entry deleted",
+      "moved": "Figure moved"
+    },
+    "reason": {
+      "weather": "Weather",
+      "hall": "Hall unavailable",
+      "other": "Other"
+    },
+    "card": {
+      "addOnline": "+ by video",
+      "sumHint": "The sum is saved",
+      "done": "Recorded: {{count}}",
+      "doneSplit": "Recorded: {{count}}, {{online}} of them by video",
+      "doneNotHeld": "Recorded: not held",
+      "change": "Change",
+      "waiting_one": "{{count}} figure is waiting for a connection and will be sent by itself",
+      "waiting_other": "{{count}} figures are waiting for a connection and will be sent by themselves"
+    },
+    "page": {
+      "basis": "over {{count}} months with entries",
+      "lastEntry": "Last entry",
+      "prevYear": "Previous service year",
+      "nextYear": "Next service year",
+      "print": "Print S-3",
+      "sentAnnual": "S-10 for this year sent with {{midweek}} / {{weekend}}",
+      "midweekYear": "Midweek · year average",
+      "weekendYear": "Weekend · year average",
+      "lastYear": "last year {{value}}",
+      "onlineShare": "by video ~{{value}}",
+      "recorded": "Entered",
+      "ofMeetings_one": "of {{count}} meeting",
+      "ofMeetings_other": "of {{count}} meetings",
+      "memorialAhead": "still ahead",
+      "toEnter": "To enter · {{count}}",
+      "enter": "Enter",
+      "look": "Open",
+      "moreGaps": "and {{count}} more — yellow in the table",
+      "gapsNote": "Until they are entered, these months’ averages rest on fewer meetings — in the S-1 and the S-10 alike.",
+      "byMonth": "By month",
+      "prevYearMark": "last year",
+      "now": "now",
+      "ahead": "ahead",
+      "enterShort": "enter",
+      "group": {
+        "midweek": "Midweek meetings",
+        "weekend": "Weekend meetings"
+      },
+      "ofHeld": "{{count}} of {{total}}",
+      "prevShort": "ly {{value}}",
+      "monthAvg": "avg {{midweek}} / {{weekend}}",
+      "incomplete": "incomplete",
+      "aheadMonths": "Ahead: {{from}} – {{to}}"
+    },
+    "print": {
+      "basis": "over {{count}} months",
+      "incomplete": "missing: {{count}}"
+    }
   },
   "annualReport": {
     "pageTitle": "Annual congregation report",
@@ -4185,7 +4282,8 @@
     "byHandTerritories": "Total number of territories",
     "byHandUnworked": "Territories not covered this year",
     "byHandBranchHelp": "Willing to accept help from the branch",
-    "averageBasis": "Average over {{count}} months with records"
+    "averageBasis": "Average over {{count}} months with records",
+    "partialMonths": "In {{count}} months not every meeting is entered — their averages rest on fewer meetings."
   },
   "notificationPrefs": {
     "title": "Notifications",
@@ -5578,7 +5676,14 @@
       "PIONEER_NO_QUOTA_DATE": "The decision is a day of his present pioneering, today at the latest.",
       "PIONEER_MEETING_NOT_FOUND": "There is no such meeting — refresh the screen.",
       "PIONEER_MEETING_INVALID": "A date is needed, and a time as HH:MM that ends after it starts.",
-      "PIONEER_MEETING_NOT_ELDER": "The meeting with the pioneers is conducted by an elder."
+      "PIONEER_MEETING_NOT_ELDER": "The meeting with the pioneers is conducted by an elder.",
+      "ATTENDANCE_ONLINE_TOO_MANY": "Those by video are part of the total and cannot be more than it.",
+      "ATTENDANCE_NOT_FOUND": "There is no such attendance entry — perhaps it was already deleted.",
+      "ATTENDANCE_MOVE_TARGET": "That meeting already has its own figure.",
+      "ATTENDANCE_ALREADY_RECORDED": "Another brother has already recorded this meeting.",
+      "ATTENDANCE_FUTURE": "That meeting has not taken place yet.",
+      "ATTENDANCE_NOT_A_MEETING": "There is no such meeting on that day.",
+      "ATTENDANCE_YEAR_INVALID": "There is no such service year."
     }
   },
   "stage": {

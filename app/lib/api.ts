@@ -6417,11 +6417,19 @@ export const journalApi = {
 
 // ------------------------------------------------- Посещаемость встреч (S-3)
 
+export type AttendanceKind = "midweek" | "weekend" | "memorial";
+export type NotHeldReason = "weather" | "hall" | "other";
+
 export interface AttendanceRow {
   date: string;
-  eventType: "midweek" | "weekend";
+  eventType: AttendanceKind;
+  /** Everyone present — in the hall and by video; what every form reads. */
   count: number | null;
+  /** The part of `count` that joined by video; null when nobody said. */
+  onlineCount?: number | null;
   notHeld: boolean;
+  notHeldReason?: NotHeldReason | null;
+  note?: string | null;
   /** False when the meeting happened but no figure has been entered yet. */
   recorded: boolean;
   /** Who entered the figure and when it was last written. */
@@ -6451,23 +6459,76 @@ export interface AttendanceMonth {
    */
   memorial: AttendanceRow[];
   memorialTotal: number;
+  /** Meetings of the month that took place and have no figure yet. */
+  midweekMissing?: number;
+  weekendMissing?: number;
+  midweekOnlineAverage?: number | null;
+  weekendOnlineAverage?: number | null;
+}
+
+/** The year's line, counted on the server and nowhere else. */
+export interface AttendanceYearly {
+  midweekAverage: number | null;
+  weekendAverage: number | null;
+  midweekMonths: number;
+  weekendMonths: number;
+  midweekOnlineAverage: number | null;
+  weekendOnlineAverage: number | null;
+  expected: number;
+  recorded: number;
 }
 
 export interface AttendanceYear {
   startYear: number;
   months: AttendanceMonth[];
+  yearly?: AttendanceYearly;
+  gaps?: { date: string; eventType: AttendanceKind }[];
+  previous?: {
+    months: {
+      month: string;
+      midweekAverage: number | null;
+      weekendAverage: number | null;
+    }[];
+    midweekAverage: number | null;
+    weekendAverage: number | null;
+  } | null;
+  /** What already went to the branch. */
+  sent?: {
+    annual: { midweekAverage: number | null; weekendAverage: number | null } | null;
+    months: string[];
+  };
 }
 
 /** A meeting already held with no figure yet. */
 export interface PendingMeeting {
   date: string;
-  eventType: "midweek" | "weekend";
+  eventType: AttendanceKind;
 }
 
 export interface PendingAttendance {
+  /** Today's meetings open for a figure and still without one. */
   meetings: PendingMeeting[];
-  /** Everything still unrecorded in the current service year. */
+  /** Today's meetings that have one — «Записано: 96 · изменить». */
+  recordedToday?: AttendanceRow[];
+  /** Every meeting still without a figure (the closed year's too, to 20 September). */
   outstandingThisYear: number;
+  outstandingPreviousYear?: number;
+  /** The newest few of them. */
+  gaps?: PendingMeeting[];
+}
+
+export interface AttendanceInput {
+  date: string;
+  eventType: AttendanceKind;
+  count?: number;
+  onlineCount?: number | null;
+  notHeld?: boolean;
+  notHeldReason?: NotHeldReason | null;
+  note?: string | null;
+  /** Nothing was recorded when the person began: tell him if somebody was first. */
+  expectNew?: boolean;
+  /** …or the stamp of the figure he was correcting. */
+  expectedRecordedAt?: string;
 }
 
 export const attendanceApi = {
@@ -6484,14 +6545,18 @@ export const attendanceApi = {
     );
     return data;
   },
-  async record(input: {
-    date: string;
-    eventType: "midweek" | "weekend";
-    count?: number;
-    notHeld?: boolean;
-    note?: string;
-  }): Promise<void> {
+  async record(input: AttendanceInput): Promise<void> {
     await api.post("/meeting-attendance", input);
+  },
+  async remove(input: { date: string; eventType: AttendanceKind }): Promise<void> {
+    await api.delete("/meeting-attendance", { params: input });
+  },
+  async move(input: {
+    date: string;
+    eventType: AttendanceKind;
+    toDate: string;
+  }): Promise<void> {
+    await api.post("/meeting-attendance/move", input);
   },
 };
 

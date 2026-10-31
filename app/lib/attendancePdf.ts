@@ -33,15 +33,24 @@ export function buildAttendancePdfHtml(opts: {
     memorial: string;
     printed: string;
     yearAverage: string;
+    /** «по 2 мес.» — what the year's line rests on. */
+    months: (n: number) => string;
+    /** «неполный: внесено 3 из 4» under a month's average. */
+    incomplete: (n: number) => string;
   };
   monthName: (isoMonth: string) => string;
+  /** A day in words, «23 марта» — never the ISO date. */
+  dayName: (isoDate: string) => string;
   printedOn: string;
 }): string {
-  const { year, congregationName, labels, monthName, printedOn } = opts;
+  const { year, congregationName, labels, monthName, dayName, printedOn } = opts;
 
-  const cells = (rows: { count: number | null; notHeld: boolean; recorded: boolean }[]) => {
+  const cells = (
+    rows: { count: number | null; notHeld: boolean; recorded: boolean }[],
+    columns: number,
+  ) => {
     const out: string[] = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < columns; i++) {
       const r = rows[i];
       if (!r) out.push('<td></td>');
       else if (r.notHeld) out.push('<td class="nh">—</td>');
@@ -53,41 +62,60 @@ export function buildAttendancePdfHtml(opts: {
 
   const block = (kind: 'midweek' | 'weekend') => {
     const label = kind === 'midweek' ? labels.midweek : labels.weekend;
+    // Five columns as on paper; a month with a sixth meeting of a kind (a
+    // visit week, a figure off the usual days) gets a sixth rather than
+    // losing one while «Всего» still counts it.
+    const columns = Math.max(
+      5,
+      ...year.months.map((m) => (kind === 'midweek' ? m.midweek : m.weekend).length),
+    );
     const body = year.months
       .map((m) => {
         const rows = kind === 'midweek' ? m.midweek : m.weekend;
         const total = kind === 'midweek' ? m.midweekTotal : m.weekendTotal;
         const avg = kind === 'midweek' ? m.midweekAverage : m.weekendAverage;
+        const missing =
+          (kind === 'midweek' ? m.midweekMissing : m.weekendMissing) ?? 0;
         return `<tr>
           <td class="mn">${esc(monthName(m.month))}</td>
-          ${cells(rows)}
+          ${cells(rows, columns)}
           <td class="tot">${total || ''}</td>
-          <td class="avg">${avg ?? ''}</td>
+          <td class="avg">${avg ?? ''}${
+            missing && avg !== null
+              ? `<div class="part">${esc(labels.incomplete(missing))}</div>`
+              : ''
+          }</td>
         </tr>`;
       })
       .join('');
 
-    // The yearly average the annual report asks for: the twelve monthly
-    // averages divided by twelve, exactly as the instruction says.
-    const monthly = year.months.map((m) =>
-      kind === 'midweek' ? m.midweekAverage : m.weekendAverage,
-    );
-    const yearly = monthly.some((v) => v !== null)
-      ? Math.round(monthly.reduce<number>((a, b) => a + (b ?? 0), 0) / 12)
-      : '';
+    // The year's line comes counted from the server — the one place it is
+    // counted: the monthly averages added up and divided by the months that
+    // hold one. It used to be divided by twelve here, in the middle of a
+    // year too, and printed 16 where the page said 96 (31 October 2026).
+    const yearly =
+      (kind === 'midweek'
+        ? year.yearly?.midweekAverage
+        : year.yearly?.weekendAverage) ?? '';
+    const monthsCounted =
+      (kind === 'midweek'
+        ? year.yearly?.midweekMonths
+        : year.yearly?.weekendMonths) ?? 0;
 
     return `<div class="sect">
       <div class="slabel">${esc(label)}</div>
       <table>
         <thead><tr>
           <th class="mn">${esc(labels.month)}</th>
-          <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+          ${Array.from({ length: columns }, (_, i) => `<th>${i + 1}</th>`).join('')}
           <th class="tot">${esc(labels.total)}</th>
           <th class="avg">${esc(labels.average)}</th>
         </tr></thead>
         <tbody>${body}</tbody>
         <tfoot><tr>
-          <td class="mn yl" colspan="6">${esc(labels.yearAverage)}</td>
+          <td class="mn yl" colspan="${columns + 1}">${esc(labels.yearAverage)}${
+            monthsCounted ? ` · ${esc(labels.months(monthsCounted))}` : ''
+          }</td>
           <td class="tot"></td>
           <td class="avg yv">${yearly}</td>
         </tr></tfoot>
@@ -108,7 +136,7 @@ export function buildAttendancePdfHtml(opts: {
       .filter((r) => r.recorded && !r.notHeld);
     if (found.length === 0) return '';
     const parts = found
-      .map((r) => `${esc(r.date)} — <b>${r.count}</b>`)
+      .map((r) => `${esc(dayName(r.date))} — <b>${r.count}</b>`)
       .join(' · ');
     return `<div class="memorial"><span class="ml">${esc(
       labels.memorial,
@@ -142,7 +170,7 @@ export function buildAttendancePdfHtml(opts: {
     padding: 5px 3px; border-bottom: 2px solid #e2e8f0; background: #f8fafc;
   }
   th.mn, td.mn { text-align: left; width: 26%; padding-left: 8px; }
-  th.tot, td.tot, th.avg, td.avg { width: 11%; }
+  th.tot, td.tot, th.avg, td.avg { width: 10%; }
   td {
     font-size: 10px; padding: 5px 4px; text-align: center;
     border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: 600;
@@ -159,6 +187,7 @@ export function buildAttendancePdfHtml(opts: {
   tfoot td { border-top: 2px solid #e2e8f0; border-bottom: none; padding-top: 7px; }
   td.yl { text-align: right; font-size: 9px; color: #64748b; font-weight: 700; text-transform: none; }
   td.yv { font-size: 12px; }
+  .part { font-size: 7px; color: #b45309; font-weight: 700; }
   .memorial {
     margin-top: 9px; padding: 7px 10px; border: 1px solid #e2e8f0;
     border-radius: 7px; background: #fbfcfd; font-size: 8.5pt; color: #0f172a;

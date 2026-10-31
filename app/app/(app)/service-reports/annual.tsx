@@ -102,32 +102,29 @@ export default function AnnualReportScreen() {
     queryFn: () => attendanceApi.serviceYear(year),
   });
 
-  // The form says plainly: add the twelve monthly averages and divide by
-  // twelve. So that is what is done — dividing by however many months happen
-  // to have data would quietly disagree with the instruction. A month with
-  // nothing recorded is instead reported as a gap to go and fill.
+  // The year's line comes counted from the server — the one place it is
+  // counted, so this page, the S-3 sheet and the snapshot of what was sent
+  // cannot disagree (31 October 2026). A month that has begun and holds no
+  // figure at all is a gap to go and fill; one with only some of its meetings
+  // entered is said too, since its average rests on fewer meetings.
   const attendanceAverages = useMemo(() => {
     const months = attendance.data?.months ?? [];
-    // A month still ahead is not a gap, and dividing by twelve in the middle
-    // of a year turned a true average of ninety-six into fifty-six — a figure
-    // that looked like a fact. The form's "divide by twelve" is written for a
-    // finished year, where every month has a figure and the two agree anyway.
-    // So the divisor is the months that actually hold one.
+    const y = attendance.data?.yearly;
     const started = months.filter((m) => m.month <= dayjs().format('YYYY-MM-01'));
-    const avg = (pick: (m: (typeof months)[number]) => number | null) => {
-      const have = started.map(pick).filter((v): v is number => v !== null);
-      return have.length
-        ? Math.round(have.reduce((a, b) => a + b, 0) / have.length)
-        : null;
-    };
     const missing = started.filter(
       (m) => m.midweekAverage === null && m.weekendAverage === null,
     ).length;
+    const partial = started.filter(
+      (m) =>
+        (m.midweekAverage !== null || m.weekendAverage !== null) &&
+        (m.midweekMissing ?? 0) + (m.weekendMissing ?? 0) > 0,
+    ).length;
     return {
-      midweek: avg((m) => m.midweekAverage),
-      weekend: avg((m) => m.weekendAverage),
+      midweek: y?.midweekAverage ?? null,
+      weekend: y?.weekendAverage ?? null,
       missing,
-      counted: started.length - missing,
+      partial,
+      counted: Math.max(y?.midweekMonths ?? 0, y?.weekendMonths ?? 0),
     };
   }, [attendance.data]);
 
@@ -299,6 +296,16 @@ export default function AnnualReportScreen() {
           <Text style={styles.warnText}>
             {t('annualReport.missingMonths', {
               count: attendanceAverages.missing,
+            })}
+          </Text>
+        </View>
+      ) : null}
+      {!kept && attendanceAverages.partial > 0 ? (
+        <View style={styles.warn}>
+          <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
+          <Text style={styles.warnText}>
+            {t('annualReport.partialMonths', {
+              count: attendanceAverages.partial,
             })}
           </Text>
         </View>

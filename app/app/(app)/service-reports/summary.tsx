@@ -565,6 +565,20 @@ export default function ServiceSummaryScreen() {
               </Text>
             </View>
           </View>
+          {/* A month whose meetings are not all entered gives an average of
+              fewer meetings than it had — said before it is copied into the
+              form (31 October 2026). */}
+          {(monthAttendance?.weekendMissing ?? 0) +
+            (monthAttendance?.midweekMissing ?? 0) >
+          0 ? (
+            <Text style={styles.attendanceGap}>
+              {t('serviceSummary.attendanceIncomplete', {
+                count:
+                  (monthAttendance?.weekendMissing ?? 0) +
+                  (monthAttendance?.midweekMissing ?? 0),
+              })}
+            </Text>
+          ) : null}
           <Text style={styles.totalsHint}>
             {t('serviceSummary.attendanceHint')}
           </Text>
@@ -576,6 +590,13 @@ export default function ServiceSummaryScreen() {
 }
 
 const styles = StyleSheet.create({
+  attendanceGap: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 12.5,
+    lineHeight: 18,
+    color: '#b45309',
+    marginTop: 8,
+  },
   yearRange: {
     fontSize: 12,
     color: '#94a3b8',
