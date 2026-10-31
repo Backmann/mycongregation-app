@@ -149,6 +149,17 @@ export const MULTI_HOLDER: ReadonlySet<ResponsibilityType> = new Set<Responsibil
  * предупреждать» — the picker warns when a ministerial servant or a publisher
  * is chosen for one of these, and lets it through. Not a rule of the server.
  */
+/**
+ * Duties that open the service records (S-21): elders only, a rule of the
+ * server (Lionel, 31 October 2026). The picker shows anyone else greyed out
+ * with the reason, rather than offering what the server will refuse.
+ */
+export const ELDERS_ONLY: ReadonlySet<ResponsibilityType> = new Set<ResponsibilityType>([
+  "secretary",
+  "body_coordinator",
+  "service_overseer",
+]);
+
 export const ELDER_USUALLY: ReadonlySet<ResponsibilityType> = new Set<ResponsibilityType>([
   "body_coordinator",
   "body_coordinator_assistant",

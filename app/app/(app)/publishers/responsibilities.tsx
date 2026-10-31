@@ -30,6 +30,7 @@ import i18n from "../../../lib/i18n";
 import { confirm } from "../../../components/ConfirmHost";
 import {
   ELDER_USUALLY,
+  ELDERS_ONLY,
   MULTI_HOLDER,
   RESPONSIBILITY_GROUPS,
   pairedWith,
@@ -617,8 +618,9 @@ function PickerBody({
                   : [];
                 const isHolder = !!c.userId && holderIds.has(c.userId);
                 const blockedBy = pair && holds.some((r) => r.type === pair) ? pair : null;
+                const notElder = ELDERS_ONLY.has(type) && c.appointment !== "elder";
                 const noLogin = !c.userId;
-                const off = isHolder || !!blockedBy || noLogin;
+                const off = isHolder || !!blockedBy || notElder || noLogin;
                 const isChosen = chosen === c.key;
                 const warnElder =
                   !off && ELDER_USUALLY.has(type) && c.appointment !== "elder";
@@ -626,7 +628,7 @@ function PickerBody({
                   <Pressable
                     key={c.key}
                     testID={`resp-pick-${c.key}`}
-                    disabled={isHolder || !!blockedBy}
+                    disabled={isHolder || !!blockedBy || notElder}
                     onPress={() => {
                       if (noLogin) {
                         if (c.publisherId) onOpenCard(c.publisherId);
@@ -648,7 +650,12 @@ function PickerBody({
                     </View>
                     <View style={styles.flex}>
                       <View style={styles.candTop}>
-                        <Text style={[styles.candName, (blockedBy || noLogin) && styles.dim]}>
+                        <Text
+                          style={[
+                            styles.candName,
+                            (blockedBy || notElder || noLogin) && styles.dim,
+                          ]}
+                        >
                           {c.name}
                         </Text>
                         {isHolder ? (
@@ -666,7 +673,9 @@ function PickerBody({
                           </View>
                         ) : null}
                       </View>
-                      {blockedBy ? (
+                      {notElder ? (
+                        <Text style={styles.blocked}>{t("responsibilities.eldersOnly")}</Text>
+                      ) : blockedBy ? (
                         <Text style={styles.blocked}>
                           {t("responsibilities.cannotPair", {
                             role: t(`responsibilities.types.${blockedBy}`),

@@ -899,8 +899,9 @@ export interface PublisherHistoryResponse {
   publisher: {
     id: string;
     displayName: string;
-    status: PublisherStatus | null;
-    statusManuallyOverridden: boolean;
+    /** Elders and admins only (31 October 2026); absent for anyone else. */
+    status?: PublisherStatus | null;
+    statusManuallyOverridden?: boolean;
     isPioneer: boolean;
     pioneerType: PioneerType;
     pioneerSince: string | null;
