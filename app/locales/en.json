@@ -4480,7 +4480,8 @@
       "annual_report_sent": "Save the annual report as sent",
       "field_service_month": "Check the field service meetings",
       "pioneer_meeting": "Annual meeting with the pioneers — who conducts it",
-      "inactive_holds": "Reassign tasks"
+      "inactive_holds": "Reassign tasks",
+      "admin_not_elder": "Administrator is not an elder"
     },
     "mine": {
       "title": "My tasks",
@@ -4504,6 +4505,9 @@
       "groupOverseer": "Group overseer «{{name}}»",
       "groupAssistant": "Group assistant «{{name}}»",
       "hint": "The task closes by itself once none of these is left or he hands in a report that he shared again."
+    },
+    "adminNotElder": {
+      "hint": "The administrator role opens all of the congregation’s data, so only an elder may hold it. Give the role to an elder or take it away — the task closes by itself."
     }
   },
   "pioneerSchool": {
@@ -5744,7 +5748,8 @@
       "ATTENDANCE_ALREADY_RECORDED": "Another brother has already recorded this meeting.",
       "ATTENDANCE_FUTURE": "That meeting has not taken place yet.",
       "ATTENDANCE_NOT_A_MEETING": "There is no such meeting on that day.",
-      "ATTENDANCE_YEAR_INVALID": "There is no such service year."
+      "ATTENDANCE_YEAR_INVALID": "There is no such service year.",
+      "ADMIN_ELDERS_ONLY": "Only an elder can be an administrator: the role opens all of the congregation’s data."
     }
   },
   "stage": {
