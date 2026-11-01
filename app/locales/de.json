@@ -4480,7 +4480,8 @@
       "annual_report_sent": "Gesendeten Jahresbericht speichern",
       "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen",
       "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet",
-      "inactive_holds": "Aufgaben neu vergeben"
+      "inactive_holds": "Aufgaben neu vergeben",
+      "admin_not_elder": "Administrator ist kein Ältester"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -4504,6 +4505,9 @@
       "groupOverseer": "Gruppenaufseher „{{name}}“",
       "groupAssistant": "Gehilfe in der Gruppe „{{name}}“",
       "hint": "Die Aufgabe schließt sich von selbst, wenn nichts mehr davon übrig ist oder er wieder einen Bericht „gepredigt“ abgibt."
+    },
+    "adminNotElder": {
+      "hint": "Die Administratorrolle öffnet alle Daten der Versammlung, daher darf sie nur ein Ältester haben. Geben Sie die Rolle einem Ältesten oder nehmen Sie sie weg – die Aufgabe schließt sich von selbst."
     }
   },
   "pioneerSchool": {
@@ -5744,7 +5748,8 @@
       "ATTENDANCE_ALREADY_RECORDED": "Diese Zusammenkunft hat schon ein anderer Bruder eingetragen.",
       "ATTENDANCE_FUTURE": "Diese Zusammenkunft hat noch nicht stattgefunden.",
       "ATTENDANCE_NOT_A_MEETING": "An diesem Tag gibt es keine solche Zusammenkunft.",
-      "ATTENDANCE_YEAR_INVALID": "Dieses Dienstjahr gibt es nicht."
+      "ATTENDANCE_YEAR_INVALID": "Dieses Dienstjahr gibt es nicht.",
+      "ADMIN_ELDERS_ONLY": "Administrator kann nur ein Ältester sein: Diese Rolle öffnet alle Daten der Versammlung."
     }
   },
   "stage": {

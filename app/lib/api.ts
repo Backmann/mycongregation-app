@@ -6896,6 +6896,8 @@ export interface ElderTask {
     | "pioneer_meeting"
     /** «Замена назначений»: an inactive publisher still holds something. */
     | "inactive_holds"
+    /** «Администратор не старейшина» (1 November 2026). */
+    | "admin_not_elder"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
@@ -6973,6 +6975,13 @@ export interface InactiveHold {
 }
 
 export const tasksApi = {
+  /** Elders only: whose account the «Администратор не старейшина» task is. */
+  async adminNotElder(taskId: string) {
+    const { data } = await api.get<{ name: string }>(
+      `/tasks/${taskId}/admin-not-elder`,
+    );
+    return data;
+  },
   /** Elders only: whose the «Замена назначений» task is, and what is left. */
   async inactiveHolds(taskId: string) {
     const { data } = await api.get<{ name: string; holds: InactiveHold[] }>(
