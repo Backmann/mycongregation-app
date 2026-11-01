@@ -311,7 +311,8 @@
       "isDeaf": "Deaf (needs sign language)",
       "isBlind": "Blind",
       "isImprisoned": "In prison",
-      "pioneerMonthGoal": "Monthly hours"
+      "pioneerMonthGoal": "Monthly hours",
+      "memberSince": "In our congregation since"
     },
     "appointment": {
       "publisher": "Publisher",
@@ -453,7 +454,20 @@
       "title": "Generate S-21",
       "year": "Choose the service year"
     },
-    "lastEdited": "Last changed by {{name}} · {{when}}"
+    "lastEdited": "Last changed by {{name}} · {{when}}",
+    "memberSince": {
+      "question": "When did he come to our congregation?",
+      "now": "Just now — this month",
+      "month": "Give the month",
+      "long": "Long in the congregation",
+      "required": "Give the month he came to the congregation",
+      "hint": {
+        "now": "Months before he came do not count as missed: in his first six months he will not become “inactive” just because there are no reports here yet.",
+        "month": "Counting starts from this month. If someone who has long not been serving is entered from a paper card, give the month he came to the congregation — then six months without reports show at once.",
+        "long": "No date needed: he is counted like everyone long in the congregation — by the reports of the last six closed months.",
+        "edit": "Empty — long in the congregation. Reports and status count from this month at the earliest."
+      }
+    }
   },
   "capabilities": {
     "hints": {
@@ -4077,7 +4091,8 @@
       "pioneerMonthGoal": "Monthly hours goal",
       "spiritualStatus": "Spiritual status",
       "pioneerHistory": "Pioneer service history",
-      "pioneerNoQuota": "No hours requirement"
+      "pioneerNoQuota": "No hours requirement",
+      "memberSince": "In our congregation since"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

@@ -311,7 +311,8 @@
       "isDeaf": "Gehörlos (braucht Gebärdensprache)",
       "isBlind": "Blind",
       "isImprisoned": "In Haft",
-      "pioneerMonthGoal": "Monatliches Stundenziel"
+      "pioneerMonthGoal": "Monatliches Stundenziel",
+      "memberSince": "In unserer Versammlung seit"
     },
     "appointment": {
       "publisher": "Verkündiger",
@@ -453,7 +454,20 @@
       "title": "S-21 erstellen",
       "year": "Dienstjahr wählen"
     },
-    "lastEdited": "Zuletzt geändert von {{name}} · {{when}}"
+    "lastEdited": "Zuletzt geändert von {{name}} · {{when}}",
+    "memberSince": {
+      "question": "Wann ist er in unsere Versammlung gekommen?",
+      "now": "Gerade eben – in diesem Monat",
+      "month": "Monat angeben",
+      "long": "Schon lange in der Versammlung",
+      "required": "Bitte geben Sie den Monat an, in dem er in die Versammlung gekommen ist",
+      "hint": {
+        "now": "Monate vor seinem Kommen zählen nicht als Lücken: In den ersten sechs Monaten wird er nicht „inaktiv“, nur weil hier noch keine Berichte vorliegen.",
+        "month": "Gezählt wird ab diesem Monat. Wird jemand, der schon länger nicht predigt, von einer Papierkarte übernommen, geben Sie den Monat an, in dem er in die Versammlung kam – dann sind sechs Monate ohne Bericht sofort sichtbar.",
+        "long": "Kein Datum nötig: Er wird wie alle gezählt, die schon lange in der Versammlung sind – nach den Berichten der letzten sechs abgeschlossenen Monate.",
+        "edit": "Leer – schon lange in der Versammlung. Berichte und Status zählen frühestens ab diesem Monat."
+      }
+    }
   },
   "capabilities": {
     "hints": {
@@ -4077,7 +4091,8 @@
       "pioneerMonthGoal": "Monatliches Stundenziel",
       "spiritualStatus": "Geistlicher Status",
       "pioneerHistory": "Pionierdienst – Verlauf",
-      "pioneerNoQuota": "Ohne Stundenziel"
+      "pioneerNoQuota": "Ohne Stundenziel",
+      "memberSince": "In unserer Versammlung seit"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

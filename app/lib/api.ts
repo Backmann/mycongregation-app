@@ -398,6 +398,8 @@ export interface Publisher {
   baptismDate: string | null;
   spiritualStatus: SpiritualStatus;
   ministryStartDate: string | null;
+  /** In our congregation since — first day of the month; null: long here. */
+  memberSince?: string | null;
   pioneerType: PioneerType;
   /**
    * Whether a permanent pioneer's service has actually begun. Sent instead of
@@ -445,6 +447,11 @@ export interface CreatePublisherInput {
   baptismDate?: string;
   spiritualStatus?: SpiritualStatus;
   ministryStartDate?: string;
+  /**
+   * In our congregation since (1 November 2026): a day of the month he came;
+   * null — long in the congregation; left out on a new card — this month.
+   */
+  memberSince?: string | null;
   pioneerType?: PioneerType;
   pioneerSince?: string;
   /** 100 (the usual) or 90 — special pioneers and missionaries only. */

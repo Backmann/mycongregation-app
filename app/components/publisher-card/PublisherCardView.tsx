@@ -330,6 +330,15 @@ export function PublisherCardView({
         value={publisher.ministryStartDate ? formatDay(publisher.ministryStartDate, lang, { year: 'always' }) : null}
       />
     ) : null,
+    // In our congregation since (1 November 2026): shown only when there is
+    // a date — long-standing members have none.
+    publisher.memberSince ? (
+      <Row
+        key="since"
+        label={t('publishers.fields.memberSince')}
+        value={formatMonthLabel(publisher.memberSince)}
+      />
+    ) : null,
     pioneer && publisher.pioneerSince ? (
       <Row
         key="p"
