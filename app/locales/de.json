@@ -5646,6 +5646,8 @@
       "STAGE_ACCOUNT_FIXED": "Ein Bühnenbildschirm ist keine Person: Er hat keine Karte, und seine Rolle ändert sich nicht.",
       "RESPONSIBILITY_OWN_ASSISTANT": "Ein Bruder kann nicht sein eigener Assistent sein: Diese Zuständigkeit und ihr Assistent sind zwei verschiedene Brüder.",
       "RESPONSIBILITY_ELDERS_ONLY": "Diese Zuständigkeit kann nur ein Ältester haben: Sie öffnet die Berichtskarten (S-21).",
+      "PERSON_NOT_ASSIGNABLE": "Diese Person kann zurzeit nicht eingeteilt werden. Bei Fragen wenden Sie sich bitte an die Ältesten.",
+      "SIGNUP_UNAVAILABLE": "Eintragen ist zurzeit nicht möglich. Bitte wenden Sie sich an die Ältesten.",
       "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein.",
       "ABSENCE_FROM_SCHOOL": "Diese Abwesenheit stammt aus einer Einteilung in der Pionierdienstschule. Bitte die Einteilung in der Schule ändern.",
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
