@@ -1,3 +1,4 @@
+import { PossibleDuplicateLines } from "../../../components/PossibleDuplicateLines";
 import { AdminNotElderLine } from "../../../components/AdminNotElderLine";
 import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
 import { useMemo, useState } from "react";
@@ -276,7 +277,8 @@ export default function TasksScreen() {
           {/* «Замена назначений» comes once per lapse, it does not repeat. */}
           {task.kind &&
           task.kind !== "inactive_holds" &&
-          task.kind !== "admin_not_elder"
+          task.kind !== "admin_not_elder" &&
+          task.kind !== "possible_duplicate"
             ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
@@ -363,6 +365,11 @@ export default function TasksScreen() {
         {/* «Замена назначений»: whose, and what is still his — read live. */}
         {task.kind === "inactive_holds" ? (
           <InactiveHoldsLines taskId={task.id} />
+        ) : null}
+
+        {/* «Возможно, одна и та же карточка»: the two cards and the answers. */}
+        {task.kind === "possible_duplicate" ? (
+          <PossibleDuplicateLines taskId={task.id} />
         ) : null}
 
         {/* «Администратор не старейшина»: whose account. */}

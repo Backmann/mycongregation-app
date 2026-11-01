@@ -6898,6 +6898,8 @@ export interface ElderTask {
     | "inactive_holds"
     /** «Администратор не старейшина» (1 November 2026). */
     | "admin_not_elder"
+    /** «Возможно, одна и та же карточка» (1 November 2026). */
+    | "possible_duplicate"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
@@ -6975,6 +6977,18 @@ export interface InactiveHold {
 }
 
 export const tasksApi = {
+  /** Elders only: the two cards of a «Возможно, одна и та же карточка» task. */
+  async possibleDuplicate(taskId: string) {
+    const { data } = await api.get<{
+      cards: PossibleDuplicateCard[];
+      why: DuplicateWhy[];
+    }>(`/tasks/${taskId}/possible-duplicate`);
+    return data;
+  },
+  /** «Это разные люди» — remembered, and the task closes. */
+  async possibleDuplicateDistinct(taskId: string) {
+    await api.post(`/tasks/${taskId}/possible-duplicate/distinct`);
+  },
   /** Elders only: whose account the «Администратор не старейшина» task is. */
   async adminNotElder(taskId: string) {
     const { data } = await api.get<{ name: string }>(
@@ -7193,5 +7207,147 @@ export const pioneerMeetingsApi = {
   },
   async remove(id: string): Promise<void> {
     await api.delete(`/pioneer-meetings/${id}`);
+  },
+};
+
+
+// ---- Merging two cards of one person (1 November 2026) --------------------
+
+export type DuplicateWhy = "name" | "email" | "phone";
+
+export interface PossibleDuplicateCard {
+  id: string;
+  displayName: string;
+  group: string | null;
+  departed: boolean;
+  createdAt: string;
+  memberSince: string | null;
+  hasAccount: boolean;
+  reports: number;
+}
+
+export interface DuplicateCandidate {
+  id: string;
+  displayName: string;
+  group: string | null;
+  departed: boolean;
+  memberSince: string | null;
+  createdAt: string;
+  why: DuplicateWhy[];
+}
+
+export interface MergeCardFacts {
+  id: string;
+  displayName: string;
+  group: string | null;
+  appointment: string;
+  gender: string;
+  birthDate: string | null;
+  baptismDate: string | null;
+  memberSince: string | null;
+  createdAt: string;
+  departed: boolean;
+  reports: number;
+  account: { userId: string; login: string | null; lastSeenAt: string | null } | null;
+}
+
+export interface MergeConflictOption {
+  id: string;
+  side: "kept" | "merged";
+  facts: Record<string, string | number | boolean | null>;
+}
+
+export interface MergeConflict {
+  key: string;
+  kind: "report" | "pioneer_spells" | "auxiliary_pioneers";
+  month: string | null;
+  options: MergeConflictOption[];
+}
+
+export interface MergeFieldDiff {
+  field: string;
+  kept: unknown;
+  merged: unknown;
+  rule: "take" | "choose";
+}
+
+export interface MergePlan {
+  kept: MergeCardFacts;
+  merged: MergeCardFacts;
+  /** table → rows that move */
+  moves: Record<string, number>;
+  /** table → rows that were the same fact twice and are joined */
+  joined: Record<string, number>;
+  conflicts: MergeConflict[];
+  fields: MergeFieldDiff[];
+  accounts: "none" | "move" | "choose";
+  needsAdmin: boolean;
+  countedTwice: string[];
+  /** Somebody said these are two people — or undid their merge. */
+  markedDistinct: boolean;
+  blockers: string[];
+  fingerprint: string;
+}
+
+export interface MergeRecord {
+  id: string;
+  createdAt: string;
+  expiresAt: string;
+  undoneAt: string | null;
+  summary: Record<string, number>;
+  mergedName: string | null;
+  canUndo: boolean;
+}
+
+export const cardMergeApi = {
+  /** Cards that may be the person being entered (secretary, admin). */
+  async duplicates(q: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    exceptId?: string;
+  }) {
+    const { data } = await api.get<DuplicateCandidate[]>(
+      "/card-merge/duplicates",
+      { params: q },
+    );
+    return data;
+  },
+  /** The merge run and rolled back: exactly what the button would do. */
+  async preview(input: {
+    keptId: string;
+    mergedId: string;
+    keepUserId?: string;
+  }) {
+    const { data } = await api.post<MergePlan>("/card-merge/preview", input);
+    return data;
+  },
+  async merge(input: {
+    keptId: string;
+    mergedId: string;
+    fingerprint: string;
+    choices?: Record<string, string>;
+    fields?: Record<string, "kept" | "merged">;
+    keepUserId?: string;
+  }) {
+    const { data } = await api.post<{ mergeId: string }>(
+      "/card-merge",
+      input,
+    );
+    return data;
+  },
+  async of(publisherId: string) {
+    const { data } = await api.get<MergeRecord[]>(
+      `/card-merge/of/${publisherId}`,
+    );
+    return data;
+  },
+  async undo(mergeId: string) {
+    const { data } = await api.post<{
+      restoredId: string;
+      notReturned: Record<string, number>;
+    }>(`/card-merge/${mergeId}/undo`);
+    return data;
   },
 };

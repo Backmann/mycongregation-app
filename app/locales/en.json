@@ -440,7 +440,17 @@
         "local_needs_topics": "local needs topics",
         "pioneer_school_helpers": "pioneer service school",
         "service_reports": "field service reports",
-        "talk_exchange": "talk exchange"
+        "talk_exchange": "talk exchange",
+        "service_groups": "groups (overseer or assistant)",
+        "elder_tasks": "tasks of the body of elders",
+        "special_events": "lodging for the circuit overseer",
+        "memorial_items": "Memorial",
+        "pioneer_spells": "pioneer service",
+        "aux_pioneer_applications": "applications for auxiliary service",
+        "local_needs_uses": "local needs",
+        "service_log_entries": "own hours log",
+        "pioneer_meetings": "meeting with the pioneers",
+        "publisher_distinct_pairs": "“different people” marks"
       }
     },
     "departedCount": "{{count}} departed",
@@ -4092,7 +4102,8 @@
       "spiritualStatus": "Spiritual status",
       "pioneerHistory": "Pioneer service history",
       "pioneerNoQuota": "No hours requirement",
-      "memberSince": "In our congregation since"
+      "memberSince": "In our congregation since",
+      "mergedWith": "Merged with card"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -4481,7 +4492,8 @@
       "field_service_month": "Check the field service meetings",
       "pioneer_meeting": "Annual meeting with the pioneers — who conducts it",
       "inactive_holds": "Reassign tasks",
-      "admin_not_elder": "Administrator is not an elder"
+      "admin_not_elder": "Administrator is not an elder",
+      "possible_duplicate": "Possibly the same card"
     },
     "mine": {
       "title": "My tasks",
@@ -5749,7 +5761,19 @@
       "ATTENDANCE_FUTURE": "That meeting has not taken place yet.",
       "ATTENDANCE_NOT_A_MEETING": "There is no such meeting on that day.",
       "ATTENDANCE_YEAR_INVALID": "There is no such service year.",
-      "ADMIN_ELDERS_ONLY": "Only an elder can be an administrator: the role opens all of the congregation’s data."
+      "ADMIN_ELDERS_ONLY": "Only an elder can be an administrator: the role opens all of the congregation’s data.",
+      "MERGE_SAME_CARD": "Choose two different cards.",
+      "MERGE_BLOCKED": "These cards cannot be merged — the reason is shown in the merge window.",
+      "MERGE_PLAN_CHANGED": "Something on these cards changed while you were looking. Please check again.",
+      "MERGE_ACCOUNT_ADMIN_ONLY": "This merge moves or closes a sign-in — an administrator does that.",
+      "MERGE_CHOICE_MISSING": "First choose an answer everywhere one is needed.",
+      "MERGE_SELF_CHECK": "The merge was stopped by a check: the second card is still named somewhere. Nothing was changed — please tell the administrator.",
+      "MERGE_NOT_UNDOABLE": "This merge can no longer be undone: 30 days have passed, it was already undone, or another one came after it.",
+      "MERGE_KEPT_DEPARTED": "The card that stays must be one in the congregation, not one that moved away. Swap the cards.",
+      "MERGE_BIRTH_DATES_DIFFER": "The cards have different dates of birth — these look like two people.",
+      "MERGE_GENDER_DIFFERS": "The cards give a different gender — these look like two people.",
+      "MERGE_FAILED": "The merge did not succeed. Nothing was changed.",
+      "CARD_MERGED": "This card was merged into another. Reload the screen and choose again."
     }
   },
   "stage": {
@@ -6548,5 +6572,102 @@
       "conductorAway": "The conductor is away that day.",
       "event": "That day: {{title}}."
     }
+  },
+  "merge": {
+    "title": "Merge cards",
+    "intro": "One person was entered twice. Everything on the second card moves to the first, and the second disappears from the lists. You can undo it for 30 days — at the foot of the card.",
+    "pickOther": "Which card to merge with",
+    "swap": "Swap",
+    "kept": "STAYS",
+    "merged": "MERGES IN AND DISAPPEARS",
+    "changed": "Something on these cards changed while you were looking. Below is the current picture; check it and press again.",
+    "blockedGeneric": "These cards cannot be merged.",
+    "movesTitle": "What moves to the card that stays",
+    "nothingMoves": "There is nothing on the second card — it simply disappears.",
+    "joined": "The same thing is on both — it stays once: {{list}}.",
+    "followsLogin": "Responsibilities, notifications and settings belong to the sign-in and move with it.",
+    "fieldTaken": "empty on the card that stays — taken over",
+    "onKept": "on the card that stays",
+    "onMerged": "on the second card",
+    "fieldsTitle": "Fields filled in differently",
+    "fieldsHint": "Where the card that stays is empty, the value is taken over by itself. We only ask when both are filled in and differ.",
+    "conflicts": {
+      "report": "Both cards have a report for {{month}}",
+      "pioneer_spells": "Pioneer service is recorded on both for the same months",
+      "auxiliary_pioneers": "Auxiliary service is recorded on both for the same months",
+      "kept": "What you do not choose is not lost: it is kept in the record of the merge and comes back if you undo it."
+    },
+    "report": {
+      "served": "Served",
+      "notServed": "Did not serve",
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "studies_one": "{{count}} Bible study",
+      "studies_other": "{{count}} Bible studies"
+    },
+    "accounts": {
+      "line": "Sign-in to the app",
+      "sameLogin": "same password, same phone",
+      "oneStays": "one stays",
+      "chooseTitle": "Both have a sign-in — which one stays",
+      "chooseHint": "The other sign-in is closed and its devices are signed out; its responsibilities move to the one that stays. Administrators only.",
+      "lastSeen": "last signed in {{date}}",
+      "neverSeen": "never signed in"
+    },
+    "countedTwice": "In reports already sent ({{months}}) he was counted twice — as two people. Figures already sent do not change; this is for your information.",
+    "adminNeeded": "This merge moves a sign-in — an administrator does that.",
+    "chooseFirst_one": "Choose an answer in {{count}} more place.",
+    "chooseFirst_other": "Choose an answer in {{count}} more places.",
+    "action": "Merge",
+    "merging": "Merging…",
+    "undoHint": "You can undo it for 30 days — at the foot of the card that stays.",
+    "confirmTitle": "Merge the cards?",
+    "confirmBody": "“{{merged}}” goes into “{{kept}}” and disappears from the lists. You can undo it for 30 days.",
+    "facts": {
+      "noGroup": "no group",
+      "since": "since {{date}}",
+      "reports_one": "{{count}} report",
+      "reports_other": "{{count}} reports",
+      "born": "born {{date}}",
+      "baptised": "baptised {{date}}",
+      "created": "created {{date}}",
+      "account": "sign-in: {{login}}",
+      "noAccount": "no sign-in to the app",
+      "hasAccount": "has a sign-in",
+      "departed": "moved away"
+    },
+    "fieldNames": {
+      "middleName": "Patronymic",
+      "group": "Group"
+    },
+    "fromCard": "Merge with another card…",
+    "history": {
+      "line": "Merged with “{{name}}” on {{date}}",
+      "undoUntil": "Undo (until {{date}})",
+      "undo": "Undo",
+      "undoTitle": "Undo the merge?",
+      "undoBody": "“{{name}}” comes back as a card of its own, with everything that moved from it. Anything new since the merge stays here.",
+      "undoneTitle": "Merge undone",
+      "undone": "The cards are apart again — everything is back in its place.",
+      "undonePartly_one": "The cards are apart again. {{count}} record did not come back: it was changed or deleted after the merge.",
+      "undonePartly_other": "The cards are apart again. {{count}} records did not come back: they were changed or deleted after the merge."
+    },
+    "duplicate": {
+      "title": "A similar card already exists",
+      "why": "Same {{list}}.",
+      "by": {
+        "name": "first and last name",
+        "email": "email",
+        "phone": "phone"
+      },
+      "open": "That is him — open his card",
+      "namesakes": "Namesakes happen: if this is someone else, just carry on."
+    },
+    "task": {
+      "merge": "Merge",
+      "distinct": "These are different people",
+      "secretaryMerges": "The secretary or an administrator merges cards."
+    },
+    "markedDistinct": "These two cards were already marked as different people (or their merge was undone). Make sure this is one person."
   }
 }

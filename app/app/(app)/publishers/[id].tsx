@@ -28,6 +28,7 @@ import i18n from '../../../lib/i18n';
 import { PublisherForm } from '../../../components/PublisherForm';
 import { PublisherAccessContent } from '../../../components/PublisherAccessContent';
 import { PublisherCardView } from '../../../components/publisher-card/PublisherCardView';
+import { MergeHistory } from '../../../components/MergeHistory';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
@@ -381,6 +382,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
                 </Pressable>
                 <Text style={styles.footText}>{t('publishers.removal.hint')}</Text>
               </View>
+            ) : null}
+            {/* Two cards of one person: merge them, or undo a merge. */}
+            {!publisher.deletedAt && canEditPublishers ? (
+              <MergeHistory publisherId={publisher.id} />
             ) : null}
             {isAdmin ? (
               <Pressable onPress={handlePurge} disabled={purgeMutation.isPending} hitSlop={6}>

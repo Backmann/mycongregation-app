@@ -440,7 +440,17 @@
         "local_needs_topics": "Themen für örtliche Bedürfnisse",
         "pioneer_school_helpers": "Pionierdienstschule",
         "service_reports": "Predigtdienstberichte",
-        "talk_exchange": "Vortragsaustausch"
+        "talk_exchange": "Vortragsaustausch",
+        "service_groups": "Gruppen (Verantwortlicher oder Gehilfe)",
+        "elder_tasks": "Aufgaben der Ältestenschaft",
+        "special_events": "Unterkunft des Kreisaufsehers",
+        "memorial_items": "Gedächtnismahl",
+        "pioneer_spells": "Pionierdienst",
+        "aux_pioneer_applications": "Bewerbungen für den Hilfspionierdienst",
+        "local_needs_uses": "Örtliche Bedürfnisse",
+        "service_log_entries": "eigene Stundenerfassung",
+        "pioneer_meetings": "Zusammenkunft mit den Pionieren",
+        "publisher_distinct_pairs": "Vermerke „verschiedene Personen“"
       }
     },
     "departedCount": "{{count}} ausgeschieden",
@@ -4092,7 +4102,8 @@
       "spiritualStatus": "Geistlicher Status",
       "pioneerHistory": "Pionierdienst – Verlauf",
       "pioneerNoQuota": "Ohne Stundenziel",
-      "memberSince": "In unserer Versammlung seit"
+      "memberSince": "In unserer Versammlung seit",
+      "mergedWith": "Zusammengeführt mit Karte"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -4481,7 +4492,8 @@
       "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen",
       "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet",
       "inactive_holds": "Aufgaben neu vergeben",
-      "admin_not_elder": "Administrator ist kein Ältester"
+      "admin_not_elder": "Administrator ist kein Ältester",
+      "possible_duplicate": "Möglicherweise dieselbe Karte"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -5749,7 +5761,19 @@
       "ATTENDANCE_FUTURE": "Diese Zusammenkunft hat noch nicht stattgefunden.",
       "ATTENDANCE_NOT_A_MEETING": "An diesem Tag gibt es keine solche Zusammenkunft.",
       "ATTENDANCE_YEAR_INVALID": "Dieses Dienstjahr gibt es nicht.",
-      "ADMIN_ELDERS_ONLY": "Administrator kann nur ein Ältester sein: Diese Rolle öffnet alle Daten der Versammlung."
+      "ADMIN_ELDERS_ONLY": "Administrator kann nur ein Ältester sein: Diese Rolle öffnet alle Daten der Versammlung.",
+      "MERGE_SAME_CARD": "Bitte zwei verschiedene Karten wählen.",
+      "MERGE_BLOCKED": "Diese Karten lassen sich nicht zusammenführen — der Grund steht im Fenster der Zusammenführung.",
+      "MERGE_PLAN_CHANGED": "Während Sie geschaut haben, hat sich an den Karten etwas geändert. Bitte noch einmal prüfen.",
+      "MERGE_ACCOUNT_ADMIN_ONLY": "Die Zusammenführung verschiebt oder schließt eine Anmeldung — das macht ein Administrator.",
+      "MERGE_CHOICE_MISSING": "Bitte zuerst überall eine Antwort wählen, wo sie gebraucht wird.",
+      "MERGE_SELF_CHECK": "Die Zusammenführung wurde von einer Prüfung angehalten: Die zweite Karte wird noch irgendwo genannt. Nichts wurde geändert — bitte dem Administrator melden.",
+      "MERGE_NOT_UNDOABLE": "Diese Zusammenführung lässt sich nicht mehr rückgängig machen: 30 Tage sind vorbei, sie wurde schon rückgängig gemacht, oder danach kam eine weitere.",
+      "MERGE_KEPT_DEPARTED": "Bleiben muss eine Karte der Versammlung, keine weggezogene. Tauschen Sie die Karten.",
+      "MERGE_BIRTH_DATES_DIFFER": "Die Karten haben verschiedene Geburtsdaten — offenbar zwei Personen.",
+      "MERGE_GENDER_DIFFERS": "Auf den Karten steht ein unterschiedliches Geschlecht — offenbar zwei Personen.",
+      "MERGE_FAILED": "Zusammenführen ist nicht gelungen. Nichts wurde geändert.",
+      "CARD_MERGED": "Diese Karte wurde mit einer anderen zusammengeführt. Bitte den Bildschirm neu laden und erneut wählen."
     }
   },
   "stage": {
@@ -6548,5 +6572,102 @@
       "conductorAway": "Der Leitende ist an diesem Tag abwesend.",
       "event": "An diesem Tag: {{title}}."
     }
+  },
+  "merge": {
+    "title": "Karteikarten zusammenführen",
+    "intro": "Eine Person wurde doppelt erfasst. Alles von der zweiten Karte geht auf die erste über, die zweite verschwindet aus den Listen. Rückgängig machen können Sie es 30 Tage lang — unten auf der Karte.",
+    "pickOther": "Mit welcher Karte zusammenführen",
+    "swap": "Tauschen",
+    "kept": "BLEIBT",
+    "merged": "GEHT AUF UND VERSCHWINDET",
+    "changed": "Während Sie geschaut haben, hat sich an den Karten etwas geändert. Unten steht der aktuelle Stand; prüfen Sie ihn und tippen Sie erneut.",
+    "blockedGeneric": "Diese Karten lassen sich nicht zusammenführen.",
+    "movesTitle": "Was auf die bleibende Karte übergeht",
+    "nothingMoves": "Auf der zweiten Karte steht nichts — sie verschwindet einfach.",
+    "joined": "Auf beiden steht dasselbe — es bleibt einmal: {{list}}.",
+    "followsLogin": "Aufgaben, Benachrichtigungen und Einstellungen hängen an der Anmeldung und gehen mit ihr über.",
+    "fieldTaken": "auf der bleibenden leer — wird übernommen",
+    "onKept": "auf der bleibenden",
+    "onMerged": "auf der zweiten",
+    "fieldsTitle": "Felder unterschiedlich ausgefüllt",
+    "fieldsHint": "Wo die bleibende Karte leer ist, wird der Wert von selbst übernommen. Gefragt wird nur, wenn beide ausgefüllt sind und sich unterscheiden.",
+    "conflicts": {
+      "report": "Bericht für {{month}} auf beiden Karten",
+      "pioneer_spells": "Pionierdienst auf beiden Karten für dieselben Monate",
+      "auxiliary_pioneers": "Hilfspionierdienst auf beiden Karten für dieselben Monate",
+      "kept": "Das nicht Gewählte geht nicht verloren: Es bleibt im Protokoll der Zusammenführung und kommt zurück, wenn Sie sie rückgängig machen."
+    },
+    "report": {
+      "served": "Gedient",
+      "notServed": "Nicht gedient",
+      "hours_one": "{{count}} Stunde",
+      "hours_other": "{{count}} Stunden",
+      "studies_one": "{{count}} Bibelstudium",
+      "studies_other": "{{count}} Bibelstudien"
+    },
+    "accounts": {
+      "line": "Anmeldung in der App",
+      "sameLogin": "dasselbe Passwort, dasselbe Telefon",
+      "oneStays": "eine bleibt",
+      "chooseTitle": "Beide haben eine Anmeldung — welche bleibt",
+      "chooseHint": "Die andere Anmeldung wird geschlossen, ihre Geräte werden abgemeldet; ihre Aufgaben gehen auf die bleibende über. Nur ein Administrator.",
+      "lastSeen": "zuletzt angemeldet {{date}}",
+      "neverSeen": "nie angemeldet"
+    },
+    "countedTwice": "In gesendeten Berichten ({{months}}) wurde er doppelt gezählt — als zwei Personen. Gesendete Zahlen ändern sich nicht; dies ist nur zu Ihrer Information.",
+    "adminNeeded": "Die Zusammenführung verschiebt eine Anmeldung — das macht ein Administrator.",
+    "chooseFirst_one": "Bitte noch an {{count}} Stelle eine Antwort wählen.",
+    "chooseFirst_other": "Bitte noch an {{count}} Stellen eine Antwort wählen.",
+    "action": "Zusammenführen",
+    "merging": "Wird zusammengeführt…",
+    "undoHint": "Rückgängig machen können Sie es 30 Tage lang — unten auf der bleibenden Karte.",
+    "confirmTitle": "Karten zusammenführen?",
+    "confirmBody": "„{{merged}}“ geht in „{{kept}}“ auf und verschwindet aus den Listen. Rückgängig machen können Sie es 30 Tage lang.",
+    "facts": {
+      "noGroup": "ohne Gruppe",
+      "since": "seit {{date}}",
+      "reports_one": "{{count}} Bericht",
+      "reports_other": "{{count}} Berichte",
+      "born": "geb. {{date}}",
+      "baptised": "getauft {{date}}",
+      "created": "angelegt {{date}}",
+      "account": "Anmeldung: {{login}}",
+      "noAccount": "ohne Anmeldung in der App",
+      "hasAccount": "hat eine Anmeldung",
+      "departed": "weggezogen"
+    },
+    "fieldNames": {
+      "middleName": "Vatersname",
+      "group": "Gruppe"
+    },
+    "fromCard": "Mit einer anderen Karte zusammenführen…",
+    "history": {
+      "line": "Zusammengeführt mit „{{name}}“ am {{date}}",
+      "undoUntil": "Rückgängig machen (bis {{date}})",
+      "undo": "Rückgängig machen",
+      "undoTitle": "Zusammenführung rückgängig machen?",
+      "undoBody": "„{{name}}“ kommt als eigene Karte zurück, mit allem, was von ihr übergegangen ist. Was nach der Zusammenführung neu dazukam, bleibt hier.",
+      "undoneTitle": "Rückgängig gemacht",
+      "undone": "Die Karten sind wieder getrennt — alles ist an seinem Platz.",
+      "undonePartly_one": "Die Karten sind wieder getrennt. {{count}} Eintrag kam nicht zurück: Er wurde nach der Zusammenführung geändert oder gelöscht.",
+      "undonePartly_other": "Die Karten sind wieder getrennt. {{count}} Einträge kamen nicht zurück: Sie wurden nach der Zusammenführung geändert oder gelöscht."
+    },
+    "duplicate": {
+      "title": "Eine ähnliche Karte gibt es schon",
+      "why": "Gleich: {{list}}.",
+      "by": {
+        "name": "Vor- und Nachname",
+        "email": "E-Mail",
+        "phone": "Telefon"
+      },
+      "open": "Das ist er — seine Karte öffnen",
+      "namesakes": "Namensvettern gibt es: Ist es eine andere Person, machen Sie einfach weiter."
+    },
+    "task": {
+      "merge": "Zusammenführen",
+      "distinct": "Das sind verschiedene Personen",
+      "secretaryMerges": "Karten führt der Sekretär oder ein Administrator zusammen."
+    },
+    "markedDistinct": "Diese beiden Karten wurden schon als verschiedene Personen markiert (oder ihre Zusammenführung wurde rückgängig gemacht). Vergewissern Sie sich, dass es eine Person ist."
   }
 }

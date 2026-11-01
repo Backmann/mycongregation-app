@@ -184,6 +184,13 @@ export default function PublishersLayout() {
           headerLeft: () => <BackButton fallback="/publishers/list" toParent />,
         }}
       />
+      <Stack.Screen
+        name="merge"
+        options={{
+          title: t('merge.title'),
+          headerLeft: () => <BackButton fallback="/publishers/list" />,
+        }}
+      />
     </Stack>
   );
 }
