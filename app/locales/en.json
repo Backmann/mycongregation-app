@@ -6577,7 +6577,6 @@
     "title": "Merge cards",
     "intro": "One person was entered twice. Everything on the second card moves to the first, and the second disappears from the lists. You can undo it for 30 days — at the foot of the card.",
     "pickOther": "Which card to merge with",
-    "swap": "Swap",
     "kept": "STAYS",
     "merged": "MERGES IN AND DISAPPEARS",
     "changed": "Something on these cards changed while you were looking. Below is the current picture; check it and press again.",
@@ -6668,6 +6667,30 @@
       "distinct": "These are different people",
       "secretaryMerges": "The secretary or an administrator merges cards."
     },
-    "markedDistinct": "These two cards were already marked as different people (or their merge was undone). Make sure this is one person."
+    "markedDistinct": "These two cards were already marked as different people (or their merge was undone). Make sure this is one person.",
+    "lead": "The two cards of “{{name}}” become one. The card with a history stays — {{history}}.",
+    "details": "More: both cards",
+    "keepOther": "Keep the other card",
+    "result": {
+      "title": "AFTER THE MERGE",
+      "reports": "Service reports",
+      "noLogin": "none",
+      "loginMoves": "moves over from the second card",
+      "created": "Card created",
+      "taken": "Taken from the second card: {{list}}.",
+      "forHim": "Nothing changes for him: same password, and the phone will not ask him to sign in again.",
+      "forHer": "Nothing changes for her: same password, and the phone will not ask her to sign in again."
+    },
+    "poor": {
+      "title": "Usually the card with a history is kept",
+      "body": "The card staying now is the one created on {{date}}, with less history. Everything still moves over, but the card that stays will carry this date.",
+      "back": "Back: keep the card with a history",
+      "anyway": "Merge anyway"
+    },
+    "pick": {
+      "lead": "Merging with the card “{{name}}”. Which is this person’s second card?",
+      "similar": "SIMILAR CARDS",
+      "all": "ALL PUBLISHERS"
+    }
   }
 }

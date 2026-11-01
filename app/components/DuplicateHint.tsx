@@ -67,6 +67,9 @@ export function DuplicateHint({
             {[
               d.displayName,
               d.group ?? t('merge.facts.noGroup'),
+              typeof d.reports === 'number'
+                ? t('merge.facts.reports', { count: d.reports })
+                : null,
               d.departed ? t('merge.facts.departed') : null,
               d.memberSince
                 ? t('merge.facts.since', { date: formatDay(d.memberSince, lang) })

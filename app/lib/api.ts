@@ -7233,6 +7233,9 @@ export interface DuplicateCandidate {
   departed: boolean;
   memberSince: string | null;
   createdAt: string;
+  /** Optional: an older server does not say (1 November 2026). */
+  reports?: number;
+  hasAccount?: boolean;
   why: DuplicateWhy[];
 }
 

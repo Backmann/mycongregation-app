@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -16,6 +16,8 @@ import i18n from '../../../lib/i18n';
 import {
   cardMergeApi,
   extractErrorMessage,
+  publishersApi,
+  serviceGroupsApi,
   type MergeCardFacts,
   type MergeConflict,
   type MergeFieldDiff,
@@ -27,6 +29,8 @@ import { confirm } from '../../../components/ConfirmHost';
 import { PublisherSelector } from '../../../components/PublisherSelector';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
+import { hasMoreHistory } from '../../../lib/card-history';
+import { useAllPublishers } from '../../../lib/useAllPublishers';
 
 /**
  * «Объединить карточки» (1 November 2026, mock-up «Объединение карточек»).
@@ -49,6 +53,12 @@ export default function MergeCardsScreen() {
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [fields, setFields] = useState<Record<string, 'kept' | 'merged'>>({});
   const [changed, setChanged] = useState(false);
+  // The card to keep is chosen here, not by where the window was opened
+  // from (1 November 2026: the first live merge was opened from the empty
+  // card with the sign-in, and kept it). Once, on the first preview; a
+  // swap by hand after that is the person's own decision.
+  const [ordered, setOrdered] = useState(false);
+  const [details, setDetails] = useState(false);
 
   const preview = useQuery({
     throwOnError: failsScreen,
@@ -59,6 +69,20 @@ export default function MergeCardsScreen() {
     staleTime: 0,
   });
   const plan = preview.data;
+
+  const swap = () => {
+    setKept(merged);
+    setMerged(kept);
+    setChoices({});
+    setFields({});
+    setKeepUserId(undefined);
+  };
+  useEffect(() => {
+    if (!plan || ordered) return;
+    setOrdered(true);
+    if (hasMoreHistory(plan.merged, plan.kept)) swap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan, ordered]);
 
   const missing = useMemo(
     () => (plan ? plan.conflicts.filter((c) => !choices[c.key]) : []),
@@ -118,23 +142,17 @@ export default function MergeCardsScreen() {
   // ---- choosing the second card -------------------------------------------
   if (!kept || !merged) {
     return (
-      <ScrollView contentContainerStyle={styles.page}>
-        <Text style={styles.lead}>{t('merge.intro')}</Text>
-        <PublisherSelector
-          label={t('merge.pickOther')}
-          value={null}
-          boxed
-          excludeIds={kept ? [kept] : []}
-          onChange={(id) => {
-            if (!kept) setKept(id);
-            else setMerged(id);
-          }}
-        />
-      </ScrollView>
+      <PickSecond
+        kept={kept}
+        onPick={(id) => {
+          if (!kept) setKept(id);
+          else setMerged(id);
+        }}
+      />
     );
   }
 
-  if (preview.isLoading) {
+  if (preview.isLoading || (plan && !ordered)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -146,32 +164,40 @@ export default function MergeCardsScreen() {
   }
 
   const blocked = plan.blockers.length > 0;
+  // Left the empty card on top by hand: said, with a way back.
+  const poorKept = hasMoreHistory(plan.merged, plan.kept);
   const adminNeeded = plan.needsAdmin && !isAdmin;
   const canGo = !blocked && !adminNeeded && missing.length === 0;
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-      <Text style={styles.lead}>{t('merge.intro')}</Text>
+      {poorKept ? (
+        <View style={styles.warnBox}>
+          <Text style={styles.warnTitle}>{t('merge.poor.title')}</Text>
+          <Text style={styles.warnText}>
+            {t('merge.poor.body', {
+              date: formatDay(plan.kept.createdAt, i18n.language),
+            })}
+          </Text>
+          <Pressable style={styles.warnButton} onPress={swap} accessibilityRole="button">
+            <Text style={styles.warnButtonText}>{t('merge.poor.back')}</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <Text style={styles.lead}>
+          {t('merge.lead', {
+            name: plan.kept.displayName,
+            history: [
+              t('merge.facts.created', {
+                date: formatDay(plan.kept.createdAt, i18n.language),
+              }),
+              t('merge.facts.reports', { count: plan.kept.reports }),
+            ].join(', '),
+          })}
+        </Text>
+      )}
 
-      <CardBox facts={plan.kept} tone="kept" t={t} />
-      <View style={styles.swapRow}>
-        <Pressable
-          style={styles.swap}
-          onPress={() => {
-            setKept(merged);
-            setMerged(kept);
-            setChoices({});
-            setFields({});
-            setKeepUserId(undefined);
-          }}
-          accessibilityRole="button"
-          testID="merge-swap"
-        >
-          <Ionicons name="swap-vertical" size={18} color="#0f172a" />
-          <Text style={styles.swapText}>{t('merge.swap')}</Text>
-        </Pressable>
-      </View>
-      <CardBox facts={plan.merged} tone="merged" t={t} />
+      <Result plan={plan} fields={fields} keepUserId={keepUserId} poor={poorKept} t={t} />
 
       {changed ? (
         <View style={styles.warn}>
@@ -195,7 +221,25 @@ export default function MergeCardsScreen() {
         </View>
       ) : null}
 
-      <Moves plan={plan} t={t} />
+      <View style={styles.box}>
+        <Pressable
+          onPress={() => setDetails((x) => !x)}
+          style={styles.detailsHead}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: details }}
+          testID="merge-details"
+        >
+          <Text style={styles.detailsText}>{t('merge.details')}</Text>
+          <Ionicons name={details ? 'chevron-up' : 'chevron-down'} size={18} color="#475569" />
+        </Pressable>
+        {details ? (
+          <View style={{ gap: 10 }}>
+            <CardBox facts={plan.kept} tone="kept" t={t} />
+            <CardBox facts={plan.merged} tone="merged" t={t} />
+            <Moves plan={plan} t={t} />
+          </View>
+        ) : null}
+      </View>
 
       {plan.conflicts.map((c) => (
         <ConflictBox
@@ -274,15 +318,220 @@ export default function MergeCardsScreen() {
         testID="merge-submit"
       >
         <Text style={styles.primaryText}>
-          {mergeMutation.isPending ? t('merge.merging') : t('merge.action')}
+          {mergeMutation.isPending
+            ? t('merge.merging')
+            : poorKept
+              ? t('merge.poor.anyway')
+              : t('merge.action')}
         </Text>
       </Pressable>
       <Text style={styles.mutedCenter}>{t('merge.undoHint')}</Text>
+      {!poorKept ? (
+        <Pressable onPress={swap} style={styles.keepOther} testID="merge-swap" accessibilityRole="button">
+          <Text style={styles.keepOtherText}>{t('merge.keepOther')}</Text>
+        </Pressable>
+      ) : null}
     </ScrollView>
   );
 }
 
 // ---------------------------------------------------------------------------
+
+/**
+ * «После объединения» — the card as it will be, not two cards to compare
+ * (mock-up, second row). Every line comes from the server's preview.
+ */
+function Result({
+  plan,
+  fields,
+  keepUserId,
+  poor,
+  t,
+}: {
+  plan: MergePlan;
+  fields: Record<string, 'kept' | 'merged'>;
+  keepUserId: string | undefined;
+  poor: boolean;
+  t: TFunction;
+}) {
+  const groupDiff = plan.fields.find((f) => f.field === 'serviceGroupId');
+  const groupFromMerged =
+    groupDiff &&
+    (groupDiff.rule === 'take' || fields.serviceGroupId === 'merged');
+  const group = groupFromMerged ? plan.merged.group : plan.kept.group;
+  const sameMonth = plan.conflicts.filter((c) => c.kind === 'report').length;
+  const reports = plan.kept.reports + plan.merged.reports - sameMonth;
+  const others = Object.entries(plan.moves).filter(
+    ([table]) => table !== 'service_reports',
+  );
+  const taken = plan.fields.filter(
+    (f) => f.rule === 'take' && f.field !== 'serviceGroupId',
+  );
+  let login: string | null = plan.kept.account?.login ?? null;
+  let loginMoves = false;
+  if (plan.accounts === 'move') {
+    login = plan.merged.account?.login ?? null;
+    loginMoves = true;
+  } else if (plan.accounts === 'choose') {
+    const id = keepUserId ?? plan.kept.account?.userId;
+    const card = plan.merged.account?.userId === id ? plan.merged : plan.kept;
+    login = card.account?.login ?? null;
+    loginMoves = card === plan.merged;
+  }
+  return (
+    <View style={[styles.result, poor && styles.resultPoor]} testID="merge-result">
+      <Text style={styles.tag}>{t('merge.result.title')}</Text>
+      <Text style={styles.resultName}>{plan.kept.displayName}</Text>
+      <Line left={t('merge.fieldNames.group')} right={group ?? t('merge.facts.noGroup')} />
+      <Line left={t('merge.result.reports')} right={String(reports)} />
+      {others.map(([table, n]) => (
+        <Line key={table} left={tableName(table, t)} right={String(n)} />
+      ))}
+      <View style={styles.line}>
+        <Text style={styles.lineLeft}>{t('merge.accounts.line')}</Text>
+        <View style={{ alignItems: 'flex-end', flexShrink: 1 }}>
+          <Text style={styles.lineRight}>{login ?? t('merge.result.noLogin')}</Text>
+          {loginMoves ? (
+            <Text style={styles.small}>{t('merge.result.loginMoves')}</Text>
+          ) : null}
+        </View>
+      </View>
+      {poor ? (
+        <Line
+          left={t('merge.result.created')}
+          right={formatDay(plan.kept.createdAt, i18n.language)}
+          warn
+        />
+      ) : null}
+      {taken.length > 0 ? (
+        <Text style={styles.muted}>
+          {t('merge.result.taken', {
+            list: taken.map((f) => fieldLabel(f.field, t)).join(', '),
+          })}
+        </Text>
+      ) : null}
+      {plan.accounts !== 'none' ? (
+        <Text style={styles.calm}>
+          {plan.kept.gender === 'sister'
+            ? t('merge.result.forHer')
+            : t('merge.result.forHim')}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/**
+ * Which card is the second one (mock-up «Выбор второй карточки»). The two
+ * cards of one person carry the same name, so the likely ones come first,
+ * with what tells them apart; the whole list below shows each one's group.
+ */
+function PickSecond({
+  kept,
+  onPick,
+}: {
+  kept: string | null;
+  onPick: (id: string) => void;
+}) {
+  const { t } = useTranslation();
+  const lang = i18n.language;
+  const card = useQuery({
+    queryKey: ['publisher', kept],
+    queryFn: () => publishersApi.getById(kept!),
+    enabled: !!kept,
+  });
+  const similar = useQuery({
+    queryKey: ['card-merge', 'duplicates', 'of', kept],
+    queryFn: () =>
+      cardMergeApi.duplicates({
+        firstName: card.data!.firstName,
+        lastName: card.data!.lastName,
+        email: card.data!.email ?? undefined,
+        phone: card.data!.mobilePhone ?? undefined,
+        exceptId: kept!,
+      }),
+    enabled: !!card.data,
+  });
+  const people = useAllPublishers();
+  const groups = useQuery({
+    queryKey: ['service-groups'],
+    queryFn: () => serviceGroupsApi.list({}),
+  });
+  const groupOf = useMemo(() => {
+    const names = new Map((groups.data?.data ?? []).map((g) => [g.id, g.name]));
+    const m = new Map<string, string>();
+    for (const p of people.data?.data ?? []) {
+      const n = p.serviceGroupId ? names.get(p.serviceGroupId) : null;
+      if (n) m.set(p.id, n);
+    }
+    return m;
+  }, [groups.data, people.data]);
+
+  return (
+    <ScrollView contentContainerStyle={styles.page}>
+      <Text style={styles.lead}>
+        {card.data
+          ? t('merge.pick.lead', { name: card.data.displayName })
+          : t('merge.intro')}
+      </Text>
+      {(similar.data ?? []).length > 0 ? (
+        <View style={{ gap: 8 }}>
+          <Text style={styles.section}>{t('merge.pick.similar')}</Text>
+          {similar.data!.map((d) => (
+            <Pressable
+              key={d.id}
+              onPress={() => onPick(d.id)}
+              style={styles.similar}
+              accessibilityRole="button"
+              testID="merge-similar"
+            >
+              <Text style={styles.name}>{d.displayName}</Text>
+              <Text style={styles.muted}>
+                {[
+                  d.group ?? t('merge.facts.noGroup'),
+                  typeof d.reports === 'number'
+                    ? t('merge.facts.reports', { count: d.reports })
+                    : null,
+                  d.departed ? t('merge.facts.departed') : null,
+                  d.memberSince
+                    ? t('merge.facts.since', { date: formatDay(d.memberSince, lang) })
+                    : t('merge.facts.created', { date: formatDay(d.createdAt, lang) }),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+              <Text style={styles.muted}>
+                {[
+                  t('merge.duplicate.why', {
+                    list: d.why.map((w) => t(`merge.duplicate.by.${w}`)).join(', '),
+                  }),
+                  d.hasAccount === undefined
+                    ? null
+                    : d.hasAccount
+                      ? t('merge.facts.hasAccount')
+                      : t('merge.facts.noAccount'),
+                ]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+      <Text style={styles.sectionMuted}>{t('merge.pick.all')}</Text>
+      <PublisherSelector
+        label={t('merge.pickOther')}
+        value={null}
+        boxed
+        excludeIds={kept ? [kept] : []}
+        rowMeta={(id) => groupOf.get(id) ?? null}
+        onChange={(id) => {
+          if (id) onPick(id);
+        }}
+      />
+    </ScrollView>
+  );
+}
 
 function CardBox({
   facts,
@@ -523,11 +772,19 @@ function monthName(ym: string): string {
   return d.toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' });
 }
 
-function Line({ left, right }: { left: string; right: string }) {
+function Line({
+  left,
+  right,
+  warn,
+}: {
+  left: string;
+  right: string;
+  warn?: boolean;
+}) {
   return (
     <View style={styles.line}>
       <Text style={styles.lineLeft}>{left}</Text>
-      <Text style={styles.lineRight}>{right}</Text>
+      <Text style={[styles.lineRight, warn && styles.lineWarn]}>{right}</Text>
     </View>
   );
 }
@@ -574,19 +831,77 @@ const styles = StyleSheet.create({
   tagKept: { color: '#0e5f73' },
   tagMerged: { color: '#9a3412' },
   name: { fontFamily: 'Manrope_700Bold', fontSize: 16, color: '#0f172a' },
-  swapRow: { alignItems: 'center' },
-  swap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    minHeight: 44,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
+  result: {
     backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+    borderWidth: 2,
+    borderColor: '#0e5f73',
   },
-  swapText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0f172a' },
+  resultPoor: { borderColor: '#0e5f73' },
+  resultName: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#0f172a' },
+  small: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#475569' },
+  calm: {
+    fontFamily: 'Manrope_500Medium',
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#065f46',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+  },
+  lineWarn: { color: '#9a3412' },
+  warnBox: {
+    backgroundColor: '#fff7ed',
+    borderRadius: 12,
+    padding: 14,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+  },
+  warnTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#7c2d12' },
+  warnButton: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fdba74',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+  },
+  warnButtonText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#7c2d12' },
+  detailsHead: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 32,
+  },
+  detailsText: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0f172a' },
+  keepOther: { alignSelf: 'center', minHeight: 44, justifyContent: 'center' },
+  keepOtherText: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: '#0369a1' },
+  section: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 13,
+    letterSpacing: 0.5,
+    color: '#0e5f73',
+  },
+  sectionMuted: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 13,
+    letterSpacing: 0.5,
+    color: '#475569',
+    marginTop: 4,
+  },
+  similar: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 14,
+    gap: 4,
+    borderWidth: 2,
+    borderColor: '#0e5f73',
+  },
   box: {
     backgroundColor: '#ffffff',
     borderRadius: 12,

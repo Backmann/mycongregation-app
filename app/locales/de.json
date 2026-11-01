@@ -6577,7 +6577,6 @@
     "title": "Karteikarten zusammenführen",
     "intro": "Eine Person wurde doppelt erfasst. Alles von der zweiten Karte geht auf die erste über, die zweite verschwindet aus den Listen. Rückgängig machen können Sie es 30 Tage lang — unten auf der Karte.",
     "pickOther": "Mit welcher Karte zusammenführen",
-    "swap": "Tauschen",
     "kept": "BLEIBT",
     "merged": "GEHT AUF UND VERSCHWINDET",
     "changed": "Während Sie geschaut haben, hat sich an den Karten etwas geändert. Unten steht der aktuelle Stand; prüfen Sie ihn und tippen Sie erneut.",
@@ -6668,6 +6667,30 @@
       "distinct": "Das sind verschiedene Personen",
       "secretaryMerges": "Karten führt der Sekretär oder ein Administrator zusammen."
     },
-    "markedDistinct": "Diese beiden Karten wurden schon als verschiedene Personen markiert (oder ihre Zusammenführung wurde rückgängig gemacht). Vergewissern Sie sich, dass es eine Person ist."
+    "markedDistinct": "Diese beiden Karten wurden schon als verschiedene Personen markiert (oder ihre Zusammenführung wurde rückgängig gemacht). Vergewissern Sie sich, dass es eine Person ist.",
+    "lead": "Die beiden Karten „{{name}}“ werden eine. Es bleibt die Karte mit Vorgeschichte — {{history}}.",
+    "details": "Mehr: beide Karten",
+    "keepOther": "Die andere Karte behalten",
+    "result": {
+      "title": "NACH DER ZUSAMMENFÜHRUNG",
+      "reports": "Berichte über den Dienst",
+      "noLogin": "keine",
+      "loginMoves": "geht von der zweiten Karte über",
+      "created": "Karte angelegt",
+      "taken": "Von der zweiten Karte übernommen: {{list}}.",
+      "forHim": "Für ihn ändert sich nichts: dasselbe Passwort, das Telefon fragt nicht nach einer neuen Anmeldung.",
+      "forHer": "Für sie ändert sich nichts: dasselbe Passwort, das Telefon fragt nicht nach einer neuen Anmeldung."
+    },
+    "poor": {
+      "title": "Üblicherweise bleibt die Karte mit Vorgeschichte",
+      "body": "Jetzt bleibt die Karte, die am {{date}} angelegt wurde, mit weniger Vorgeschichte. Übergehen wird trotzdem alles, aber die bleibende Karte trägt dieses Datum.",
+      "back": "Zurück: die Karte mit Vorgeschichte behalten",
+      "anyway": "Trotzdem zusammenführen"
+    },
+    "pick": {
+      "lead": "Zusammenführen mit der Karte „{{name}}“. Welche ist die zweite Karte dieser Person?",
+      "similar": "ÄHNLICHE KARTEN",
+      "all": "ALLE VERKÜNDIGER"
+    }
   }
 }
