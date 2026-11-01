@@ -264,8 +264,11 @@ export default function ServiceReportsListScreen() {
     queryKey: ['service-reports', 'my'],
     queryFn: () => serviceReportsApi.listMy(),
   });
+  // The same key as Главная and Служение (1 November 2026): this screen had
+  // a key of its own, which nothing refreshed after a report was handed in —
+  // the card said «не сдан» until the page was reloaded.
   const standingQ = useQuery({
-    queryKey: ['my-report-standing'],
+    queryKey: ['reports', 'my-standing'],
     queryFn: () => serviceReportsApi.myStanding(),
   });
   const navigation = useNavigation();

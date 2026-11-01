@@ -310,6 +310,26 @@ export default function NewOrEditServiceReportScreen() {
     !!myReports &&
     recentMonths.every((m) => submittedMonths.has(m.value));
 
+  /**
+   * Everything a handed-in, corrected or removed report changes, in one place
+   * (1 November 2026). Each path refreshed its own few lists, and the
+   * «сдан / не сдан» card on Отчёты was in none of them.
+   */
+  const refreshAfterReport = () => {
+    for (const key of [
+      ['service-reports'],
+      ['reports', 'my-standing'],
+      ['publisher-history'],
+      ['report-collection'],
+      // The secretary's summary of the month.
+      ['group-reports'],
+      // The month's log now defers to the report.
+      ['service-log'],
+    ]) {
+      void queryClient.invalidateQueries({ queryKey: key });
+    }
+  };
+
   const submitMutation = useMutation({
     // Shown in place by this form — keep it out of the global error strip,
     // which was repeating the very same sentence a second time.
@@ -325,9 +345,7 @@ export default function NewOrEditServiceReportScreen() {
         notes: notes.trim() || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-reports'] });
-      // The month's log now defers to the report.
-      queryClient.invalidateQueries({ queryKey: ['service-log'] });
+      refreshAfterReport();
       setSubmitted(true);
     },
     onError: (err) => {
@@ -354,7 +372,7 @@ export default function NewOrEditServiceReportScreen() {
         notes: notes.trim() || undefined,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['service-reports'] });
+      refreshAfterReport();
       queryClient.invalidateQueries({ queryKey: ['service-report', editId] });
       setSubmitted(true);
     },
@@ -875,10 +893,7 @@ export default function NewOrEditServiceReportScreen() {
               });
               if (!ok) return;
               await serviceReportsApi.remove(editingReport.id);
-              queryClient.invalidateQueries({ queryKey: ['service-reports'] });
-              queryClient.invalidateQueries({ queryKey: ['group-reports'] });
-              queryClient.invalidateQueries({ queryKey: ['publisher-history'] });
-              queryClient.invalidateQueries({ queryKey: ['my-report-standing'] });
+              refreshAfterReport();
               goBack('/service-reports');
             }}
             style={styles.removeBtn}
