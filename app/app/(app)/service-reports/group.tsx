@@ -464,15 +464,9 @@ export default function GroupReportsScreen() {
             statusInfo={statusMap.get(item.publisherId) ?? null}
             missedThreshold={missedThreshold}
             canOverride={canOverride}
-            onOverride={
-              canOverride
-                ? () =>
-                    setOverrideTarget({
-                      publisherId: item.publisherId,
-                      displayName: item.displayName,
-                    })
-                : undefined
-            }
+            // The standing comes from the reports only (1 November 2026):
+            // the button that set it by hand is gone; the server refuses it.
+            onOverride={undefined}
             onTapHistory={() =>
               router.push(
                 `/service-reports/publisher-history?publisherId=${item.publisherId}&displayName=${encodeURIComponent(item.displayName)}&from=${FROM}` as any,

@@ -3863,6 +3863,10 @@
     },
     "s21": "die S-21-Karte",
     "fieldNames": {
+      "notHeldReason": "Warum die Zusammenkunft ausfiel",
+      "onlineCount": "Online zugeschaltet",
+      "place": "Ort",
+      "timeStart": "Beginn",
       "outcome": "Ergebnis",
       "minutes": "Minuten",
       "presenterPublisherId": "Vorgetragen von",
@@ -5648,6 +5652,7 @@
       "RESPONSIBILITY_ELDERS_ONLY": "Diese Zuständigkeit kann nur ein Ältester haben: Sie öffnet die Berichtskarten (S-21).",
       "PERSON_NOT_ASSIGNABLE": "Diese Person kann zurzeit nicht eingeteilt werden. Bei Fragen wenden Sie sich bitte an die Ältesten.",
       "SIGNUP_UNAVAILABLE": "Eintragen ist zurzeit nicht möglich. Bitte wenden Sie sich an die Ältesten.",
+      "STATUS_BY_REPORTS_ONLY": "Der Status ergibt sich nur aus den Berichten und wird nicht von Hand gesetzt.",
       "GROUP_LEADER_SISTER": "Gruppenaufseher und sein Gehilfe müssen Brüder sein.",
       "ABSENCE_FROM_SCHOOL": "Diese Abwesenheit stammt aus einer Einteilung in der Pionierdienstschule. Bitte die Einteilung in der Schule ändern.",
       "PIONEER_KIND_CHANGE_DATE": "Die neue Art des Dienstes muss später beginnen als die bisherige. Bitte den Monat angeben, ab dem er so dient, oder die Art für die ganze Zeit korrigieren.",
