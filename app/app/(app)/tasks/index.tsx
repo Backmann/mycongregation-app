@@ -1,3 +1,4 @@
+import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -353,6 +354,11 @@ export default function TasksScreen() {
           >
             <Text style={styles.openScreen}>{t("pioneerMeeting.fromTask")}</Text>
           </Pressable>
+        ) : null}
+
+        {/* «Замена назначений»: whose, and what is still his — read live. */}
+        {task.kind === "inactive_holds" ? (
+          <InactiveHoldsLines taskId={task.id} />
         ) : null}
 
         {/* The draft month waits on its own page: check it, publish it. */}

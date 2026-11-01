@@ -4479,7 +4479,8 @@
       "service_overseer_visits": "Besuche der Gruppen planen",
       "annual_report_sent": "Gesendeten Jahresbericht speichern",
       "field_service_month": "Zusammenkünfte für den Predigtdienst prüfen",
-      "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet"
+      "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet",
+      "inactive_holds": "Aufgaben neu vergeben"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -4491,7 +4492,19 @@
     "doneOn": "Erledigt am {{date}}, {{time}}",
     "closedBy": "Abgehakt von {{name}}",
     "expandDetails": "Vollständig anzeigen",
-    "collapseDetails": "Einklappen"
+    "collapseDetails": "Einklappen",
+    "inactiveHolds": {
+      "loading": "Wird geladen…",
+      "none": "Nichts mehr offen – die Aufgabe schließt sich von selbst.",
+      "week": "Woche ab {{date}}",
+      "part": "Programm",
+      "cart": "Stand",
+      "field_service": "Treffpunkt für den Predigtdienst",
+      "talk": "Vortrag in einer anderen Versammlung",
+      "groupOverseer": "Gruppenaufseher „{{name}}“",
+      "groupAssistant": "Gehilfe in der Gruppe „{{name}}“",
+      "hint": "Die Aufgabe schließt sich von selbst, wenn nichts mehr davon übrig ist oder er wieder einen Bericht „gepredigt“ abgibt."
+    }
   },
   "pioneerSchool": {
     "title": "Pionierdienstschule",
