@@ -4479,7 +4479,8 @@
       "service_overseer_visits": "Plan the visits to the groups",
       "annual_report_sent": "Save the annual report as sent",
       "field_service_month": "Check the field service meetings",
-      "pioneer_meeting": "Annual meeting with the pioneers — who conducts it"
+      "pioneer_meeting": "Annual meeting with the pioneers — who conducts it",
+      "inactive_holds": "Reassign tasks"
     },
     "mine": {
       "title": "My tasks",
@@ -4491,7 +4492,19 @@
     "doneOn": "Done {{date}}, {{time}}",
     "closedBy": "Marked by {{name}}",
     "expandDetails": "Show in full",
-    "collapseDetails": "Collapse"
+    "collapseDetails": "Collapse",
+    "inactiveHolds": {
+      "loading": "Loading…",
+      "none": "Nothing left — the task will close by itself.",
+      "week": "week of {{date}}",
+      "part": "Program",
+      "cart": "Cart",
+      "field_service": "Meeting for field service",
+      "talk": "Talk in another congregation",
+      "groupOverseer": "Group overseer «{{name}}»",
+      "groupAssistant": "Group assistant «{{name}}»",
+      "hint": "The task closes by itself once none of these is left or he hands in a report that he shared again."
+    }
   },
   "pioneerSchool": {
     "title": "Pioneer Service School",

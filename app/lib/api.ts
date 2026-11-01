@@ -6894,6 +6894,8 @@ export interface ElderTask {
     | "annual_report_sent"
     | "field_service_month"
     | "pioneer_meeting"
+    /** «Замена назначений»: an inactive publisher still holds something. */
+    | "inactive_holds"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
@@ -6953,7 +6955,31 @@ export interface AgendaResult {
 }
 
 /** Elders and admins only — the server refuses everyone else. */
+/** One thing an inactive publisher still holds (1 November 2026). */
+export interface InactiveHold {
+  kind:
+    | "part"
+    | "duty"
+    | "cart"
+    | "field_service"
+    | "talk"
+    | "group"
+    | "responsibility";
+  date: string | null;
+  /** `date` is the Monday of the week, not the day itself. */
+  week: boolean;
+  label: string | null;
+  code: string | null;
+}
+
 export const tasksApi = {
+  /** Elders only: whose the «Замена назначений» task is, and what is left. */
+  async inactiveHolds(taskId: string) {
+    const { data } = await api.get<{ name: string; holds: InactiveHold[] }>(
+      `/tasks/${taskId}/inactive-holds`,
+    );
+    return data;
+  },
   async list(status?: "open" | "done") {
     const { data } = await api.get<ElderTask[]>("/tasks", {
       params: status ? { status } : undefined,

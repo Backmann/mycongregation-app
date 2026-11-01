@@ -1,3 +1,4 @@
+import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -271,7 +272,8 @@ export default function TasksScreen() {
                 "when",
               )
             : null}
-          {task.kind
+          {/* «Замена назначений» comes once per lapse, it does not repeat. */}
+          {task.kind && task.kind !== "inactive_holds"
             ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
@@ -353,6 +355,11 @@ export default function TasksScreen() {
           >
             <Text style={styles.openScreen}>{t("pioneerMeeting.fromTask")}</Text>
           </Pressable>
+        ) : null}
+
+        {/* «Замена назначений»: whose, and what is still his — read live. */}
+        {task.kind === "inactive_holds" ? (
+          <InactiveHoldsLines taskId={task.id} />
         ) : null}
 
         {/* The draft month waits on its own page: check it, publish it. */}
