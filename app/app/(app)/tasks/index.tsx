@@ -272,7 +272,8 @@ export default function TasksScreen() {
                 "when",
               )
             : null}
-          {task.kind
+          {/* «Замена назначений» comes once per lapse, it does not repeat. */}
+          {task.kind && task.kind !== "inactive_holds"
             ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
