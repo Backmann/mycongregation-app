@@ -5646,6 +5646,8 @@
       "STAGE_ACCOUNT_FIXED": "A stage display is not a person: it has no card and its role cannot be changed.",
       "RESPONSIBILITY_OWN_ASSISTANT": "A brother cannot be his own assistant: this responsibility and its assistant are two different brothers.",
       "RESPONSIBILITY_ELDERS_ONLY": "Only an elder can hold this responsibility: it opens the service records (S-21).",
+      "PERSON_NOT_ASSIGNABLE": "This person cannot be given a task at the moment. If you have questions, please speak to the elders.",
+      "SIGNUP_UNAVAILABLE": "Signing up is not available at the moment. Please speak to the elders.",
       "GROUP_LEADER_SISTER": "The group overseer and his assistant must be brothers.",
       "ABSENCE_FROM_SCHOOL": "This absence comes from an assignment in the Pioneer Service School. Change the assignment in the school instead.",
       "PIONEER_KIND_CHANGE_DATE": "The new kind of service has to start later than the current one. Enter the month he starts serving this way, or correct the kind for all time.",
