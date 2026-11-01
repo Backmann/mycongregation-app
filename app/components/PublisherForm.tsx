@@ -115,6 +115,7 @@ export function PublisherForm({
     baptismDate: initial?.baptismDate ?? '',
     spiritualStatus: initial?.spiritualStatus ?? 'unknown',
     ministryStartDate: initial?.ministryStartDate ?? '',
+    memberSince: initial?.memberSince ?? '',
     pioneerType: initial?.pioneerType ?? 'none',
     pioneerSince: initial?.pioneerSince ?? '',
     pioneerMonthGoal: initial?.pioneerMonthGoal ?? 100,
@@ -124,6 +125,20 @@ export function PublisherForm({
       initial?.capabilities ??
       (initial?.gender === 'sister' ? { hospitality: true } : {}),
   });
+
+  /**
+   * «Когда он пришёл в наше собрание?» — asked of a NEW card only
+   * (1 November 2026). Counting for his standing and the reports begins no
+   * earlier than this month; «давно» leaves the date empty, as for everyone
+   * who was here before. An existing card shows the date as a plain field.
+   */
+  const isNew = !initial;
+  const [arrival, setArrival] = useState<'now' | 'month' | 'long'>('now');
+  const ARRIVAL_OPTIONS: { value: 'now' | 'month' | 'long'; label: string }[] = [
+    { value: 'now', label: t('publishers.memberSince.now') },
+    { value: 'month', label: t('publishers.memberSince.month') },
+    { value: 'long', label: t('publishers.memberSince.long') },
+  ];
 
   const [error, setError] = useState<string | null>(null);
   const [correctOpen, setCorrectOpen] = useState(false);
@@ -208,11 +223,28 @@ export function PublisherForm({
       setError(t('publishers.validation.pioneerSinceRequired'));
       return;
     }
+    const sinceText = form.memberSince?.trim() ?? '';
+    if (isNew && arrival === 'month' && !sinceText) {
+      setError(t('publishers.memberSince.required'));
+      return;
+    }
+    // New card: «только что» — left to the server (this month); a month —
+    // that month; «давно» — no date. Existing card: the field as it stands.
+    const { memberSince: _since, ...rest } = form;
+    const memberSince: string | null | undefined = isNew
+      ? arrival === 'now'
+        ? undefined
+        : arrival === 'month'
+          ? sinceText
+          : null
+      : sinceText || null;
+    const payload: CreatePublisherInput =
+      memberSince === undefined ? rest : { ...rest, memberSince };
     try {
       await onSubmit(
         endMonth && wasPermanent && form.pioneerType === 'none'
-          ? { ...form, pioneerEndMonth: endMonth }
-          : form,
+          ? { ...payload, pioneerEndMonth: endMonth }
+          : payload,
       );
     } catch (e) {
       setError(extractErrorMessage(e));
@@ -377,6 +409,40 @@ export function PublisherForm({
             onChange={(v) => update('ministryStartDate', v)}
             placeholder={t('publishers.placeholders.date')}
           />
+        )}
+        {showMinistryStart && isNew && (
+          <>
+            <FormChips
+              label={t('publishers.memberSince.question')}
+              value={arrival}
+              options={ARRIVAL_OPTIONS}
+              onChange={setArrival}
+            />
+            {arrival === 'month' && (
+              <DateField
+                label={t('publishers.fields.memberSince')}
+                value={form.memberSince ?? ''}
+                onChange={(v) => update('memberSince', v)}
+                placeholder={t('publishers.placeholders.date')}
+              />
+            )}
+            <Text style={styles.sinceHint}>
+              {t(`publishers.memberSince.hint.${arrival}`)}
+            </Text>
+          </>
+        )}
+        {showMinistryStart && !isNew && (
+          <>
+            <DateField
+              label={t('publishers.fields.memberSince')}
+              value={form.memberSince ?? ''}
+              onChange={(v) => update('memberSince', v)}
+              placeholder={t('publishers.placeholders.date')}
+            />
+            <Text style={styles.sinceHint}>
+              {t('publishers.memberSince.hint.edit')}
+            </Text>
+          </>
         )}
         {showPioneer && (
           <>
@@ -604,6 +670,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'flex-start',
+  },
+  // Under the «в нашем собрании с» question: room before the next field.
+  sinceHint: {
+    fontFamily: 'Manrope_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+    color: '#475569',
+    marginTop: -4,
+    marginBottom: 16,
   },
   kindHintText: {
     flex: 1,

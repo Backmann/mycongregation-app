@@ -290,6 +290,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           // set — the mark the S-21 prints. Found 30 October 2026.
           spiritualStatus: publisher.spiritualStatus ?? undefined,
           ministryStartDate: publisher.ministryStartDate ?? undefined,
+          memberSince: publisher.memberSince ?? null,
           pioneerType: publisher.pioneerType,
           pioneerSince: publisher.pioneerSince ?? undefined,
           // Without it the form starts at 100, and saving anything on the
