@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
 import { tasksApi, type PossibleDuplicateCard } from '../lib/api';
 import { formatDay } from '../lib/date-range';
+import { hasMoreHistory } from '../lib/card-history';
 import { useMayOpen } from '../lib/useMayOpen';
 
 /**
@@ -29,13 +30,7 @@ export function PossibleDuplicateLines({ taskId }: { taskId: string }) {
   });
   if (!q.data) return null;
   const [x, y] = q.data.cards;
-  const richer = (a: PossibleDuplicateCard, b: PossibleDuplicateCard) =>
-    a.departed !== b.departed
-      ? !a.departed
-      : a.reports !== b.reports
-        ? a.reports > b.reports
-        : a.createdAt < b.createdAt;
-  const [keep, other] = richer(x, y) ? [x, y] : [y, x];
+  const [keep, other] = hasMoreHistory(x, y) ? [x, y] : [y, x];
   const lang = i18n.language;
   const line = (c: PossibleDuplicateCard) =>
     [
