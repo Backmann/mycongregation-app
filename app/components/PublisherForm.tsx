@@ -13,6 +13,7 @@ import { DateField } from './DateField';
 import { FormSection } from './FormSection';
 import { FormChips } from './FormChips';
 import { CapabilitiesEditor } from './CapabilitiesEditor';
+import { DuplicateHint } from './DuplicateHint';
 import {
   Capabilities,
   CreatePublisherInput,
@@ -295,6 +296,13 @@ export function PublisherForm({
           required
           placeholder={t('publishers.placeholders.lastName')}
         />
+        {isNew ? (
+          <DuplicateHint
+            only="name"
+            firstName={form.firstName}
+            lastName={form.lastName}
+          />
+        ) : null}
         <FormChips
           label={t('publishers.fields.gender')}
           value={form.gender}
@@ -346,6 +354,13 @@ export function PublisherForm({
           onChangeText={(v) => update('address', v)}
           multiline
         />
+        {isNew ? (
+          <DuplicateHint
+            only="contacts"
+            phone={form.mobilePhone ?? undefined}
+            email={form.email ?? undefined}
+          />
+        ) : null}
       </FormSection>
 
       <FormSection title={t('publishers.sections.spirituality')}>

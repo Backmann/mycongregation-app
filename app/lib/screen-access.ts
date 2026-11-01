@@ -124,6 +124,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // says which.
   '/publishers/[id]': 'self',
   '/publishers/new': 'publisherCards',
+  '/publishers/merge': 'publisherCards',
   '/service-groups': 'all',
   '/service-groups/[id]': 'self',
   '/service-groups/new': 'admin',
