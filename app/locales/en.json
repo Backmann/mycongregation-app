@@ -2365,7 +2365,6 @@
     },
     "recentDays_one": "{{count}} day at the stand in 8 weeks",
     "recentDays_other": "{{count}} days at the stand in 8 weeks",
-    "repeatLastWeek": "Repeat last week",
     "restore": "Restore",
     "save": "Save",
     "sharePdf": "PDF",
@@ -2425,7 +2424,14 @@
     "wantsWithWritten": "note (not on the list): {{who}}",
     "mateStands": "on the plan {{time}}",
     "mateAsked": "signed up {{time}}",
-    "mateNotThisDay": "no sign-up this day"
+    "mateNotThisDay": "no sign-up this day",
+    "noDaysYet": "No days this week yet. Add days — place and hours — then open sign-up.",
+    "memoAdd": "Add a memo for everyone — all see it above every week",
+    "repeatWeek": "Repeat the week {{week}}",
+    "planNextWeek": "Plan next week: {{week}}",
+    "deadlineRange": "No earlier than {{from}} and no later than {{to}}, the last day planned",
+    "skippedPast_one": "{{count}} day is already over — not added.",
+    "skippedPast_other": "{{count}} days are already over — not added."
   },
   "cartLocations": {
     "add": "Add location",
@@ -5921,7 +5927,10 @@
       "CART_DAY_HAS_PEOPLE": "People are already on this day. Take them off first, or call the day off.",
       "CART_ALREADY_REQUESTED": "You already signed up for this time.",
       "CART_BAD_SPAN": "A time at the stand is an hour or more, on the half-hour, within the day.",
-      "CART_PARTNER_UNKNOWN": "Choose one or two people from the list the stand is open to. Anyone not on the list — write them under «Not on the list»."
+      "CART_PARTNER_UNKNOWN": "Choose one or two people from the list the stand is open to. Anyone not on the list — write them under «Not on the list».",
+      "CART_DAYS_PAST": "Every day chosen is already over — choose days ahead.",
+      "CART_WEEK_EMPTY": "There is no day ahead in this week — add days first, then open sign-up.",
+      "CART_BAD_DEADLINE": "The last day for signing up lies between today and the last day planned."
     }
   },
   "stage": {

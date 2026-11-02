@@ -2365,7 +2365,6 @@
     },
     "recentDays_one": "{{count}} Tag am Stand in 8 Wochen",
     "recentDays_other": "{{count}} Tage am Stand in 8 Wochen",
-    "repeatLastWeek": "Vorige Woche wiederholen",
     "restore": "Wiederherstellen",
     "save": "Speichern",
     "sharePdf": "PDF",
@@ -2425,7 +2424,14 @@
     "wantsWithWritten": "Wunsch (nicht in der Liste): {{who}}",
     "mateStands": "eingeteilt {{time}}",
     "mateAsked": "eingetragen {{time}}",
-    "mateNotThisDay": "an diesem Tag kein Eintrag"
+    "mateNotThisDay": "an diesem Tag kein Eintrag",
+    "noDaysYet": "Für diese Woche gibt es noch keine Tage. Fügen Sie Tage hinzu – Ort und Zeiten – und öffnen Sie dann die Eintragung.",
+    "memoAdd": "Hinweis für alle hinzufügen – alle sehen ihn über jeder Woche",
+    "repeatWeek": "Woche {{week}} wiederholen",
+    "planNextWeek": "Nächste Woche planen: {{week}}",
+    "deadlineRange": "Nicht vor {{from}} und nicht nach {{to}}, dem letzten geplanten Tag",
+    "skippedPast_one": "{{count}} Tag ist schon vorbei – nicht hinzugefügt.",
+    "skippedPast_other": "{{count}} Tage sind schon vorbei – nicht hinzugefügt."
   },
   "cartLocations": {
     "add": "Standort hinzufügen",
@@ -5921,7 +5927,10 @@
       "CART_DAY_HAS_PEOPLE": "An diesem Tag sind schon Personen eingeteilt. Erst austragen oder den Tag absagen.",
       "CART_ALREADY_REQUESTED": "Für diese Zeit sind Sie schon eingetragen.",
       "CART_BAD_SPAN": "Eine Zeit am Stand dauert mindestens eine Stunde, in halben Stunden, innerhalb des Tages.",
-      "CART_PARTNER_UNKNOWN": "Wählen Sie eine oder zwei Personen aus der Liste, für die der Stand freigegeben ist. Wer nicht in der Liste steht, unter «Nicht in der Liste» eintragen."
+      "CART_PARTNER_UNKNOWN": "Wählen Sie eine oder zwei Personen aus der Liste, für die der Stand freigegeben ist. Wer nicht in der Liste steht, unter «Nicht in der Liste» eintragen.",
+      "CART_DAYS_PAST": "Alle gewählten Tage sind schon vorbei – bitte Tage in der Zukunft wählen.",
+      "CART_WEEK_EMPTY": "In dieser Woche gibt es keinen Tag mehr – erst Tage hinzufügen, dann die Eintragung öffnen.",
+      "CART_BAD_DEADLINE": "Der Eintragungsschluss liegt zwischen heute und dem letzten geplanten Tag."
     }
   },
   "stage": {

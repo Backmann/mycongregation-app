@@ -113,6 +113,15 @@ export default function WitnessingScreen() {
     queryFn: () => cartWeeksApi.getWeek(weekISO),
   });
   const week = weekQuery.data ?? null;
+  const emptyWeek = !week || week.days.length === 0;
+  // «Повторить»: which week and which days, said on the button; no such
+  // week — no button (2 November 2026).
+  const copySourceQuery = useQuery({
+    queryKey: ['cart-copy-source', weekISO],
+    queryFn: () => cartWeeksApi.copySource(weekISO),
+    enabled: mayArrange && emptyWeek && !weekQuery.isLoading,
+  });
+  const copySource = copySourceQuery.data ?? null;
   // «Мои смены»: this week and the next — and the week on screen, when it is
   // a later one (walk of 2 November 2026: a brother looking at a week three
   // weeks out saw his shifts of the next two, not of the week before him).
@@ -142,8 +151,9 @@ export default function WitnessingScreen() {
         daysOfWeek: bDays,
         locationIds: bLocations,
       }),
-    onSuccess: () => {
+    onSuccess: (r) => {
       setShowBuild(false);
+      if (r.skippedPast) notify(t('witnessing.skippedPast', { count: r.skippedPast }), undefined, 'success');
       refresh();
     },
     onError: err,
@@ -151,7 +161,14 @@ export default function WitnessingScreen() {
   const copy = useMutation({
     mutationFn: () => cartWeeksApi.copy(weekISO),
     onSuccess: (r) => {
-      notify(t('witnessing.copied', { count: r.added }), undefined, 'success');
+      notify(
+        [
+          t('witnessing.copied', { count: r.added }),
+          ...(r.skippedPast ? [t('witnessing.skippedPast', { count: r.skippedPast })] : []),
+        ].join(' '),
+        undefined,
+        'success',
+      );
       refresh();
     },
     onError: err,
@@ -319,6 +336,16 @@ export default function WitnessingScreen() {
   };
 
   const visible = week && !(week.status === 'draft' && !canManage);
+  // The last day for signing up: from today to the last day planned — the
+  // server holds the same (CART_BAD_DEADLINE).
+  const lastDay = week?.days.length ? [...week.days.map((d) => d.date)].sort().pop()! : null;
+  const deadlineOk = !deadline || !lastDay || (deadline >= todayISO && deadline <= lastDay);
+  // «Вт, Чт, Сб · Bahnhof Ahlen»: what «Повторить» brings, in a line.
+  const sourceSummary = (src: NonNullable<typeof copySource>): string => {
+    const dows = [...new Set(src.days.map((d) => d.weekday))].sort((a, b) => a - b);
+    const places = [...new Set(src.days.map((d) => d.locationName))];
+    return `${dows.map((d) => t(`witnessing.dow.${d}`)).join(', ')} · ${places.join(', ')}`;
+  };
   const hasPeople = !!week && week.days.some((d) => (d.plan ?? []).length > 0);
 
   return (
@@ -346,7 +373,9 @@ export default function WitnessingScreen() {
           }}
         >
           <Ionicons name="information-circle-outline" size={18} color="#0e7490" />
-          <Text style={styles.memoText}>{week?.memo || t('witnessing.memoEmpty')}</Text>
+          <Text style={styles.memoText}>
+            {week?.memo || (canManage ? t('witnessing.memoAdd') : t('witnessing.memoEmpty'))}
+          </Text>
           {canManage && <Ionicons name="create-outline" size={16} color="#64748b" />}
         </Pressable>
       )}
@@ -410,10 +439,12 @@ export default function WitnessingScreen() {
         </Pressable>
       </View>
 
-      {canManage && week && (
+      {/* The way through a week, from its first day (2 November 2026: on an
+          empty week the arranger did not see where he was going). */}
+      {canManage && (
         <View style={styles.steps}>
           {(['draft', 'collecting', 'published'] as const).map((s, i) => {
-            const at = ['draft', 'collecting', 'published'].indexOf(week.status);
+            const at = week ? ['draft', 'collecting', 'published'].indexOf(week.status) : 0;
             const done = i < at || (s === 'published' && at === 2);
             const now2 = i === at && s !== 'published';
             return (
@@ -436,15 +467,48 @@ export default function WitnessingScreen() {
         <ActivityIndicator style={{ marginTop: 32 }} color="#0e7490" />
       ) : !visible ? (
         <View style={styles.emptyBox}>
-          <Text style={styles.emptyText}>{t('witnessing.notOpen')}</Text>
+          {/* The publisher hears the week is not open; the arranger, what to
+              do with it. */}
+          <Text style={styles.emptyText}>{canManage ? t('witnessing.noDaysYet') : t('witnessing.notOpen')}</Text>
           {canManage && (
             <View style={{ gap: 10, alignSelf: 'stretch' }}>
               <Pressable style={styles.primaryBtn} onPress={() => setShowBuild(true)}>
                 <Text style={styles.primaryBtnText}>{t('witnessing.addDays')}</Text>
               </Pressable>
-              <Pressable style={styles.secondaryBtn} disabled={copy.isPending} onPress={() => copy.mutate()}>
-                <Text style={styles.secondaryBtnText}>{t('witnessing.repeatLastWeek')}</Text>
-              </Pressable>
+              {!!copySource && (
+                <Pressable style={styles.secondaryBtn} disabled={copy.isPending} onPress={() => copy.mutate()}>
+                  <Text style={styles.secondaryBtnText}>
+                    {t('witnessing.repeatWeek', {
+                      week: formatDayRange(
+                        copySource.weekStartDate,
+                        formatDateISO(addDays(parseISODate(copySource.weekStartDate), 6)),
+                        locale,
+                        { month: 'short', year: 'never' },
+                      ),
+                    })}
+                  </Text>
+                  <Text style={styles.secondarySub}>{sourceSummary(copySource)}</Text>
+                </Pressable>
+              )}
+              {weekISO === thisMonday && (
+                <Pressable style={styles.linkRow} onPress={() => setMonday((m) => addWeeks(m, 1))}>
+                  <Text style={styles.linkText}>
+                    {t('witnessing.planNextWeek', {
+                      week: formatDayRange(nextMonday, formatDateISO(addDays(parseISODate(nextMonday), 6)), locale, {
+                        month: 'short',
+                        year: 'never',
+                      }),
+                    })}
+                  </Text>
+                  <Ionicons name="arrow-forward" size={16} color="#0e7490" />
+                </Pressable>
+              )}
+              {mayOpen('/cart/witnessing-archive') && (
+                <Pressable style={styles.linkRow} onPress={() => router.push('/cart/witnessing-archive' as never)}>
+                  <Ionicons name="archive-outline" size={18} color="#0e7490" />
+                  <Text style={styles.linkText}>{t('witnessing.archive')}</Text>
+                </Pressable>
+              )}
             </View>
           )}
         </View>
@@ -680,10 +744,16 @@ export default function WitnessingScreen() {
         onCancel={() => setShowOpen(false)}
         onConfirm={() => week && open.mutate(week.id)}
         pending={open.isPending}
+        confirmDisabled={!deadlineOk}
       >
         <View style={{ gap: 8 }}>
           <Text style={styles.small}>{t('witnessing.openBody')}</Text>
           <DateField label={t('witnessing.deadline')} value={deadline} onChange={setDeadline} />
+          {!!lastDay && (
+            <Text style={[styles.small, !deadlineOk && styles.bad]}>
+              {t('witnessing.deadlineRange', { from: shortDay(todayISO), to: shortDay(lastDay) })}
+            </Text>
+          )}
         </View>
       </Dialog>
 
@@ -769,6 +839,8 @@ const styles = StyleSheet.create({
   smallBtnText: { color: '#0e7490', fontSize: 13, fontFamily: 'Manrope_700Bold' },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10 },
   linkText: { color: '#0e7490', fontSize: 14, fontFamily: 'Manrope_700Bold' },
+  secondarySub: { color: '#475569', fontSize: 12.5, fontFamily: 'Manrope_400Regular', marginTop: 2 },
+  bad: { color: '#b91c1c' },
   deleteWeekBtn: { alignItems: 'center', paddingVertical: 12 },
   deleteWeekText: { color: '#b91c1c', fontSize: 14, fontFamily: 'Manrope_600SemiBold' },
   fieldLabel: { fontSize: 13, fontFamily: 'Manrope_700Bold', color: '#475569' },
