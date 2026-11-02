@@ -2255,7 +2255,7 @@
     "deleteWeek": "Delete week",
     "deleteWeekConfirm": "Delete this week with all slots and applications?",
     "statusDraft": "Draft",
-    "statusCollecting": "Collecting applications",
+    "statusCollecting": "Sign-up open",
     "statusPublished": "Published",
     "withdraw": "Remove",
     "cancel": "Cancel",

@@ -2255,7 +2255,7 @@
     "deleteWeek": "Woche löschen",
     "deleteWeekConfirm": "Diese Woche mit allen Slots und Anmeldungen löschen?",
     "statusDraft": "Entwurf",
-    "statusCollecting": "Anmeldungen laufen",
+    "statusCollecting": "Eintragung offen",
     "statusPublished": "Veröffentlicht",
     "withdraw": "Entfernen",
     "cancel": "Abbrechen",

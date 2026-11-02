@@ -242,7 +242,11 @@ export function CartDaySheet({
                   {p.mine ? t('witnessing.you') : p.name}
                 </Text>
                 <View style={styles.track}>
-                  <View style={[styles.bar, p.mine ? styles.barMine : styles.barOther, barOf(day, p.span)]} />
+                  {/* What is called off stays in its place, grey. */}
+                  <View style={[styles.bar, styles.barOff, barOf(day, p.span)]} />
+                  {liveSpans(day, [p.span]).map((x) => (
+                    <View key={x.startTime} style={[styles.bar, p.mine ? styles.barMine : styles.barOther, barOf(day, x)]} />
+                  ))}
                 </View>
                 <Text style={styles.time}>{spanText(p.span)}</Text>
               </View>
@@ -313,6 +317,7 @@ const styles = StyleSheet.create({
   bar: { position: 'absolute', top: 0, bottom: 0 },
   barMine: { backgroundColor: '#15803d' },
   barOther: { backgroundColor: '#86efac' },
+  barOff: { backgroundColor: '#cbd5e1' },
   time: { width: 82, textAlign: 'right', fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#475569' },
   wish: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   link: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#b91c1c' },

@@ -111,9 +111,12 @@ export default function WitnessingScreen() {
     queryFn: () => cartWeeksApi.getWeek(weekISO),
   });
   const week = weekQuery.data ?? null;
-  // «Мои смены»: this week and the next, whatever week is on screen.
+  // «Мои смены»: this week and the next — and the week on screen, when it is
+  // a later one (walk of 2 November 2026: a brother looking at a week three
+  // weeks out saw his shifts of the next two, not of the week before him).
+  const mineWeeks = [...new Set([thisMonday, nextMonday, ...(weekISO > nextMonday ? [weekISO] : [])])];
   const mineQs = useQueries({
-    queries: [thisMonday, nextMonday].map((w) => ({
+    queries: mineWeeks.map((w) => ({
       queryKey: ['cart-week', w],
       queryFn: () => cartWeeksApi.getWeek(w),
     })),

@@ -321,7 +321,17 @@ export default function WitnessingDayScreen() {
                 )}
               </View>
               <View style={styles.track}>
-                <View style={[styles.bar, r.kind === 'plan' ? styles.barOn : styles.barWish, barOf(day, r)]} />
+                {/* A called-off part of the time is grey, not «stands». */}
+                {r.kind === 'plan' ? (
+                  <>
+                    <View style={[styles.bar, styles.barOff, barOf(day, r)]} />
+                    {liveSpans(day, [r]).map((x) => (
+                      <View key={x.startTime} style={[styles.bar, styles.barOn, barOf(day, x)]} />
+                    ))}
+                  </>
+                ) : (
+                  <View style={[styles.bar, styles.barWish, barOf(day, r)]} />
+                )}
               </View>
               {(!!r.note || r.absent) && (
                 <Text style={[styles.personNote, r.absent && styles.absent]}>
@@ -576,6 +586,7 @@ const styles = StyleSheet.create({
   track: { height: 10, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden', position: 'relative' },
   bar: { position: 'absolute', top: 0, bottom: 0 },
   barOn: { backgroundColor: '#15803d' },
+  barOff: { backgroundColor: '#94a3b8' },
   barWish: { backgroundColor: '#bbf7d0', borderWidth: 1.5, borderColor: '#15803d', borderStyle: 'dashed' },
   timeBtn: { padding: 6, borderRadius: 8, backgroundColor: '#f0f9ff' },
   offBtn: { backgroundColor: '#fef2f2', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 },

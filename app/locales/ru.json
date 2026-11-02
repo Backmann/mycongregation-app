@@ -2311,7 +2311,7 @@
     "deleteWeek": "Удалить неделю",
     "deleteWeekConfirm": "Удалить эту неделю со всеми слотами и заявками?",
     "statusDraft": "Черновик",
-    "statusCollecting": "Идёт сбор заявок",
+    "statusCollecting": "Идёт запись",
     "statusPublished": "Опубликовано",
     "withdraw": "Убрать",
     "cancel": "Отмена",
