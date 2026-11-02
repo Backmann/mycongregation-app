@@ -452,6 +452,7 @@ export default function AdminUsersScreen() {
             </Text>
           ) : null}
           <PublisherSelector
+            includeInactive
             boxed
             label={t('admin.users.orphans.sheetTitle')}
             value={null}

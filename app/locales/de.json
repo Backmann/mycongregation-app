@@ -6159,8 +6159,7 @@
     "reason": {
       "absent": "an diesem Tag abwesend",
       "duty": "schon eingeteilt: {{place}}",
-      "part": "hat einen Programmpunkt",
-      "inactive": "untätiger Verkündiger"
+      "part": "hat einen Programmpunkt"
     },
     "freeHere": "Bei dieser Zusammenkunft noch nicht eingeteilt: {{count}}",
     "fill": {

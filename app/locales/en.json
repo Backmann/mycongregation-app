@@ -6159,8 +6159,7 @@
     "reason": {
       "absent": "away that day",
       "duty": "already at: {{place}}",
-      "part": "has a part in the program",
-      "inactive": "inactive publisher"
+      "part": "has a part in the program"
     },
     "freeHere": "Still free at this meeting: {{count}}",
     "fill": {

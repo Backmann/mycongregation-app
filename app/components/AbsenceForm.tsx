@@ -197,6 +197,7 @@ export function AbsenceForm({
       ) : (
         <View style={styles.selectorSlot}>
           <PublisherSelector
+            includeInactive
             boxed
             label={t('absences.fields.publisher')}
             value={publisherId}
@@ -220,6 +221,7 @@ export function AbsenceForm({
             </View>
           ))}
           <PublisherSelector
+            includeInactive
             boxed
             label={t('absences.form.addPerson')}
             value={null}
