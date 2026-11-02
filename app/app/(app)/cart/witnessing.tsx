@@ -146,7 +146,7 @@ export default function WitnessingScreen() {
   const copy = useMutation({
     mutationFn: () => cartWeeksApi.copy(weekISO),
     onSuccess: (r) => {
-      notify(t('witnessing.copied', { count: r.added }));
+      notify(t('witnessing.copied', { count: r.added }), undefined, 'success');
       refresh();
     },
     onError: err,
@@ -167,7 +167,7 @@ export default function WitnessingScreen() {
   const suggest = useMutation({
     mutationFn: (id: string) => cartWeeksApi.suggest(id),
     onSuccess: (r) => {
-      notify(t('witnessing.suggested', { count: r.added }));
+      notify(t('witnessing.suggested', { count: r.added }), undefined, 'success');
       refresh();
     },
     onError: err,
@@ -250,7 +250,7 @@ export default function WitnessingScreen() {
     try {
       if (Platform.OS === 'web' && !(navigator as { share?: unknown }).share) {
         await navigator.clipboard.writeText(text);
-        notify(t('witnessing.textCopied'));
+        notify(t('witnessing.textCopied'), undefined, 'success');
       } else {
         await Share.share({ message: text });
       }
@@ -288,7 +288,13 @@ export default function WitnessingScreen() {
     if (canManage) {
       const wishes = (d.wishes ?? []).length;
       const alone = d.warnings?.alone.length ?? 0;
-      return `${spanText(d)} · ${t('witnessing.wishesCount', { count: wishes })}${
+      // Once the plan has people, it is what the arranger reads first.
+      const onPlan = new Set((d.plan ?? []).map((p) => p.publisherId ?? p.name)).size;
+      const what = [
+        ...(onPlan || week?.status === 'published' ? [t('witnessing.planCount', { count: onPlan })] : []),
+        ...(week?.status !== 'published' ? [t('witnessing.wishesCount', { count: wishes })] : []),
+      ].join(' · ');
+      return `${spanText(d)} · ${what}${
         alone ? ` · ${t('witnessing.aloneCount', { count: alone })}` : ''
       }${off}`;
     }
@@ -473,7 +479,7 @@ export default function WitnessingScreen() {
 
           {canManage && week && (
             <View style={{ gap: 8, marginTop: 8 }}>
-              {week.status !== 'draft' && (
+              {week.status === 'collecting' && (
                 <Pressable
                   style={styles.greenBtn}
                   disabled={suggest.isPending}
@@ -495,7 +501,18 @@ export default function WitnessingScreen() {
                     if (
                       await confirm({
                         title: t('witnessing.publish'),
-                        body: t('witnessing.publishConfirm'),
+                        body: [
+                          t('witnessing.publishConfirm'),
+                          // Soft, as agreed: said before it goes out, never a refusal.
+                          ...(() => {
+                            const alone = week.days.reduce((n, d) => n + (d.warnings?.alone.length ?? 0), 0);
+                            const empty = week.days.filter((d) => liveSpans(d, d.plan ?? []).length === 0 && d.cancellations.length === 0).length;
+                            return [
+                              ...(alone ? [t('witnessing.publishAlone', { count: alone })] : []),
+                              ...(empty ? [t('witnessing.publishEmpty', { count: empty })] : []),
+                            ];
+                          })(),
+                        ].join('\n\n'),
                         confirmLabel: t('witnessing.publish'),
                         cancelLabel: t('witnessing.cancel'),
                       })

@@ -2257,7 +2257,7 @@
     "statusDraft": "Entwurf",
     "statusCollecting": "Anmeldungen laufen",
     "statusPublished": "Veröffentlicht",
-    "withdraw": "Zurückziehen",
+    "withdraw": "Entfernen",
     "cancel": "Abbrechen",
     "close": "Schließen",
     "dow": {
@@ -2372,7 +2372,7 @@
     "shareText": "Als Text",
     "signUpFor": "Eintragen {{time}}",
     "statDays": "Tage",
-    "statHours": "Stunden",
+    "statHours": "Stunden zusammen",
     "statPeople": "Personen",
     "statusCollectingUntil": "Eintragung offen bis {{date}}",
     "steps": {
@@ -2381,14 +2381,12 @@
       "published": "Veröffentlicht"
     },
     "suggest": "Einteilung vorschlagen",
-    "suggested_one": "{{count}} Person vorgeschlagen – prüfen und veröffentlichen",
-    "suggested_other": "{{count}} Personen vorgeschlagen – prüfen und veröffentlichen",
     "takeOff": "Austragen",
     "takenOff": "{{name}} ausgetragen",
     "textCopied": "Plan kopiert – in die Gruppe einfügen",
     "timeFor": "Zeit: {{name}}",
     "together": "Zusammen mit: {{names}}",
-    "wantsWith": "möchte mit: {{who}}",
+    "wantsWith": "Wunsch: {{who}}",
     "warnAlone": "{{time}} – nur eine Person. Bitte jemanden dazu einteilen.",
     "warnBrotherSister": "{{time}} – ein Bruder und eine Schwester allein. Möglich, aber besser mit einer dritten Person.",
     "warnLongDay": "{{name}} steht {{hours}} Std. an diesem Tag – ist das nicht viel?",
@@ -2404,7 +2402,17 @@
     "youStand": "Sie stehen {{time}}",
     "youAt": "Sie {{time}}",
     "youAsked": "eingetragen {{time}}",
-    "absentThatDay": "an diesem Tag abwesend"
+    "absentThatDay": "an diesem Tag abwesend",
+    "suggested_one": "{{count}} Zeit eingeplant – prüfen und veröffentlichen",
+    "suggested_other": "{{count}} Zeiten eingeplant – prüfen und veröffentlichen",
+    "publishAlone_one": "Hinweis: {{count}} Abschnitt, in dem jemand allein steht.",
+    "publishAlone_other": "Hinweis: {{count}} Abschnitte, in denen jemand allein steht.",
+    "publishEmpty_one": "{{count}} Tag ohne Personen – Sie können ihn absagen oder löschen.",
+    "publishEmpty_other": "{{count}} Tage ohne Personen – Sie können sie absagen oder löschen.",
+    "planCount_one": "{{count}} Person eingeteilt",
+    "planCount_other": "{{count}} Personen eingeteilt",
+    "hoursInLog": "Schon in Ihren Stunden",
+    "youStood": "Sie standen {{time}}"
   },
   "cartLocations": {
     "add": "Standort hinzufügen",
@@ -2438,7 +2446,8 @@
     "permitPlaceholder": "Nicht angegeben",
     "permitHint": "30 Tage vor Ablauf bekommt der Verantwortliche eine Erinnerung.",
     "permitShort": "Genehmigung bis {{date}}",
-    "permitExpired": "Genehmigung abgelaufen"
+    "permitExpired": "Genehmigung abgelaufen",
+    "permitSoon": "Genehmigung läuft bald ab"
   },
   "specialEvents": {
     "title": {

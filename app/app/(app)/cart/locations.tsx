@@ -26,7 +26,7 @@ import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
 import { DateField } from '../../../components/DateField';
-import { formatDateISO, formatLongDate } from '../../../lib/dates';
+import { addDays, formatDateISO, formatLongDate } from '../../../lib/dates';
 
 export default function CartLocationsScreen() {
   const { t, i18n } = useTranslation();
@@ -63,6 +63,8 @@ export default function CartLocationsScreen() {
     return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
   }, [locations]);
   const todayISO = formatDateISO(new Date());
+  // The reminder goes 30 days ahead; the card says so too.
+  const soonISO = formatDateISO(addDays(new Date(), 30));
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ['cart-locations'] });
@@ -196,9 +198,11 @@ export default function CartLocationsScreen() {
                     {t(`cartLocations.kinds.${loc.kind}`)}
                   </Text>
                 </View>
-                {!!loc.permitUntil && loc.permitUntil < todayISO && (
+                {!!loc.permitUntil && loc.permitUntil < todayISO ? (
                   <Text style={styles.inactiveTag}>{t('cartLocations.permitExpired')}</Text>
-                )}
+                ) : !!loc.permitUntil && loc.permitUntil <= soonISO ? (
+                  <Text style={styles.soonTag}>{t('cartLocations.permitSoon')}</Text>
+                ) : null}
                 {!loc.isActive && (
                   <Text style={styles.inactiveTag}>
                     {t('cartLocations.inactive')}
@@ -356,6 +360,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
+  soonTag: { fontSize: 12, color: '#b45309', fontFamily: 'Manrope_600SemiBold' },
   kindSelect: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
   hint: { fontSize: 12.5, color: '#475569', fontFamily: 'Manrope_400Regular', marginTop: -4 },
   kindOption: {

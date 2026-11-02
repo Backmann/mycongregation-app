@@ -24,6 +24,7 @@ import {
   coverage,
   halfHours,
   liveSpans,
+  overlaps,
   spanText,
   toHHMM,
   toMin,
@@ -170,7 +171,14 @@ export default function WitnessingDayScreen() {
         if (s?.pioneer) bits.push(t('witnessing.pioneer'));
         if (s) bits.push(t('witnessing.recentDays', { count: s.recentDays }));
         if (s && s.missedWeeks >= 2) bits.push(t('witnessing.missedWeeks', { count: s.missedWeeks }));
-        if ('withWhomNote' in r && r.withWhomNote) bits.push(t('witnessing.wantsWith', { who: r.withWhomNote }));
+        // On the plan, the note of the wish it came from still shows: the
+        // arranger may want to keep the pair together when he moves things.
+        const note =
+          'withWhomNote' in r && r.withWhomNote
+            ? r.withWhomNote
+            : (day.wishes ?? []).find((w) => w.publisherId && w.publisherId === r.publisherId && w.withWhomNote && overlaps(w, r))
+                ?.withWhomNote;
+        if (note) bits.push(t('witnessing.wantsWith', { who: note }));
         if ('late' in r && r.late) bits.push(t('witnessing.late'));
         const partner = r.publisherId ? pairs[r.publisherId]?.[0] : undefined;
         if (partner) bits.push(t('witnessing.recentlyWith', { name: partner.name }));
@@ -549,7 +557,7 @@ const styles = StyleSheet.create({
   c2: { backgroundColor: '#15803d' },
   c1: { backgroundColor: '#f59e0b' },
   c0: { backgroundColor: '#e2e8f0' },
-  cOff: { backgroundColor: '#cbd5e1', opacity: 0.6 },
+  cOff: { backgroundColor: '#94a3b8' },
   coverText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 10.5, color: '#ffffff' },
   axis: { flexDirection: 'row', justifyContent: 'space-between' },
   axisText: { fontFamily: 'Manrope_400Regular', fontSize: 11, color: '#64748b' },

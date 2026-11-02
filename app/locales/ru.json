@@ -2313,7 +2313,7 @@
     "statusDraft": "Черновик",
     "statusCollecting": "Идёт сбор заявок",
     "statusPublished": "Опубликовано",
-    "withdraw": "Отозвать заявку",
+    "withdraw": "Убрать",
     "cancel": "Отмена",
     "close": "Закрыть",
     "dow": {
@@ -2354,7 +2354,7 @@
     "calledOff": "Отменено {{time}}",
     "calledOffShort": "отменено",
     "cannot": "Не смогу",
-    "cannotBody": "Вы снимаетесь с {{time}}. Ответственный и напарники получат сообщение.",
+    "cannotBody": "Вас уберут со времени {{time}}. Ответственный и напарники получат сообщение.",
     "cannotTitle": "Не сможете прийти?",
     "copied_one": "Добавлен {{count}} день",
     "copied_few": "Добавлено {{count}} дня",
@@ -2442,7 +2442,7 @@
     "shareText": "Текстом",
     "signUpFor": "Записаться {{time}}",
     "statDays": "дней",
-    "statHours": "часов",
+    "statHours": "часов всех вместе",
     "statPeople": "человек",
     "statusCollectingUntil": "Идёт запись до {{date}}",
     "steps": {
@@ -2451,16 +2451,12 @@
       "published": "Опубликовано"
     },
     "suggest": "Предложить состав",
-    "suggested_one": "Предложен {{count}} человек — проверьте и опубликуйте",
-    "suggested_few": "Предложено {{count}} человека — проверьте и опубликуйте",
-    "suggested_many": "Предложено {{count}} человек — проверьте и опубликуйте",
-    "suggested_other": "Предложено {{count}} человека — проверьте и опубликуйте",
     "takeOff": "Снять",
     "takenOff": "{{name}} снят(а)",
     "textCopied": "План скопирован — вставьте его в группу",
     "timeFor": "Время: {{name}}",
     "together": "Вместе: {{names}}",
-    "wantsWith": "хочет с: {{who}}",
+    "wantsWith": "пожелание: {{who}}",
     "warnAlone": "{{time}} — один человек. Добавьте кого-нибудь.",
     "warnBrotherSister": "{{time}} — брат и сестра вдвоём. Можно оставить, но лучше добавить третьего.",
     "warnLongDay": "{{name}} стоит {{hours}} ч за день — не много ли?",
@@ -2478,7 +2474,25 @@
     "youStand": "Вы стоите {{time}}",
     "youAt": "вы {{time}}",
     "youAsked": "вы записались {{time}}",
-    "absentThatDay": "в этот день отсутствует"
+    "absentThatDay": "в этот день отсутствует",
+    "suggested_one": "В плане {{count}} запись — проверьте и опубликуйте",
+    "suggested_few": "В плане {{count}} записи — проверьте и опубликуйте",
+    "suggested_many": "В плане {{count}} записей — проверьте и опубликуйте",
+    "suggested_other": "В плане {{count}} записи — проверьте и опубликуйте",
+    "publishAlone_one": "Внимание: {{count}} промежуток, где человек стоит один.",
+    "publishAlone_few": "Внимание: {{count}} промежутка, где человек стоит один.",
+    "publishAlone_many": "Внимание: {{count}} промежутков, где человек стоит один.",
+    "publishAlone_other": "Внимание: {{count}} промежутка, где человек стоит один.",
+    "publishEmpty_one": "{{count}} день без людей — его можно отменить или удалить.",
+    "publishEmpty_few": "{{count}} дня без людей — их можно отменить или удалить.",
+    "publishEmpty_many": "{{count}} дней без людей — их можно отменить или удалить.",
+    "publishEmpty_other": "{{count}} дня без людей — их можно отменить или удалить.",
+    "planCount_one": "в плане {{count}} человек",
+    "planCount_few": "в плане {{count}} человека",
+    "planCount_many": "в плане {{count}} человек",
+    "planCount_other": "в плане {{count}} человека",
+    "hoursInLog": "Уже в учёте часов",
+    "youStood": "Вы стояли {{time}}"
   },
   "cartLocations": {
     "add": "Добавить точку",
@@ -2512,7 +2526,8 @@
     "permitPlaceholder": "Не указано",
     "permitHint": "За 30 дней до конца ответственный получит напоминание.",
     "permitShort": "Разрешение до {{date}}",
-    "permitExpired": "Разрешение истекло"
+    "permitExpired": "Разрешение истекло",
+    "permitSoon": "Разрешение скоро кончается"
   },
   "specialEvents": {
     "title": {

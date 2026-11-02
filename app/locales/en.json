@@ -2257,7 +2257,7 @@
     "statusDraft": "Draft",
     "statusCollecting": "Collecting applications",
     "statusPublished": "Published",
-    "withdraw": "Withdraw",
+    "withdraw": "Remove",
     "cancel": "Cancel",
     "close": "Close",
     "dow": {
@@ -2296,7 +2296,7 @@
     "calledOff": "Called off {{time}}",
     "calledOffShort": "called off",
     "cannot": "I can’t make it",
-    "cannotBody": "You are taken off {{time}}. The arranger and your partners will be told.",
+    "cannotBody": "You will be taken off {{time}}. The arranger and your partners will be told.",
     "cannotTitle": "Can’t make it?",
     "copied_one": "{{count}} day added",
     "copied_other": "{{count}} days added",
@@ -2372,7 +2372,7 @@
     "shareText": "As text",
     "signUpFor": "Sign up {{time}}",
     "statDays": "days",
-    "statHours": "hours",
+    "statHours": "hours, all together",
     "statPeople": "people",
     "statusCollectingUntil": "Sign-up open until {{date}}",
     "steps": {
@@ -2381,14 +2381,12 @@
       "published": "Published"
     },
     "suggest": "Suggest the crew",
-    "suggested_one": "{{count}} person suggested — check and publish",
-    "suggested_other": "{{count}} people suggested — check and publish",
     "takeOff": "Take off",
     "takenOff": "{{name}} taken off",
     "textCopied": "Plan copied — paste it into the group",
     "timeFor": "Time: {{name}}",
     "together": "Together: {{names}}",
-    "wantsWith": "wants to go with: {{who}}",
+    "wantsWith": "note: {{who}}",
     "warnAlone": "{{time}} — only one person. Add someone.",
     "warnBrotherSister": "{{time}} — a brother and a sister on their own. You may keep it, but a third is better.",
     "warnLongDay": "{{name}} stands {{hours}} h this day — isn’t that a lot?",
@@ -2404,7 +2402,17 @@
     "youStand": "You stand {{time}}",
     "youAt": "you {{time}}",
     "youAsked": "you signed up {{time}}",
-    "absentThatDay": "away that day"
+    "absentThatDay": "away that day",
+    "suggested_one": "{{count}} time put on the plan — check and publish",
+    "suggested_other": "{{count}} times put on the plan — check and publish",
+    "publishAlone_one": "Note: {{count}} stretch where someone stands alone.",
+    "publishAlone_other": "Note: {{count}} stretches where someone stands alone.",
+    "publishEmpty_one": "{{count}} day has nobody — you can call it off or delete it.",
+    "publishEmpty_other": "{{count}} days have nobody — you can call them off or delete them.",
+    "planCount_one": "{{count}} person on the plan",
+    "planCount_other": "{{count}} people on the plan",
+    "hoursInLog": "Already in your hours",
+    "youStood": "You stood {{time}}"
   },
   "cartLocations": {
     "add": "Add location",
@@ -2438,7 +2446,8 @@
     "permitPlaceholder": "Not set",
     "permitHint": "The arranger is reminded 30 days before it runs out.",
     "permitShort": "Permit until {{date}}",
-    "permitExpired": "Permit expired"
+    "permitExpired": "Permit expired",
+    "permitSoon": "Permit runs out soon"
   },
   "specialEvents": {
     "title": {

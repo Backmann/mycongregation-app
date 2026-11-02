@@ -5,6 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Sheet } from '../Sheet';
 import { SpanPicker } from './SpanPicker';
 import { confirm } from '../ConfirmHost';
+import { useLogActions, useLogOverview } from '../../lib/useServiceLog';
 import { notify } from '../../lib/error-bus';
 import {
   type CartDayView,
@@ -12,7 +13,6 @@ import {
   type CartWeekView,
   cartWeeksApi,
   extractErrorMessage,
-  serviceLogApi,
 } from '../../lib/api';
 import {
   barOf,
@@ -74,15 +74,27 @@ export function CartDaySheet({
     onSuccess: onChanged,
     onError: err,
   });
+  // Only for whoever's report asks for hours that month (a pioneer); the
+  // assignment's id is the entry's, so a second tap writes the same entry
+  // again instead of counting the hours twice. Through the log's queue, so it
+  // keeps without a connection.
+  const logQ = useLogOverview();
+  const { write: writeLog } = useLogActions();
+  const logMonth = day ? logQ.months?.find((x) => x.month === day.date.slice(0, 7)) : undefined;
+  const mayLog = !!logMonth?.role && logMonth.open;
+  const logged = (id: string) => !!logMonth?.entries.some((e) => e.id === id);
   const logHours = useMutation({
     mutationFn: (v: { id: string; minutes: number }) =>
-      serviceLogApi.put(v.id, {
-        day: day!.date,
-        minutes: v.minutes,
-        kind: 'field',
-        note: t('witnessing.hoursNote', { place: day!.locationName }),
-      }),
-    onSuccess: () => notify(t('witnessing.hoursAdded')),
+      writeLog(
+        {
+          day: day!.date,
+          minutes: v.minutes,
+          kind: 'field',
+          note: t('witnessing.hoursNote', { place: day!.locationName }),
+        },
+        v.id,
+      ),
+    onSuccess: () => notify(t('witnessing.hoursAdded'), undefined, 'success'),
     onError: err,
   });
 
@@ -156,7 +168,7 @@ export function CartDaySheet({
             const over = day.over || (day.date === todayISO && s.endTime <= nowHM);
             return (
               <View key={s.startTime} style={styles.mineBox}>
-                <Text style={styles.mineTitle}>{t('witnessing.youStand', { time: spanText(s) })}</Text>
+                <Text style={styles.mineTitle}>{t(over ? 'witnessing.youStood' : 'witnessing.youStand', { time: spanText(s) })}</Text>
                 <Text style={styles.small}>
                   {partners.length
                     ? t('witnessing.together', {
@@ -193,7 +205,13 @@ export function CartDaySheet({
                     </Pressable>
                   ))}
                 {over &&
-                  own.map((m) => (
+                  mayLog &&
+                  own.map((m) =>
+                    logged(m.id) ? (
+                      <Text key={m.id} style={styles.small}>
+                        {t('witnessing.hoursInLog')}
+                      </Text>
+                    ) : (
                     <Pressable
                       key={m.id}
                       style={styles.secondary}
@@ -204,7 +222,8 @@ export function CartDaySheet({
                         {t('witnessing.addHours', { hours: String(minutes(m) / 60).replace('.', ',') })}
                       </Text>
                     </Pressable>
-                  ))}
+                    ),
+                  )}
               </View>
             );
           })}
