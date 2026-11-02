@@ -119,12 +119,26 @@ function routeForNotification(data) {
       };
     case 'field_service_meeting':
       return { path: '/cart/field-service', params: {} };
-    // The carts: a published week for whoever is on it, a request or a
-    // cancellation for whoever arranges them — all three open the carts.
+    // The stand: everything about a week opens that week; the permit of a
+    // place running out opens the places (2 November 2026).
     case 'cart_published':
     case 'cart_dobor_request':
     case 'cart_cancel':
-      return { path: '/cart/witnessing', params: {} };
+    case 'cart_open':
+    case 'cart_assigned':
+    case 'cart_changed':
+    case 'cart_unassigned':
+    case 'cart_crew_changed':
+    case 'cart_partner_cancel':
+    case 'cart_place_free':
+    case 'cart_shift_cancelled':
+    case 'cart_shift_restored':
+    case 'cart_signup_reminder':
+    case 'cart_collect_due':
+    case 'cart_unpublished':
+      return { path: '/cart/witnessing', params: data.weekStart ? { week: data.weekStart } : {} };
+    case 'cart_permit':
+      return { path: '/cart/locations', params: {} };
     // A talk one of ours gives in another congregation. It stands on Home,
     // among his own things, with the address of the hall.
     case 'outgoing_talk':

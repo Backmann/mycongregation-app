@@ -8,6 +8,7 @@ import type {
   SpecialEvent,
 } from './api';
 import { arrangeFieldDay } from './field-audience';
+import { liveSpans } from './cart-time';
 import { formatDayRange } from './date-range';
 
 /**
@@ -208,31 +209,39 @@ export function serviceLines(
   // --- Служение в общественных местах. --------------------------------------
   if (input.cartWeeks) {
     const weeks = input.cartWeeks.filter((w): w is CartWeekView => !!w);
+    // My next time at the stand that is still ahead, the called-off parts
+    // taken out (2 November 2026: spans, not shifts).
     const myShift = weeks
-      .flatMap((w) => (w.status === 'published' ? w.slots : []))
-      .filter(
-        (s) =>
-          s.myAssignment === true &&
-          (s.date > today || (s.date === today && s.endTime.slice(0, 5) > input.nowHM)),
+      .flatMap((w) =>
+        w.status === 'published'
+          ? w.days.flatMap((d) =>
+              liveSpans(d, d.mine).map((s) => ({ day: d, ...s })),
+            )
+          : [],
       )
-      .sort((a, b) => `${a.date} ${a.startTime}`.localeCompare(`${b.date} ${b.startTime}`))[0];
+      .filter((s) => s.day.date > today || (s.day.date === today && s.endTime > input.nowHM))
+      .sort((a, b) => `${a.day.date} ${a.startTime}`.localeCompare(`${b.day.date} ${b.startTime}`))[0];
     const collecting = weeks.find((w) => w.status === 'collecting');
     const thisWeek = input.cartWeeks[0];
     if (myShift) {
       lines.cart = {
         text: L('cartMine', {
-          when: when(myShift.date, myShift.startTime, today, locale, t),
-          place: myShift.locationName,
+          when: when(myShift.day.date, myShift.startTime, today, locale, t),
+          place: myShift.day.locationName,
         }),
         due: false,
       };
-    } else if (collecting) {
+    } else if (collecting && collecting.canApply) {
+      // Only who may sign up hears that sign-up is open.
       const date = dayMonth(collecting.weekStartDate, locale);
       lines.cart = {
-        text: L(collecting.slots.some((s) => s.myRequest) ? 'cartRequested' : 'cartCollecting', { date }),
+        text: L(
+          collecting.days.some((d) => d.myRequests.length > 0) ? 'cartRequested' : 'cartCollecting',
+          { date },
+        ),
         due: false,
       };
-    } else if (thisWeek && thisWeek.status === 'published' && input.me) {
+    } else if (thisWeek && thisWeek.status === 'published' && thisWeek.canApply && input.me) {
       lines.cart = { text: L('cartNotMine'), due: false };
     }
   }

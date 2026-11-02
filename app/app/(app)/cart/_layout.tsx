@@ -34,6 +34,20 @@ export default function CartLayout() {
         }}
       />
       <Stack.Screen
+        name="witnessing-day"
+        options={{
+          title: t('service.publicWitnessing'),
+          headerLeft: () => <BackButton fallback="/cart/witnessing" />,
+        }}
+      />
+      <Stack.Screen
+        name="witnessing-archive"
+        options={{
+          title: t('witnessing.archiveTitle'),
+          headerLeft: () => <BackButton fallback="/cart/witnessing" />,
+        }}
+      />
+      <Stack.Screen
         name="locations"
         options={{ title: t('service.locations') }}
       />

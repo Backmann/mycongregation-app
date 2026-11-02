@@ -3000,7 +3000,8 @@ export const cleaningApi = {
   },
 };
 
-export type CartLocationKind = "cart" | "stand";
+/** The four kinds of equipment the branch offers (S-80). */
+export type CartLocationKind = "cart" | "stand" | "kiosk" | "table";
 
 export interface CartLocation {
   id: string;
@@ -3008,6 +3009,10 @@ export interface CartLocation {
   name: string;
   address: string | null;
   kind: CartLocationKind;
+  /** Where the equipment is fetched from. */
+  equipmentAt: string | null;
+  /** The town's permit holds until this day. */
+  permitUntil: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -3017,6 +3022,8 @@ export interface CreateCartLocationInput {
   name: string;
   address?: string | null;
   kind?: CartLocationKind;
+  equipmentAt?: string;
+  permitUntil?: string | null;
   isActive?: boolean;
 }
 
@@ -3317,61 +3324,104 @@ export interface PartnerHint {
   lastDate: string;
 }
 
-export interface CartAssignmentView {
+/** A span of a day at the stand, «HH:MM» on the half-hour. */
+export interface CartSpan {
+  startTime: string;
+  endTime: string;
+}
+
+export interface CartPersonSpan extends CartSpan {
   id: string;
   publisherId: string | null;
   name: string;
-  gender: Gender | null;
   external: boolean;
+  gender?: Gender | null;
+  /** Away that day — only whoever arranges is told. */
+  absent?: boolean;
 }
 
-export interface CartRequestView {
+export interface CartWishView extends CartSpan {
+  id: string;
   publisherId: string;
   name: string;
-  withWhomNote: string | null;
+  /** Only whoever arranges reads it. */
+  withWhomNote?: string | null;
+  /** Asked after publication: a request for free time. */
+  late?: boolean;
+  absent?: boolean;
 }
 
-export interface SlotWarnings {
-  underMin: boolean;
-  brotherSister: boolean;
-  secondShiftSameDay: boolean;
-}
-
-export interface CartSlotView {
+export interface CartDayView extends CartSpan {
   id: string;
   date: string;
-  startTime: string;
-  endTime: string;
   locationId: string;
   locationName: string;
   locationKind: CartLocationKind;
-  capacityMax: number;
-  myRequest: boolean;
-  myAssignment?: boolean;
-  assignedCount?: number;
-  requestCount?: number;
-  assignments?: CartAssignmentView[];
-  requests?: CartRequestView[];
-  warnings?: SlotWarnings;
+  equipmentAt: string | null;
+  cancellations: (CartSpan & { id: string; reason: string | null })[];
+  over: boolean;
+  locked: boolean;
+  myRequests: (CartSpan & { id: string; withWhomNote: string | null })[];
+  mine: (CartSpan & { id: string })[];
+  wishes?: CartWishView[];
+  plan?: CartPersonSpan[];
+  warnings?: {
+    alone: CartSpan[];
+    brotherSister: CartSpan[];
+    longDay: { name: string; minutes: number }[];
+  };
 }
 
 export interface CartWeekView {
   id: string;
   weekStartDate: string;
   status: CartWeekStatus;
-  startTime: string;
-  endTime: string;
-  stepMinutes: number;
-  slots: CartSlotView[];
+  signupUntil: string | null;
+  canManage: boolean;
+  canApply: boolean;
+  memo: string | null;
+  days: CartDayView[];
 }
 
 export interface BuildCartWeekInput {
   weekStartDate: string;
   startTime: string;
   endTime: string;
-  stepMinutes: number;
   daysOfWeek: number[];
   locationIds: string[];
+}
+
+export interface CartStanding {
+  publisherId: string;
+  pioneer: boolean;
+  missedWeeks: number;
+  recentDays: number;
+  lastDate: string | null;
+}
+
+export interface CartArchive {
+  from: string;
+  to: string;
+  days: {
+    date: string;
+    place: string;
+    kind: CartLocationKind;
+    people: { name: string; startTime: string; endTime: string }[];
+    minutes: number;
+  }[];
+  totals: {
+    days: number;
+    minutes: number;
+    people: number;
+    byPlace: { place: string; days: number; minutes: number }[];
+    calledOff: {
+      date: string;
+      place: string;
+      startTime: string;
+      endTime: string;
+      reason: string | null;
+    }[];
+  };
 }
 
 export const cartWeeksApi = {
@@ -3385,32 +3435,39 @@ export const cartWeeksApi = {
     const { data } = await api.post<{ id: string }>("/cart-weeks", input);
     return data;
   },
-  async open(id: string): Promise<void> {
-    await api.post(`/cart-weeks/${id}/open`);
+  async copy(weekStartDate: string): Promise<{ added: number }> {
+    const { data } = await api.post<{ added: number }>("/cart-weeks/copy", {
+      weekStartDate,
+    });
+    return data;
   },
-  async remove(id: string): Promise<void> {
-    await api.delete(`/cart-weeks/${id}`);
-  },
-  async apply(slotId: string, withWhomNote?: string): Promise<void> {
-    await api.post(
-      `/cart-slots/${slotId}/request`,
-      withWhomNote ? { withWhomNote } : {},
-    );
-  },
-  async withdraw(slotId: string): Promise<void> {
-    await api.delete(`/cart-slots/${slotId}/request`);
+  async open(id: string, signupUntil?: string): Promise<void> {
+    await api.post(`/cart-weeks/${id}/open`, signupUntil ? { signupUntil } : {});
   },
   async publish(id: string): Promise<void> {
     await api.post(`/cart-weeks/${id}/publish`);
   },
-  async assign(
-    slotId: string,
-    body: { publisherId?: string; externalName?: string },
-  ): Promise<void> {
-    await api.post(`/cart-slots/${slotId}/assignments`, body);
+  async suggest(id: string): Promise<{ added: number }> {
+    const { data } = await api.post<{ added: number }>(`/cart-weeks/${id}/suggest`);
+    return data;
   },
-  async unassign(slotId: string, assignmentId: string): Promise<void> {
-    await api.delete(`/cart-slots/${slotId}/assignments/${assignmentId}`);
+  async standing(id: string): Promise<Record<string, CartStanding>> {
+    const { data } = await api.get<Record<string, CartStanding>>(
+      `/cart-weeks/${id}/standing`,
+    );
+    return data;
+  },
+  async remove(id: string): Promise<void> {
+    await api.delete(`/cart-weeks/${id}`);
+  },
+  async setMemo(memo: string | null): Promise<void> {
+    await api.put("/cart-weeks/memo", { memo });
+  },
+  async archive(from?: string, to?: string): Promise<CartArchive> {
+    const { data } = await api.get<CartArchive>("/cart-weeks/archive", {
+      params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
+    });
+    return data;
   },
   async pairings(weeks?: number): Promise<Record<string, PartnerHint[]>> {
     const { data } = await api.get<Record<string, PartnerHint[]>>(
@@ -3419,8 +3476,44 @@ export const cartWeeksApi = {
     );
     return data;
   },
-  async cancelMine(slotId: string): Promise<void> {
-    await api.delete(`/cart-slots/${slotId}/my-assignment`);
+  async request(
+    dayId: string,
+    span: CartSpan & { withWhomNote?: string },
+  ): Promise<void> {
+    await api.post(`/cart/days/${dayId}/requests`, span);
+  },
+  async withdraw(requestId: string): Promise<void> {
+    await api.delete(`/cart/requests/${requestId}`);
+  },
+  async assign(
+    dayId: string,
+    body: CartSpan & { publisherId?: string; externalName?: string },
+  ): Promise<void> {
+    await api.post(`/cart/days/${dayId}/assignments`, body);
+  },
+  async changeTime(assignmentId: string, span: CartSpan): Promise<void> {
+    await api.patch(`/cart/assignments/${assignmentId}`, span);
+  },
+  async unassign(assignmentId: string): Promise<void> {
+    await api.delete(`/cart/assignments/${assignmentId}`);
+  },
+  async cancelMine(assignmentId: string): Promise<void> {
+    await api.delete(`/cart/assignments/${assignmentId}/mine`);
+  },
+  async dayHours(dayId: string, span: CartSpan): Promise<void> {
+    await api.patch(`/cart/days/${dayId}`, span);
+  },
+  async deleteDay(dayId: string): Promise<void> {
+    await api.delete(`/cart/days/${dayId}`);
+  },
+  async cancelDay(
+    dayId: string,
+    body: Partial<CartSpan> & { reason?: string },
+  ): Promise<void> {
+    await api.post(`/cart/days/${dayId}/cancel`, body);
+  },
+  async restore(cancellationId: string): Promise<void> {
+    await api.delete(`/cart/cancellations/${cancellationId}`);
   },
 };
 
