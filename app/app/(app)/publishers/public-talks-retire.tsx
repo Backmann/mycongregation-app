@@ -1,8 +1,8 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -156,7 +156,7 @@ export default function RetireTalksScreen() {
   const scheduledCount = preview?.scheduled.length ?? 0;
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       contentContainerStyle={styles.body}
       keyboardShouldPersistTaps="handled"
@@ -483,7 +483,7 @@ export default function RetireTalksScreen() {
           </View>
         </>
       ) : null}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

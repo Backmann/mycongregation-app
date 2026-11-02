@@ -1,10 +1,10 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { goBack } from './NavHistory';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Linking,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -271,7 +271,7 @@ export function SpecialEventDetail({
       : event.title || kindName;
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+    <KeyboardScroll style={styles.scroll} contentContainerStyle={styles.container}>
       <EventHeader event={event} today={today} />
       {isCoVisit && event.coRole === 'substitute' ? (
         <Text style={styles.coMeta}>{t('circuitOverseer.roleSubstitute')}</Text>
@@ -491,7 +491,7 @@ export function SpecialEventDetail({
           )}
         </View>
       )}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

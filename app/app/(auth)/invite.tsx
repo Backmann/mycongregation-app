@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../components/KeyboardScroll';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -147,7 +147,7 @@ export default function InviteScreen() {
   if (session) {
     return (
       <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.container}>
+        <KeyboardScroll contentContainerStyle={styles.container}>
           <View style={styles.card}>
             <Text style={styles.title}>{t('auth.invite.welcomeTitle')}</Text>
             <Text style={styles.intro}>{t('auth.invite.welcomeIntro')}</Text>
@@ -187,14 +187,14 @@ export default function InviteScreen() {
               </Text>
             </Pressable>
           </View>
-        </ScrollView>
+        </KeyboardScroll>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <LanguagePills />
           <Text style={styles.title}>
@@ -357,7 +357,7 @@ export default function InviteScreen() {
             <Text style={styles.back}>{t('auth.invite.backToLogin')}</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardScroll>
     </SafeAreaView>
   );
 }

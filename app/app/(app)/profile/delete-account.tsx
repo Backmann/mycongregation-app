@@ -1,9 +1,10 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -70,10 +71,12 @@ export default function DeleteAccountScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
+      // iOS only (2 November 2026): on Android the form below is a
+      // KeyboardScroll and makes its own room; both at once lift it twice.
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1 }}
     >
-      <ScrollView
+      <KeyboardScroll
         style={styles.container}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
@@ -132,7 +135,7 @@ export default function DeleteAccountScreen() {
         </Pressable>
 
         <Text style={styles.note}>{t('deleteAccount.note')}</Text>
-      </ScrollView>
+      </KeyboardScroll>
 
       <Dialog
         visible={confirming}

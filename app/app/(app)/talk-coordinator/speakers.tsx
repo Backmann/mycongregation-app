@@ -1,10 +1,10 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -722,7 +722,7 @@ export default function SpeakersScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
@@ -989,7 +989,7 @@ export default function SpeakersScreen() {
             ),
           )
         )}
-      </ScrollView>
+      </KeyboardScroll>
     </SafeAreaView>
   );
 }

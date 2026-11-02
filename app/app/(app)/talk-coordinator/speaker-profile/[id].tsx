@@ -1,10 +1,10 @@
+import { KeyboardScroll } from "../../../../components/KeyboardScroll";
 import { usePermissions } from "../../../../lib/permissions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Linking,
   Pressable,
-  ScrollView,
   StyleSheet,
   TextInput,
   Text,
@@ -269,7 +269,7 @@ export default function SpeakerProfileScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardScroll contentContainerStyle={styles.container}>
       {/* Header */}
       <View style={styles.card}>
         <Text style={styles.name}>{name}</Text>
@@ -629,7 +629,7 @@ export default function SpeakerProfileScreen() {
           )}
         </Pressable>
       </Dialog>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

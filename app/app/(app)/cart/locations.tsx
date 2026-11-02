@@ -1,10 +1,10 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   
   
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -144,7 +144,7 @@ export default function CartLocationsScreen() {
       ) : locations.length === 0 ? (
         <Text style={styles.empty}>{t('cartLocations.empty')}</Text>
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <KeyboardScroll contentContainerStyle={styles.list}>
           {locations.map((loc) => (
             <Pressable
               key={loc.id}
@@ -176,7 +176,7 @@ export default function CartLocationsScreen() {
               )}
             </Pressable>
           ))}
-        </ScrollView>
+        </KeyboardScroll>
       )}
 
       <Dialog

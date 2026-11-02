@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -84,7 +84,7 @@ export default function ServiceGroupsListScreen() {
   }
 
   const list = (
-    <ScrollView
+    <KeyboardScroll
       style={split ? styles.listPane : styles.container}
       contentContainerStyle={styles.listContent}
       refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
@@ -121,7 +121,7 @@ export default function ServiceGroupsListScreen() {
           </Text>
         </Pressable>
       ) : null}
-    </ScrollView>
+    </KeyboardScroll>
   );
 
   if (!split) return list;

@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import React, { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { LoadFailure } from '../../../components/LoadFailure';
@@ -5,7 +6,6 @@ import {
   Pressable,
   ActivityIndicator,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -231,7 +231,7 @@ export default function AdminUsersScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
@@ -429,7 +429,7 @@ export default function AdminUsersScreen() {
             />
           ))
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       <StageNewSheet visible={stageNew} onClose={() => setStageNew(false)} />
       <StageEditSheet user={stageFor} onClose={() => setStageFor(null)} />

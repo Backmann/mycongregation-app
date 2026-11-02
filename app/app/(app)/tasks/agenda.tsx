@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -376,7 +377,7 @@ export default function AgendaScreen() {
         <Text style={styles.archiveLinkText}>{t('agenda.archive.open')}</Text>
       </Pressable>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardScroll contentContainerStyle={styles.content}>
         {/* The chip row only when there are meetings to choose between: with
             none, a bare «+» stood over the big «Назначить встречу» (audit,
             22 October 2026). */}
@@ -748,7 +749,7 @@ export default function AgendaScreen() {
             </Pressable>
           </>
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       {makingTask ? (
         <MakeTaskSheet
@@ -874,7 +875,7 @@ function MeetingForm({
         </Pressable>
       }
     >
-      <ScrollView contentContainerStyle={styles.formBody}>
+      <KeyboardScroll pad={false} contentContainerStyle={styles.formBody}>
         <Text style={styles.label}>{t('tasks.meeting.date')}</Text>
         <DateField value={date || undefined} onChange={(v) => setDate(v)} />
 
@@ -958,7 +959,7 @@ function MeetingForm({
             <Text style={styles.deleteText}>{t('tasks.meeting.deleteAction')}</Text>
           </Pressable>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

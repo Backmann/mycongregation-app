@@ -1,8 +1,8 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -106,7 +106,7 @@ export default function AbsenceDetailScreen() {
 
   if (editing) {
     return (
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}
         keyboardShouldPersistTaps="handled"
       >
@@ -124,12 +124,12 @@ export default function AbsenceDetailScreen() {
                 : undefined
           }
         />
-      </ScrollView>
+      </KeyboardScroll>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}>
+    <KeyboardScroll contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}>
       <Text style={styles.name}>{data.publisher?.displayName ?? "—"}</Text>
       {removed ? (
         <Text style={styles.removedBadge}>{t("absences.deleted")}</Text>
@@ -241,7 +241,7 @@ export default function AbsenceDetailScreen() {
           )}
         </View>
       ) : null}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

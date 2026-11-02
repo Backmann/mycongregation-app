@@ -1,3 +1,5 @@
+import { useBottomRoom } from '../../../components/Sheet';
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -154,6 +156,9 @@ export default function FieldServiceMeetingsScreen() {
   const side = Math.max(0, Math.floor((screenW - (panel ? LIST_MAX + PANEL_GAP + PANEL_W : PAGE_MAX)) / 2));
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
+  // Lifted above the keyboard (2 November 2026): edge to edge on Android, a
+  // field in this window was otherwise covered by it.
+  const bottomRoom = useBottomRoom();
 
   const scrollRef = useRef<ScrollView>(null);
   const monthOffsets = useRef<Record<string, number>>({});
@@ -814,7 +819,7 @@ export default function FieldServiceMeetingsScreen() {
       )}
 
       <View style={[styles.body, panel && { flexDirection: 'row', paddingHorizontal: side, gap: PANEL_GAP }]}>
-      <ScrollView
+      <KeyboardScroll
         ref={scrollRef}
         style={styles.list}
         contentContainerStyle={{ paddingBottom: 48, paddingHorizontal: panel ? 0 : side }}
@@ -1063,7 +1068,7 @@ export default function FieldServiceMeetingsScreen() {
             )}
           </View>
         ))}
-      </ScrollView>
+      </KeyboardScroll>
       {panel ? (
         <View style={styles.panel}>
           <Text style={styles.panelHead}>{t('fieldService.panel.months')}</Text>
@@ -1155,7 +1160,7 @@ export default function FieldServiceMeetingsScreen() {
         animationType="fade"
         onRequestClose={() => setThemeEdit(null)}
       >
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, { paddingBottom: 20 + bottomRoom }]}>
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => setThemeEdit(null)}

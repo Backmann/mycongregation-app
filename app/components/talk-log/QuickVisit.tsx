@@ -1,8 +1,8 @@
+import { KeyboardScroll } from "../KeyboardScroll";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -768,7 +768,7 @@ export function QuickVisit({
       }
       footer={series ? seriesFooter : footer}
     >
-      <ScrollView
+      <KeyboardScroll pad={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={s.body}
       >
@@ -987,7 +987,7 @@ export function QuickVisit({
             {talkBlock}
           </>
         )}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

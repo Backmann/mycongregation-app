@@ -1,8 +1,8 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -61,7 +61,7 @@ export function ServiceGroupForm({
   };
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
@@ -149,7 +149,7 @@ export function ServiceGroupForm({
           </Pressable>
         )}
       </View>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

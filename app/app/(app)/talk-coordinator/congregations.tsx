@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -5,7 +6,6 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -173,7 +173,7 @@ export default function CongregationsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f5f9' }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <Text style={styles.hint}>{t('talkCoordinator.congregations.hint')}</Text>
 
         <View style={styles.card}>
@@ -235,7 +235,7 @@ export default function CongregationsScreen() {
           <Ionicons name="add-circle-outline" size={18} color="#0369a1" />
           <Text style={styles.addBtnText}>{t('talkCoordinator.congregations.add')}</Text>
         </Pressable>
-      </ScrollView>
+      </KeyboardScroll>
 
       <Dialog
         visible={modalOpen}

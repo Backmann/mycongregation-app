@@ -1,8 +1,8 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -76,7 +76,7 @@ export default function PioneerSchoolsScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <KeyboardScroll contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text style={styles.intro}>{t('pioneerSchool.intro')}</Text>
 
         {canManagePioneerSchool && (
@@ -122,7 +122,7 @@ export default function PioneerSchoolsScreen() {
             </Pressable>
           ))
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       <Sheet
         visible={open}

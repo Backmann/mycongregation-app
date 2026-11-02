@@ -1,10 +1,11 @@
+import { useBottomRoom } from "./Sheet";
+import { KeyboardScroll } from "./KeyboardScroll";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIndicator,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -214,6 +215,9 @@ export function AssignmentForm({
   const [quickReplaceOpen, setQuickReplaceOpen] = useState(false);
   const allPublishersQuery = useAllPublishers({ enabled: form.partKey === "public_talk_speaker" });
   const [lnPickerOpen, setLnPickerOpen] = useState(false);
+  // Lifted above the keyboard (2 November 2026): edge to edge on Android, a
+  // field in this window was otherwise covered by it.
+  const bottomRoom = useBottomRoom();
   const isLivingChristians = (form.partKey ?? "").startsWith(
     "living_christians",
   );
@@ -461,7 +465,9 @@ export function AssignmentForm({
   };
 
   return (
-    <ScrollView
+    // Inside AssignmentSheet, whose card is already lifted above the keyboard.
+    <KeyboardScroll
+      pad={false}
       style={styles.container}
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
@@ -575,7 +581,7 @@ export function AssignmentForm({
           transparent
           onRequestClose={() => setLnPickerOpen(false)}
         >
-          <View style={styles.lnBackdrop}>
+          <View style={[styles.lnBackdrop, { paddingBottom: 16 + bottomRoom }]}>
             <Pressable
               style={StyleSheet.absoluteFill}
               onPress={() => setLnPickerOpen(false)}
@@ -671,7 +677,7 @@ export function AssignmentForm({
                     </Pressable>
                   );
                   return (
-                    <ScrollView style={{ maxHeight: 360 }}>
+                    <KeyboardScroll pad={false} style={{ maxHeight: 360 }}>
                       {plannedRows.length > 0 ? (
                         <>
                           <Text style={styles.lnGroup}>
@@ -688,7 +694,7 @@ export function AssignmentForm({
                           {usedRows.map((r) => row(r, true))}
                         </>
                       ) : null}
-                    </ScrollView>
+                    </KeyboardScroll>
                   );
                 })()
               )}
@@ -1047,7 +1053,7 @@ export function AssignmentForm({
           </View>
         )}
       </View>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

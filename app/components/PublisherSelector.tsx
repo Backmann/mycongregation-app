@@ -1,9 +1,9 @@
+import { KeyboardScroll } from "./KeyboardScroll";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -581,7 +581,7 @@ export function PublisherSelector({
         {isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
         ) : (
-          <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+          <KeyboardScroll pad={false} style={styles.list} keyboardShouldPersistTaps="handled">
             <Pressable
               style={({ pressed }) => [
                 styles.option,
@@ -638,7 +638,7 @@ export function PublisherSelector({
                 pairWithName={partnerName}
               />
             ))}
-          </ScrollView>
+          </KeyboardScroll>
         )}
       </Sheet>
     </>

@@ -1,8 +1,8 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -577,7 +577,7 @@ function SongRow({
             <Text style={styles.clearText}>{t('songPicker.clear')}</Text>
           </Pressable>
         ) : null}
-        <ScrollView style={styles.songList}>
+        <KeyboardScroll pad={false} style={styles.songList}>
           {shown.map((s) => (
             <Pressable
               key={s.id}
@@ -594,7 +594,7 @@ function SongRow({
               <Text style={styles.songTitle}>{s.title}</Text>
             </Pressable>
           ))}
-        </ScrollView>
+        </KeyboardScroll>
       </Sheet>
     </>
   );

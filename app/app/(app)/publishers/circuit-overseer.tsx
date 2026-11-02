@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import {
@@ -5,7 +6,6 @@ import {
   
   
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -195,7 +195,7 @@ export default function CircuitOverseerScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <KeyboardScroll contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
         <Text style={styles.intro}>{t(isAdmin ? 'circuitOverseer.listIntro' : 'circuitOverseer.listIntroRead')}</Text>
 
         {list.length === 0 ? (
@@ -253,7 +253,7 @@ export default function CircuitOverseerScreen() {
         )}
 
         {isAdmin ? <Text style={styles.note}>{t('circuitOverseer.note')}</Text> : null}
-      </ScrollView>
+      </KeyboardScroll>
 
       <Sheet
         visible={modalOpen}

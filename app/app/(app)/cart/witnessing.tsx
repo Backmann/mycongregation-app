@@ -1,10 +1,10 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   
   
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -307,7 +307,7 @@ export default function WitnessingScreen() {
   }, [week]);
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       contentContainerStyle={styles.content}
     >
@@ -964,7 +964,7 @@ export default function WitnessingScreen() {
           </>
         )}
       </Sheet>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

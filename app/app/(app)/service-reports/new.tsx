@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -5,7 +6,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -561,14 +561,14 @@ export default function NewOrEditServiceReportScreen() {
 
   return (
     <KeyboardAvoidingView
-      // 'padding' is right on iOS and actively wrong on Android, where the
-      // system already resizes the window: the two together push the form off
-      // the top of the screen.
+      // iOS only. On Android the app runs edge to edge and the window does
+      // NOT resize for the keyboard; the form below is a KeyboardScroll and
+      // makes its own room (2 November 2026) — both at once lift it twice.
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
     >
       <Stack.Screen options={{ title: screenTitle }} />
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
       >
@@ -903,7 +903,7 @@ export default function NewOrEditServiceReportScreen() {
           </Pressable>
         ) : null}
 
-      </ScrollView>
+      </KeyboardScroll>
       {/* The button stays under the thumb, whatever the length of the form. */}
       <View style={styles.footer}>
           <Pressable

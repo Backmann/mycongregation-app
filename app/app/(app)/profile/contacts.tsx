@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -111,7 +111,7 @@ export default function MyContactsScreen() {
     : null;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <KeyboardScroll style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.intro}>
         <Text style={styles.introText}>{t('myContacts.intro')}</Text>
       </View>
@@ -219,7 +219,7 @@ export default function MyContactsScreen() {
           <Text style={styles.secondaryText}>{t('common.back')}</Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

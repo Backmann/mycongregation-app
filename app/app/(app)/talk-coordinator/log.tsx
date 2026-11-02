@@ -1,3 +1,4 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { breakable } from "../../../lib/breakable";
 import { Fragment, useMemo, useRef, useState, useEffect } from "react";
 import type { SetAsideGuest, TalkAttentionItem } from "../../../lib/api";
@@ -7,7 +8,6 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -2266,7 +2266,7 @@ export default function TalkExchangeYearScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f1f5f9" }}>
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={styles.journal}
         onLayout={(e) => setContentWidth(e.nativeEvent.layout.width)}
       >
@@ -2387,7 +2387,7 @@ export default function TalkExchangeYearScreen() {
             <Text style={styles.journalEmpty}>{t("talkCoordinator.journal.noPast")}</Text>
           ) : null}
         </View>
-      </ScrollView>
+      </KeyboardScroll>
 
       {/* «Заменить докладчика»: обмен/перенос содержимого слота между неделями */}
       <Dialog
@@ -2444,7 +2444,7 @@ export default function TalkExchangeYearScreen() {
               {t("talkCoordinator.swap.visitWeek")}
             </Text>
           ) : null}
-          <ScrollView style={styles.swapList}>
+          <KeyboardScroll pad={false} style={styles.swapList}>
             {swapCandidates
               .map((w) => {
                 const inc = byWeek.get(w.monday)!.incoming!;
@@ -2481,7 +2481,7 @@ export default function TalkExchangeYearScreen() {
                   </Pressable>
                 );
               })}
-          </ScrollView>
+          </KeyboardScroll>
 
           {swapCandidates.length === 0 &&
           !(swapTarget && visitWeek(swapTarget.monday)) ? (
@@ -2698,7 +2698,7 @@ export default function TalkExchangeYearScreen() {
           )
         }
       >
-        <ScrollView
+        <KeyboardScroll pad={false}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.editorBody}
         >
@@ -3376,7 +3376,7 @@ export default function TalkExchangeYearScreen() {
               />
             </>
           )}
-        </ScrollView>
+        </KeyboardScroll>
       </Sheet>
     </SafeAreaView>
   );

@@ -1,8 +1,8 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -275,7 +275,7 @@ export default function MeetingPlaceScreen() {
   const hallPending = hallCreate.isPending || hallUpdate.isPending || hallRemove.isPending;
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <KeyboardScroll style={styles.screen} contentContainerStyle={styles.content}>
       {/* ── What is in force ─────────────────────────────────────────── */}
       <Text style={styles.sectionLabel}>{t('meetingSettings.now')}</Text>
       <View style={styles.card}>
@@ -632,7 +632,7 @@ export default function MeetingPlaceScreen() {
           </View>
         ) : null}
       </Dialog>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 

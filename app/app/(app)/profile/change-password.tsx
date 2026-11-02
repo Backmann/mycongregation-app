@@ -1,10 +1,11 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -90,10 +91,12 @@ export default function ChangePasswordScreen() {
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
+      // iOS only (2 November 2026): on Android the form below is a
+      // KeyboardScroll and makes its own room; both at once lift it twice.
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1 }}
     >
-      <ScrollView
+      <KeyboardScroll
         style={styles.container}
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
@@ -193,7 +196,7 @@ export default function ChangePasswordScreen() {
         </Pressable>
 
         <Text style={styles.note}>{t('profile.changePassword.note')}</Text>
-      </ScrollView>
+      </KeyboardScroll>
     </KeyboardAvoidingView>
   );
 }

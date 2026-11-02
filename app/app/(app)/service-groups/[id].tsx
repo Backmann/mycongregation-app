@@ -1,3 +1,5 @@
+import { useBottomRoom } from '../../../components/Sheet';
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
@@ -6,7 +8,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -379,7 +380,7 @@ export function GroupDetail({
   }
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       contentContainerStyle={styles.content}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
@@ -557,7 +558,7 @@ export function GroupDetail({
         onAdd={(ids) => addMembersMutation.mutate(ids)}
         pending={addMembersMutation.isPending}
       />
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
@@ -632,6 +633,9 @@ function AddMembersModal({
   pending?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  // Lifted above the keyboard (2 November 2026): edge to edge on Android, a
+  // field in this window was otherwise covered by it.
+  const bottomRoom = useBottomRoom();
   const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
@@ -678,7 +682,7 @@ function AddMembersModal({
       <View
         style={[
           styles.modal,
-          Platform.OS === 'android' && { paddingTop: insets.top, paddingBottom: insets.bottom },
+          Platform.OS === 'android' && { paddingTop: insets.top, paddingBottom: bottomRoom },
         ]}
       >
         <View style={styles.modalHeader}>
@@ -701,7 +705,7 @@ function AddMembersModal({
         {publishersQuery.isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
         ) : (
-          <ScrollView style={styles.modalList} keyboardShouldPersistTaps="handled">
+          <KeyboardScroll pad={false} style={styles.modalList} keyboardShouldPersistTaps="handled">
             {candidates.length === 0 && (
               <Text style={styles.empty}>{t('serviceGroups.noPublishersToAdd')}</Text>
             )}
@@ -735,7 +739,7 @@ function AddMembersModal({
                 </Pressable>
               );
             })}
-          </ScrollView>
+          </KeyboardScroll>
         )}
 
         <View style={styles.modalFooter}>

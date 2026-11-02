@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { ScrollView } from 'react-native';
 import { router } from 'expo-router';
@@ -32,7 +33,7 @@ export default function NewAbsenceScreen() {
   });
 
   return (
-    <ScrollView
+    <KeyboardScroll
       contentContainerStyle={{ padding: 16, paddingBottom: 48, width: '100%', maxWidth: 780, alignSelf: 'center' }}
       keyboardShouldPersistTaps="handled"
     >
@@ -45,6 +46,6 @@ export default function NewAbsenceScreen() {
         lockedPublisher={locked}
         defaultPublisher={defaultPublisher}
       />
-    </ScrollView>
+    </KeyboardScroll>
   );
 }

@@ -1,5 +1,6 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -184,7 +185,7 @@ export default function DutyPlacesScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardScroll contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.seg}>
           {(['midweek', 'weekend'] as const).map((k) => (
             <Pressable
@@ -346,7 +347,7 @@ export default function DutyPlacesScreen() {
             </Pressable>
           ))}
         </View>
-      </ScrollView>
+      </KeyboardScroll>
 
       <View style={styles.footer}>
         {problem && dirty ? <Text style={styles.problem}>{problem}</Text> : null}

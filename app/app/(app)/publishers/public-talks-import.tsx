@@ -1,8 +1,8 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -43,7 +43,7 @@ export default function PublicTalksImportScreen() {
   const lineCount = text.split(/\r?\n/).filter((l) => l.trim()).length;
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={{ flex: 1, backgroundColor: '#f1f5f9' }}
       contentContainerStyle={{ paddingBottom: 32 }}
       keyboardShouldPersistTaps="handled"
@@ -128,7 +128,7 @@ export default function PublicTalksImportScreen() {
           }
         />
       )}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
