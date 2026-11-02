@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -300,7 +300,7 @@ export default function LocalNeedsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={topicsQ.isRefetching} onRefresh={refresh} />}
       >
@@ -318,7 +318,7 @@ export default function LocalNeedsScreen() {
             {bankColumn}
           </>
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       <PlaceSheet
         visible={!!place}

@@ -1,3 +1,4 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { PossibleDuplicateLines } from "../../../components/PossibleDuplicateLines";
 import { AdminNotElderLine } from "../../../components/AdminNotElderLine";
 import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
@@ -5,7 +6,6 @@ import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -544,7 +544,7 @@ export default function TasksScreen() {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardScroll contentContainerStyle={styles.content}>
         {tab === "done" ? (
           doneQuery.isLoading ? (
             <ActivityIndicator style={{ marginTop: 32 }} />
@@ -574,7 +574,7 @@ export default function TasksScreen() {
             </View>
           ))
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       {/* Beside the scroller, never inside it: a strip that lives inside a
           list appears at the foot of its CONTENT, metres below the screen. */}
@@ -722,7 +722,7 @@ function TaskForm({
         </Pressable>
       }
     >
-      <ScrollView contentContainerStyle={styles.formBody}>
+      <KeyboardScroll pad={false} contentContainerStyle={styles.formBody}>
         <Text style={styles.label}>{t("tasks.form.title")}</Text>
         {editing?.kind ? (
           /* A calendar task is named by the app, in the reader's own language,
@@ -906,7 +906,7 @@ function TaskForm({
             <Text style={styles.deleteText}>{t("common.delete")}</Text>
           </Pressable>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

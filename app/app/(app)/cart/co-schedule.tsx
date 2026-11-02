@@ -1,3 +1,4 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -1343,7 +1344,7 @@ export default function CoScheduleScreen() {
           </ScrollView>
         </View>
       ) : null}
-      <ScrollView
+      <KeyboardScroll
         style={styles.container}
         contentContainerStyle={styles.content}
       >
@@ -2015,7 +2016,7 @@ export default function CoScheduleScreen() {
           ) : null}
         </View>
       </Sheet>
-      </ScrollView>
+      </KeyboardScroll>
 
       <UndoBar
         visible={!!undo}

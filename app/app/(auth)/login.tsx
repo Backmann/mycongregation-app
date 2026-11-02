@@ -1,9 +1,10 @@
+import { KeyboardScroll } from '../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -79,9 +80,11 @@ export default function LoginScreen() {
       // itself around the keyboard; this app runs edge-to-edge, where it does
       // not — which is why the e-mail field was comfortable and the password
       // below it sat under the keyboard.
-      behavior="padding"
+      // iOS only (2 November 2026): on Android the form below is a
+      // KeyboardScroll and makes its own room; both at once lift it twice.
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -222,7 +225,7 @@ export default function LoginScreen() {
             <Text style={styles.legalLink}>{t('legal.linkShort')}</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </KeyboardScroll>
     </KeyboardAvoidingView>
   );
 }

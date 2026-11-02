@@ -1,8 +1,8 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -182,7 +182,7 @@ export default function PioneerSchoolHelpersScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <KeyboardScroll contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <Text style={styles.intro}>{t('pioneerSchool.helpers.intro')}</Text>
         {countedSchool ? (
           <Text style={styles.countedFor}>
@@ -257,7 +257,7 @@ export default function PioneerSchoolHelpersScreen() {
             </View>
           ))
         )}
-      </ScrollView>
+      </KeyboardScroll>
 
       {/* The app's own sheet, not a hand-rolled Modal. It already rises above
           the keyboard, knows about the Android navigation buttons, and keeps

@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -104,7 +104,7 @@ function ResetPasswordScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <Text style={styles.title}>{t('auth.reset.title')}</Text>
 
@@ -219,7 +219,7 @@ function ResetPasswordScreen() {
             </>
           )}
         </View>
-      </ScrollView>
+      </KeyboardScroll>
     </SafeAreaView>
   );
 }

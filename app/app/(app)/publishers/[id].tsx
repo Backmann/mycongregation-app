@@ -1,3 +1,5 @@
+import { useBottomRoom } from '../../../components/Sheet';
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
 import { useMemo, useState } from 'react';
 import {
@@ -6,7 +8,6 @@ import {
   
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -315,7 +316,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
   }
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       // Same comfortable column as the edit form, so switching between viewing
       // and editing doesn't shift the layout under the reader.
@@ -442,7 +443,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
         onCancel={() => setRemoveOpen(false)}
         onSubmit={submitRemove}
       />
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
@@ -478,6 +479,9 @@ function RemoveModal({
   onSubmit: () => void;
 }) {
   const { t } = useTranslation();
+  // Lifted above the keyboard (2 November 2026): edge to edge on Android, a
+  // field in this window was otherwise covered by it.
+  const bottomRoom = useBottomRoom();
   const REASONS: RemovalReason[] = [
     'died',
     'moved',
@@ -503,7 +507,7 @@ function RemoveModal({
       animationType="fade"
       onRequestClose={onCancel}
     >
-      <View style={styles.modalOverlay}>
+      <View style={[styles.modalOverlay, { paddingBottom: 24 + bottomRoom }]}>
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={onCancel}

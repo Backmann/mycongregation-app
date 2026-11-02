@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { createContext, useContext, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -122,7 +122,7 @@ export default function SpecialEventsListScreen() {
     picked ?? (firstEvent && firstEvent.kind === 'event' ? firstEvent.event.id : null);
 
   const list = (
-    <ScrollView
+    <KeyboardScroll
       style={styles.screen}
       contentContainerStyle={styles.content}
       refreshControl={
@@ -250,7 +250,7 @@ export default function SpecialEventsListScreen() {
           ) : null}
         </>
       )}
-    </ScrollView>
+    </KeyboardScroll>
   );
 
   if (!wide) return list;

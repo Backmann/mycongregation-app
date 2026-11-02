@@ -1,8 +1,8 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -66,7 +66,7 @@ export function EventFormScreen({
 
   return (
     <View style={styles.screen}>
-      <ScrollView
+      <KeyboardScroll
         style={styles.scroll}
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
@@ -80,7 +80,7 @@ export function EventFormScreen({
           others={othersQ.data}
           selfId={selfId}
         />
-      </ScrollView>
+      </KeyboardScroll>
       <View style={styles.bar}>
         {problem ? <Text style={styles.problem}>{problem}</Text> : null}
         {errorText ? <Text style={styles.error}>{errorText}</Text> : null}

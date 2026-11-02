@@ -1,8 +1,8 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -124,7 +124,9 @@ export function SongPicker({
       ) : songs.length === 0 ? (
         <Text style={styles.empty}>{t('songPicker.catalogEmpty')}</Text>
       ) : (
-        <ScrollView
+        // Inside AssignmentSheet, whose card is already lifted above the keyboard.
+        <KeyboardScroll
+          pad={false}
           style={styles.list}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 24 }}
@@ -161,7 +163,7 @@ export function SongPicker({
               </Pressable>
             );
           })}
-        </ScrollView>
+        </KeyboardScroll>
       )}
     </View>
   );

@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useMemo, useState } from 'react';
 import { capitalizeFirst } from '../../../lib/relative-time';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -211,7 +211,7 @@ export default function PioneerSchoolScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <KeyboardScroll contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         {/* The head of the sheet: what, when, and where to drive. */}
         <View style={styles.headCard}>
           <Text style={styles.headTitle}>{school.title}</Text>
@@ -343,7 +343,7 @@ export default function PioneerSchoolScreen() {
             <RichNote text={school.notes} />
           </View>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
 
       {/* Who serves */}
       <Sheet
@@ -365,7 +365,7 @@ export default function PioneerSchoolScreen() {
               autoCapitalize="none"
             />
           </View>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <KeyboardScroll pad={false} keyboardShouldPersistTaps="handled">
             {/* «Clear» only when somebody is there to clear; an empty list
                 says so rather than looking broken (walk, 23 October 2026). */}
             {picking?.helperId ? (
@@ -428,7 +428,7 @@ export default function PioneerSchoolScreen() {
                 ) : null}
               </Pressable>
             ))}
-          </ScrollView>
+          </KeyboardScroll>
         </View>
       </Sheet>
 
@@ -680,7 +680,7 @@ function SchoolEditSheet({
         </Pressable>
       }
     >
-      <ScrollView
+      <KeyboardScroll pad={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
         keyboardShouldPersistTaps="handled"
       >
@@ -826,7 +826,7 @@ function SchoolEditSheet({
         {saveMut.isError ? (
           <Text style={styles.error}>{extractErrorMessage(saveMut.error)}</Text>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

@@ -1,8 +1,8 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -310,7 +310,7 @@ export default function ResponsibilitiesScreen() {
   const narrowTable = panel && pickerFor !== null;
 
   const list = (
-    <ScrollView
+    <KeyboardScroll
       style={styles.flex}
       contentContainerStyle={[styles.scroll, table && styles.scrollWide]}
     >
@@ -422,7 +422,7 @@ export default function ResponsibilitiesScreen() {
           </View>
         </View>
       ))}
-    </ScrollView>
+    </KeyboardScroll>
   );
 
   const pickerProps = pickerFor
@@ -475,9 +475,9 @@ export default function ResponsibilitiesScreen() {
                 <Ionicons name="close" size={22} color="#64748b" />
               </Pressable>
             </View>
-            <ScrollView style={styles.flex} keyboardShouldPersistTaps="handled">
+            <KeyboardScroll style={styles.flex} keyboardShouldPersistTaps="handled">
               <PickerBody {...pickerProps} />
-            </ScrollView>
+            </KeyboardScroll>
             {footer}
           </View>
         ) : null}

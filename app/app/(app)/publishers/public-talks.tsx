@@ -1,9 +1,9 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState, useCallback } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -134,7 +134,7 @@ export default function PublicTalksScreen() {
         </View>
       </View>
 
-      <ScrollView
+      <KeyboardScroll
         contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
@@ -216,7 +216,7 @@ export default function PublicTalksScreen() {
             ) : null}
           </View>
         )}
-      </ScrollView>
+      </KeyboardScroll>
     </View>
   );
 }

@@ -130,6 +130,7 @@ const STEPS = [
   // (6 October: typed as an address, the administrator's screens opened for
   // anybody signed in).
   ['Кому открыт экран', 'node', ['scripts/check-screen-access.mjs']],
+  ['Поля над клавиатурой', 'node', ['scripts/check-keyboard.mjs']],
   ['Двери спрашивают экран', 'node', ['scripts/check-doors.mjs']],
   ['Телефон без сервисов Google', 'node', ['scripts/check-push-no-google.mjs']],
   // The code the app draws for a camera is compared, module by module, with

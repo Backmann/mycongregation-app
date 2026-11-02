@@ -1,5 +1,6 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Platform, Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -297,7 +298,7 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
       closeLabel={t('common.close')}
       footer={footer}
     >
-      <ScrollView style={s.scroll} contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
+      <KeyboardScroll pad={false} style={s.scroll} contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
         {step === 1 ? (
           <>
             <View style={s.hero}>
@@ -376,7 +377,7 @@ export function StageNewSheet({ visible, onClose }: { visible: boolean; onClose:
         ) : made ? (
           <Credentials made={made} />
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }
@@ -492,7 +493,7 @@ export function StageEditSheet({ user, onClose }: { user: PublicUser | null; onC
       closeLabel={t('common.close')}
       footer={<PrimaryButton label={t('common.save')} onPress={() => save.mutate()} disabled={!ready || save.isPending} />}
     >
-      <ScrollView style={s.scroll} contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
+      <KeyboardScroll pad={false} style={s.scroll} contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
         <Section title={t('stage.admin.whereTitle')}>
           <Field label={t('stage.admin.name')} value={shownLabel} onChange={setLabel} last />
         </Section>
@@ -525,7 +526,7 @@ export function StageEditSheet({ user, onClose }: { user: PublicUser | null; onC
           />
         </Section>
         {save.isError ? <Hint ok={false} text={extractErrorMessage(save.error)} /> : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

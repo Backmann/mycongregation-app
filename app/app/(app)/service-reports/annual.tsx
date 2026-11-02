@@ -1,8 +1,8 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -222,7 +222,7 @@ export default function AnnualReportScreen() {
     });
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <KeyboardScroll style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.yearRow}>
         <Pressable onPress={() => setYear(year - 1)} hitSlop={10}>
           <Ionicons name="chevron-back" size={20} color="#0e7490" />
@@ -447,7 +447,7 @@ export default function AnnualReportScreen() {
           onClose={() => setEditing(null)}
         />
       ) : null}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
@@ -639,7 +639,7 @@ function DriftSheet({
         </View>
       }
     >
-      <ScrollView contentContainerStyle={{ paddingBottom: 12 }}>
+      <KeyboardScroll pad={false} contentContainerStyle={{ paddingBottom: 12 }}>
         <View style={styles.compare}>
           <View style={styles.compareCell}>
             <Text style={styles.compareLabel}>{t('sent.sentLabel')}</Text>
@@ -674,7 +674,7 @@ function DriftSheet({
 
         <Text style={styles.sheetNote}>{t('sent.notAffect')}</Text>
         <Text style={styles.sheetNote}>{t('sent.correctHint')}</Text>
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }
@@ -754,7 +754,7 @@ function SaveSheet({
         </Pressable>
       }
     >
-      <ScrollView
+      <KeyboardScroll pad={false}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
         keyboardShouldPersistTaps="handled"
       >
@@ -794,7 +794,7 @@ function SaveSheet({
         {save.isError ? (
           <Text style={styles.error}>{extractErrorMessage(save.error)}</Text>
         ) : null}
-      </ScrollView>
+      </KeyboardScroll>
     </Sheet>
   );
 }

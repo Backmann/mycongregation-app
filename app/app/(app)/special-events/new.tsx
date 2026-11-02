@@ -1,7 +1,7 @@
+import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useState } from 'react';
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -87,7 +87,7 @@ export default function NewSpecialEventScreen() {
 
   if (!picked) {
     return (
-      <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardScroll contentContainerStyle={styles.container}>
         <Text style={styles.chooseTitle}>{t('specialEvents.create.title')}</Text>
         <Text style={styles.chooseSub}>{t('specialEvents.create.subtitle')}</Text>
         <View style={styles.choices}>
@@ -143,7 +143,7 @@ export default function NewSpecialEventScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+      </KeyboardScroll>
     );
   }
 

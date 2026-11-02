@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { BRAND } from "../lib/header";
 import { Toast } from "./ErrorToast";
+import { KeyboardScroll } from "./KeyboardScroll";
 
 /**
  * How much room is taken at the BOTTOM of the screen on Android — by the
@@ -205,14 +206,18 @@ export function Sheet({
               // the room.
               <View style={styles.fillBody}>{children}</View>
             ) : (
-              <ScrollView
+              // The card is lifted by the keyboard's height already
+              // (bottomRoom); the scroller only brings the field with the
+              // cursor into the part of the card that is left (2 November).
+              <KeyboardScroll
+                pad={false}
                 ref={scrollRef}
                 style={styles.bottomScroll}
                 contentContainerStyle={styles.bottomBody}
                 keyboardShouldPersistTaps="handled"
               >
                 {children}
-              </ScrollView>
+              </KeyboardScroll>
             )}
             {footer ? <View style={styles.footer}>{footer}</View> : null}
           </View>

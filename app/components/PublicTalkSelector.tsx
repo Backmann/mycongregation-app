@@ -1,9 +1,9 @@
+import { KeyboardScroll } from "./KeyboardScroll";
 import { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -140,7 +140,7 @@ export function PublicTalkSelector({
         {isLoading ? (
           <ActivityIndicator size="large" style={{ marginTop: 32 }} />
         ) : (
-          <ScrollView style={styles.list} keyboardShouldPersistTaps="handled">
+          <KeyboardScroll pad={false} style={styles.list} keyboardShouldPersistTaps="handled">
             <Pressable
               style={({ pressed }) => [
                 styles.option,
@@ -177,7 +177,7 @@ export function PublicTalkSelector({
                 }}
               />
             ))}
-          </ScrollView>
+          </KeyboardScroll>
         )}
       </Sheet>
     </>

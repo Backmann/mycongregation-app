@@ -1,3 +1,4 @@
+import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { HoursCard } from "../../../components/hours/HoursCard";
 import { useLogUndo } from "../../../components/hours/useLogUndo";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +8,6 @@ import {
   Linking,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -2390,7 +2390,7 @@ export default function HomeScreen() {
 
   return (
     <>
-      <ScrollView
+      <KeyboardScroll
         style={s.container}
         contentContainerStyle={s.content}
         refreshControl={
@@ -2428,7 +2428,7 @@ export default function HomeScreen() {
             </>
           )}
         </View>
-      </ScrollView>
+      </KeyboardScroll>
       <WindowsPlanDialog windows={windows} onClose={() => setWindows(null)} />
       {logUndo.undoBar}
     </>

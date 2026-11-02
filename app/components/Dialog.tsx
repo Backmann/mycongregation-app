@@ -3,13 +3,13 @@ import {
   ActivityIndicator,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useBottomRoom } from './Sheet';
+import { KeyboardScroll } from './KeyboardScroll';
 import { Toast } from './ErrorToast';
 
 /**
@@ -56,7 +56,6 @@ export function Dialog({
   /** For long bodies — keeps the dialog within the screen. */
   scroll?: boolean;
 }) {
-  const Body = scroll ? ScrollView : View;
   // The dialog is centred, so the navigation bar never troubled it — but the
   // keyboard does: a text field inside one sits in the middle of the screen
   // and the keyboard covers it. Android only; iOS handles this itself.
@@ -84,7 +83,15 @@ export function Dialog({
             <Text style={styles.title}>{title}</Text>
           </View>
 
-          <Body style={scroll ? styles.scrollBody : undefined}>{children}</Body>
+          {scroll ? (
+            // Lifted by the keyboard's height already (bottomRoom); this only
+            // brings the field with the cursor into view (2 November 2026).
+            <KeyboardScroll pad={false} style={styles.scrollBody}>
+              {children}
+            </KeyboardScroll>
+          ) : (
+            <View>{children}</View>
+          )}
 
           {onConfirm || cancelLabel || onExtra ? (
             <View style={styles.actions}>

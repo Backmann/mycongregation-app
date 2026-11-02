@@ -1,8 +1,8 @@
+import { KeyboardScroll } from './KeyboardScroll';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -273,7 +273,7 @@ export function PublisherForm({
   const showPioneer = isBaptized;
 
   return (
-    <ScrollView
+    <KeyboardScroll
       style={styles.container}
       // On a wide browser window the fields would otherwise run the full width
       // of the screen, which is tiring to read and scan; the form keeps to a
@@ -671,7 +671,7 @@ export function PublisherForm({
           </Pressable>
         )}
       </View>
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
