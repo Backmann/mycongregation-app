@@ -39,8 +39,17 @@ import {
  * ScrollView — scripts/check-keyboard.mjs fails the gate otherwise.
  */
 
-/** Room left between the field and the keyboard's edge. */
-const GAP = 24;
+/**
+ * Room left between the field and the keyboard's edge.
+ *
+ * 72, not 24 (2 November 2026, on Lionel's Samsung): with 24 every field
+ * came up but stopped AT the keyboard, half of it still under the strip of
+ * tools the keyboard draws above its keys. Measured from the screenshots,
+ * the keyboard's reported top was about 42 dp below its real one — that
+ * strip is not counted. 72 leaves the whole field and some air above it
+ * whatever the keyboard adds on top.
+ */
+const GAP = 72;
 
 /**
  * Which scroller the person is working in. A sheet open over a form is a
