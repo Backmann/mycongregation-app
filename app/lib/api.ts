@@ -3430,6 +3430,11 @@ export interface CartArchive {
   };
 }
 
+export interface CartCopySource {
+  weekStartDate: string;
+  days: { weekday: number; locationName: string; startTime: string; endTime: string }[];
+}
+
 export const cartWeeksApi = {
   async getWeek(weekStart: string): Promise<CartWeekView | null> {
     const { data } = await api.get<CartWeekView | null>("/cart-weeks", {
@@ -3437,15 +3442,29 @@ export const cartWeeksApi = {
     });
     return data || null;
   },
-  async build(input: BuildCartWeekInput): Promise<{ id: string }> {
-    const { data } = await api.post<{ id: string }>("/cart-weeks", input);
+  async build(
+    input: BuildCartWeekInput,
+  ): Promise<{ id: string; added?: number; skippedPast?: number }> {
+    const { data } = await api.post<{ id: string; added?: number; skippedPast?: number }>(
+      "/cart-weeks",
+      input,
+    );
     return data;
   },
-  async copy(weekStartDate: string): Promise<{ added: number }> {
-    const { data } = await api.post<{ added: number }>("/cart-weeks/copy", {
-      weekStartDate,
-    });
+  async copy(weekStartDate: string): Promise<{ added: number; skippedPast?: number }> {
+    const { data } = await api.post<{ added: number; skippedPast?: number }>(
+      "/cart-weeks/copy",
+      { weekStartDate },
+    );
     return data;
+  },
+  /** What «Повторить прошлую неделю» would bring here, or null. */
+  async copySource(weekStart: string): Promise<CartCopySource | null> {
+    const { data } = await api.get<CartCopySource | "" | null>(
+      "/cart-weeks/copy-source",
+      { params: { weekStart } },
+    );
+    return data && typeof data === "object" && "weekStartDate" in data ? data : null;
   },
   async open(id: string, signupUntil?: string): Promise<void> {
     await api.post(`/cart-weeks/${id}/open`, signupUntil ? { signupUntil } : {});
