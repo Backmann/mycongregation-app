@@ -16,6 +16,7 @@ export function SpanPicker({
   onChange,
   notBefore,
   lengths: offered = LENGTHS,
+  blocked = [],
 }: {
   day: CartSpan;
   value: CartSpan | null;
@@ -24,16 +25,20 @@ export function SpanPicker({
   notBefore?: string | null;
   /** The lengths to offer, in minutes; the day's own hours need longer ones. */
   lengths?: number[];
+  /** Called-off parts: no time that touches them is offered. */
+  blocked?: CartSpan[];
 }) {
   const { t } = useTranslation();
   const from = toMin(day.startTime);
   const to = toMin(day.endTime);
   const floor = notBefore ? Math.max(from, toMin(notBefore)) : from;
   const starts: number[] = [];
-  for (let m = from; m + MIN_SPAN <= to; m += STEP) if (m >= floor) starts.push(m);
+  const free = (a: number, b: number) =>
+    !blocked.some((o) => a < toMin(o.endTime) && toMin(o.startTime) < b);
+  for (let m = from; m + MIN_SPAN <= to; m += STEP) if (m >= floor && free(m, m + MIN_SPAN)) starts.push(m);
   const start = value ? toMin(value.startTime) : null;
   const len = value ? toMin(value.endTime) - toMin(value.startTime) : null;
-  const lengths = offered.filter((l) => start === null || start + l <= to);
+  const lengths = offered.filter((l) => start === null || (start + l <= to && free(start, start + l)));
 
   const pick = (s: number, l: number) =>
     onChange({ startTime: toHHMM(s), endTime: toHHMM(Math.min(s + l, to)) });
@@ -50,7 +55,10 @@ export function SpanPicker({
               key={m}
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
-              onPress={() => pick(m, len && m + len <= to ? len : Math.min(120, to - m))}
+              onPress={() => {
+                const want = len && m + len <= to && free(m, m + len) ? len : Math.min(120, to - m);
+                pick(m, free(m, m + want) ? want : MIN_SPAN);
+              }}
               style={[styles.chip, inside && styles.chipInside, on && styles.chipOn]}
             >
               <Text style={[styles.chipText, inside && styles.chipTextInside, on && styles.chipTextOn]}>

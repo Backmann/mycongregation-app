@@ -288,7 +288,7 @@ export function CartDaySheet({
         {canSign ? (
           <View style={{ gap: 10 }}>
             <Text style={styles.section}>{t('witnessing.whenCan')}</Text>
-            <SpanPicker day={day} value={span} onChange={setSpan} notBefore={notBefore} />
+            <SpanPicker day={day} value={span} onChange={setSpan} notBefore={notBefore} blocked={day.cancellations} />
             {span && (
               <Text style={styles.preview}>
                 {along.length

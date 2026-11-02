@@ -498,7 +498,7 @@ export default function WitnessingDayScreen() {
               style={styles.input}
             />
           </View>
-          <SpanPicker day={day} value={addSpan} onChange={setAddSpan} />
+          <SpanPicker day={day} value={addSpan} onChange={setAddSpan} blocked={day.cancellations} />
         </View>
       </Sheet>
 
