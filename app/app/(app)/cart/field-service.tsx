@@ -11,6 +11,7 @@ import {
   TextInput,
   View,
   useWindowDimensions,
+  type LayoutChangeEvent,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
@@ -152,8 +153,24 @@ export default function FieldServiceMeetingsScreen() {
   // place out at the right once they are wide enough (FieldMeetingRow).
   // From PANEL_FROM the months and the month's actions stand in a panel at
   // the right (variant A, 14 October 2026), and the strip above goes.
-  const panel = screenW >= PANEL_FROM;
-  const side = Math.max(0, Math.floor((screenW - (panel ? LIST_MAX + PANEL_GAP + PANEL_W : PAGE_MAX)) / 2));
+  //
+  // Measured on the screen itself, not the window (2 November 2026): since
+  // the side menu and the 1120 column (22 October) the screen is far
+  // narrower than the window, and margins worked out from the window were
+  // added on top of the column's own — on Lionel's computer the list was
+  // squeezed to a strip, on a 1920 window to nothing.
+  const [boxW, setBoxW] = useState<number | null>(null);
+  const areaW = boxW ?? screenW;
+  // On every root view this screen returns: on the web the loading view's
+  // element is kept for the list that follows, and an element whose size
+  // does not change reports no new layout — measured only on the list, the
+  // width never came.
+  const measure = (e: LayoutChangeEvent) => {
+    const w = Math.round(e.nativeEvent.layout.width);
+    setBoxW((prev) => (prev === w ? prev : w));
+  };
+  const panel = areaW >= PANEL_FROM;
+  const side = Math.max(0, Math.floor((areaW - (panel ? LIST_MAX + PANEL_GAP + PANEL_W : PAGE_MAX)) / 2));
   const canEdit = perms.canEditFieldServiceMeetings;
   const qc = useQueryClient();
   // Lifted above the keyboard (2 November 2026): edge to edge on Android, a
@@ -467,14 +484,14 @@ export default function FieldServiceMeetingsScreen() {
 
   if (meetingsQuery.isLoading) {
     return (
-      <View style={styles.center}>
+      <View style={styles.center} onLayout={measure}>
         <ActivityIndicator color="#0ea5e9" />
       </View>
     );
   }
   if (meetingsQuery.isError) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} onLayout={measure}>
         <LoadError onRetry={() => meetingsQuery.refetch()} />
       </View>
     );
@@ -772,7 +789,7 @@ export default function FieldServiceMeetingsScreen() {
 
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={measure}>
       {/* Month strip; the one action on the plan at its right. */}
       {panel ? null : (
       <View style={[styles.monthBar, side > 0 && { paddingLeft: side, paddingRight: side + 8 }]}>
@@ -1286,8 +1303,12 @@ export default function FieldServiceMeetingsScreen() {
 
 /** The widest the month reads at; beyond it the page keeps margins. */
 const PAGE_MAX = 960;
-/** From this width the months and their actions stand at the right. */
-const PANEL_FROM = 1100;
+/**
+ * From this width OF THE SCREEN the months and their actions stand at the
+ * right: the list still gets 600 beside the panel. (It was 1100 of the
+ * window, before the screen stood in a column beside the side menu.)
+ */
+const PANEL_FROM = 600 + 24 + 280;
 const LIST_MAX = 760;
 const PANEL_W = 280;
 const PANEL_GAP = 24;

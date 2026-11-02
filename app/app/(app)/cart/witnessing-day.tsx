@@ -1,4 +1,5 @@
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
+import { useCartSheetVariant } from '../../../lib/cart-sheet';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +40,7 @@ import {
  */
 export default function WitnessingDayScreen() {
   const { t, i18n } = useTranslation();
+  const sheetVariant = useCartSheetVariant();
   const locale = i18n.language;
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -171,18 +173,34 @@ export default function WitnessingDayScreen() {
         if (s?.pioneer) bits.push(t('witnessing.pioneer'));
         if (s) bits.push(t('witnessing.recentDays', { count: s.recentDays }));
         if (s && s.missedWeeks >= 2) bits.push(t('witnessing.missedWeeks', { count: s.missedWeeks }));
-        // On the plan, the note of the wish it came from still shows: the
-        // arranger may want to keep the pair together when he moves things.
-        const note =
-          'withWhomNote' in r && r.withWhomNote
-            ? r.withWhomNote
-            : (day.wishes ?? []).find((w) => w.publisherId && w.publisherId === r.publisherId && w.withWhomNote && overlaps(w, r))
-                ?.withWhomNote;
-        if (note) bits.push(t('witnessing.wantsWith', { who: note }));
+        // The «с кем» of the wish (for a place on the plan, of the wish it
+        // came from — the arranger keeps the pair in mind when he moves
+        // things). Each chosen name says where that person is that day.
+        const src =
+          r.kind === 'wish'
+            ? r
+            : (day.wishes ?? []).find(
+                (w) =>
+                  w.publisherId === r.publisherId &&
+                  ((w.withPublishers ?? []).length > 0 || !!w.withWhomNote) &&
+                  overlaps(w, r),
+              );
+        const mates: string[] = [];
+        for (const m of src?.withPublishers ?? []) {
+          const on = (day.plan ?? []).filter((p) => p.publisherId === m.id);
+          const wish = (day.wishes ?? []).filter((w) => w.publisherId === m.id);
+          const where = on.length
+            ? t('witnessing.mateStands', { time: on.map(spanText).join(', ') })
+            : wish.length
+              ? t('witnessing.mateAsked', { time: wish.map(spanText).join(', ') })
+              : t('witnessing.mateNotThisDay');
+          mates.push(t('witnessing.wantsWith', { name: m.name, where }));
+        }
+        if (src?.withWhomNote) mates.push(t('witnessing.wantsWithWritten', { who: src.withWhomNote }));
         if ('late' in r && r.late) bits.push(t('witnessing.late'));
         const partner = r.publisherId ? pairs[r.publisherId]?.[0] : undefined;
         if (partner) bits.push(t('witnessing.recentlyWith', { name: partner.name }));
-        return { ...r, note: bits.join(' · '), absent: !!r.absent };
+        return { ...r, note: bits.join(' · '), mates, absent: !!r.absent };
       })
       .sort((a, b) => toMin(a.startTime) - toMin(b.startTime) || (a.kind === 'plan' ? -1 : 1));
   }, [day, standingQuery.data, pairingsQuery.data, t]);
@@ -321,8 +339,23 @@ export default function WitnessingDayScreen() {
                 )}
               </View>
               <View style={styles.track}>
-                <View style={[styles.bar, r.kind === 'plan' ? styles.barOn : styles.barWish, barOf(day, r)]} />
+                {/* A called-off part of the time is grey, not «stands». */}
+                {r.kind === 'plan' ? (
+                  <>
+                    <View style={[styles.bar, styles.barOff, barOf(day, r)]} />
+                    {liveSpans(day, [r]).map((x) => (
+                      <View key={x.startTime} style={[styles.bar, styles.barOn, barOf(day, x)]} />
+                    ))}
+                  </>
+                ) : (
+                  <View style={[styles.bar, styles.barWish, barOf(day, r)]} />
+                )}
               </View>
+              {r.mates.map((m) => (
+                <Text key={m} style={styles.mate}>
+                  {m}
+                </Text>
+              ))}
               {(!!r.note || r.absent) && (
                 <Text style={[styles.personNote, r.absent && styles.absent]}>
                   {r.absent ? `${t('witnessing.absentThatDay')}${r.note ? ' · ' : ''}` : ''}
@@ -392,7 +425,7 @@ export default function WitnessingDayScreen() {
       {/* Another time for one already on the plan. */}
       <Sheet
         visible={!!timeFor}
-        variant="bottom"
+        variant={sheetVariant}
         title={timeFor ? t('witnessing.timeFor', { name: timeFor.name }) : ''}
         onClose={() => setTimeFor(null)}
         closeLabel={t('witnessing.cancel')}
@@ -412,7 +445,7 @@ export default function WitnessingDayScreen() {
       {/* Somebody who did not ask, or a guest. */}
       <Sheet
         visible={addOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.addPerson')}
         onClose={() => setAddOpen(false)}
         closeLabel={t('witnessing.cancel')}
@@ -445,6 +478,7 @@ export default function WitnessingDayScreen() {
             value={addWho}
             absenceDate={day.date}
             requiredCapability="public_witnessing"
+            hideInactive
             onChange={(id) => {
               setAddWho(id);
               if (id) setGuest('');
@@ -464,14 +498,14 @@ export default function WitnessingDayScreen() {
               style={styles.input}
             />
           </View>
-          <SpanPicker day={day} value={addSpan} onChange={setAddSpan} />
+          <SpanPicker day={day} value={addSpan} onChange={setAddSpan} blocked={day.cancellations} />
         </View>
       </Sheet>
 
       {/* The day, or part of it, called off. */}
       <Sheet
         visible={offOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.callOff')}
         onClose={() => setOffOpen(false)}
         closeLabel={t('witnessing.cancel')}
@@ -520,7 +554,7 @@ export default function WitnessingDayScreen() {
       {/* The day's hours. */}
       <Sheet
         visible={hoursOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.dayHours')}
         onClose={() => setHoursOpen(false)}
         closeLabel={t('witnessing.cancel')}
@@ -571,11 +605,13 @@ const styles = StyleSheet.create({
   personHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   personName: { flex: 1, fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: '#0f172a' },
   personTime: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#475569' },
+  mate: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#0e7490' },
   personNote: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#475569' },
   absent: { color: '#b91c1c' },
   track: { height: 10, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden', position: 'relative' },
   bar: { position: 'absolute', top: 0, bottom: 0 },
   barOn: { backgroundColor: '#15803d' },
+  barOff: { backgroundColor: '#94a3b8' },
   barWish: { backgroundColor: '#bbf7d0', borderWidth: 1.5, borderColor: '#15803d', borderStyle: 'dashed' },
   timeBtn: { padding: 6, borderRadius: 8, backgroundColor: '#f0f9ff' },
   offBtn: { backgroundColor: '#fef2f2', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 7 },
