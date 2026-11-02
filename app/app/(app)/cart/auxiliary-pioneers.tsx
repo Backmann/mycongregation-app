@@ -531,6 +531,7 @@ export default function AuxiliaryPioneersScreen() {
               </View>
             ) : (
               <PublisherSelector
+                includeInactive
                 label={t('auxPioneer.publisher')}
                 value={newPublisher}
                 onChange={setNewPublisher}

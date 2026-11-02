@@ -478,7 +478,6 @@ export default function WitnessingDayScreen() {
             value={addWho}
             absenceDate={day.date}
             requiredCapability="public_witnessing"
-            hideInactive
             onChange={(id) => {
               setAddWho(id);
               if (id) setGuest('');

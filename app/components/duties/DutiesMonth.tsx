@@ -800,11 +800,13 @@ function CellPanel({
       others.set(r.publisherId, dutyLabel({ ...r, id: '', congregationId: '', weekStartDate: '', eventType: 'midweek' } as never, t));
     }
   }
+  // The inactive are not offered at all (2 November 2026): since 31 October
+  // the server puts them on nothing, so «listed last, with the reason» only
+  // led to a refusal. One already standing here stays shown as current.
   const people = candidatesFor(entry.row.capability, publishers).filter(
-    (p) => p.id !== entry.row.publisherId && p.id !== proposed,
+    (p) => p.id !== entry.row.publisherId && p.id !== proposed && isServing(p),
   );
   const reasonOf = (p: Publisher): string | null => {
-    if (!isServing(p)) return t('dutiesMonth.reason.inactive');
     const a = absenceOn(absences, p.id, meeting.date);
     if (a) return t('dutiesMonth.reason.absent');
     if (others.has(p.id)) return t('dutiesMonth.reason.duty', { place: others.get(p.id) });

@@ -520,6 +520,7 @@ function PickSecond({
       ) : null}
       <Text style={styles.sectionMuted}>{t('merge.pick.all')}</Text>
       <PublisherSelector
+        includeInactive
         label={t('merge.pickOther')}
         value={null}
         boxed

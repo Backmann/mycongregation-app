@@ -25,7 +25,8 @@ export function dutyPool(publishers: Publisher[]): Publisher[] {
 /**
  * Not an inactive publisher (Lionel, 27 October 2026): he is neither proposed
  * by «Заполнить пустые» nor counted among those with nothing this month.
- * Put by hand he still may be — the panel lists him last, with the reason.
+ * Since 31 October he cannot be put on by hand either — the server refuses —
+ * so the panel does not offer him (2 November 2026).
  */
 export function isServing(p: Publisher): boolean {
   return p.status !== 'inactive';

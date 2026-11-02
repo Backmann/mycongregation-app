@@ -80,6 +80,7 @@ export default function AuxPaperScreen() {
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.content}>
         <PublisherSelector
+          includeInactive
           label={t('auxPioneer.publisher')}
           value={publisherId}
           onChange={setPublisherId}

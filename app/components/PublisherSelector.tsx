@@ -47,11 +47,17 @@ interface Props {
    */
   requiredCapability?: string;
   /**
-   * Leave out the inactive (by reports) altogether — for a place the server
-   * will not give them anyway (2 November 2026, the stand: «Вольф» was
-   * offered and the choice ended in a refusal).
+   * Offer the inactive (by reports) too. By default they are not offered
+   * (2 November 2026, Lionel): since 31 October the server puts an inactive
+   * publisher on nothing — programme, duties, field service, the stand… —
+   * so offering him ended in a refusal, and a new screen is safe by default.
+   * Only screens that put nobody on anything ask for them: merging cards,
+   * linking a sign-in, absences, an auxiliary-pioneer application.
+   * The one already chosen is always shown, so a place held by someone who
+   * has since become inactive does not read as empty (variant A: it stays
+   * until replaced).
    */
-  hideInactive?: boolean;
+  includeInactive?: boolean;
   /** If set, only publishers of this gender are shown. */
   genderFilter?: "sister" | "brother";
   /**
@@ -153,7 +159,7 @@ export function PublisherSelector({
   onChange,
   excludeIds = [],
   requiredCapability,
-  hideInactive = false,
+  includeInactive = false,
   genderFilter,
   pioneerFilter,
   appointmentFilter,
@@ -329,7 +335,7 @@ export function PublisherSelector({
 
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
-    if (hideInactive && p.status === 'inactive' && p.id !== value) return false;
+    if (!includeInactive && p.status === 'inactive' && p.id !== value) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
     if (pioneerFilter === "regular") {
       if (p.pioneerType !== "regular") return false;
