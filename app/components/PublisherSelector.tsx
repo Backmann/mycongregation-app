@@ -46,6 +46,12 @@ interface Props {
    * The user can toggle "Show all" inside the modal to override.
    */
   requiredCapability?: string;
+  /**
+   * Leave out the inactive (by reports) altogether — for a place the server
+   * will not give them anyway (2 November 2026, the stand: «Вольф» was
+   * offered and the choice ended in a refusal).
+   */
+  hideInactive?: boolean;
   /** If set, only publishers of this gender are shown. */
   genderFilter?: "sister" | "brother";
   /**
@@ -147,6 +153,7 @@ export function PublisherSelector({
   onChange,
   excludeIds = [],
   requiredCapability,
+  hideInactive = false,
   genderFilter,
   pioneerFilter,
   appointmentFilter,
@@ -322,6 +329,7 @@ export function PublisherSelector({
 
   const filtered = allPublishers.filter((p) => {
     if (excludeIds.includes(p.id)) return false;
+    if (hideInactive && p.status === 'inactive' && p.id !== value) return false;
     if (genderFilter && p.gender !== genderFilter) return false;
     if (pioneerFilter === "regular") {
       if (p.pioneerType !== "regular") return false;

@@ -1,4 +1,5 @@
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
+import { useCartSheetVariant } from '../../../lib/cart-sheet';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -68,6 +69,7 @@ function cap(s: string, locale: string): string {
 
 export default function WitnessingScreen() {
   const { t, i18n } = useTranslation();
+  const sheetVariant = useCartSheetVariant();
   const locale = i18n.language;
   const router = useRouter();
   const perms = usePermissions();
@@ -594,7 +596,7 @@ export default function WitnessingScreen() {
       {/* Days: which weekdays, which places, which hours. */}
       <Sheet
         visible={showBuild}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.addDays')}
         onClose={() => setShowBuild(false)}
         closeLabel={t('witnessing.cancel')}

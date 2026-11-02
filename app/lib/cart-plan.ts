@@ -29,6 +29,16 @@ export function stretches(day: CartDayView): Stretch[] {
     cuts.add(toMin(p.startTime));
     cuts.add(toMin(p.endTime));
   }
+  // A called-off part is a piece of its own (2 November 2026: «13:00–15:00
+  // отменено» used to vanish into «09:00–15:00 —» on the sheet).
+  const a0 = toMin(day.startTime);
+  const b0 = toMin(day.endTime);
+  for (const c of day.cancellations) {
+    cuts.add(Math.min(b0, Math.max(a0, toMin(c.startTime))));
+    cuts.add(Math.min(b0, Math.max(a0, toMin(c.endTime))));
+  }
+  const offAt = (a: number, b: number) =>
+    day.cancellations.some((c) => toMin(c.startTime) <= a && b <= toMin(c.endTime));
   const points = [...cuts].sort((a, b) => a - b);
   const out: Stretch[] = [];
   for (let i = 0; i + 1 < points.length; i++) {
@@ -38,8 +48,15 @@ export function stretches(day: CartDayView): Stretch[] {
       .filter((p) => toMin(p.startTime) <= a && b <= toMin(p.endTime))
       .map((p) => p.name);
     const last = out[out.length - 1];
-    // Neighbouring pieces with the same crew are one.
-    if (last && last.names.join('|') === names.join('|') && toMin(last.endTime) === a) {
+    const off = offAt(a, b);
+    // Neighbouring pieces with the same crew are one — not across the edge
+    // of a called-off part.
+    if (
+      last &&
+      last.names.join('|') === names.join('|') &&
+      toMin(last.endTime) === a &&
+      offAt(toMin(last.startTime), toMin(last.endTime)) === off
+    ) {
       last.endTime = toHHMM(b);
     } else {
       out.push({ startTime: toHHMM(a), endTime: toHHMM(b), names });
@@ -124,6 +141,9 @@ export interface ArchiveWords {
   byPlace: string;
   calledOff: string;
   days: string;
+  /** Column heads of the table by place. */
+  daysCol: string;
+  hoursCol: string;
   dayLabel: (iso: string) => string;
   hours: (minutes: number) => string;
 }
@@ -158,7 +178,7 @@ th { font-family: 'Manrope_700Bold', sans-serif; font-weight: normal; background
 </style></head><body>
 <h1>${esc(w.title)}</h1><div class="muted">${esc(w.period)}</div>
 <h2>${esc(w.totals)}</h2>
-<table><tbody><tr><th>${esc(w.byPlace)}</th><th class="n">${esc(w.days)}</th><th class="n"></th></tr>${places}</tbody></table>
+<table><tbody><tr><th>${esc(w.byPlace)}</th><th class="n">${esc(w.daysCol)}</th><th class="n">${esc(w.hoursCol)}</th></tr>${places}</tbody></table>
 ${off ? `<h2>${esc(w.calledOff)}</h2><ul>${off}</ul>` : ''}
 <h2>${esc(w.days)}</h2>
 <table><tbody>${days}</tbody></table>

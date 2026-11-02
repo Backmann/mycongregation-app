@@ -1,4 +1,5 @@
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
+import { useCartSheetVariant } from '../../../lib/cart-sheet';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +40,7 @@ import {
  */
 export default function WitnessingDayScreen() {
   const { t, i18n } = useTranslation();
+  const sheetVariant = useCartSheetVariant();
   const locale = i18n.language;
   const navigation = useNavigation();
   const queryClient = useQueryClient();
@@ -423,7 +425,7 @@ export default function WitnessingDayScreen() {
       {/* Another time for one already on the plan. */}
       <Sheet
         visible={!!timeFor}
-        variant="bottom"
+        variant={sheetVariant}
         title={timeFor ? t('witnessing.timeFor', { name: timeFor.name }) : ''}
         onClose={() => setTimeFor(null)}
         closeLabel={t('witnessing.cancel')}
@@ -443,7 +445,7 @@ export default function WitnessingDayScreen() {
       {/* Somebody who did not ask, or a guest. */}
       <Sheet
         visible={addOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.addPerson')}
         onClose={() => setAddOpen(false)}
         closeLabel={t('witnessing.cancel')}
@@ -476,6 +478,7 @@ export default function WitnessingDayScreen() {
             value={addWho}
             absenceDate={day.date}
             requiredCapability="public_witnessing"
+            hideInactive
             onChange={(id) => {
               setAddWho(id);
               if (id) setGuest('');
@@ -502,7 +505,7 @@ export default function WitnessingDayScreen() {
       {/* The day, or part of it, called off. */}
       <Sheet
         visible={offOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.callOff')}
         onClose={() => setOffOpen(false)}
         closeLabel={t('witnessing.cancel')}
@@ -551,7 +554,7 @@ export default function WitnessingDayScreen() {
       {/* The day's hours. */}
       <Sheet
         visible={hoursOpen}
-        variant="bottom"
+        variant={sheetVariant}
         title={t('witnessing.dayHours')}
         onClose={() => setHoursOpen(false)}
         closeLabel={t('witnessing.cancel')}

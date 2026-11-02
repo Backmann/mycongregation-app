@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useCartSheetVariant } from '../../lib/cart-sheet';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
@@ -43,6 +44,7 @@ export function CartDaySheet({
   onChanged: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const sheetVariant = useCartSheetVariant();
   const [span, setSpan] = useState<CartSpan | null>(null);
   const [note, setNote] = useState('');
   const [partners, setPartners] = useState<string[]>([]);
@@ -127,7 +129,7 @@ export function CartDaySheet({
   return (
     <Sheet
       visible={!!day}
-      variant="bottom"
+      variant={sheetVariant}
       title={date.charAt(0).toLocaleUpperCase(i18n.language) + date.slice(1)}
       subtitle={
         <Text style={styles.place}>

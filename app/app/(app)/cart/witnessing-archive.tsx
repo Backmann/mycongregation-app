@@ -58,6 +58,8 @@ export default function WitnessingArchiveScreen() {
         byPlace: t('witnessing.archiveByPlace'),
         calledOff: t('witnessing.archiveCalledOff'),
         days: t('witnessing.archiveDays'),
+        daysCol: t('witnessing.statDays'),
+        hoursCol: t('witnessing.statHours'),
         dayLabel,
         hours,
       },
