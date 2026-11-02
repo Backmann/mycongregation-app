@@ -201,6 +201,9 @@ export default function WitnessingScreen() {
   const now = new Date();
   const todayISO = formatDateISO(now);
   const nowHM = toHHMM(now.getHours() * 60 + now.getMinutes());
+  // The three nearest first (2 November 2026): with many shifts ahead the
+  // list pushed the week itself off the screen.
+  const [allMine, setAllMine] = useState(false);
   const myShifts = useMemo(() => {
     const out: { week: CartWeekView; day: CartDayView; span: CartSpan; with: string[] }[] = [];
     for (const q of mineQs) {
@@ -349,7 +352,7 @@ export default function WitnessingScreen() {
       {myShifts.length > 0 && (
         <View style={styles.mineCard}>
           <Text style={styles.mineHeader}>{t('witnessing.myShifts')}</Text>
-          {myShifts.map((m) => (
+          {(allMine ? myShifts : myShifts.slice(0, MINE_SHOWN)).map((m) => (
             <Pressable
               key={`${m.day.id}${m.span.startTime}`}
               style={styles.mineRow}
@@ -372,6 +375,13 @@ export default function WitnessingScreen() {
               </View>
             </Pressable>
           ))}
+          {myShifts.length > MINE_SHOWN && (
+            <Pressable style={styles.mineMore} onPress={() => setAllMine((v) => !v)}>
+              <Text style={styles.linkText}>
+                {allMine ? t('witnessing.mineLess') : t('witnessing.mineMore', { count: myShifts.length - MINE_SHOWN })}
+              </Text>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -699,7 +709,10 @@ export default function WitnessingScreen() {
   );
 }
 
+const MINE_SHOWN = 3;
+
 const styles = StyleSheet.create({
+  mineMore: { alignSelf: 'flex-start', paddingVertical: 8 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, gap: 12 },
   placesRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#f0f9ff', borderWidth: 1, borderColor: '#bae6fd', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10 },

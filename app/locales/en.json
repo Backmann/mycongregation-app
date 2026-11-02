@@ -2412,7 +2412,10 @@
     "planCount_one": "{{count}} person on the plan",
     "planCount_other": "{{count}} people on the plan",
     "hoursInLog": "Already in your hours",
-    "youStood": "You stood {{time}}"
+    "youStood": "You stood {{time}}",
+    "mineMore_one": "{{count}} more shift",
+    "mineMore_other": "{{count}} more shifts",
+    "mineLess": "Show fewer"
   },
   "cartLocations": {
     "add": "Add location",

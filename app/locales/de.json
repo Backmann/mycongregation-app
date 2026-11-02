@@ -2412,7 +2412,10 @@
     "planCount_one": "{{count}} Person eingeteilt",
     "planCount_other": "{{count}} Personen eingeteilt",
     "hoursInLog": "Schon in Ihren Stunden",
-    "youStood": "Sie standen {{time}}"
+    "youStood": "Sie standen {{time}}",
+    "mineMore_one": "{{count}} weitere Zeit",
+    "mineMore_other": "{{count}} weitere Zeiten",
+    "mineLess": "Weniger anzeigen"
   },
   "cartLocations": {
     "add": "Standort hinzufügen",

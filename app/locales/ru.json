@@ -2492,7 +2492,12 @@
     "planCount_many": "в плане {{count}} человек",
     "planCount_other": "в плане {{count}} человека",
     "hoursInLog": "Уже в учёте часов",
-    "youStood": "Вы стояли {{time}}"
+    "youStood": "Вы стояли {{time}}",
+    "mineMore_one": "Ещё {{count}} смена",
+    "mineMore_few": "Ещё {{count}} смены",
+    "mineMore_many": "Ещё {{count}} смен",
+    "mineMore_other": "Ещё {{count}} смены",
+    "mineLess": "Свернуть"
   },
   "cartLocations": {
     "add": "Добавить точку",
