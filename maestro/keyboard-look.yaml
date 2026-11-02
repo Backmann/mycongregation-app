@@ -1,0 +1,85 @@
+# Клавиатура закрывает поле? (2 ноября 2026)
+#
+# ТОЛЬКО СМОТРИТ, на живых данных: открывает формы, ставит курсор в нижнее
+# поле, снимает экран с открытой клавиатурой и уходит, НИЧЕГО НЕ СОХРАНЯЯ
+# (назад без кнопки «Сохранить»). Ничего не вводится.
+#
+# Снимки: что видно над клавиатурой, когда поле в нижней части формы. До
+# исправления (2 ноября) все четыре поля были целиком под клавиатурой; после —
+# поле с курсором должно стоять над ней.
+appId: com.backmann.mycongregation
+name: Клавиатура и нижние поля форм
+---
+- stopApp
+- openLink: mycongregation://home
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: { id: "tab-home" }
+    timeout: 30000
+
+# 1. Мои контакты — адрес, последнее поле
+- openLink: mycongregation://profile/contacts
+- extendedWaitUntil:
+    visible: "Адрес"
+    timeout: 20000
+- takeScreenshot: kb-01-contacts-before
+- tapOn:
+    below:
+      text: "Адрес"
+- waitForAnimationToEnd
+- takeScreenshot: kb-02-contacts-address
+- hideKeyboard
+- back
+
+# 2. Новое отсутствие — заметка внизу
+- openLink: mycongregation://absences/new
+- extendedWaitUntil:
+    visible: "Новое отсутствие"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "Например: отпуск, командировка"
+- tapOn: "Например: отпуск, командировка"
+- waitForAnimationToEnd
+- takeScreenshot: kb-03-absence-note
+- hideKeyboard
+- back
+
+# 3. Сдать отчёт — комментарий внизу (если форма за месяц открыта)
+- openLink: mycongregation://service-reports/new
+- runFlow:
+    when:
+      visible: "Дополнительная информация…"
+    commands:
+      - scrollUntilVisible:
+          element: "Дополнительная информация…"
+      - tapOn: "Дополнительная информация…"
+      - waitForAnimationToEnd
+      - takeScreenshot: kb-04-report-notes
+      - hideKeyboard
+- back
+
+# 4. Новый возвещатель — почта (середина) и общие заметки (самый низ)
+- openLink: mycongregation://publishers/new
+- runFlow:
+    when:
+      visible: "Новый возвещатель|Имя"
+    commands:
+      - scrollUntilVisible:
+          element: "ivan@example.com"
+      - tapOn: "ivan@example.com"
+      - waitForAnimationToEnd
+      - takeScreenshot: kb-05-new-card-email
+      - hideKeyboard
+      - scrollUntilVisible:
+          element: "Общие заметки"
+      - tapOn:
+          below:
+            text: "Общие заметки"
+      - waitForAnimationToEnd
+      - takeScreenshot: kb-06-new-card-notes
+      - hideKeyboard
+- back
