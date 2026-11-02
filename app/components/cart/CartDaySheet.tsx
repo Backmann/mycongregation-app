@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { Sheet } from '../Sheet';
 import { SpanPicker } from './SpanPicker';
 import { confirm } from '../ConfirmHost';
+import { PartnerPicker } from './PartnerPicker';
 import { useLogActions, useLogOverview } from '../../lib/useServiceLog';
 import { notify } from '../../lib/error-bus';
 import {
@@ -44,6 +45,7 @@ export function CartDaySheet({
   const { t, i18n } = useTranslation();
   const [span, setSpan] = useState<CartSpan | null>(null);
   const [note, setNote] = useState('');
+  const [partners, setPartners] = useState<string[]>([]);
 
   const now = new Date();
   const todayISO = formatDateISO(now);
@@ -52,14 +54,16 @@ export function CartDaySheet({
 
   const err = (e: unknown) => notify(t('witnessing.actionError'), extractErrorMessage(e));
   const request = useMutation({
-    mutationFn: (v: { dayId: string; span: CartSpan; note: string }) =>
+    mutationFn: (v: { dayId: string; span: CartSpan; note: string; partners: string[] }) =>
       cartWeeksApi.request(v.dayId, {
         ...v.span,
         ...(v.note.trim() ? { withWhomNote: v.note.trim() } : {}),
+        ...(v.partners.length ? { withPublisherIds: v.partners } : {}),
       }),
     onSuccess: () => {
       setSpan(null);
       setNote('');
+      setPartners([]);
       onChanged();
     },
     onError: err,
@@ -140,7 +144,7 @@ export function CartDaySheet({
           <Pressable
             style={[styles.primary, request.isPending && styles.dim]}
             disabled={request.isPending}
-            onPress={() => request.mutate({ dayId: day.id, span, note })}
+            onPress={() => request.mutate({ dayId: day.id, span, note, partners })}
           >
             <Text style={styles.primaryText}>
               {t('witnessing.signUpFor', { time: spanText(span) })}
@@ -260,7 +264,17 @@ export function CartDaySheet({
             <Text style={styles.section}>{t('witnessing.myWishes')}</Text>
             {day.myRequests.map((r) => (
               <View key={r.id} style={styles.wish}>
-                <Text style={styles.name}>{spanText(r)}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.name}>{spanText(r)}</Text>
+                  {/* Whom he asked for, so he knows it was heard. */}
+                  {((r.withPublishers ?? []).length > 0 || !!r.withWhomNote) && (
+                    <Text style={styles.small}>
+                      {t('witnessing.askedWith', {
+                        names: [...(r.withPublishers ?? []).map((x) => x.name), ...(r.withWhomNote ? [r.withWhomNote] : [])].join(', '),
+                      })}
+                    </Text>
+                  )}
+                </View>
                 <Pressable onPress={() => withdraw.mutate(r.id)} disabled={withdraw.isPending}>
                   <Text style={styles.link}>{t('witnessing.withdraw')}</Text>
                 </Pressable>
@@ -281,17 +295,7 @@ export function CartDaySheet({
               </Text>
             )}
             {span && (
-              <View style={{ gap: 4 }}>
-                <Text style={styles.small}>{t('witnessing.withWhomLabel')}</Text>
-                <TextInput
-                  value={note}
-                  onChangeText={setNote}
-                  maxLength={200}
-                  placeholder={t('witnessing.withWhomPlaceholder')}
-                  placeholderTextColor="#64748b"
-                  style={styles.input}
-                />
-              </View>
+              <PartnerPicker value={partners} onChange={setPartners} note={note} onNote={setNote} />
             )}
             <Text style={styles.small}>{t('witnessing.againLater')}</Text>
           </View>
@@ -322,7 +326,6 @@ const styles = StyleSheet.create({
   wish: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   link: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#b91c1c' },
   preview: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#14532d', backgroundColor: '#f0fdf4', borderRadius: 10, padding: 10, lineHeight: 20 },
-  input: { fontFamily: 'Manrope_400Regular', fontSize: 15, borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, color: '#0f172a' },
   primary: { backgroundColor: '#15803d', borderRadius: 12, paddingVertical: 14, alignItems: 'center' },
   primaryText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 16, color: '#ffffff' },
   dim: { opacity: 0.5 },

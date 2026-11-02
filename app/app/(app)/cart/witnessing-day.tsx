@@ -171,18 +171,34 @@ export default function WitnessingDayScreen() {
         if (s?.pioneer) bits.push(t('witnessing.pioneer'));
         if (s) bits.push(t('witnessing.recentDays', { count: s.recentDays }));
         if (s && s.missedWeeks >= 2) bits.push(t('witnessing.missedWeeks', { count: s.missedWeeks }));
-        // On the plan, the note of the wish it came from still shows: the
-        // arranger may want to keep the pair together when he moves things.
-        const note =
-          'withWhomNote' in r && r.withWhomNote
-            ? r.withWhomNote
-            : (day.wishes ?? []).find((w) => w.publisherId && w.publisherId === r.publisherId && w.withWhomNote && overlaps(w, r))
-                ?.withWhomNote;
-        if (note) bits.push(t('witnessing.wantsWith', { who: note }));
+        // The «с кем» of the wish (for a place on the plan, of the wish it
+        // came from — the arranger keeps the pair in mind when he moves
+        // things). Each chosen name says where that person is that day.
+        const src =
+          r.kind === 'wish'
+            ? r
+            : (day.wishes ?? []).find(
+                (w) =>
+                  w.publisherId === r.publisherId &&
+                  ((w.withPublishers ?? []).length > 0 || !!w.withWhomNote) &&
+                  overlaps(w, r),
+              );
+        const mates: string[] = [];
+        for (const m of src?.withPublishers ?? []) {
+          const on = (day.plan ?? []).filter((p) => p.publisherId === m.id);
+          const wish = (day.wishes ?? []).filter((w) => w.publisherId === m.id);
+          const where = on.length
+            ? t('witnessing.mateStands', { time: on.map(spanText).join(', ') })
+            : wish.length
+              ? t('witnessing.mateAsked', { time: wish.map(spanText).join(', ') })
+              : t('witnessing.mateNotThisDay');
+          mates.push(t('witnessing.wantsWith', { name: m.name, where }));
+        }
+        if (src?.withWhomNote) mates.push(t('witnessing.wantsWithWritten', { who: src.withWhomNote }));
         if ('late' in r && r.late) bits.push(t('witnessing.late'));
         const partner = r.publisherId ? pairs[r.publisherId]?.[0] : undefined;
         if (partner) bits.push(t('witnessing.recentlyWith', { name: partner.name }));
-        return { ...r, note: bits.join(' · '), absent: !!r.absent };
+        return { ...r, note: bits.join(' · '), mates, absent: !!r.absent };
       })
       .sort((a, b) => toMin(a.startTime) - toMin(b.startTime) || (a.kind === 'plan' ? -1 : 1));
   }, [day, standingQuery.data, pairingsQuery.data, t]);
@@ -333,6 +349,11 @@ export default function WitnessingDayScreen() {
                   <View style={[styles.bar, styles.barWish, barOf(day, r)]} />
                 )}
               </View>
+              {r.mates.map((m) => (
+                <Text key={m} style={styles.mate}>
+                  {m}
+                </Text>
+              ))}
               {(!!r.note || r.absent) && (
                 <Text style={[styles.personNote, r.absent && styles.absent]}>
                   {r.absent ? `${t('witnessing.absentThatDay')}${r.note ? ' · ' : ''}` : ''}
@@ -581,6 +602,7 @@ const styles = StyleSheet.create({
   personHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   personName: { flex: 1, fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: '#0f172a' },
   personTime: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#475569' },
+  mate: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#0e7490' },
   personNote: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#475569' },
   absent: { color: '#b91c1c' },
   track: { height: 10, borderRadius: 3, backgroundColor: '#f1f5f9', overflow: 'hidden', position: 'relative' },

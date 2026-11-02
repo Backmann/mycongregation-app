@@ -2456,7 +2456,7 @@
     "textCopied": "План скопирован — вставьте его в группу",
     "timeFor": "Время: {{name}}",
     "together": "Вместе: {{names}}",
-    "wantsWith": "пожелание: {{who}}",
+    "wantsWith": "хочет с: {{name}} — {{where}}",
     "warnAlone": "{{time}} — один человек. Добавьте кого-нибудь.",
     "warnBrotherSister": "{{time}} — брат и сестра вдвоём. Можно оставить, но лучше добавить третьего.",
     "warnLongDay": "{{name}} стоит {{hours}} ч за день — не много ли?",
@@ -2469,7 +2469,6 @@
     "wishesCount_many": "{{count}} записей",
     "wishesCount_other": "{{count}} записи",
     "withWhomLabel": "С кем хотели бы (видит только ответственный)",
-    "withWhomPlaceholder": "Необязательно",
     "you": "вы",
     "youStand": "Вы стоите {{time}}",
     "youAt": "вы {{time}}",
@@ -2497,7 +2496,18 @@
     "mineMore_few": "Ещё {{count}} смены",
     "mineMore_many": "Ещё {{count}} смен",
     "mineMore_other": "Ещё {{count}} смены",
-    "mineLess": "Свернуть"
+    "mineLess": "Свернуть",
+    "partnerSearch": "Найти по имени",
+    "partnerNone": "Никого не нашли. Если его нет в списке — напишите ниже.",
+    "partnerWrite": "Нет в списке — написать",
+    "partnerWriteLabel": "Например, гость из другого собрания",
+    "partnerWritePlaceholder": "Имя",
+    "partnerRemove": "Убрать {{name}}",
+    "askedWith": "с кем хотели бы: {{names}}",
+    "wantsWithWritten": "пожелание (не из списка): {{who}}",
+    "mateStands": "в плане {{time}}",
+    "mateAsked": "есть запись {{time}}",
+    "mateNotThisDay": "на этот день записи нет"
   },
   "cartLocations": {
     "add": "Добавить точку",
@@ -6088,7 +6098,8 @@
       "CART_DAY_LOCKED": "Прошло больше недели — день в архиве, менять его нельзя.",
       "CART_DAY_HAS_PEOPLE": "На этот день уже поставлены люди. Сначала снимите их или отмените день.",
       "CART_ALREADY_REQUESTED": "Вы уже записались на это время.",
-      "CART_BAD_SPAN": "Время у стенда — от часа, по получасам и в пределах дня."
+      "CART_BAD_SPAN": "Время у стенда — от часа, по получасам и в пределах дня.",
+      "CART_PARTNER_UNKNOWN": "Выберите из списка одного или двух человек, которым открыт стенд. Кого в списке нет — напишите в поле «Нет в списке»."
     }
   },
   "stage": {

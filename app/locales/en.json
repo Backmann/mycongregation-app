@@ -2386,7 +2386,7 @@
     "textCopied": "Plan copied — paste it into the group",
     "timeFor": "Time: {{name}}",
     "together": "Together: {{names}}",
-    "wantsWith": "note: {{who}}",
+    "wantsWith": "wants to go with: {{name}} — {{where}}",
     "warnAlone": "{{time}} — only one person. Add someone.",
     "warnBrotherSister": "{{time}} — a brother and a sister on their own. You may keep it, but a third is better.",
     "warnLongDay": "{{name}} stands {{hours}} h this day — isn’t that a lot?",
@@ -2396,8 +2396,7 @@
     "wholeDay": "The whole day",
     "wishesCount_one": "{{count}} sign-up",
     "wishesCount_other": "{{count}} sign-ups",
-    "withWhomLabel": "With whom you’d like to go (only the arranger sees this)",
-    "withWhomPlaceholder": "Optional",
+    "withWhomLabel": "With whom you would like to go (only the arranger sees this)",
     "you": "you",
     "youStand": "You stand {{time}}",
     "youAt": "you {{time}}",
@@ -2415,7 +2414,18 @@
     "youStood": "You stood {{time}}",
     "mineMore_one": "{{count}} more shift",
     "mineMore_other": "{{count}} more shifts",
-    "mineLess": "Show fewer"
+    "mineLess": "Show fewer",
+    "partnerSearch": "Find by name",
+    "partnerNone": "Nobody found. If they are not on the list, write below.",
+    "partnerWrite": "Not on the list — write it",
+    "partnerWriteLabel": "For example, a guest from another congregation",
+    "partnerWritePlaceholder": "Name",
+    "partnerRemove": "Remove {{name}}",
+    "askedWith": "with whom you would like: {{names}}",
+    "wantsWithWritten": "note (not on the list): {{who}}",
+    "mateStands": "on the plan {{time}}",
+    "mateAsked": "signed up {{time}}",
+    "mateNotThisDay": "no sign-up this day"
   },
   "cartLocations": {
     "add": "Add location",
@@ -5910,7 +5920,8 @@
       "CART_DAY_LOCKED": "More than a week has passed — the day is archived and can’t be changed.",
       "CART_DAY_HAS_PEOPLE": "People are already on this day. Take them off first, or call the day off.",
       "CART_ALREADY_REQUESTED": "You already signed up for this time.",
-      "CART_BAD_SPAN": "A time at the stand is an hour or more, on the half-hour, within the day."
+      "CART_BAD_SPAN": "A time at the stand is an hour or more, on the half-hour, within the day.",
+      "CART_PARTNER_UNKNOWN": "Choose one or two people from the list the stand is open to. Anyone not on the list — write them under «Not on the list»."
     }
   },
   "stage": {

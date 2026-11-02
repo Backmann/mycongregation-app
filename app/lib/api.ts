@@ -3346,6 +3346,8 @@ export interface CartWishView extends CartSpan {
   name: string;
   /** Only whoever arranges reads it. */
   withWhomNote?: string | null;
+  /** Whom he chose from the list (whoever arranges reads it). */
+  withPublishers?: { id: string; name: string }[];
   /** Asked after publication: a request for free time. */
   late?: boolean;
   absent?: boolean;
@@ -3361,7 +3363,11 @@ export interface CartDayView extends CartSpan {
   cancellations: (CartSpan & { id: string; reason: string | null })[];
   over: boolean;
   locked: boolean;
-  myRequests: (CartSpan & { id: string; withWhomNote: string | null })[];
+  myRequests: (CartSpan & {
+    id: string;
+    withWhomNote: string | null;
+    withPublishers?: { id: string; name: string }[];
+  })[];
   mine: (CartSpan & { id: string })[];
   wishes?: CartWishView[];
   plan?: CartPersonSpan[];
@@ -3469,6 +3475,13 @@ export const cartWeeksApi = {
     });
     return data;
   },
+  /** «С кем»: whom the stand is open to — names only. */
+  async partners(): Promise<{ id: string; name: string }[]> {
+    const { data } = await api.get<{ id: string; name: string }[]>(
+      "/cart-weeks/partners",
+    );
+    return data;
+  },
   async pairings(weeks?: number): Promise<Record<string, PartnerHint[]>> {
     const { data } = await api.get<Record<string, PartnerHint[]>>(
       "/cart-weeks/pairings",
@@ -3478,7 +3491,7 @@ export const cartWeeksApi = {
   },
   async request(
     dayId: string,
-    span: CartSpan & { withWhomNote?: string },
+    span: CartSpan & { withWhomNote?: string; withPublisherIds?: string[] },
   ): Promise<void> {
     await api.post(`/cart/days/${dayId}/requests`, span);
   },

@@ -2386,7 +2386,7 @@
     "textCopied": "Plan kopiert – in die Gruppe einfügen",
     "timeFor": "Zeit: {{name}}",
     "together": "Zusammen mit: {{names}}",
-    "wantsWith": "Wunsch: {{who}}",
+    "wantsWith": "möchte mit: {{name}} – {{where}}",
     "warnAlone": "{{time}} – nur eine Person. Bitte jemanden dazu einteilen.",
     "warnBrotherSister": "{{time}} – ein Bruder und eine Schwester allein. Möglich, aber besser mit einer dritten Person.",
     "warnLongDay": "{{name}} steht {{hours}} Std. an diesem Tag – ist das nicht viel?",
@@ -2397,7 +2397,6 @@
     "wishesCount_one": "{{count}} Eintrag",
     "wishesCount_other": "{{count}} Einträge",
     "withWhomLabel": "Mit wem Sie gern gehen würden (sieht nur der Verantwortliche)",
-    "withWhomPlaceholder": "Optional",
     "you": "Sie",
     "youStand": "Sie stehen {{time}}",
     "youAt": "Sie {{time}}",
@@ -2415,7 +2414,18 @@
     "youStood": "Sie standen {{time}}",
     "mineMore_one": "{{count}} weitere Zeit",
     "mineMore_other": "{{count}} weitere Zeiten",
-    "mineLess": "Weniger anzeigen"
+    "mineLess": "Weniger anzeigen",
+    "partnerSearch": "Nach Namen suchen",
+    "partnerNone": "Niemand gefunden. Steht die Person nicht in der Liste, unten eintragen.",
+    "partnerWrite": "Nicht in der Liste – eintragen",
+    "partnerWriteLabel": "Zum Beispiel ein Gast aus einer anderen Versammlung",
+    "partnerWritePlaceholder": "Name",
+    "partnerRemove": "{{name}} entfernen",
+    "askedWith": "gewünscht mit: {{names}}",
+    "wantsWithWritten": "Wunsch (nicht in der Liste): {{who}}",
+    "mateStands": "eingeteilt {{time}}",
+    "mateAsked": "eingetragen {{time}}",
+    "mateNotThisDay": "an diesem Tag kein Eintrag"
   },
   "cartLocations": {
     "add": "Standort hinzufügen",
@@ -5910,7 +5920,8 @@
       "CART_DAY_LOCKED": "Mehr als eine Woche vorbei – der Tag ist archiviert und lässt sich nicht mehr ändern.",
       "CART_DAY_HAS_PEOPLE": "An diesem Tag sind schon Personen eingeteilt. Erst austragen oder den Tag absagen.",
       "CART_ALREADY_REQUESTED": "Für diese Zeit sind Sie schon eingetragen.",
-      "CART_BAD_SPAN": "Eine Zeit am Stand dauert mindestens eine Stunde, in halben Stunden, innerhalb des Tages."
+      "CART_BAD_SPAN": "Eine Zeit am Stand dauert mindestens eine Stunde, in halben Stunden, innerhalb des Tages.",
+      "CART_PARTNER_UNKNOWN": "Wählen Sie eine oder zwei Personen aus der Liste, für die der Stand freigegeben ist. Wer nicht in der Liste steht, unter «Nicht in der Liste» eintragen."
     }
   },
   "stage": {
