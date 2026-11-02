@@ -42,6 +42,8 @@ export type AccessRule =
   | 'localNeeds'
   | 'pioneerSchool'
   | 'coSchedule'
+  /** Whoever arranges the stand: the day's timeline, the archive. */
+  | 'cartArrange'
   | 'auxPioneers'
   | 'summary'
   | 'annual'
@@ -81,6 +83,7 @@ export const ACCESS_RULES: Record<
   localNeeds: (p) => p.canViewLocalNeeds,
   pioneerSchool: (p) => p.canViewPioneerSchool,
   coSchedule: (p) => p.canViewCoSchedule,
+  cartArrange: (p) => p.canEditCartWitnessing || p.canEditFieldServiceMeetings,
   auxPioneers: (p) => p.canManageAuxiliaryPioneers,
   summary: (p) => p.canViewServiceSummary,
   annual: (p) => p.canManageServiceSummary,
@@ -171,6 +174,8 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/cart': 'all',
   '/cart/field-service': 'all',
   '/cart/witnessing': 'all',
+  '/cart/witnessing-day': 'cartArrange',
+  '/cart/witnessing-archive': 'cartArrange',
   '/cart/locations': 'all',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.

@@ -104,7 +104,7 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
     key: 'public_witnessing',
     label: 'Public witnessing',
     capabilities: [
-      { key: 'public_witnessing', label: 'Public witnessing' },
+      { key: 'public_witnessing', label: 'Public witnessing', baptizedOnly: true },
     ],
   },
 ];

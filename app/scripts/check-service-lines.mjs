@@ -21,14 +21,15 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(ROOT, 'package.json'));
 const ts = require('typescript');
 const out = mkdtempSync(join(tmpdir(), 'service-lines-'));
-for (const name of ['field-audience', 'date-range', 'service-lines']) {
+for (const name of ['field-audience', 'date-range', 'cart-time', 'service-lines']) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
   const js = ts
     .transpileModule(src, {
       compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
     })
     .outputText.replace("'./field-audience'", "'./field-audience.mjs'")
-    .replace("'./date-range'", "'./date-range.mjs'");
+    .replace("'./date-range'", "'./date-range.mjs'")
+    .replace("'./cart-time'", "'./cart-time.mjs'");
   writeFileSync(join(out, `${name}.mjs`), js);
 }
 const { serviceLines } = await import(pathToFileURL(join(out, 'service-lines.mjs')));
@@ -96,18 +97,24 @@ check('проповедь: отменённая, которую вёл, — не
 check('проповедь: без группы и карточки — любая встреча', key(serviceLines({ ...base, me: null, myGroupId: null, fieldMeetings: [fs({ serviceGroupId: 'g-ahlen' })] }, perms, t, 'ru').fieldService), 'fieldNext');
 
 // Public witnessing.
-const slot = (o) => ({ id: 's', date: '2026-10-08', startTime: '10:00', endTime: '12:00', locationId: 'l', locationName: 'Marktplatz', locationKind: 'cart', capacityMax: 3, myRequest: false, ...o });
-const week = (o) => ({ id: 'w', weekStartDate: '2026-10-05', status: 'published', startTime: '09:00', endTime: '18:00', stepMinutes: 120, slots: [], ...o });
+// A day at the stand and a week of them (2 November 2026: days with hours,
+// spans of time — «mine» is my places on the plan, «myRequests» my wishes).
+const day = (o) => ({ id: 'd', date: '2026-10-08', startTime: '09:00', endTime: '18:00', locationId: 'l', locationName: 'Marktplatz', locationKind: 'cart', equipmentAt: null, cancellations: [], over: false, locked: false, myRequests: [], mine: [], ...o });
+const mine = (a = '10:00', b = '12:00') => [{ id: 'a', startTime: a, endTime: b }];
+const week = (o) => ({ id: 'w', weekStartDate: '2026-10-05', status: 'published', signupUntil: null, canManage: false, canApply: true, memo: null, days: [], ...o });
 check('стенды: недели не заведены — строки нет', lines({ cartWeeks: [null, null] }).cart, undefined);
-check('стенды: моя смена', lines({ cartWeeks: [week({ slots: [slot({ myAssignment: true })] }), null] }).cart.text, t('cartMine', { when: 'tomorrow, 10:00', place: 'Marktplatz' }));
-check('стенды: прошедшая смена не «моя ближайшая»', key(lines({ cartWeeks: [week({ slots: [slot({ date: '2026-10-06', myAssignment: true })] }), null] }).cart), 'cartNotMine');
-check('стенды: смена идёт сейчас — ещё моя', key(lines({ cartWeeks: [week({ slots: [slot({ date: TODAY, startTime: '11:00', endTime: '13:00', myAssignment: true })] }), null] }).cart), 'cartMine');
-check('стенды: ближайшая из двух', lines({ cartWeeks: [week({ slots: [slot({ date: '2026-10-10', myAssignment: true }), slot({ date: '2026-10-09', startTime: '14:00', myAssignment: true })] }), null] }).cart.text.includes('пт, 9 октября, 14:00'), true);
-check('стенды: черновик недели не читается', lines({ cartWeeks: [week({ status: 'draft', slots: [slot({ myAssignment: true })] }), null] }).cart, undefined);
-check('стенды: идёт запись', key(lines({ cartWeeks: [week(), week({ weekStartDate: '2026-10-12', status: 'collecting', slots: [slot({ date: '2026-10-13' })] })] }).cart), 'cartCollecting');
-check('стенды: заявка подана', key(lines({ cartWeeks: [null, week({ weekStartDate: '2026-10-12', status: 'collecting', slots: [slot({ date: '2026-10-13', myRequest: true })] })] }).cart), 'cartRequested');
-check('стенды: назначенная смена важнее записи', key(lines({ cartWeeks: [week({ slots: [slot({ myAssignment: true })] }), week({ status: 'collecting' })] }).cart), 'cartMine');
-check('стенды: опубликовано, меня нет', key(lines({ cartWeeks: [week({ slots: [slot({})] }), null] }).cart), 'cartNotMine');
+check('стенды: моя смена', lines({ cartWeeks: [week({ days: [day({ mine: mine() })] }), null] }).cart.text, t('cartMine', { when: 'tomorrow, 10:00', place: 'Marktplatz' }));
+check('стенды: прошедшая смена не «моя ближайшая»', key(lines({ cartWeeks: [week({ days: [day({ date: '2026-10-06', mine: mine() })] }), null] }).cart), 'cartNotMine');
+check('стенды: смена идёт сейчас — ещё моя', key(lines({ cartWeeks: [week({ days: [day({ date: TODAY, mine: mine('11:00', '13:00') })] }), null] }).cart), 'cartMine');
+check('стенды: ближайшая из двух', lines({ cartWeeks: [week({ days: [day({ date: '2026-10-10', mine: mine() }), day({ date: '2026-10-09', mine: mine('14:00', '16:00') })] }), null] }).cart.text.includes('пт, 9 октября, 14:00'), true);
+check('стенды: отменённое время — не моя смена', key(lines({ cartWeeks: [week({ days: [day({ mine: mine(), cancellations: [{ id: 'c', startTime: '09:00', endTime: '18:00', reason: null }] })] }), null] }).cart), 'cartNotMine');
+check('стенды: черновик недели не читается', lines({ cartWeeks: [week({ status: 'draft', days: [day({ mine: mine() })] }), null] }).cart, undefined);
+check('стенды: идёт запись', key(lines({ cartWeeks: [week(), week({ weekStartDate: '2026-10-12', status: 'collecting', days: [day({ date: '2026-10-13' })] })] }).cart), 'cartCollecting');
+check('стенды: заявка подана', key(lines({ cartWeeks: [null, week({ weekStartDate: '2026-10-12', status: 'collecting', days: [day({ date: '2026-10-13', myRequests: [{ id: 'r', startTime: '10:00', endTime: '12:00', withWhomNote: null }] })] })] }).cart), 'cartRequested');
+check('стенды: без допуска о записи не говорится', lines({ cartWeeks: [null, week({ status: 'collecting', canApply: false })] }).cart, undefined);
+check('стенды: назначенная смена важнее записи', key(lines({ cartWeeks: [week({ days: [day({ mine: mine() })] }), week({ status: 'collecting' })] }).cart), 'cartMine');
+check('стенды: опубликовано, меня нет', key(lines({ cartWeeks: [week({ days: [day({})] }), null] }).cart), 'cartNotMine');
+check('стенды: без допуска «вы не записаны» не говорится', lines({ cartWeeks: [week({ canApply: false }), null] }).cart, undefined);
 check('стенды: без карточки возвещателя «вы не записаны» не говорится', serviceLines({ ...base, me: null, cartWeeks: [week(), null] }, perms, t, 'ru').cart, undefined);
 
 // The service overseer's visits to the groups.

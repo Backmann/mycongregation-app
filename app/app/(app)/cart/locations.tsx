@@ -25,9 +25,11 @@ import { Dialog } from '../../../components/Dialog';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { DateField } from '../../../components/DateField';
+import { formatDateISO, formatLongDate } from '../../../lib/dates';
 
 export default function CartLocationsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const perms = usePermissions();
   const queryClient = useQueryClient();
   const canManage =
@@ -40,6 +42,8 @@ export default function CartLocationsScreen() {
   const [address, setAddress] = useState('');
   const [kind, setKind] = useState<CartLocationKind>('cart');
   const [active, setActive] = useState(true);
+  const [equipment, setEquipment] = useState('');
+  const [permit, setPermit] = useState('');
 
   const { data, isLoading } = useQuery({
     throwOnError: failsScreen,
@@ -48,6 +52,17 @@ export default function CartLocationsScreen() {
   });
 
   const locations = useMemo(() => data ?? [], [data]);
+
+  // Where the equipment is usually kept: what most places already say.
+  const usualEquipment = useMemo(() => {
+    const n = new Map<string, number>();
+    for (const l of locations) {
+      const v = l.equipmentAt?.trim();
+      if (v) n.set(v, (n.get(v) ?? 0) + 1);
+    }
+    return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
+  }, [locations]);
+  const todayISO = formatDateISO(new Date());
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ['cart-locations'] });
@@ -59,6 +74,10 @@ export default function CartLocationsScreen() {
         address: address.trim() || null,
         kind,
         isActive: active,
+        // Left empty on a new place, the server puts the congregation's usual
+        // one; on a place being edited, empty clears it.
+        ...(equipment.trim() || editing ? { equipmentAt: equipment.trim() } : {}),
+        permitUntil: permit || null,
       };
       if (editing) return cartLocationsApi.update(editing.id, payload);
       return cartLocationsApi.create(payload);
@@ -82,6 +101,8 @@ export default function CartLocationsScreen() {
     setAddress('');
     setKind('cart');
     setActive(true);
+    setEquipment(usualEquipment);
+    setPermit('');
     setModalOpen(true);
   }
 
@@ -91,6 +112,8 @@ export default function CartLocationsScreen() {
     setAddress(loc.address ?? '');
     setKind(loc.kind);
     setActive(loc.isActive);
+    setEquipment(loc.equipmentAt ?? '');
+    setPermit(loc.permitUntil ?? '');
     setModalOpen(true);
   }
 
@@ -156,15 +179,26 @@ export default function CartLocationsScreen() {
                 {!!loc.address && (
                   <Text style={styles.cardAddress}>{loc.address}</Text>
                 )}
+                {!!loc.equipmentAt && (
+                  <Text style={styles.cardAddress}>
+                    {t('cartLocations.equipmentShort', { place: loc.equipmentAt })}
+                  </Text>
+                )}
+                {!!loc.permitUntil && (
+                  <Text style={styles.cardAddress}>
+                    {t('cartLocations.permitShort', { date: formatLongDate(loc.permitUntil, i18n.language) })}
+                  </Text>
+                )}
               </View>
               <View style={styles.badges}>
                 <View style={styles.kindBadge}>
                   <Text style={styles.kindBadgeText}>
-                    {loc.kind === 'stand'
-                      ? t('cartLocations.kindStand')
-                      : t('cartLocations.kindCart')}
+                    {t(`cartLocations.kinds.${loc.kind}`)}
                   </Text>
                 </View>
+                {!!loc.permitUntil && loc.permitUntil < todayISO && (
+                  <Text style={styles.inactiveTag}>{t('cartLocations.permitExpired')}</Text>
+                )}
                 {!loc.isActive && (
                   <Text style={styles.inactiveTag}>
                     {t('cartLocations.inactive')}
@@ -218,7 +252,7 @@ export default function CartLocationsScreen() {
 
             <Text style={styles.fieldLabel}>{t('cartLocations.kind')}</Text>
             <View style={styles.kindSelect}>
-              {(['cart', 'stand'] as CartLocationKind[]).map((k) => (
+              {(['cart', 'stand', 'kiosk', 'table'] as CartLocationKind[]).map((k) => (
                 <Pressable
                   key={k}
                   style={[styles.kindOption, kind === k && styles.kindOptionActive]}
@@ -230,13 +264,29 @@ export default function CartLocationsScreen() {
                       kind === k && styles.kindOptionTextActive,
                     ]}
                   >
-                    {k === 'stand'
-                      ? t('cartLocations.kindStand')
-                      : t('cartLocations.kindCart')}
+                    {t(`cartLocations.kinds.${k}`)}
                   </Text>
                 </Pressable>
               ))}
             </View>
+
+            <Text style={styles.fieldLabel}>{t('cartLocations.equipmentAt')}</Text>
+            <TextInput
+              style={styles.input}
+              value={equipment}
+              onChangeText={setEquipment}
+              maxLength={255}
+              placeholder={t('cartLocations.equipmentPlaceholder')}
+              placeholderTextColor="#94a3b8"
+            />
+
+            <DateField
+              label={t('cartLocations.permitUntil')}
+              value={permit}
+              onChange={setPermit}
+              placeholder={t('cartLocations.permitPlaceholder')}
+            />
+            <Text style={styles.hint}>{t('cartLocations.permitHint')}</Text>
 
             <View style={styles.switchRow}>
               <Text style={styles.fieldLabel}>{t('cartLocations.active')}</Text>
@@ -306,9 +356,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#0f172a',
   },
-  kindSelect: { flexDirection: 'row', gap: 8 },
+  kindSelect: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  hint: { fontSize: 12.5, color: '#475569', fontFamily: 'Manrope_400Regular', marginTop: -4 },
   kindOption: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '40%',
     alignItems: 'center',
     paddingVertical: 10,
     borderRadius: 8,
