@@ -12,9 +12,10 @@ on:
     branches: [main]
     # "edited": a title changed after the checks ran is checked again.
     types: [opened, synchronize, reopened, edited]
-    paths:
-      - 'app/**'
-      - '.github/workflows/deploy.yml'
+    # No paths filter here (3 November 2026). The "protect main" ruleset
+    # requires the `test` check; a pull request that touches nothing under
+    # app/ (maestro/, .github/dependabot.yml, README) would otherwise never get
+    # one and could never be merged. Deploys stay path-filtered: see `push`.
   workflow_dispatch:
 concurrency:
   # Deploys queue one behind another and are never cut short. A pull request

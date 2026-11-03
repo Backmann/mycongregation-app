@@ -1,0 +1,41 @@
+# Dependabot: what may propose changes here, and how (3 November 2026).
+#
+# Weekly, as pull requests that CI and the "protect main" rule must pass;
+# nothing merges by itself. Major versions are never proposed — they are
+# decisions, not routine.
+#
+# npm has NO scheduled updates (open-pull-requests-limit: 0). Routine bumps of
+# dozens of packages add risk — a compromised release, a changed behaviour no
+# test covers — for little gain. npm still gets SECURITY updates: those come
+# from the repository setting "Dependabot security updates" and are not
+# limited by this file.
+#
+# cooldown: a new release is proposed only after it has been public that many
+# days. Compromised releases are usually found and pulled within that time.
+# It does not delay security updates.
+#
+# The app (Expo): app/package.json is an input to the Expo fingerprint, so a
+# security update touching it is reviewed by hand against the fingerprint
+# (CI already refuses a pull request that changes app/package.json).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /app
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 0
