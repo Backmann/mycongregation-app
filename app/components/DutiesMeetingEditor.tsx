@@ -132,7 +132,7 @@ export function DutiesMeetingEditor({
   const time =
     meeting === 'memorial'
       ? (rules.memorial?.time ?? null)
-      : ((meeting === 'midweek' ? version?.midweekTime : version?.weekendTime) || '').slice(0, 5) || null;
+      : rules.timeOf(meeting);
   const dateLabel = dayInHeader
     ? time
     : dateISO

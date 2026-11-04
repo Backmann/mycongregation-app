@@ -642,11 +642,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // and address on the weekday of a meeting that is not taking place.
       const memorial = rules.memorialTakes === kind ? rules.memorial : null;
       const dateISO = memorial ? memorial.date : settingsDateISO;
-      const time = memorial
-        ? (memorial.time ?? '')
-        : kind === 'midweek'
-          ? v.midweekTime
-          : v.weekendTime;
+      // The hour and place the rules give: an event «with changes» may set
+      // another hour or address for that day — and next, a meeting moved for
+      // one week will (4 November 2026).
+      const time = memorial ? (memorial.time ?? '') : (rules.timeOf(kind) ?? '');
+      const place = memorial ? (memorial.address ?? v.address) : (rules.placeOf(kind) ?? v.address);
       if (!inNear(dateISO)) continue;
 
       /**
@@ -703,8 +703,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         dateISO,
         time,
         kind,
-        address: memorial ? (memorial.address ?? v.address) : v.address,
-        atHall: !memorial || !memorial.address || memorial.address === v.address,
+        address: place,
+        atHall: !place || place.trim() === (v.address ?? '').trim(),
         title: about?.title ?? null,
         speaker: about?.speaker ?? null,
         speakerIsMine: !!about?.speakerIsMine,
