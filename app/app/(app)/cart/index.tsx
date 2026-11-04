@@ -104,7 +104,7 @@ export default function ServiceHubScreen() {
   });
   const eventsQ = useQuery({
     queryKey: ['special-events', 'home'],
-    queryFn: () => specialEventsApi.list(),
+    queryFn: () => specialEventsApi.fromThisWeek(),
     enabled: perms.canViewCoSchedule,
     staleTime: 60 * 1000,
   });

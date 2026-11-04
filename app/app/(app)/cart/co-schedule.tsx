@@ -38,7 +38,8 @@ import { PublisherSelector } from '../../../components/PublisherSelector';
 import { TimeField } from '../../../components/TimeField';
 import { usePermissions } from '../../../lib/permissions';
 import { formatDateISO, startOfWeekMonday } from '../../../lib/dates';
-import { meetingDate } from '../../../lib/meeting-schedule';
+import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { weekRules } from '../../../lib/week-rules';
 import type { CoMeetingInfo } from '../../../lib/coSchedulePdf';
 import { reportError, notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
@@ -324,6 +325,9 @@ export default function CoScheduleScreen() {
       visit?.id ?? null,
       visit?.coMidweekDow ?? null,
       settingsOverview?.effective?.midweekDow ?? null,
+      // Asked again when the settings or the events change — the rules read both.
+      settingsOverview?.versions?.length ?? 0,
+      events?.length ?? 0,
     ],
     queryFn: () => buildVisitMeetings(),
     enabled: !!visit && !!settingsOverview?.effective,
@@ -751,7 +755,6 @@ export default function CoScheduleScreen() {
   const buildVisitMeetings = async (): Promise<CoMeetingInfo[]> => {
     const eff = settingsOverview?.effective;
     if (!eff) return [];
-    const hall = eff.address ?? null;
     const startISO = visit.date;
     const endISO = visit.endDate ?? visit.date;
     const inRange = (iso: string) => iso >= startISO && iso <= endISO;
@@ -772,7 +775,6 @@ export default function CoScheduleScreen() {
     // rather than letting the schedule look simply empty.
     let loadFailed = false;
     for (const weekStart of weekSet) {
-      const monday = new Date(`${weekStart}T00:00:00`);
       // Load this week's assignments once.
       let rows: Awaited<ReturnType<typeof assignmentsApi.list>>['data'] = [];
       try {
@@ -787,34 +789,38 @@ export default function CoScheduleScreen() {
         return a?.partTitle?.trim() || null;
       };
 
-      // Midweek: CO service talk. A visit moves the midweek meeting — to the
-      // visit's own coMidweekDow, Tuesday when none is set: the rule every
-      // other screen and the server keep (lib/event-view.ts, server
-      // common/week-rules.ts). Until 22 October 2026 this fell back to the
-      // congregation's usual day, so the heading said «вторник» while the
-      // day list and the PDF put the meeting on Wednesday.
-      const midweekDow = visit.coMidweekDow ?? 2;
-      const mwDate = formatDateISO(meetingDate(monday, midweekDow));
-      if (inRange(mwDate)) {
+      // Each meeting of the week as the week rules hold it (4 November 2026):
+      // the visit's midweek day, the settings version in force THAT week
+      // (not today's), the hour and place an event «with changes» gives, and
+      // no row for a meeting the Memorial or a convention takes away. The
+      // weekend day and hour used to come from today's settings, and a
+      // Memorial in the visit week still listed the meeting it takes.
+      const rules = weekRules({
+        weekStartISO: weekStart,
+        version: effectiveVersionFor(settingsOverview?.versions, weekStart),
+        events: events ?? [],
+      });
+      const mw = rules.meetingOf('midweek');
+      if (mw.held && mw.date && inRange(mw.date)) {
         const coTalk = titleFor('co_service_talk');
         out.push({
           kind: 'midweek',
-          date: mwDate,
-          time: eff.midweekTime,
-          place: hall,
+          date: mw.date,
+          time: mw.time ?? eff.midweekTime,
+          place: mw.place ?? eff.address ?? null,
           talks: [coTalk].filter((x): x is string => !!x),
         });
       }
       // Weekend: public talk + CO concluding talk (two talks).
-      const weDate = formatDateISO(meetingDate(monday, eff.weekendDow));
-      if (inRange(weDate)) {
+      const we = rules.meetingOf('weekend');
+      if (we.held && we.date && inRange(we.date)) {
         const publicTalk = titleFor('public_talk_speaker');
         const coConcluding = titleFor('co_concluding_talk');
         out.push({
           kind: 'weekend',
-          date: weDate,
-          time: eff.weekendTime,
-          place: hall,
+          date: we.date,
+          time: we.time ?? eff.weekendTime,
+          place: we.place ?? eff.address ?? null,
           talks: [publicTalk, coConcluding].filter(
             (x): x is string => !!x,
           ),

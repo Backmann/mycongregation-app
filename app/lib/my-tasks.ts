@@ -50,10 +50,15 @@ export function refineMyTasks(
       dateISO = item.date;
       // The lunch bag is brought for the meeting: its hour is the meeting's.
       if (item.kind === 'guest_lunch') {
-        meetingTime = effectiveVersionFor(
-          versions,
-          formatDateISO(startOfWeekMonday(new Date(`${item.date}T00:00:00`))),
-        )?.weekendTime;
+        const week = formatDateISO(
+          startOfWeekMonday(new Date(`${item.date}T00:00:00`)),
+        );
+        meetingTime =
+          weekRules({
+            weekStartISO: week,
+            version: effectiveVersionFor(versions, week),
+            events,
+          }).timeOf('weekend') ?? undefined;
       }
     } else if (
       item.kind === 'field_service' &&
@@ -77,21 +82,16 @@ export function refineMyTasks(
         events,
       });
       const kind = item.eventType === 'midweek' ? 'midweek' : 'weekend';
-      const fromRules = rules.meetingsHeld ? rules.dateOf(kind) : null;
-      if (fromRules) {
-        dateISO = fromRules;
-        meetingTime =
-          item.eventType === 'midweek' ? v?.midweekTime : v?.weekendTime;
-      } else {
-        const dow =
-          item.eventType === 'midweek' ? v?.midweekDow : v?.weekendDow;
-        if (v && dow) {
-          dateISO = formatDateISO(
-            addDays(new Date(`${item.weekStartDate}T00:00:00`), dow - 1),
-          );
-          meetingTime =
-            item.eventType === 'midweek' ? v.midweekTime : v.weekendTime;
-        }
+      // One answer for the meeting (4 November 2026): its real day, its hour
+      // (an event's changed hour included) and whether it is held at all. A
+      // part in a convention week, or on the meeting the Memorial takes, used
+      // to stand on the usual weekday here while Home left it out — two
+      // screens disagreeing about the same part. It is left out here too.
+      const m = rules.meetingOf(kind);
+      if (m.date && !m.held) continue;
+      if (m.date) {
+        dateISO = m.date;
+        meetingTime = m.time ?? undefined;
       }
     }
     if (!dateISO) {

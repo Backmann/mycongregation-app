@@ -1935,7 +1935,7 @@ function useHomeData(todayISO: string) {
   });
   const eventsQ = useQuery({
     queryKey: ["special-events", "home"],
-    queryFn: () => specialEventsApi.list(),
+    queryFn: () => specialEventsApi.fromThisWeek(),
   });
   const tasksQ = useQuery({
     queryKey: ["me", "assignments"],

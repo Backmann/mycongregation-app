@@ -100,7 +100,7 @@ export default function MyAssignmentsScreen() {
   // moves the midweek one, and a convention week has none.
   const eventsQuery = useQuery({
     queryKey: ['special-events'],
-    queryFn: () => specialEventsApi.list(),
+    queryFn: () => specialEventsApi.fromThisWeek(),
     staleTime: 5 * 60 * 1000,
   });
 

@@ -82,11 +82,16 @@ export function ConductEntry({
   const isAdmin = user?.role === 'admin';
   // Both sides are 'YYYY-MM-DD', which compares correctly as text.
   const thisWeek = formatDateISO(startOfWeekMonday(new Date()));
-  const meetingDay = weekRules({
+  const meeting = weekRules({
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
     events: events ?? [],
-  }).dateOf(kind);
+  }).meetingOf(kind);
+  const meetingDay = meeting.date;
+  // Nothing to conduct when the meeting is not held that week (4 November
+  // 2026): no «Вести встречу» in a convention week or on the meeting the
+  // Memorial takes.
+  if (meetingDay && !meeting.held) return null;
   const over = week < thisWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
   if ((!isChairman && !isAdmin) || over) {
     return <ConductResultLink week={week} chairmanPublisherId={chairmanPublisherId} kind={kind} />;

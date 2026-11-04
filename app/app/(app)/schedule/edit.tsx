@@ -246,36 +246,28 @@ function ProgrammeEditor() {
     weekStartISO,
   );
 
-  // Week drawer helpers. The drawer lists real meeting dates, so resolve the
-  // weekday from the settings version effective for THAT week, and let a
-  // circuit-overseer visit move the midweek meeting (usually to Tuesday).
+  // Week drawer: each listed meeting as the week rules hold it (4 November
+  // 2026) — its real day (a visit moves the midweek one), the Memorial's
+  // evening only for the meeting the Memorial takes, and whether a visit
+  // falls on it. The drawer used to work the visit out itself and put the
+  // Memorial's evening on BOTH meetings of its week.
   const allSpecialEvents = specialEventsQuery.data;
   const settingsVersions = meetingSettingsQuery.data?.versions;
-  const coVisitForWeek = useCallback(
-    (weekStartISO2: string) => {
-      const sunISO = formatDateISO(addDays(new Date(weekStartISO2), 6));
-      return (allSpecialEvents ?? []).find(
-        (e) =>
-          e.type === "circuit_overseer_visit" &&
-          e.date <= sunISO &&
-          (e.endDate ?? e.date) >= weekStartISO2,
-      );
+  const drawerMeetingOf = useCallback(
+    (weekStartISO2: string, k: "midweek" | "weekend") => {
+      const rules = weekRules({
+        weekStartISO: weekStartISO2,
+        version: effectiveVersionFor(settingsVersions, weekStartISO2),
+        events: allSpecialEvents ?? [],
+      });
+      const memorial = rules.memorialTakes === k ? rules.memorial : null;
+      return {
+        date: memorial?.date ?? rules.dateOf(k),
+        memorial: !!memorial,
+        coVisit: k === "midweek" && !!rules.coVisit,
+      };
     },
-    [allSpecialEvents],
-  );
-  const drawerDowForWeek = useCallback(
-    (weekStartISO2: string, k: "midweek" | "weekend"): number | null => {
-      const v = effectiveVersionFor(settingsVersions, weekStartISO2);
-      if (k === "weekend") return v?.weekendDow ?? null;
-      const visit = coVisitForWeek(weekStartISO2);
-      if (visit) return visit.coMidweekDow ?? 2;
-      return v?.midweekDow ?? null;
-    },
-    [settingsVersions, coVisitForWeek],
-  );
-  const drawerIsCoVisitWeek = useCallback(
-    (weekStartISO2: string) => !!coVisitForWeek(weekStartISO2),
-    [coVisitForWeek],
+    [settingsVersions, allSpecialEvents],
   );
   // Opens the picked meeting's section after a drawer jump. The week is part
   // of the focus because switching weeks unmounts the sections while the new
@@ -710,11 +702,6 @@ function ProgrammeEditor() {
   const [printingMonth, setPrintingMonth] = useState(false);
   const printMonthMeeting = async (kind: "midweek" | "weekend") => {
     if (!meetingVersion) return;
-    const dow =
-      kind === "midweek"
-        ? meetingVersion.midweekDow
-        : meetingVersion.weekendDow;
-    if (!dow) return;
     const win = openPrintWindow();
     setPrintingMonth(true);
     try {
@@ -739,64 +726,58 @@ function ProgrammeEditor() {
       // viewedMeeting is used only for the month label below.
       const viewedMeeting = new Date(year, month, 1);
 
-      // A regional convention / circuit assembly replaces the whole week's
-      // meeting; show the event (type, theme, place, dates) instead of parts.
+      // EACH WEEK BY THE WEEK RULES (4 November 2026). The sheet used to take
+      // the viewed week's settings for the whole month, its own convention
+      // test (the meeting day or Sat/Sun) and its own visit rule, and knew
+      // nothing of the Memorial — so a Memorial week printed an ordinary
+      // midweek meeting, and a settings change within the month printed the
+      // wrong weekday. Now every week asks the same rules every screen asks.
       const events = specialEventsQuery.data ?? [];
-      const congressForWeek = (mon: Date) => {
-        const meetingISO = formatDateISO(meetingDate(mon, dow));
-        const satISO = formatDateISO(addDays(mon, 5));
-        const sunISO = formatDateISO(addDays(mon, 6));
-        return events.find((e) => {
-          if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
-            return false;
-          const end = e.endDate ?? e.date;
-          // Covers the meeting day, or (for the weekend) the Sat/Sun span.
-          return (
-            (e.date <= meetingISO && end >= meetingISO) ||
-            (e.date <= sunISO && satISO <= end)
-          );
-        });
-      };
       const fmtRange = (start: string, end: string | null): string =>
         formatDayRange(start, end, i18n.language, { year: "never" });
-
-      // The midweek meeting moves during a circuit-overseer visit (commonly to
-      // Tuesday), stored per-visit on the event. Use the visit's day for that
-      // week so the printed date and weekday are correct.
-      const visitForWeek = (mon: Date) => {
+      const rulesOf = (mon: Date) => {
         const monISO = formatDateISO(mon);
-        const sunISO = formatDateISO(addDays(mon, 6));
-        return events.find((e) => {
-          if (e.type !== "circuit_overseer_visit") return false;
-          const end = e.endDate ?? e.date;
-          return e.date <= sunISO && end >= monISO; // visit overlaps this week
+        return weekRules({
+          weekStartISO: monISO,
+          version: effectiveVersionFor(settingsVersions, monISO),
+          events,
         });
       };
-      const dowForWeek = (mon: Date): number => {
-        if (kind !== "midweek") return dow;
-        const visit = visitForWeek(mon);
-        if (visit) return visit.coMidweekDow ?? 2; // default Tuesday
-        return dow;
-      };
+      const usualTime = (
+        (kind === "midweek"
+          ? meetingVersion.midweekTime
+          : meetingVersion.weekendTime) || ""
+      ).slice(0, 5);
+      const meetingTimeOf = new Map<string, string | null>();
 
       const weeks: MeetingPdfWeek[] = mondays.map((mon) => {
-        const congress = congressForWeek(mon);
-        const weekDow = dowForWeek(mon);
-        const visit = kind === "midweek" ? visitForWeek(mon) : undefined;
+        const rules = rulesOf(mon);
+        const m = rules.meetingOf(kind);
+        meetingTimeOf.set(formatDateISO(mon), m.time);
+        // What stands in for the meeting: the convention, the Memorial, or a
+        // flagged event — shown instead of the parts.
+        const standIn = m.held ? null : m.by;
+        const visit = kind === "midweek" && m.held ? rules.coVisit : null;
+        const otherHour = m.held && m.time && usualTime && m.time !== usualTime;
         return {
           weekStartDate: formatDateISO(mon),
-          meetingDateLabel: meetingDate(mon, weekDow).toLocaleDateString(
-            i18n.language,
-            { day: "numeric", month: "long" },
-          ),
-          headerNote:
-            visit && !congress ? t("schedule.print.coVisitNote") : null,
-          event: congress
+          meetingDateLabel: m.date
+            ? new Date(`${m.date}T00:00:00`).toLocaleDateString(
+                i18n.language,
+                { day: "numeric", month: "long" },
+              )
+            : "",
+          headerNote: visit
+            ? t("schedule.print.coVisitNote")
+            : otherHour
+              ? t("schedule.print.startsAt", { time: m.time })
+              : null,
+          event: standIn
             ? {
-                typeLabel: t(`specialEvents.types.${congress.type}`),
-                title: congress.title || null,
-                place: congress.address || null,
-                dateLabel: fmtRange(congress.date, congress.endDate),
+                typeLabel: t(`specialEvents.types.${standIn.type}`),
+                title: standIn.title || null,
+                place: standIn.address || null,
+                dateLabel: fmtRange(standIn.date, standIn.endDate ?? null),
               }
             : null,
         };
@@ -839,7 +820,10 @@ function ProgrammeEditor() {
               partTitle: a.partTitle,
             }));
           if (items.length === 0) continue;
-          buildMidweekPartTimes(items, meetingVersion.midweekTime).forEach(
+          buildMidweekPartTimes(
+            items,
+            meetingTimeOf.get(w.weekStartDate) ?? meetingVersion.midweekTime,
+          ).forEach(
             (iv, id) => timeById.set(id, iv.start),
           );
         }
@@ -947,11 +931,7 @@ function ProgrammeEditor() {
         month: "long",
         year: "numeric",
       });
-      const time = (
-        (kind === "midweek"
-          ? meetingVersion.midweekTime
-          : meetingVersion.weekendTime) || ""
-      ).slice(0, 5);
+      const time = usualTime;
       const html = buildMeetingSchedulePdfHtml({
         eventType: kind,
         weeks,
@@ -970,12 +950,19 @@ function ProgrammeEditor() {
             kind === "midweek"
               ? t("schedule.print.midweekTitle")
               : t("schedule.print.weekendTitle"),
-          subtitleDow:
-            mondays.length > 0
+          // The usual weekday, as the settings intend it; a week held on
+          // another day says so by its own date.
+          subtitleDow: (() => {
+            const dow =
+              kind === "midweek"
+                ? meetingVersion.midweekDow
+                : meetingVersion.weekendDow;
+            return mondays.length > 0 && dow
               ? meetingDate(mondays[0], dow).toLocaleDateString(i18n.language, {
                   weekday: "long",
                 })
-              : "",
+              : "";
+          })(),
           emptyCell: "—",
         },
       });
@@ -1085,8 +1072,7 @@ function ProgrammeEditor() {
               n: Date.now(),
             });
           }}
-          dowForWeek={drawerDowForWeek}
-          isCoVisitWeek={drawerIsCoVisitWeek}
+          meetingOf={drawerMeetingOf}
         />
         <AssignmentSheet
           assignment={editing}

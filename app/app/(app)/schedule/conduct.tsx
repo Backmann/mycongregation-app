@@ -372,18 +372,24 @@ export default function ConductScreen({
     queryFn: () => specialEventsApi.list({ all: true }),
     staleTime: 60 * 60 * 1000,
   });
-  const meetingDay = useMemo(
+  const meeting = useMemo(
     () =>
       week
         ? weekRules({
             weekStartISO: week,
             version: effectiveVersionFor(settingsQuery.data?.versions, week),
             events: eventsQuery.data ?? [],
-          }).dateOf(kind)
+          }).meetingOf(kind)
         : null,
     [week, settingsQuery.data, eventsQuery.data, kind],
   );
-  const meetingOver = pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
+  const meetingDay = meeting?.date ?? null;
+  // A meeting that is not held at all (a convention week, the one the
+  // Memorial takes, a flagged event) has nothing to conduct — the screen
+  // treats it as over rather than offering to start it (4 November 2026).
+  const notHeld = !!meeting?.date && !meeting.held;
+  const meetingOver =
+    pastWeek || notHeld || (!!meetingDay && meetingDay < formatDateISO(new Date()));
 
   // THE MEETING AS IT RUNS, from the server — and who this account is for it
   // (the timekeeper is named in the duties, which this screen does not read).

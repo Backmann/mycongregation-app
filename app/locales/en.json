@@ -1159,6 +1159,7 @@
     "print": {
       "midweekTitle": "Midweek meeting",
       "coVisitNote": "Circuit overseer visit",
+      "startsAt": "Starts at {{time}}",
       "weekendTitle": "Weekend meeting",
       "watchtowerPrefix": "Watchtower"
     },
@@ -3525,6 +3526,7 @@
       "nobody": "Nobody yet",
       "nobodyHint": "No speaker is booked for this meeting yet.",
       "congress": "The congregation has no meeting of its own these days.",
+      "memorial": "No regular meeting — no speaker is needed.",
       "emptyWeeks_one": "empty week in the next 2 months",
       "emptyWeeks_other": "empty weeks in the next 2 months",
       "waiting_one": "item awaits a decision",

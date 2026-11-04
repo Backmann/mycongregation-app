@@ -36,12 +36,14 @@ interface Props {
   /** Jump to a week and open that meeting's section. */
   onPick: (weekStart: Date, kind: Kind) => void;
   /**
-   * Real meeting weekday (1 = Mon … 7 = Sun) for a given week, so the list
-   * shows actual dates — including a midweek meeting moved by a CO visit.
+   * The meeting of that week as the week rules hold it: its real date (a
+   * visit moves the midweek one; the Memorial's evening for the meeting it
+   * takes), and the two markers the list shows.
    */
-  dowForWeek: (weekStartISO: string, kind: Kind) => number | null;
-  /** True when a circuit-overseer visit falls on that week (midweek marker). */
-  isCoVisitWeek?: (weekStartISO: string) => boolean;
+  meetingOf: (
+    weekStartISO: string,
+    kind: Kind,
+  ) => { date: string | null; memorial: boolean; coVisit: boolean };
 }
 
 const PANEL_WIDTH = 250;
@@ -60,8 +62,7 @@ export function WeekDrawer({
   onClose,
   currentWeekStart,
   onPick,
-  dowForWeek,
-  isCoVisitWeek,
+  meetingOf,
 }: Props) {
   const { t, i18n } = useTranslation();
   const { height } = useWindowDimensions();
@@ -102,26 +103,20 @@ export function WeekDrawer({
     const out: { key: string; label: string; entries: MeetingEntry[] }[] = [];
     for (const r of rows) {
       if (kind === 'midweek' ? !r.hasMidweek : !r.hasWeekend) continue;
-      // The Memorial has a day of its own, fixed by the calendar and not by
-      // the congregation's settings — so the entry shows the evening, not the
-      // weekday of the meeting it took away.
-      let date: dayjs.Dayjs;
-      if (r.memorialDate) {
-        date = dayjs(r.memorialDate).locale(i18n.language);
-      } else {
-        const dow = dowForWeek(r.weekStartDate, kind);
-        if (!dow) continue;
-        date = dayjs(r.weekStartDate)
-          .locale(i18n.language)
-          .add(dow - 1, 'day');
-      }
+      // The Memorial has a day of its own, fixed by the calendar — but only
+      // for the meeting it takes; the other meeting of its week keeps its own.
+      const m = meetingOf(r.weekStartDate, kind);
+      if (!m.date) continue;
+      const date = dayjs(m.date).locale(i18n.language);
       const entry: MeetingEntry = {
         weekStartDate: r.weekStartDate,
         date,
-        coVisit: kind === 'midweek' && !!isCoVisitWeek?.(r.weekStartDate),
-        memorial: !!r.memorialDate,
+        coVisit: m.coVisit,
+        memorial: m.memorial,
       };
-      if (isSameWeek(new Date(r.weekStartDate), currentWeekStart)) {
+      // A date-only string read as LOCAL midnight: `new Date('2026-11-02')` is
+      // UTC midnight, which west of Greenwich is still the Sunday before.
+      if (isSameWeek(new Date(`${r.weekStartDate}T00:00:00`), currentWeekStart)) {
         current = entry;
         continue;
       }
@@ -134,7 +129,7 @@ export function WeekDrawer({
       g.entries.push(entry);
     }
     return { currentEntry: current, groups: out };
-  }, [weeksQuery.data, i18n.language, currentWeekStart, kind, dowForWeek, isCoVisitWeek]);
+  }, [weeksQuery.data, i18n.language, currentWeekStart, kind, meetingOf]);
 
   const weekRange = (weekStartIso: string) => {
     const end = dayjs(weekStartIso).add(6, 'day').format('YYYY-MM-DD');
@@ -173,7 +168,7 @@ export function WeekDrawer({
       key={e.weekStartDate}
       style={[styles.row, isCurrent && styles.rowCurrent]}
       onPress={() => {
-        onPick(startOfWeekMonday(new Date(e.weekStartDate)), kind);
+        onPick(startOfWeekMonday(new Date(`${e.weekStartDate}T00:00:00`)), kind);
         onClose();
       }}
     >
