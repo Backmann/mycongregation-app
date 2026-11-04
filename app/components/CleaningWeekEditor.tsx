@@ -37,8 +37,8 @@ export function CleaningWeekEditor({ weekStartISO }: { weekStartISO: string }) {
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const publishersById = new Map<string, Publisher>((rosterQ.data?.data ?? []).map((p) => [p.id, p]));
 
-  // A convention week has no meetings, so no cleaning — the programme screen
-  // hid the section then; here the week says so.
+  // A convention week has no meetings, so no cleaning AFTER them; the weekly
+  // and general cleaning stay.
   const rules = weekRules({
     weekStartISO,
     version: effectiveVersionFor(settingsQ.data?.versions, weekStartISO),
@@ -51,15 +51,22 @@ export function CleaningWeekEditor({ weekStartISO }: { weekStartISO: string }) {
   return (
     <View style={styles.wrap}>
       <ScrollView contentContainerStyle={styles.content}>
+        {/* A convention week: no meetings, so no cleaning after them — but the
+            weekly and the general cleaning stay (Lionel, 25 August 2026; the
+            whole section used to disappear). */}
         {rules.congress ? (
           <Text style={styles.note}>
             {t('cleaningHall.congressWeek', { event: t(`specialEvents.types.${rules.congress.type}`) })}
           </Text>
-        ) : (
+        ) : null}
+        {
           <>
             {/* The detail draws nothing for a reader when the week is empty. */}
-            {empty && !canEdit ? <Text style={styles.note}>{t('cleaningHall.emptyWeek')}</Text> : null}
+            {empty && !canEdit && !rules.congress ? (
+              <Text style={styles.note}>{t('cleaningHall.emptyWeek')}</Text>
+            ) : null}
             <CleaningSection
+              noMeetings={!!rules.congress}
               assignments={cleaningWeek.assignments}
               hideHeader
               publishersById={publishersById}
@@ -72,7 +79,7 @@ export function CleaningWeekEditor({ weekStartISO }: { weekStartISO: string }) {
               onClearSlot={(slotType) => clearCleaningSlotMutation.mutate(slotType)}
             />
           </>
-        )}
+        }
       </ScrollView>
       <UndoBar
         visible={!!clearedSlot}

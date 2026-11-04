@@ -21,9 +21,11 @@ import {
   PublisherActivity,
   meetingSettingsApi,
   PublisherAppointment,
+  specialEventsApi,
 } from "../lib/api";
 import { ActivitySummary, summarizeActivity } from "../lib/activity";
-import { effectiveVersionFor, meetingDate } from "../lib/meeting-schedule";
+import { effectiveVersionFor } from "../lib/meeting-schedule";
+import { weekRules } from "../lib/week-rules";
 import { useTranslation } from "react-i18next";
 import { Sheet } from "./Sheet";
 import { isActivePermanentPioneer } from "../lib/pioneer-status";
@@ -209,6 +211,14 @@ export function PublisherSelector({
     enabled: weekValid,
     staleTime: 10 * 60 * 1000,
   });
+  // The week's events, for the visit's moved day — the same list and key the
+  // schedule and the duties screens keep in the cache.
+  const { data: weekEvents } = useQuery({
+    queryKey: ["special-events", "all"],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    enabled: weekValid && !absenceDate,
+    staleTime: 10 * 60 * 1000,
+  });
   // Exact calendar date of the meeting being assigned (midweek vs weekend),
   // so an absence only warns on the day it actually covers.
   const meetingDayISO = useMemo(() => {
@@ -219,15 +229,18 @@ export function PublisherSelector({
     // free. The caller knows its own date; when it says so, believe it.
     if (absenceDate) return absenceDate;
     if (!weekValid || !currentWeekStart) return null;
+    // The meeting's REAL day, asked of the week rules (4 November 2026). The
+    // settings' weekday ignored a circuit visit: in a visit week a brother
+    // away on the Tuesday showed as free, and one away on the usual
+    // Wednesday as away.
     const v = effectiveVersionFor(msOverview?.versions, currentWeekStart);
     if (!v) return null;
-    const dow = currentEventType === "weekend" ? v.weekendDow : v.midweekDow;
-    if (!dow) return null;
-    const d = meetingDate(new Date(`${currentWeekStart}T00:00:00`), dow);
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${d.getFullYear()}-${mm}-${dd}`;
-  }, [absenceDate, msOverview, currentWeekStart, currentEventType, weekValid]);
+    return weekRules({
+      weekStartISO: currentWeekStart,
+      version: v,
+      events: weekEvents ?? [],
+    }).dateOf(currentEventType === "weekend" ? "weekend" : "midweek");
+  }, [absenceDate, msOverview, weekEvents, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
     const m = new Map<string, Absence>();
     if (!weekAbsData) return m;

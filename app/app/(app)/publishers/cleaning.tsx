@@ -174,35 +174,36 @@ export default function CleaningScreen() {
     let title: string;
     let titleStyle: TextStyle = styles.title;
     const lines: { text: string; style: TextStyle }[] = [];
+    // A convention week: no meetings, so no cleaning after them — but the
+    // weekly and general cleaning are still shown and assignable (Lionel,
+    // 25 August 2026; the row used to say «уборки нет» and hide them).
     if (rules.congress) {
       title = t('cleaningHall.congressWeek', { event: t(`specialEvents.types.${rules.congress.type}`) });
       titleStyle = styles.titleSoft;
+    } else if (after) {
+      title = t('cleaningHall.after', { group: groupName.get(after.serviceGroupId!) ?? '—' });
     } else {
-      if (after) {
-        title = t('cleaningHall.after', { group: groupName.get(after.serviceGroupId!) ?? '—' });
-      } else {
-        title = t('cleaningHall.afterMissing');
-        titleStyle = coordinator ? styles.titleWarn : styles.titleSoft;
-      }
-      if (weekly) {
-        const when = weekly.thoroughPlannedAt ? dayOf(weekly.thoroughPlannedAt) : t('cleaningHall.dayNotSet');
-        lines.push({ text: t('cleaningHall.weekly', { group: groupName.get(weekly.serviceGroupId!) ?? '—', when }), style: styles.sub });
-      } else if (coordinator) {
-        lines.push({ text: t('cleaningHall.weeklyMissing'), style: styles.sub });
-      }
-      if (general) {
-        const when = general.thoroughPlannedAt ? dayOf(general.thoroughPlannedAt) : t('cleaningHall.dateTbd');
-        lines.push({ text: t('cleaningHall.general', { when }), style: styles.sub });
-      }
-      // «Yours» — the group's own weeks, and the overseer's day to set.
-      if (weekly && overseerOf.has(weekly.serviceGroupId!) && !weekly.thoroughPlannedAt) {
-        lines.push({ text: t('cleaningHall.mineWeeklyPlan'), style: styles.mineWarn });
-      } else if (weekly && myGroupId && weekly.serviceGroupId === myGroupId) {
-        lines.push({ text: t('cleaningHall.mineWeekly'), style: styles.mine });
-      }
-      if (after && myGroupId && after.serviceGroupId === myGroupId) {
-        lines.push({ text: t('cleaningHall.mineAfter'), style: styles.mine });
-      }
+      title = t('cleaningHall.afterMissing');
+      titleStyle = coordinator ? styles.titleWarn : styles.titleSoft;
+    }
+    if (weekly) {
+      const when = weekly.thoroughPlannedAt ? dayOf(weekly.thoroughPlannedAt) : t('cleaningHall.dayNotSet');
+      lines.push({ text: t('cleaningHall.weekly', { group: groupName.get(weekly.serviceGroupId!) ?? '—', when }), style: styles.sub });
+    } else if (coordinator) {
+      lines.push({ text: t('cleaningHall.weeklyMissing'), style: styles.sub });
+    }
+    if (general) {
+      const when = general.thoroughPlannedAt ? dayOf(general.thoroughPlannedAt) : t('cleaningHall.dateTbd');
+      lines.push({ text: t('cleaningHall.general', { when }), style: styles.sub });
+    }
+    // «Yours» — the group's own weeks, and the overseer's day to set.
+    if (weekly && overseerOf.has(weekly.serviceGroupId!) && !weekly.thoroughPlannedAt) {
+      lines.push({ text: t('cleaningHall.mineWeeklyPlan'), style: styles.mineWarn });
+    } else if (weekly && myGroupId && weekly.serviceGroupId === myGroupId) {
+      lines.push({ text: t('cleaningHall.mineWeekly'), style: styles.mine });
+    }
+    if (!rules.congress && after && myGroupId && after.serviceGroupId === myGroupId) {
+      lines.push({ text: t('cleaningHall.mineAfter'), style: styles.mine });
     }
 
     const selected = wide && week === chosen;

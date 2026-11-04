@@ -5397,7 +5397,7 @@
     "mineAfter": "Your group cleans — after meetings",
     "mineWeekly": "Your group — weekly cleaning",
     "mineWeeklyPlan": "Your group — weekly · set the day",
-    "congressWeek": "{{event}} — no cleaning",
+    "congressWeek": "{{event}} — no meetings, so no cleaning after them",
     "emptyWeek": "No cleaning assigned for this week",
     "showMore": "Show more",
     "guideSection": "Guide",

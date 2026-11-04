@@ -57,6 +57,11 @@ type Props = {
   ) => void;
   onClearSlot: (slotType: CleaningSlotType) => void;
   hideHeader?: boolean;
+  /**
+   * A convention week: no meetings, so no cleaning after them — but the
+   * weekly and the general cleaning stay assignable (Lionel, 25 August).
+   */
+  noMeetings?: boolean;
 };
 
 export function CleaningSection({
@@ -68,6 +73,7 @@ export function CleaningSection({
   onSetSlot,
   onClearSlot,
   hideHeader,
+  noMeetings = false,
 }: Props) {
   const { t } = useTranslation();
   const { myPublisher } = useMyPublisher();
@@ -100,7 +106,9 @@ export function CleaningSection({
       ) : null}
 
       <View style={styles.stack}>
-        {GROUP_SLOTS.map((slot) => {
+        {GROUP_SLOTS.filter(
+          (slot) => !(noMeetings && slot === 'after_meeting'),
+        ).map((slot) => {
           const assigned = bySlot.get(slot) ?? null;
           const group = assigned?.serviceGroupId
             ? groupsById.get(assigned.serviceGroupId) ?? null

@@ -5397,7 +5397,7 @@
     "mineAfter": "Ihre Gruppe reinigt — nach den Zusammenkünften",
     "mineWeekly": "Ihre Gruppe — wöchentliche Reinigung",
     "mineWeeklyPlan": "Ihre Gruppe — wöchentlich · Tag festlegen",
-    "congressWeek": "{{event}} — keine Reinigung",
+    "congressWeek": "{{event}} — keine Zusammenkünfte, also keine Reinigung danach",
     "emptyWeek": "Für diese Woche ist keine Reinigung eingeteilt",
     "showMore": "Mehr anzeigen",
     "guideSection": "Anleitung",
