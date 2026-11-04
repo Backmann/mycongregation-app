@@ -151,7 +151,7 @@ export default function DutiesScreen() {
     for (const m of ['midweek', 'weekend'] as const) {
       let meeting: DutyMeeting | null = m;
       let dateISO: string | null = rules.dateOf(m);
-      let time: string | null = ((m === 'midweek' ? version?.midweekTime : version?.weekendTime) || '').slice(0, 5) || null;
+      let time: string | null = rules.timeOf(m);
       if (rules.memorialTakes === m && rules.memorial) {
         meeting = 'memorial';
         dateISO = rules.memorial.date;

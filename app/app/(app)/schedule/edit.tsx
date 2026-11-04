@@ -675,9 +675,11 @@ function ProgrammeEditor() {
       return rules.memorial?.time ? `${when} · ${rules.memorial.time}` : when;
     }
     if (!meetingVersion) return null;
-    const dow = dowFor(kind);
-    if (!dow) return null;
-    const dateStr = addDays(weekStart, dow - 1).toLocaleDateString(
+    // The day and hour the week rules give: a visit's day, an event's
+    // changed hour — the same answer every other screen shows.
+    const m = rules.meetingOf(kind);
+    if (!m.date) return null;
+    const dateStr = new Date(`${m.date}T00:00:00`).toLocaleDateString(
       i18n.language,
       {
         weekday: "long",
@@ -685,14 +687,11 @@ function ProgrammeEditor() {
         month: "long",
       },
     );
-    const rawTime =
-      kind === "midweek"
-        ? meetingVersion.midweekTime
-        : meetingVersion.weekendTime;
-    const time = (rawTime || "").slice(0, 5);
-    return time ? `${dateStr} · ${time}` : dateStr;
+    return m.time ? `${dateStr} · ${m.time}` : dateStr;
   };
-  const meetingAddress = (): string | null => meetingVersion?.address || null;
+  // Where it is held that week: an event «with changes» may give another place.
+  const meetingAddress = (kind: "midweek" | "weekend"): string | null =>
+    rules.placeOf(kind);
 
   type DutyMeeting = "midweek" | "weekend" | "memorial";
 
@@ -1187,15 +1186,11 @@ function ProgrammeEditor() {
                 const numbers = buildPartNumbers(items);
                 const partTimes =
                   eventType === "midweek"
-                    ? buildMidweekPartTimes(
-                        items,
-                        meetingSettingsQuery.data?.effective?.midweekTime,
-                      )
+                    // From this week's own start: the version in force THAT
+                    // week and an event's changed hour, not today's settings.
+                    ? buildMidweekPartTimes(items, rules.timeOf("midweek"))
                     : eventType === "weekend"
-                      ? buildWeekendPartTimes(
-                          items,
-                          meetingSettingsQuery.data?.effective?.weekendTime,
-                        )
+                      ? buildWeekendPartTimes(items, rules.timeOf("weekend"))
                       : null;
                 if (eventType === "midweek" && midweekReplacedBy) {
                   return (
@@ -1229,7 +1224,7 @@ function ProgrammeEditor() {
                       icon="calendar-outline"
                       title={getEventTypeLabel("midweek")}
                       meta={meetingDateLabel("midweek")}
-                      metaAddress={meetingAddress()}
+                      metaAddress={meetingAddress("midweek")}
                       onPrint={
                         perms.isElder || perms.isAdmin
                           ? () => printMonthMeeting("midweek")
@@ -1303,7 +1298,7 @@ function ProgrammeEditor() {
                       icon="calendar-outline"
                       title={getEventTypeLabel("weekend")}
                       meta={meetingDateLabel("weekend")}
-                      metaAddress={meetingAddress()}
+                      metaAddress={meetingAddress("weekend")}
                       onPrint={
                         perms.isElder || perms.isAdmin
                           ? () => printMonthMeeting("weekend")

@@ -590,10 +590,8 @@ export default function ProgrammeFeedScreen() {
         date,
         week,
         kind,
-        time:
-          change?.meetingTime ??
-          (kind === "midweek" ? version?.midweekTime : version?.weekendTime) ??
-          null,
+        // The hour the rules give — an event's changed hour included.
+        time: rules.timeOf(kind),
         movedByVisit: kind === "midweek" && !!rules.coVisit,
         change,
       });
