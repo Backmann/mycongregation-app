@@ -2936,6 +2936,10 @@
       "evening": "Good evening",
       "night": "Good evening"
     },
+    "notHeld": {
+      "withEvent": "No meeting this time — {{event}}",
+      "plain": "No meeting this week"
+    },
     "rowKind": {
       "duty": "Duty"
     },
@@ -3526,7 +3530,7 @@
       "nobody": "Nobody yet",
       "nobodyHint": "No speaker is booked for this meeting yet.",
       "congress": "The congregation has no meeting of its own these days.",
-      "memorial": "No regular meeting — no speaker is needed.",
+      "noMeeting": "No regular meeting — no speaker is needed.",
       "emptyWeeks_one": "empty week in the next 2 months",
       "emptyWeeks_other": "empty weeks in the next 2 months",
       "waiting_one": "item awaits a decision",

@@ -111,7 +111,10 @@ export default function MyAssignmentsScreen() {
     staleTime: 60 * 1000,
   });
 
-  const isLoading = tasksQuery.isLoading || overviewQuery.isLoading;
+  // The events decide which meetings are held; without them a convention week
+  // would show its parts as ordinary for a moment.
+  const isLoading =
+    tasksQuery.isLoading || overviewQuery.isLoading || eventsQuery.isLoading;
   const refreshing = tasksQuery.isRefetching || overviewQuery.isRefetching;
   const onRefresh = () => {
     tasksQuery.refetch();
@@ -196,8 +199,23 @@ export default function MyAssignmentsScreen() {
                     {g.rows.map((r, idx) => (
                       <View
                         key={`${r.item.kind}-${idx}-${r.dateISO}`}
-                        style={[styles.partRow, idx > 0 && styles.rowBorder]}
+                        style={[
+                          styles.partRow,
+                          idx > 0 && styles.rowBorder,
+                          r.notHeldBy !== undefined && styles.notHeldRow,
+                        ]}
                       >
+                        {/* The meeting is not held (a convention, the
+                            Memorial, an event that replaces it): the part
+                            stays, muted, with the reason — so a wrongly
+                            entered event is seen, not silently obeyed. */}
+                        {r.notHeldBy !== undefined ? (
+                          <Text style={styles.notHeldNote} numberOfLines={2}>
+                            {r.notHeldBy
+                              ? t('home.notHeld.withEvent', { event: r.notHeldBy.title })
+                              : t('home.notHeld.plain')}
+                          </Text>
+                        ) : null}
                         {taskSubsectionLabel(r.item, t) ? (
                           <Text style={styles.subsection} numberOfLines={1}>
                             {taskSubsectionLabel(r.item, t)}
@@ -427,6 +445,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   title: { fontSize: 15, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  notHeldRow: { opacity: 0.6 },
+  notHeldNote: {
+    fontSize: 12,
+    fontFamily: 'Manrope_600SemiBold',
+    color: '#b45309',
+    marginBottom: 2,
+  },
   topic: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 2, lineHeight: 19 },
   pair: {
     fontFamily: 'Manrope_400Regular',

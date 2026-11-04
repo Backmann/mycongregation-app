@@ -21,7 +21,7 @@ import {
   visitingSpeakersApi,
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
-import { weekRules } from '../../../lib/week-rules';
+import { isCongressEvent, weekRules } from '../../../lib/week-rules';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { capitalizeFirst } from '../../../lib/relative-time';
@@ -165,7 +165,7 @@ export default function TalkCoordinatorScreen() {
               {t('talkCoordinator.desk.thisWeekend', { day: nextLabel })}
               {next.time ? ` · ${next.time.slice(0, 5)}` : ''}
             </Text>
-            {list.isLoading ? (
+            {list.isLoading || events.isLoading ? (
               <ActivityIndicator color="#ffffff" style={{ marginVertical: 16 }} />
             ) : congress && !entry ? (
               <>
@@ -175,9 +175,12 @@ export default function TalkCoordinatorScreen() {
                   })}
                 </Text>
                 <Text style={styles.heroTalk}>
-                  {congress.type === 'memorial'
-                    ? t('talkCoordinator.desk.memorial')
-                    : t('talkCoordinator.desk.congress')}
+                  {/* «No meeting of its own these days» fits a convention or
+                      an assembly; the Memorial or an event flagged «no usual
+                      meeting» gets the plain «no speaker needed». */}
+                  {isCongressEvent(congress)
+                    ? t('talkCoordinator.desk.congress')
+                    : t('talkCoordinator.desk.noMeeting')}
                 </Text>
               </>
             ) : entry ? (

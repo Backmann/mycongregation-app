@@ -324,10 +324,12 @@ export default function CoScheduleScreen() {
       'co-visit-meetings',
       visit?.id ?? null,
       visit?.coMidweekDow ?? null,
-      settingsOverview?.effective?.midweekDow ?? null,
-      // Asked again when the settings or the events change — the rules read both.
-      settingsOverview?.versions?.length ?? 0,
-      events?.length ?? 0,
+      // Asked again whenever the settings or the events change at all — the
+      // rules read both, and a changed hour or a newly flagged event keeps the
+      // count the same (review, 4 November 2026). React Query hashes the key,
+      // so the arrays themselves are the signature.
+      settingsOverview?.versions ?? [],
+      events ?? [],
     ],
     queryFn: () => buildVisitMeetings(),
     enabled: !!visit && !!settingsOverview?.effective,

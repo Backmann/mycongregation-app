@@ -21,6 +21,15 @@ export interface RefinedTask {
   dateISO: string;
   weekOnly: boolean;
   meetingTime?: string;
+  /**
+   * The meeting this part or duty belongs to is NOT held that week — and what
+   * takes its place (a convention, the Memorial, an event flagged «обычной
+   * встречи нет»). Kept rather than dropped (4 November 2026, review): a
+   * wrongly entered event would otherwise make a real part vanish from every
+   * screen the brother sees. «Мои назначения» shows it muted with the reason;
+   * Home leaves it out, as it always did.
+   */
+  notHeldBy?: SpecialEvent | null;
 }
 
 /**
@@ -46,6 +55,7 @@ export function refineMyTasks(
     let dateISO: string | null = null;
     let weekOnly = false;
     let meetingTime: string | undefined;
+    let notHeldBy: SpecialEvent | null | undefined;
     if (item.date) {
       dateISO = item.date;
       // The lunch bag is brought for the meeting: its hour is the meeting's.
@@ -85,13 +95,12 @@ export function refineMyTasks(
       // One answer for the meeting (4 November 2026): its real day, its hour
       // (an event's changed hour included) and whether it is held at all. A
       // part in a convention week, or on the meeting the Memorial takes, used
-      // to stand on the usual weekday here while Home left it out — two
-      // screens disagreeing about the same part. It is left out here too.
+      // to stand on the usual weekday as if nothing were different.
       const m = rules.meetingOf(kind);
-      if (m.date && !m.held) continue;
       if (m.date) {
         dateISO = m.date;
         meetingTime = m.time ?? undefined;
+        if (!m.held) notHeldBy = m.by;
       }
     }
     if (!dateISO) {
@@ -107,7 +116,13 @@ export function refineMyTasks(
     } else if (dateISO < todayISO) {
       continue;
     }
-    refined.push({ item, dateISO, weekOnly, meetingTime });
+    refined.push({
+      item,
+      dateISO,
+      weekOnly,
+      meetingTime,
+      ...(notHeldBy !== undefined ? { notHeldBy } : {}),
+    });
   }
   refined.sort(
     (a, b) =>

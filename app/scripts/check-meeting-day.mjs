@@ -44,9 +44,8 @@ const FREE = new Set([
 
 /** Still to be moved onto the rules, with today's count. Lower, never raise. */
 const STILL_TO_MOVE = {
-  'app/(app)/cart/co-schedule.tsx': 3,
+  'app/(app)/cart/co-schedule.tsx': 2,
   'app/(app)/publishers/duties.tsx': 2,
-  'app/(app)/schedule/conduct.tsx': 2,
   'app/(app)/schedule/edit.tsx': 9,
   'app/(app)/schedule/index.tsx': 2,
   'app/(app)/special-events/index.tsx': 17,

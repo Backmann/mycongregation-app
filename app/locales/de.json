@@ -2936,6 +2936,10 @@
       "evening": "Guten Abend",
       "night": "Guten Abend"
     },
+    "notHeld": {
+      "withEvent": "Die Zusammenkunft findet nicht statt — {{event}}",
+      "plain": "Diese Woche findet keine Zusammenkunft statt"
+    },
     "rowKind": {
       "duty": "Dienst"
     },
@@ -3526,7 +3530,7 @@
       "nobody": "Noch niemand",
       "nobodyHint": "Für diese Zusammenkunft ist noch kein Redner eingetragen.",
       "congress": "An diesen Tagen hat die Versammlung keine eigene Zusammenkunft.",
-      "memorial": "Keine reguläre Zusammenkunft — kein Redner nötig.",
+      "noMeeting": "Keine reguläre Zusammenkunft — kein Redner nötig.",
       "emptyWeeks_one": "leere Woche in den nächsten 2 Monaten",
       "emptyWeeks_other": "leere Wochen in den nächsten 2 Monaten",
       "waiting_one": "offener Punkt",

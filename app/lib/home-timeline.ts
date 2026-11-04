@@ -593,8 +593,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   };
   // Events go in so a visit week places a part on the day the meeting was
   // actually moved to, rather than on the weekday the settings name.
+  // A part of a meeting that is not held stays out of Home, as before; «Мои
+  // назначения» shows it muted with the reason.
   const refined = refineMyTasks(myItems, versions, todayISO, events).filter(
-    (r) => !droppedByCongress(r),
+    (r) => !droppedByCongress(r) && r.notHeldBy === undefined,
   );
 
   const taskPlacement = (r: RefinedTask): string =>

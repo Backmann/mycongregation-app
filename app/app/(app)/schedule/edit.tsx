@@ -767,11 +767,15 @@ function ProgrammeEditor() {
                 { day: "numeric", month: "long" },
               )
             : "",
-          headerNote: visit
-            ? t("schedule.print.coVisitNote")
-            : otherHour
-              ? t("schedule.print.startsAt", { time: m.time })
-              : null,
+          // Both can be true — a visit week whose midweek hour an event
+          // changed — and then both are said (review, 4 November 2026).
+          headerNote:
+            [
+              visit ? t("schedule.print.coVisitNote") : null,
+              otherHour ? t("schedule.print.startsAt", { time: m.time }) : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || null,
           event: standIn
             ? {
                 typeLabel: t(`specialEvents.types.${standIn.type}`),
