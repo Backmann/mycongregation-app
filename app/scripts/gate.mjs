@@ -67,6 +67,10 @@ const STEPS = [
   // hold". They have drifted apart three times now, and every time it was
   // found by reading the code months later.
   ['Правила недели', 'node', ['scripts/check-week-rules.mjs']],
+  // …and nobody works the day or hour out of the settings on the side
+  // (4 November 2026: the week/day audit found about twenty such copies; the
+  // list of the remaining ones may only shrink).
+  ['День встречи — из правил недели', 'node', ['scripts/check-meeting-day.mjs']],
   // Who a field-service meeting is for — one rule for the four screens that
   // draw them (26 September: a visit and an ordinary meeting read as two
   // meetings for everybody).

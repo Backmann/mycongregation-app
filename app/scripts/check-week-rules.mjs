@@ -59,7 +59,9 @@ const held = (r) =>
     .map((k) => `${r.dateOf(k)} ${k}`);
 
 const failures = [];
+let checked = 0;
 function check(name, got, want) {
+  checked += 1;
   const a = JSON.stringify(got);
   const b = JSON.stringify(want);
   if (a !== b) failures.push(`${name}\n      получено: ${a}\n      ожидалось: ${b}`);
@@ -172,6 +174,65 @@ check(
   ['2026-04-09 midweek'],
 );
 
+check(
+  'старый визит с ГАЛОЧКОЙ не снимает встречи — визит переносит, а не уносит',
+  held(
+    rules([
+      { id: 'v', type: 'circuit_overseer_visit', date: '2026-04-07', endDate: '2026-04-12', replacesMeeting: true },
+    ]),
+  ),
+  ['2026-04-07 midweek', '2026-04-12 weekend'],
+);
+
+// ---- the hour and the place (4 November) -----------------------------------
+// The same cases as the server's week-rules.spec.ts «the hour a meeting
+// begins» and «where a meeting is held».
+{
+  const timed = {
+    midweekDow: 4,
+    weekendDow: 7,
+    midweekTime: '19:00:00',
+    weekendTime: '13:00',
+    address: 'Musterstraße 1',
+  };
+  const at = (events) => weekRules({ weekStartISO: WEEK, version: timed, events });
+  const r0 = at([]);
+  check('час — из настроек в обычную неделю', [r0.timeOf('midweek'), r0.timeOf('weekend')], ['19:00', '13:00']);
+  const r1 = at([{ id: 'x', type: 'other', date: '2026-04-12', meetingMode: 'changed', meetingTime: '10:00' }]);
+  check('час — из события «с изменениями» в его день', [r1.timeOf('weekend'), r1.timeOf('midweek')], ['10:00', '19:00']);
+  const r2 = at([
+    { id: 'v', type: 'circuit_overseer_visit', date: '2026-04-07', endDate: '2026-04-12', coMidweekDow: 2 },
+    { id: 'x', type: 'other', date: '2026-04-07', meetingMode: 'changed', meetingTime: '18:30' },
+  ]);
+  check('час идёт за встречей в день визита', [r2.dateOf('midweek'), r2.timeOf('midweek')], ['2026-04-07', '18:30']);
+  const r3 = at([{ id: 'x', type: 'other', date: '2026-04-10', meetingMode: 'changed', meetingTime: '10:00' }]);
+  check('час другого дня недели не в счёт', [r3.timeOf('midweek'), r3.timeOf('weekend')], ['19:00', '13:00']);
+  check('без настроек часа нет', weekRules({ weekStartISO: WEEK, version: null, events: [] }).timeOf('midweek'), null);
+  check('место — из настроек', r0.placeOf('weekend'), 'Musterstraße 1');
+  const r4 = at([{ id: 'x', type: 'other', date: '2026-04-12', meetingMode: 'changed', meetingAddress: ' Stadthalle ' }]);
+  check('место — из события «с изменениями»', [r4.placeOf('weekend'), r4.placeOf('midweek')], ['Stadthalle', 'Musterstraße 1']);
+  check('другой час без адреса оставляет зал', r1.placeOf('weekend'), 'Musterstraße 1');
+
+  // meetingOf: one answer per meeting.
+  const pick = (m) => [m.date, m.time, m.held, m.notHeld];
+  check('встреча обычной недели', pick(r0.meetingOf('midweek')), ['2026-04-09', '19:00', true, null]);
+  check(
+    'встреча на неделе конгресса',
+    pick(at([{ id: 'c', type: 'regional_convention', date: '2026-04-10', endDate: '2026-04-12' }]).meetingOf('midweek')),
+    ['2026-04-09', '19:00', false, 'congress'],
+  );
+  check(
+    'встреча, которую взяла Вечеря',
+    pick(at([{ id: 'm', type: 'memorial', date: '2026-04-08' }]).meetingOf('midweek')),
+    ['2026-04-09', '19:00', false, 'memorial'],
+  );
+  check(
+    'встреча, снятая галочкой',
+    pick(at([{ id: 's', type: 'special_talk', date: '2026-04-12', replacesMeeting: true }]).meetingOf('weekend')),
+    ['2026-04-12', '13:00', false, 'replaced'],
+  );
+}
+
 // ---- which schedule version is in force (26 September) --------------------
 // The same cases as the server's src/common/week-version.spec.ts: a version
 // takes effect on the Monday on or after its date, any date reads as its week,
@@ -197,4 +258,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log('OK: week rules and the version in force agree with the server (22 cases).');
+console.log(`OK: week rules and the version in force agree with the server (${checked} cases).`);
