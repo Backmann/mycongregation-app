@@ -18,6 +18,7 @@ import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules, type MeetingKind } from '../lib/week-rules';
 import ConductScreen from './(app)/schedule/conduct';
 import { StageChrome } from '../components/ConductStage';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 
 /**
  * THE SCREEN ON THE STAGE (20 October 2026).
@@ -66,6 +67,7 @@ export default function StageScreen() {
     staleTime: 60 * 60 * 1000,
     enabled: isStage,
   });
+  const moves = useMeetingMoves();
   const eventsQuery = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -84,6 +86,7 @@ export default function StageScreen() {
         weekStartISO: week,
         version: effectiveVersionFor(settingsQuery.data.versions, week),
         events: eventsQuery.data ?? [],
+        moves,
       });
       for (const kind of KINDS) {
         // Only a meeting that is HELD (4 November 2026): the hall screen
@@ -94,7 +97,7 @@ export default function StageScreen() {
       }
     }
     return out.sort((a, b) => a.date.localeCompare(b.date));
-  }, [settingsQuery.data, eventsQuery.data, now]);
+  }, [settingsQuery.data, eventsQuery.data, moves, now]);
 
   const todays = meetings.find((m) => m.date === today) ?? null;
   const next = meetings.find((m) => m.date > today) ?? null;

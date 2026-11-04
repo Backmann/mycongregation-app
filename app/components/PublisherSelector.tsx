@@ -31,6 +31,7 @@ import { Sheet } from "./Sheet";
 import { isActivePermanentPioneer } from "../lib/pioneer-status";
 import { useAllPublishers } from "../lib/useAllPublishers";
 import { formatDayRange } from "../lib/date-range";
+import { useMeetingMoves } from "../lib/useMeetingMoves";
 
 interface Props {
   label: string;
@@ -213,6 +214,7 @@ export function PublisherSelector({
   });
   // The week's events, for the visit's moved day — the same list and key the
   // schedule and the duties screens keep in the cache.
+  const moves = useMeetingMoves();
   const { data: weekEvents } = useQuery({
     queryKey: ["special-events", "all"],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -239,8 +241,9 @@ export function PublisherSelector({
       weekStartISO: currentWeekStart,
       version: v,
       events: weekEvents ?? [],
+      moves,
     }).dateOf(currentEventType === "weekend" ? "weekend" : "midweek");
-  }, [absenceDate, msOverview, weekEvents, currentWeekStart, currentEventType, weekValid]);
+  }, [absenceDate, msOverview, weekEvents, moves, currentWeekStart, currentEventType, weekValid]);
   const absentThisWeek = useMemo(() => {
     const m = new Map<string, Absence>();
     if (!weekAbsData) return m;

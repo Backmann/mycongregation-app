@@ -26,6 +26,7 @@ import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { capitalizeFirst } from '../../../lib/relative-time';
 import { FONT } from '../../../lib/typography';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 /**
  * THE COORDINATOR'S DESK (Lionel, 25 October 2026).
@@ -64,6 +65,7 @@ export default function TalkCoordinatorScreen() {
     queryFn: () => publicTalksApi.list({ includeInactive: true, limit: 300 }),
   });
   const pubs = useAllPublishers();
+  const moves = useMeetingMoves();
   const events = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -82,6 +84,7 @@ export default function TalkCoordinatorScreen() {
       version:
         effectiveVersionFor(settings.data?.versions ?? [], mon) ?? settings.data?.effective ?? null,
       events: events.data ?? [],
+      moves,
     }).meetingOf('weekend');
     return {
       date: m.date ?? formatDateISO(addDays(new Date(`${mon}T00:00:00`), 6)),

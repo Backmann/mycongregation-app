@@ -4821,6 +4821,62 @@ export const pioneerSchoolApi = {
   },
 };
 
+/**
+ * A meeting moved for ONE week to another day or hour of that week
+ * (4 November 2026). The server keeps one per meeting per week; the week rules
+ * (lib/week-rules.ts) are the one reader.
+ */
+export interface MeetingMove {
+  id: string;
+  weekStartDate: string;
+  eventType: "midweek" | "weekend";
+  date: string;
+  time: string;
+  /** Null: at the Kingdom Hall, as the settings give it. */
+  address: string | null;
+  movedById: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeetingMoveResult {
+  move: MeetingMove | null;
+  from: { date: string; time: string | null };
+  to: { date: string; time: string | null; address: string | null };
+  past: boolean;
+  attendanceMoved: boolean;
+}
+
+export const meetingMovesApi = {
+  /** Every move (or from a week on). Read by every member: the rules need them. */
+  async list(fromWeek?: string): Promise<MeetingMove[]> {
+    const { data } = await api.get<MeetingMove[]>("/meeting-moves", {
+      params: { from: fromWeek },
+    });
+    return data;
+  },
+  async move(
+    week: string,
+    kind: "midweek" | "weekend",
+    body: { date: string; time: string; address?: string | null },
+  ): Promise<MeetingMoveResult> {
+    const { data } = await api.put<MeetingMoveResult>(
+      `/meeting-moves/${week}/${kind}`,
+      body,
+    );
+    return data;
+  },
+  async moveBack(
+    week: string,
+    kind: "midweek" | "weekend",
+  ): Promise<MeetingMoveResult> {
+    const { data } = await api.delete<MeetingMoveResult>(
+      `/meeting-moves/${week}/${kind}`,
+    );
+    return data;
+  },
+};
+
 export const specialEventsApi = {
   /**
    * Upcoming events by default; `all` for everything ever recorded; `since`

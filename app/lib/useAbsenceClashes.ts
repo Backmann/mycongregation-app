@@ -9,6 +9,7 @@ import {
 import { addWeeks, formatDateISO, startOfWeekMonday } from './dates';
 import { effectiveVersionFor } from './meeting-schedule';
 import { weekRules } from './week-rules';
+import { useMeetingMoves } from './useMeetingMoves';
 import { activityItemLabel } from './activity';
 
 /**
@@ -73,6 +74,7 @@ export function useAbsenceClashes(periods: PeriodToCheck[], enabled = true): {
     enabled: on,
   });
 
+  const moves = useMeetingMoves();
   const clashes = useMemo(() => {
     const out = new Map<string, Clash[]>();
     if (!activityQ.data || !settingsQ.data || !eventsQ.data) return out;
@@ -82,6 +84,7 @@ export function useAbsenceClashes(periods: PeriodToCheck[], enabled = true): {
         weekStartISO: i.weekStartDate,
         version: effectiveVersionFor(settingsQ.data!.versions, i.weekStartDate),
         events: eventsQ.data!,
+        moves,
       });
       if (i.eventType === 'memorial') return rules.memorial?.date ?? null;
       if (i.eventType === 'midweek' || i.eventType === 'weekend') return rules.dateOf(i.eventType);
@@ -101,7 +104,7 @@ export function useAbsenceClashes(periods: PeriodToCheck[], enabled = true): {
     return out;
     // `relevant` is rebuilt every render; its content is what matters.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activityQ.data, settingsQ.data, eventsQ.data, JSON.stringify(relevant), today]);
+  }, [activityQ.data, settingsQ.data, eventsQ.data, moves, JSON.stringify(relevant), today]);
 
   return { clashes, ready: !on || (!!activityQ.data && !!settingsQ.data && !!eventsQ.data) };
 }

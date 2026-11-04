@@ -56,7 +56,10 @@ export function meetingDaysCovered(
     const rules = weekRules({
       weekStartISO: week,
       version: effectiveVersionFor(versions, week),
+      // The settings' days only, as before — which meeting days the event's
+      // own days fall on, not what this week's events or moves make of them.
       events: [],
+      moves: [],
     });
     for (const kind of ['midweek', 'weekend'] as const) {
       if (rules.dateOf(kind) === iso) out.push({ date: iso, kind });

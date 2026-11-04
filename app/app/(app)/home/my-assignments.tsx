@@ -34,6 +34,7 @@ import { WindowsPlanDialog } from '../../../components/WindowsPlan';
 import { FieldNotice } from '../../../components/FieldNotice';
 import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
 import { sessionVerdict } from '../../../lib/session-verdict';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   // As the language writes a span (lib/date-range.ts): «19–OCTOBER 25» was
@@ -98,6 +99,7 @@ export default function MyAssignmentsScreen() {
 
   // Needed to place a meeting on the day it is actually held: a circuit visit
   // moves the midweek one, and a convention week has none.
+  const moves = useMeetingMoves();
   const eventsQuery = useQuery({
     queryKey: ['special-events'],
     queryFn: () => specialEventsApi.fromThisWeek(),
@@ -132,6 +134,7 @@ export default function MyAssignmentsScreen() {
     versions,
     todayISO,
     eventsQuery.data ?? [],
+    moves,
   );
   const weeks = buildWeeks(refined);
 

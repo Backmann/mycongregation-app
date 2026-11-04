@@ -7,6 +7,7 @@ import { meetingSettingsApi, SpecialEvent, specialEventsApi } from '../lib/api';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import { weekRules } from '../lib/week-rules';
 import { formatDayRange } from '../lib/date-range';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -41,6 +42,7 @@ export function EventOnDateNotice({
   // All events, under the key the schedule editor around this form already
   // holds (no second request, kept offline). Only what was still ahead lost
   // an event already over in the week being edited (4 November 2026).
+  const moves = useMeetingMoves();
   const eventsQuery = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -61,6 +63,7 @@ export function EventOnDateNotice({
     weekStartISO: weekISO,
     version,
     events: eventsQuery.data ?? [],
+    moves,
   });
   const m = rules.meetingOf(eventType);
   const event: SpecialEvent | undefined = m.held ? undefined : (m.by ?? undefined);

@@ -11,6 +11,7 @@ import { usePermissions } from '../lib/permissions';
 import { clock } from './ConductSummary';
 import { useAuth } from '../lib/auth';
 import { formatDateISO, startOfWeekMonday } from '../lib/dates';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 
 /**
  * THE DOOR INTO CONDUCT MODE — an offer, not a route anyone has to take.
@@ -72,6 +73,7 @@ export function ConductEntry({
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 60 * 60 * 1000,
   });
+  const moves = useMeetingMoves();
   const { data: events } = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -86,6 +88,7 @@ export function ConductEntry({
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
     events: events ?? [],
+    moves,
   }).meetingOf(kind);
   const meetingDay = meeting.date;
   // Nothing to conduct when the meeting is not held that week (4 November
@@ -245,6 +248,7 @@ export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
   // The week's events too (4 November 2026): without them a circuit visit
   // was ignored, and «Сегодня вы председатель» came on the usual Wednesday
   // instead of the visit's Tuesday.
+  const moves = useMeetingMoves();
   const { data: events } = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -255,6 +259,7 @@ export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
     events: events ?? [],
+    moves,
   }).dateOf(kind);
   const card = liveCardOf({
     live: data.live,

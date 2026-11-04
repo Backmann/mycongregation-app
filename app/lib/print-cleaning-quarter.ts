@@ -60,6 +60,8 @@ export async function printCleaningQuarter({
         weekStartISO: formatDateISO(mon),
         version: null,
         events,
+        // Only the congress is asked; a move does not change it.
+        moves: [],
       }).congress;
       return c ? t(`specialEvents.types.${c.type}`) : null;
     };

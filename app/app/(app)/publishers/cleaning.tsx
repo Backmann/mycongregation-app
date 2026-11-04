@@ -24,6 +24,7 @@ import { CleaningWeekEditor } from '../../../components/CleaningWeekEditor';
 import { WindowsLine, WindowsPlanDialog } from '../../../components/WindowsPlan';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDay, formatDayRange } from '../../../lib/date-range';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -84,6 +85,7 @@ export default function CleaningScreen() {
     queryFn: () => cleaningApi.range(startISO, endISO),
   });
   const groupsQ = useQuery({ queryKey: ['service-groups'], queryFn: () => serviceGroupsApi.list({}) });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
 
@@ -165,6 +167,7 @@ export default function CleaningScreen() {
       weekStartISO: week,
       version: effectiveVersionFor(settingsQ.data?.versions, week),
       events: eventsQ.data ?? [],
+      moves,
     });
     const list = byWeek.get(week) ?? [];
     const after = list.find((a) => a.slotType === 'after_meeting' && a.serviceGroupId);
