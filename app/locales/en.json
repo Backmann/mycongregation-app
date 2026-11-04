@@ -4388,7 +4388,8 @@
       "doneNotHeld": "Recorded: not held",
       "change": "Change",
       "waiting_one": "{{count}} figure is waiting for a connection and will be sent by itself",
-      "waiting_other": "{{count}} figures are waiting for a connection and will be sent by themselves"
+      "waiting_other": "{{count}} figures are waiting for a connection and will be sent by themselves",
+      "beforeStart": "Starts at {{time}}. Count those present in the middle of the meeting — the field opens at {{time}}."
     },
     "page": {
       "basis": "over {{count}} months with entries",

@@ -58,12 +58,25 @@ export function useAttendanceDue() {
   if (!perms.canRecordAttendance || !pending.data) return null;
   const meeting = pending.data.meetings?.[0] ?? null;
   const recorded = pending.data.recordedToday?.[0] ?? null;
-  const outstanding = pending.data.outstandingThisYear ?? 0;
-  if (!meeting && !recorded && outstanding === 0) return null;
+  // Meetings before today still without a figure. Today's is never a debt:
+  // it is the card's (4 November 2026 — at 06:37 Home used to say «1 встреча
+  // без записи» about that evening's meeting). An older server sends only
+  // the total, which still holds today's open meetings.
+  const owed =
+    pending.data.owed ??
+    Math.max(0, (pending.data.outstandingThisYear ?? 0) - (pending.data.meetings?.length ?? 0));
+  if (!meeting && !recorded && owed === 0) return null;
+  // When the card's meeting begins, as a moment on this device's clock:
+  // the server says how many minutes from its answer.
+  const startsAt =
+    meeting && (meeting.startsInMinutes ?? 0) > 0
+      ? pending.dataUpdatedAt + (meeting.startsInMinutes as number) * 60_000
+      : null;
   return {
     meeting,
     recorded,
-    outstanding,
+    owed,
+    startsAt,
     previousYear: pending.data.outstandingPreviousYear ?? 0,
   };
 }
@@ -81,6 +94,19 @@ export function AttendanceCard() {
   const [editing, setEditing] = useState<AttendanceRow | null>(null);
   const [waiting, setWaiting] = useState(0);
   const due = useAttendanceDue();
+  // Before the start the card waits (4 November 2026): it appears an hour
+  // early, when the brother is already at the hall, but the count is made
+  // once, in the middle of the meeting (S-3) — a figure typed before it is
+  // a guess. The field opens by itself at the start.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const startsAt = due?.startsAt ?? null;
+  useEffect(() => {
+    if (!startsAt) return;
+    setNowMs(Date.now());
+    const id = setInterval(() => setNowMs(Date.now()), 20_000);
+    return () => clearInterval(id);
+  }, [startsAt]);
+  const beforeStart = !!startsAt && nowMs < startsAt;
   const mayOpen = useMayOpen();
   const meeting = due?.meeting ?? null;
   const recorded = due?.recorded ?? null;
@@ -111,7 +137,7 @@ export function AttendanceCard() {
 
   if (!due) return null;
 
-  const backlog = due.outstanding - (meeting ? 1 : 0);
+  const backlog = due.owed;
   const backlogLine =
     backlog > 0 && mayOpen('/service-reports/attendance') ? (
       <Pressable
@@ -203,7 +229,25 @@ export function AttendanceCard() {
         </View>
       </View>
 
-      {meeting ? (
+      {meeting && beforeStart ? (
+        <>
+          <View style={styles.waitRow}>
+            <Ionicons name="time-outline" size={16} color="#0e7490" />
+            <Text style={styles.waitText}>
+              {/* Only with a start time on record does the card wait at all. */}
+              {t('attendance.card.beforeStart', { time: (meeting.startTime ?? '').slice(0, 5) })}
+            </Text>
+          </View>
+          <View style={styles.links}>
+            <View />
+            {/* Weather, a closed hall: known before the start, so this one
+                is open already. */}
+            <Pressable onPress={() => setEditing(unrecordedRow)} hitSlop={6}>
+              <Text style={styles.notHeld}>{t('attendance.notHeld')}…</Text>
+            </Pressable>
+          </View>
+        </>
+      ) : meeting ? (
         <>
           <View style={[styles.row, narrow && styles.rowStacked]}>
             <View style={styles.inputs}>
@@ -411,5 +455,7 @@ const styles = StyleSheet.create({
   },
   doneText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#14532d' },
   doneBy: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: '#4d7c0f', marginTop: 1 },
+  waitRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginTop: 10 },
+  waitText: { flex: 1, fontSize: 13.5, lineHeight: 19, color: '#334155', fontFamily: 'Manrope_600SemiBold' },
   waiting: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#b45309', marginTop: 10 },
 });

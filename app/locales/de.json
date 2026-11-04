@@ -4388,7 +4388,8 @@
       "doneNotHeld": "Eingetragen: fand nicht statt",
       "change": "Ändern",
       "waiting_one": "{{count}} Zahl wartet auf Verbindung und wird von selbst gesendet",
-      "waiting_other": "{{count}} Zahlen warten auf Verbindung und werden von selbst gesendet"
+      "waiting_other": "{{count}} Zahlen warten auf Verbindung und werden von selbst gesendet",
+      "beforeStart": "Beginn um {{time}}. Zählen Sie die Anwesenden in der Mitte der Zusammenkunft – das Feld öffnet sich um {{time}}."
     },
     "page": {
       "basis": "aus {{count}} Monaten mit Einträgen",
