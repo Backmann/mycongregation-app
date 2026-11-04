@@ -59,6 +59,7 @@ import { PublisherSelector } from "../../../components/PublisherSelector";
 import { PublicTalkSelector } from "../../../components/PublicTalkSelector";
 import { startOfWeekMonday, addDays, formatDateISO } from "../../../lib/dates";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
+import { weekRules } from "../../../lib/week-rules";
 import { notify } from "../../../lib/error-bus";
 import { useAllPublishers } from "../../../lib/useAllPublishers";
 import { failsScreen } from "../../../lib/screen-failure";
@@ -148,22 +149,28 @@ function mondayISO(dateISO: string): string {
 function buildWeeks(
   versions: MeetingSettingsVersion[],
   fallback: MeetingSettingsVersion | null,
+  events: SpecialEvent[],
 ): WeekRow[] {
   const rows: WeekRow[] = [];
   let monday = startOfWeekMonday(new Date(`${YEAR_FROM - 1}-12-22T00:00:00`));
   for (let i = 0; i < 130; i++) {
     const mISO = formatDateISO(monday);
-    // The shared rule (lib/meeting-schedule) — this screen had its own copy.
-    const v = effectiveVersionFor(versions, mISO) ?? fallback;
-    const dow = v?.weekendDow ?? 7;
-    const wd = addDays(monday, dow - 1);
+    // The weekend meeting as the week rules hold it (4 November 2026): its
+    // day, and the hour and place an event «with changes» gives it — not the
+    // settings' alone. Whether it is held is shown by the week's events below.
+    const m = weekRules({
+      weekStartISO: mISO,
+      version: effectiveVersionFor(versions, mISO) ?? fallback,
+      events,
+    }).meetingOf('weekend');
+    const wd = m.date ? new Date(`${m.date}T00:00:00`) : addDays(monday, 6);
     const y = wd.getFullYear();
     if (y >= YEAR_FROM && y <= YEAR_TO)
       rows.push({
         monday: mISO,
         date: formatDateISO(wd),
-        time: v?.weekendTime ?? null,
-        address: v?.address ?? null,
+        time: m.time,
+        address: m.place,
       });
     if (y > YEAR_TO) break;
     monday = addDays(monday, 7);
@@ -837,7 +844,7 @@ export default function TalkExchangeYearScreen() {
   const months = useMemo<MonthBlock[]>(() => {
     const versions = settingsQuery.data?.versions ?? [];
     const fallback = settingsQuery.data?.effective ?? null;
-    const weeks = buildWeeks(versions, fallback);
+    const weeks = buildWeeks(versions, fallback, eventsQuery.data ?? []);
     const byMonth = new Map<string, WeekRow[]>();
     for (const w of weeks) {
       const key = w.date.slice(0, 7);
@@ -849,7 +856,7 @@ export default function TalkExchangeYearScreen() {
       title: dayjs(`${key}-01`).locale(i18n.language).format("MMMM YYYY"),
       rows,
     }));
-  }, [settingsQuery.data, i18n.language]);
+  }, [settingsQuery.data, eventsQuery.data, i18n.language]);
 
   // Плоский список недель для модалки «Заменить докладчика».
   const weeksFlat = useMemo<WeekRow[]>(

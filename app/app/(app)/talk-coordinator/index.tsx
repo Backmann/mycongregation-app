@@ -21,6 +21,7 @@ import {
   visitingSpeakersApi,
 } from '../../../lib/api';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { isCongressEvent, weekRules } from '../../../lib/week-rules';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { capitalizeFirst } from '../../../lib/relative-time';
@@ -68,15 +69,24 @@ export default function TalkCoordinatorScreen() {
     queryFn: () => specialEventsApi.list({ all: true }),
   });
 
-  // This weekend: the first weekend day from today, by the settings in force.
+  // This weekend: the weekend meeting as the week rules hold it (4 November
+  // 2026) — its day and hour, and whether it is held at all. The desk used to
+  // count a convention only when it covered that very Sunday, so in the week
+  // of a one-day Saturday assembly it reported a missing guest for a meeting
+  // nobody holds; the Memorial on a weekend was not known at all.
   const today = dayjs().format('YYYY-MM-DD');
   const monday = formatDateISO(startOfWeekMonday(new Date(`${today}T00:00:00`)));
   const dayOfWeek = (mon: string) => {
-    const v =
-      effectiveVersionFor(settings.data?.versions ?? [], mon) ?? settings.data?.effective ?? null;
+    const m = weekRules({
+      weekStartISO: mon,
+      version:
+        effectiveVersionFor(settings.data?.versions ?? [], mon) ?? settings.data?.effective ?? null,
+      events: events.data ?? [],
+    }).meetingOf('weekend');
     return {
-      date: formatDateISO(addDays(new Date(`${mon}T00:00:00`), (v?.weekendDow ?? 7) - 1)),
-      time: v?.weekendTime ?? null,
+      date: m.date ?? formatDateISO(addDays(new Date(`${mon}T00:00:00`), 6)),
+      time: m.time,
+      standIn: m.held ? null : m.by,
     };
   };
   let next = dayOfWeek(monday);
@@ -114,14 +124,10 @@ export default function TalkCoordinatorScreen() {
       ? `№${talk.number} «${talk.title}»`
       : null;
   const lunch = entry && !entry.publisherId ? pubName(entry.hospitalityPublisherId) : null;
-  // A convention or an assembly that weekend: nobody is to come, and that is
-  // no gap. A circuit visit has its overseer's own entry, shown as any guest.
-  const congress = (events.data ?? []).find(
-    (ev) =>
-      (ev.type === 'regional_convention' || ev.type === 'circuit_assembly') &&
-      ev.date <= next.date &&
-      (ev.endDate ?? ev.date) >= next.date,
-  );
+  // A convention, an assembly or the Memorial that weekend: nobody is to come,
+  // and that is no gap. A circuit visit has its overseer's own entry, shown
+  // as any guest.
+  const congress = next.standIn;
   const nextLabel = capitalizeFirst(dayjs(next.date).locale(i18n.language).format('dd, D MMMM'));
 
   const empty = (inAttn.data ?? []).filter((a) => a.reason === 'needs_guest').length;
@@ -159,7 +165,7 @@ export default function TalkCoordinatorScreen() {
               {t('talkCoordinator.desk.thisWeekend', { day: nextLabel })}
               {next.time ? ` · ${next.time.slice(0, 5)}` : ''}
             </Text>
-            {list.isLoading ? (
+            {list.isLoading || events.isLoading ? (
               <ActivityIndicator color="#ffffff" style={{ marginVertical: 16 }} />
             ) : congress && !entry ? (
               <>
@@ -168,7 +174,14 @@ export default function TalkCoordinatorScreen() {
                     defaultValue: congress.title ?? '',
                   })}
                 </Text>
-                <Text style={styles.heroTalk}>{t('talkCoordinator.desk.congress')}</Text>
+                <Text style={styles.heroTalk}>
+                  {/* «No meeting of its own these days» fits a convention or
+                      an assembly; the Memorial or an event flagged «no usual
+                      meeting» gets the plain «no speaker needed». */}
+                  {isCongressEvent(congress)
+                    ? t('talkCoordinator.desk.congress')
+                    : t('talkCoordinator.desk.noMeeting')}
+                </Text>
               </>
             ) : entry ? (
               <>

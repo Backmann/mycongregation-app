@@ -372,18 +372,29 @@ export default function ConductScreen({
     queryFn: () => specialEventsApi.list({ all: true }),
     staleTime: 60 * 60 * 1000,
   });
-  const meetingDay = useMemo(
+  const meeting = useMemo(
     () =>
       week
         ? weekRules({
             weekStartISO: week,
             version: effectiveVersionFor(settingsQuery.data?.versions, week),
             events: eventsQuery.data ?? [],
-          }).dateOf(kind)
+          }).meetingOf(kind)
         : null,
     [week, settingsQuery.data, eventsQuery.data, kind],
   );
-  const meetingOver = pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
+  const meetingDay = meeting?.date ?? null;
+  // A meeting that is not held at all (a convention week, the one the
+  // Memorial takes, a flagged event) has nothing to conduct — the screen
+  // treats it as over rather than offering to start it (4 November 2026).
+  const notHeld = !!meeting?.date && !meeting.held;
+  // Over by the calendar: the run's own data (an unfinished run let go, a
+  // finished one queued and sent) follows only this. An event that says «not
+  // held» must never wipe or hold back a run already made — it may be entered
+  // by mistake, or after the evening (review, 4 November 2026).
+  const pastMeeting =
+    pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
+  const meetingOver = pastMeeting || notHeld;
 
   // THE MEETING AS IT RUNS, from the server — and who this account is for it
   // (the timekeeper is named in the duties, which this screen does not read).
@@ -752,8 +763,8 @@ export default function ConductScreen({
       segments.slice(run.index + 1).reduce((sum, s) => sum + s.minutes * 60, 0)
     : 0;
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
-  const weekVersion = week ? effectiveVersionFor(settingsQuery.data?.versions, week) : null;
-  const meetingTime = (weekend ? weekVersion?.weekendTime : weekVersion?.midweekTime) ?? null;
+  // The hour the rules give — an event's changed hour included.
+  const meetingTime = meeting?.time ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
   // Behind or ahead of the programme's END — a late start counts (18 October 2026).
   const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, meetingDay, driftSec);
@@ -1121,18 +1132,18 @@ export default function ConductScreen({
   // screen the moment there is a signal (lib/conduct-resend.ts).
   // Only the device whose taps counted: a watcher's `local` is somebody else's run.
   useEffect(() => {
-    if (practice || watching || meetingOver || !local || state.saved || state.pending || state.finishedAt === null) return;
+    if (practice || watching || pastMeeting || !local || state.saved || state.pending || state.finishedAt === null) return;
     apply({ ...state, pending: local });
-  }, [practice, watching, meetingOver, local, state, apply]);
+  }, [practice, watching, pastMeeting, local, state, apply]);
 
   // A RUN LEFT UNFINISHED PAST THE MEETING'S DAY is not the meeting: it is
   // let go. A FINISHED one waiting to be sent stays — the hall may have had
   // no signal, and lib/conduct-resend.ts sends it when there is one.
   useEffect(() => {
-    if (!loaded || !meetingOver || state.meetingStartedAt === null || state.finishedAt !== null) return;
+    if (!loaded || !pastMeeting || state.meetingStartedAt === null || state.finishedAt !== null) return;
     setState(EMPTY);
     AsyncStorage.removeItem(storageKey(week, kind)).catch(() => undefined);
-  }, [loaded, meetingOver, state.meetingStartedAt, state.finishedAt, week]);
+  }, [loaded, pastMeeting, state.meetingStartedAt, state.finishedAt, week]);
 
   const save = useMutation({
     mutationFn: (data: ConductSummaryData) =>
@@ -1153,11 +1164,11 @@ export default function ConductScreen({
   // «нет связи» for it (as on 16 October) sends a man looking for Wi-Fi.
   const saveRefused = statusOf(save.error) !== undefined;
   useEffect(() => {
-    if (practice || watching || meetingOver || !local || state.saved || !canRun || state.finishedAt === null) return;
+    if (practice || watching || pastMeeting || !local || state.saved || !canRun || state.finishedAt === null) return;
     if (triedFor.current === state.finishedAt) return;
     triedFor.current = state.finishedAt;
     save.mutate(local);
-  }, [practice, watching, meetingOver, local, state.saved, state.finishedAt, canRun, save]);
+  }, [practice, watching, pastMeeting, local, state.saved, state.finishedAt, canRun, save]);
 
   const titleOf = (id: string | null) => (id ? (byId.get(id)?.partTitle ?? null) : null);
   /** The programme's counsel after a part, seconds — the report's plan for it. */

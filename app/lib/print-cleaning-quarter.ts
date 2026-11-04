@@ -10,6 +10,7 @@ import {
 import { CLEANING_SHADES } from "./section-colors";
 import { reportError } from "./error-bus";
 import { formatDayRange } from "./date-range";
+import { weekRules } from "./week-rules";
 
 // Monthly cleaning PDF: a grid of cleaning slots (rows) x weeks (columns) with
 // the assigned service group per cell. Weeks grouped by Monday. Loads each
@@ -49,19 +50,17 @@ export async function printCleaningQuarter({
       quarterStartMonth + 2,
     ];
 
+    // The week rules' own answer (4 November 2026): a convention or assembly
+    // touching ANY day of the week cancels its meetings. The sheet used to
+    // test the weekend and a hard-coded Thursday, which is neither the rule
+    // nor this congregation's midweek day — a Tuesday-only assembly slipped
+    // through. Only the cleaning AFTER the meetings goes with them.
     const congressNote = (mon: Date): string | null => {
-      const satISO = formatDateISO(addDays(mon, 5));
-      const sunISO = formatDateISO(addDays(mon, 6));
-      const midISO = formatDateISO(addDays(mon, 3));
-      const c = events.find((e) => {
-        if (e.type !== "regional_convention" && e.type !== "circuit_assembly")
-          return false;
-        const end = e.endDate ?? e.date;
-        return (
-          (e.date <= sunISO && satISO <= end) ||
-          (e.date <= midISO && end >= midISO)
-        );
-      });
+      const c = weekRules({
+        weekStartISO: formatDateISO(mon),
+        version: null,
+        events,
+      }).congress;
       return c ? t(`specialEvents.types.${c.type}`) : null;
     };
 

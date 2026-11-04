@@ -44,24 +44,18 @@ const FREE = new Set([
 
 /** Still to be moved onto the rules, with today's count. Lower, never raise. */
 const STILL_TO_MOVE = {
-  'app/(app)/cart/co-schedule.tsx': 7,
+  'app/(app)/cart/co-schedule.tsx': 2,
   'app/(app)/publishers/duties.tsx': 2,
-  'app/(app)/schedule/conduct.tsx': 2,
-  'app/(app)/schedule/edit.tsx': 13,
+  'app/(app)/schedule/edit.tsx': 9,
   'app/(app)/schedule/index.tsx': 2,
   'app/(app)/special-events/index.tsx': 17,
-  'app/(app)/talk-coordinator/index.tsx': 2,
-  'app/(app)/talk-coordinator/log.tsx': 2,
-  'app/stage.tsx': 2,
   'components/DutiesMeetingEditor.tsx': 2,
   'components/EventDetailSections.tsx': 9,
-  'components/EventOnDateNotice.tsx': 2,
   'components/SpecialEventDetail.tsx': 1,
   'components/SpecialEventForm.tsx': 9,
   'lib/congregation-lines.ts': 4,
   'lib/event-view.ts': 2,
   'lib/home-timeline.ts': 2,
-  'lib/my-tasks.ts': 7,
 };
 
 function files(dir) {

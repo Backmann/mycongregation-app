@@ -4840,6 +4840,19 @@ export const specialEventsApi = {
     });
     return data;
   },
+  /**
+   * From this week's Monday on (4 November 2026). «Upcoming» alone dropped an
+   * event already over THIS week — a Saturday assembly by the Sunday, a
+   * weekday Memorial by the day after — and the screens that read it then
+   * drew the week's meetings as though nothing had happened.
+   */
+  async fromThisWeek(): Promise<SpecialEvent[]> {
+    const d = new Date();
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return specialEventsApi.list({ since: `${d.getFullYear()}-${mm}-${dd}` });
+  },
   async getById(id: string): Promise<SpecialEvent> {
     const { data } = await api.get<SpecialEvent>(`/special-events/${id}`);
     return data;

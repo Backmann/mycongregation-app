@@ -4,16 +4,16 @@ import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { meetingSettingsApi, SpecialEvent, specialEventsApi } from '../lib/api';
-import { effectiveVersionFor, meetingDate } from '../lib/meeting-schedule';
-import { formatDateISO } from '../lib/dates';
+import { effectiveVersionFor } from '../lib/meeting-schedule';
+import { weekRules } from '../lib/week-rules';
 import { formatDayRange } from '../lib/date-range';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * Advisory banner for schedulers: shown when a special event with
- * replacesMeeting=true covers the meeting date implied by the selected
- * week + event type. Purely informational — it never blocks saving.
+ * Advisory banner for schedulers: shown when the week rules say an event
+ * takes this meeting away — a convention, the Memorial, or an event flagged
+ * «обычной встречи нет». Purely informational — it never blocks saving.
  *
  * Self-contained: fetches meeting settings and special events itself,
  * reusing the same query keys as the schedule screen so react-query
@@ -38,9 +38,12 @@ export function EventOnDateNotice({
     queryFn: () => meetingSettingsApi.getOverview(),
     enabled: validWeek,
   });
+  // All events, under the key the schedule editor around this form already
+  // holds (no second request, kept offline). Only what was still ahead lost
+  // an event already over in the week being edited (4 November 2026).
   const eventsQuery = useQuery({
-    queryKey: ['special-events'],
-    queryFn: () => specialEventsApi.list(),
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
     enabled: validWeek,
   });
 
@@ -49,24 +52,18 @@ export function EventOnDateNotice({
   const version = effectiveVersionFor(settingsQuery.data?.versions, weekISO);
   if (!version) return null;
 
-  const dow = eventType === 'midweek' ? version.midweekDow : version.weekendDow;
-  if (!dow) return null;
-
-  const base = new Date(`${weekISO}T00:00:00`);
-  const meetingISO = formatDateISO(meetingDate(base, dow));
-  const satISO = formatDateISO(meetingDate(base, 6));
-  const sunISO = formatDateISO(meetingDate(base, 7));
-
-  const event: SpecialEvent | undefined = (eventsQuery.data ?? []).find((e) => {
-    const isCongress =
-      e.type === 'regional_convention' || e.type === 'circuit_assembly';
-    if (!e.replacesMeeting && !isCongress) return false;
-    const end = e.endDate ?? e.date;
-    // A convention on either weekend day (Sat or Sun) cancels the weekend
-    // meeting; midweek only when an event covers its exact day.
-    if (eventType === 'weekend') return e.date <= sunISO && satISO <= end;
-    return e.date <= meetingISO && end >= meetingISO;
+  // The week rules decide what stands in for the meeting (4 November 2026):
+  // a convention cancels the WHOLE week, the Memorial takes one meeting by
+  // the kind of day, a flagged event the meeting of the day it covers. The
+  // banner had its own copy that missed a Fri–Sun convention for a Thursday
+  // part and judged the weekend by «touches Saturday or Sunday».
+  const rules = weekRules({
+    weekStartISO: weekISO,
+    version,
+    events: eventsQuery.data ?? [],
   });
+  const m = rules.meetingOf(eventType);
+  const event: SpecialEvent | undefined = m.held ? undefined : (m.by ?? undefined);
   if (!event) return null;
 
   const loc = i18n.language;

@@ -76,7 +76,7 @@ export default function StageScreen() {
   /** The meetings of this week and the next three, by their real day. */
   const meetings = useMemo(() => {
     if (!settingsQuery.data) return [];
-    const out: { week: string; kind: MeetingKind; date: string }[] = [];
+    const out: { week: string; kind: MeetingKind; date: string; time: string | null }[] = [];
     const monday = startOfWeekMonday(now);
     for (let w = 0; w < 4; w++) {
       const week = formatDateISO(addDays(monday, w * 7));
@@ -86,8 +86,11 @@ export default function StageScreen() {
         events: eventsQuery.data ?? [],
       });
       for (const kind of KINDS) {
-        const date = rules.dateOf(kind);
-        if (date) out.push({ week, kind, date });
+        // Only a meeting that is HELD (4 November 2026): the hall screen
+        // used to open a «meeting of today» in a convention week, and the
+        // meeting the Memorial takes on its usual day.
+        const m = rules.meetingOf(kind);
+        if (m.date && m.held) out.push({ week, kind, date: m.date, time: m.time });
       }
     }
     return out.sort((a, b) => a.date.localeCompare(b.date));
@@ -302,7 +305,7 @@ function Idle({
 }: {
   label: string;
   now: Date;
-  next: { week: string; kind: MeetingKind; date: string } | null;
+  next: { week: string; kind: MeetingKind; date: string; time: string | null } | null;
   loading: boolean;
   language: string;
   menu: ReactNode;
@@ -323,11 +326,6 @@ function Idle({
     return () => clearInterval(id);
   }, []);
 
-  const settings = useQuery({
-    queryKey: ['meeting-settings'],
-    queryFn: () => meetingSettingsApi.getOverview(),
-    staleTime: 60 * 60 * 1000,
-  });
   const rows = useQuery({
     queryKey: ['stage-next', next?.week, next?.kind],
     queryFn: () => assignmentsApi.list({ weekStart: next!.week, eventType: next!.kind, limit: 200 }),
@@ -340,8 +338,8 @@ function Idle({
     staleTime: 5 * 60 * 1000,
   });
 
-  const version = next ? effectiveVersionFor(settings.data?.versions, next.week) : null;
-  const time = next ? (next.kind === 'weekend' ? version?.weekendTime : version?.midweekTime) ?? null : null;
+  // The meeting's own hour from the week rules — an event «with changes» included.
+  const time = next?.time ?? null;
   const chairmanId = rows.data?.data.find(
     (a) => a.weekStartDate === next?.week && a.partKey === `${next?.kind}_chairman`,
   )?.publisherId;
