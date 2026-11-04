@@ -56,7 +56,6 @@ const STILL_TO_MOVE = {
   'components/DutiesMeetingEditor.tsx': 2,
   'components/EventDetailSections.tsx': 9,
   'components/EventOnDateNotice.tsx': 2,
-  'components/PublisherSelector.tsx': 2,
   'components/SpecialEventDetail.tsx': 1,
   'components/SpecialEventForm.tsx': 9,
   'lib/congregation-lines.ts': 4,

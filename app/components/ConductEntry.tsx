@@ -237,11 +237,19 @@ export function ConductLiveCard({ kind = 'midweek' }: { kind?: Kind }) {
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 60 * 60 * 1000,
   });
+  // The week's events too (4 November 2026): without them a circuit visit
+  // was ignored, and «Сегодня вы председатель» came on the usual Wednesday
+  // instead of the visit's Tuesday.
+  const { data: events } = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 60 * 60 * 1000,
+  });
   if (!data) return null;
   const meetingDay = weekRules({
     weekStartISO: week,
     version: effectiveVersionFor(settings?.versions, week),
-    events: [],
+    events: events ?? [],
   }).dateOf(kind);
   const card = liveCardOf({
     live: data.live,

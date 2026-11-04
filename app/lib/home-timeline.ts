@@ -578,10 +578,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   // ---- My own items, resolved up front: the meetings loop needs to know
   // which days I am away giving a talk and which weeks my group cleans ----
-  // Cleaning happens after the meetings, so a convention week has none. Field
-  // service (cart) stays: it can still happen that week.
+  // Cleaning AFTER the meetings has nothing to follow in a convention week.
+  // The weekly and the general cleaning stay (Lionel, 25 August 2026 — they
+  // were dropped with it). Field service (cart) stays too.
   const droppedByCongress = (r: RefinedTask): boolean => {
-    if (r.item.kind !== 'cleaning') return false;
+    if (r.item.kind !== 'cleaning' || r.item.label !== 'after_meeting') {
+      return false;
+    }
     const monISO = formatDateISO(
       startOfWeekMonday(new Date(`${placementDate(r, todayISO)}T00:00:00`)),
     );
