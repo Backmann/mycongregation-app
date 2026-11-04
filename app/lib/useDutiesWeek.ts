@@ -24,6 +24,21 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
       dutiesApi.list({ weekStart: weekStartISO, weekEnd: nextWeekISO }),
   });
   const duties = dutiesQuery.data ?? [];
+  /**
+   * Everything that reads who stands where (4 November 2026, Lionel: a
+   * brother put on the microphone still showed under «Ещё не задействованы на
+   * этой встрече»). That card, the month table and its «не задействованы в
+   * месяце» read `['duties', 'month', …]`, which `['duties', week]` does not
+   * reach — only the week's own sheet was refreshed. The whole `['duties']`
+   * root is asked again now, with the readiness lines and the congregation
+   * summary that count the places.
+   */
+  const invalidateDuties = () => {
+    queryClient.invalidateQueries({ queryKey: ["duties"] });
+    queryClient.invalidateQueries({ queryKey: ["publisher-activity"] });
+    queryClient.invalidateQueries({ queryKey: ["readiness"] });
+    queryClient.invalidateQueries({ queryKey: ["congregation-summary"] });
+  };
   const renamePlaceMutation = useMutation({
     mutationFn: (v: { id: string; customLabel: string }) =>
       dutiesApi.renamePlace(v.id, v.customLabel),
@@ -40,16 +55,12 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
   });
   const removePlaceMutation = useMutation({
     mutationFn: (id: string) => dutiesApi.removePlace(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
+    onSuccess: () => invalidateDuties(),
   });
   const generateDutiesMutation = useMutation({
     mutationFn: (eventType: EventType) =>
       dutiesApi.generate({ weekStartDate: weekStartISO, eventType }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    },
+    onSuccess: () => invalidateDuties(),
   });
   const activityQuery = useQuery({
     queryKey: ["publisher-activity", weekStartISO],
@@ -59,12 +70,6 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
   const activityById = new Map<string, PublisherActivity>();
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
 
-  const invalidateDuties = () => {
-    queryClient.invalidateQueries({ queryKey: ["duties", weekStartISO] });
-    queryClient.invalidateQueries({
-      queryKey: ["publisher-activity", weekStartISO],
-    });
-  };
   const showDutyWarnings = (warnings: string[]) => {
     if (warnings.length === 0) return;
     const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n");

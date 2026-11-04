@@ -166,6 +166,9 @@ export function DutiesMonth({
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['duties'] });
       qc.invalidateQueries({ queryKey: ['publisher-activity'] });
+      // The readiness lines and the summary count the places too.
+      qc.invalidateQueries({ queryKey: ['readiness'] });
+      qc.invalidateQueries({ queryKey: ['congregation-summary'] });
     },
     onError: (e) => notify(t('dutiesMonth.errorTitle'), extractErrorMessage(e)),
   });
@@ -260,6 +263,9 @@ export function DutiesMonth({
       setSaving(false);
       qc.invalidateQueries({ queryKey: ['duties'] });
       qc.invalidateQueries({ queryKey: ['publisher-activity'] });
+      // The readiness lines and the summary count the places too.
+      qc.invalidateQueries({ queryKey: ['readiness'] });
+      qc.invalidateQueries({ queryKey: ['congregation-summary'] });
     }
   };
 
