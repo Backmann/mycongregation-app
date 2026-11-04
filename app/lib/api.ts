@@ -6636,6 +6636,10 @@ export interface AttendanceYear {
 export interface PendingMeeting {
   date: string;
   eventType: AttendanceKind;
+  /** The card's meeting: when it begins (4 November 2026). */
+  startTime?: string | null;
+  /** Minutes from the server's answer to the start; 0 once begun or with no time. */
+  startsInMinutes?: number;
 }
 
 export interface PendingAttendance {
@@ -6645,6 +6649,8 @@ export interface PendingAttendance {
   recordedToday?: AttendanceRow[];
   /** Every meeting still without a figure (the closed year's too, to 20 September). */
   outstandingThisYear: number;
+  /** Meetings before today without a figure; today's is the card's (4 November 2026). */
+  owed?: number;
   outstandingPreviousYear?: number;
   /** The newest few of them. */
   gaps?: PendingMeeting[];
