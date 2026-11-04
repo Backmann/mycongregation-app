@@ -51,6 +51,53 @@ export interface WeekRules {
   replacedBy: (kind: MeetingKind) => SpecialEvent | undefined;
   /** True when this meeting is not held at all — for any of the reasons. */
   isTakenAway: (kind: MeetingKind) => boolean;
+  /**
+   * The hour it begins (HH:mm): an event keeping it «with changes» on its day
+   * at another hour, else the settings version. Null when none is recorded.
+   * The same answer as the server's `timeOf` (4 November 2026).
+   */
+  timeOf: (kind: MeetingKind) => string | null;
+  /** Where it is held: the event's address on a day «with changes», else the settings'. */
+  placeOf: (kind: MeetingKind) => string | null;
+  /**
+   * Everything a screen needs about one meeting, in one answer — ask THIS
+   * rather than assembling day, hour and «is it held» from the parts.
+   */
+  meetingOf: (kind: MeetingKind) => WeekMeeting;
+}
+
+/** Why a meeting is not held that week. */
+export type NotHeldReason = 'congress' | 'memorial' | 'replaced';
+
+export interface WeekMeeting {
+  kind: MeetingKind;
+  /** Its real day, or null when the settings name none. */
+  date: string | null;
+  time: string | null;
+  place: string | null;
+  held: boolean;
+  /** Set when it is not held. */
+  notHeld: NotHeldReason | null;
+  /** The event standing in for it (convention, Memorial, flagged event). */
+  by: SpecialEvent | null;
+}
+
+/**
+ * The event keeping the meeting «with changes» on this day, if any — what
+ * gives it another hour or place. The server's `meetingTimeOn` reads the same.
+ */
+function changedOn(
+  events: SpecialEvent[],
+  dateISO: string,
+  field: 'meetingTime' | 'meetingAddress',
+): SpecialEvent | undefined {
+  return events.find(
+    (e) =>
+      e.meetingMode === 'changed' &&
+      !!e[field]?.trim() &&
+      e.date <= dateISO &&
+      (e.endDate ?? e.date) >= dateISO,
+  );
 }
 
 /** A convention or a circuit assembly — both cancel the week's meetings. */
@@ -147,6 +194,10 @@ export function weekRules(input: {
     return events.find((e) => {
       if (!e.replacesMeeting && !isCongressEvent(e)) return false;
       if (e.type === 'memorial') return false;
+      // A visit MOVES the midweek meeting and never takes one away — the
+      // server leaves it out of this rule too. An old visit row still carrying
+      // the flag took both of the week's meetings here and none there.
+      if (e.type === 'circuit_overseer_visit') return false;
       const end = e.endDate ?? e.date;
       return e.date <= dateISO && end >= dateISO;
     });
@@ -159,6 +210,44 @@ export function weekRules(input: {
   const isTakenAway = (kind: MeetingKind): boolean =>
     !!congress || !!replacedBy(kind);
 
+  const timeOf = (kind: MeetingKind): string | null => {
+    const dateISO = dateOf(kind);
+    if (!dateISO) return null;
+    const changed = changedOn(events, dateISO, 'meetingTime');
+    if (changed?.meetingTime) return changed.meetingTime.slice(0, 5);
+    const t = kind === 'midweek' ? version?.midweekTime : version?.weekendTime;
+    return t ? t.slice(0, 5) : null;
+  };
+
+  const placeOf = (kind: MeetingKind): string | null => {
+    const dateISO = dateOf(kind);
+    if (!dateISO) return null;
+    const changed = changedOn(events, dateISO, 'meetingAddress');
+    if (changed?.meetingAddress?.trim()) return changed.meetingAddress.trim();
+    return version?.address?.trim() || null;
+  };
+
+  const meetingOf = (kind: MeetingKind): WeekMeeting => {
+    const date = dateOf(kind);
+    const replaced = replacedBy(kind);
+    const notHeld: NotHeldReason | null = congress
+      ? 'congress'
+      : memorialTakes === kind
+        ? 'memorial'
+        : replaced
+          ? 'replaced'
+          : null;
+    return {
+      kind,
+      date,
+      time: timeOf(kind),
+      place: placeOf(kind),
+      held: !!date && notHeld === null,
+      notHeld,
+      by: congress ?? replaced ?? null,
+    };
+  };
+
   return {
     weekStartISO,
     coVisit,
@@ -170,5 +259,8 @@ export function weekRules(input: {
     dateOf,
     replacedBy,
     isTakenAway,
+    timeOf,
+    placeOf,
+    meetingOf,
   };
 }
