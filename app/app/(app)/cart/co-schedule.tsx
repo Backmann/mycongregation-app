@@ -47,6 +47,7 @@ import { UndoBar } from '../../../components/UndoBar';
 import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDayRange } from '../../../lib/date-range';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -153,6 +154,7 @@ export default function CoScheduleScreen() {
   /** What was just removed and can still be brought back with one tap. */
   const [undo, setUndo] = useState<{ ids: string[] } | null>(null);
 
+  const moves = useMeetingMoves();
   const { data: events, isLoading } = useQuery({
     throwOnError: failsScreen,
     queryKey: ['special-events', 'co-schedule'],
@@ -330,6 +332,7 @@ export default function CoScheduleScreen() {
       // so the arrays themselves are the signature.
       settingsOverview?.versions ?? [],
       events ?? [],
+      moves,
     ],
     queryFn: () => buildVisitMeetings(),
     enabled: !!visit && !!settingsOverview?.effective,
@@ -801,6 +804,7 @@ export default function CoScheduleScreen() {
         weekStartISO: weekStart,
         version: effectiveVersionFor(settingsOverview?.versions, weekStart),
         events: events ?? [],
+        moves,
       });
       const mw = rules.meetingOf('midweek');
       if (mw.held && mw.date && inRange(mw.date)) {

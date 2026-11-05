@@ -78,6 +78,7 @@ import {
 } from "../../../components/ProgrammeSheet";
 import { lowerFirst } from "../../../lib/lower-first";
 import { capitalizeFirst } from "../../../lib/relative-time";
+import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -346,6 +347,7 @@ export default function ProgrammeFeedScreen() {
       queryFn: () => fieldServiceApi.list({ weekStart: sp.from, weekEnd: sp.to, cancelled: true }),
     })),
   });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({
     queryKey: ["special-events", "all"],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -539,7 +541,7 @@ export default function ProgrammeFeedScreen() {
   for (let w = firstMonday; formatDateISO(w) <= endWeek; w = addDays(w, 7)) {
     const week = formatDateISO(w);
     const version = effectiveVersionFor(settingsQ.data?.versions, week);
-    const rules = weekRules({ weekStartISO: week, version, events: eventsQ.data ?? [] });
+    const rules = weekRules({ weekStartISO: week, version, events: eventsQ.data ?? [] , moves });
     if (!rules.meetingsHeld && rules.congress) {
       items.push({
         type: "special",
@@ -665,6 +667,7 @@ export default function ProgrammeFeedScreen() {
       weekStartISO: week,
       version: effectiveVersionFor(settingsQ.data?.versions, week),
       events: eventsQ.data ?? [],
+      moves,
     });
     // «23 — 28 февраля» within a month, as the week labels once were: the month once.
     const sameMonth = !!e.endDate && e.endDate.slice(0, 7) === e.date.slice(0, 7);

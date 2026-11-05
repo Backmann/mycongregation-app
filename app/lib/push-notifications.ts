@@ -206,11 +206,26 @@ export function routeForNotification(
         path: '/service-reports/new',
         params: data.reportMonth ? { reportMonth: data.reportMonth } : {},
       };
+    // A part published or changed, a meeting moved: the week, on THAT
+    // meeting. They all led to the Memorial's place in the week (4 November
+    // 2026), because they shared its case below.
     case 'schedule_published':
     case 'schedule_changed':
+      return {
+        path: '/schedule',
+        params: data.weekStartDate
+          ? {
+              week: data.weekStartDate,
+              ...(data.eventType === 'midweek' ||
+              data.eventType === 'weekend' ||
+              data.eventType === 'memorial'
+                ? { meeting: data.eventType }
+                : {}),
+            }
+          : {},
+      };
     // The Memorial has no screen of its own on purpose: its programme opens
-    // in the week, in the place of the meeting it took away. So both of its
-    // notices lead exactly where the schedule's do.
+    // in the week, in the place of the meeting it took away.
     case 'memorial_published':
     case 'memorial_tomorrow':
       return {

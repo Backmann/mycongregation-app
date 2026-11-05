@@ -50,7 +50,7 @@ const { effectiveVersionFor, versionStartsOn } = await import(
 const WEEK = '2026-04-06';
 const VERSION = { midweekDow: 4, weekendDow: 7 };
 const rules = (events) =>
-  weekRules({ weekStartISO: WEEK, version: VERSION, events });
+  weekRules({ weekStartISO: WEEK, version: VERSION, events, moves: [] });
 
 /** Which meetings are actually held, in order — the thing both sides answer. */
 const held = (r) =>
@@ -195,7 +195,7 @@ check(
     weekendTime: '13:00',
     address: 'Musterstraße 1',
   };
-  const at = (events) => weekRules({ weekStartISO: WEEK, version: timed, events });
+  const at = (events, moves = []) => weekRules({ weekStartISO: WEEK, version: timed, events, moves });
   const r0 = at([]);
   check('час — из настроек в обычную неделю', [r0.timeOf('midweek'), r0.timeOf('weekend')], ['19:00', '13:00']);
   const r1 = at([{ id: 'x', type: 'other', date: '2026-04-12', meetingMode: 'changed', meetingTime: '10:00' }]);
@@ -207,7 +207,7 @@ check(
   check('час идёт за встречей в день визита', [r2.dateOf('midweek'), r2.timeOf('midweek')], ['2026-04-07', '18:30']);
   const r3 = at([{ id: 'x', type: 'other', date: '2026-04-10', meetingMode: 'changed', meetingTime: '10:00' }]);
   check('час другого дня недели не в счёт', [r3.timeOf('midweek'), r3.timeOf('weekend')], ['19:00', '13:00']);
-  check('без настроек часа нет', weekRules({ weekStartISO: WEEK, version: null, events: [] }).timeOf('midweek'), null);
+  check('без настроек часа нет', weekRules({ weekStartISO: WEEK, version: null, events: [], moves: [] }).timeOf('midweek'), null);
   check('место — из настроек', r0.placeOf('weekend'), 'Musterstraße 1');
   const r4 = at([{ id: 'x', type: 'other', date: '2026-04-12', meetingMode: 'changed', meetingAddress: ' Stadthalle ' }]);
   check('место — из события «с изменениями»', [r4.placeOf('weekend'), r4.placeOf('midweek')], ['Stadthalle', 'Musterstraße 1']);
@@ -231,6 +231,41 @@ check(
     pick(at([{ id: 's', type: 'special_talk', date: '2026-04-12', replacesMeeting: true }]).meetingOf('weekend')),
     ['2026-04-12', '13:00', false, 'replaced'],
   );
+}
+
+// ---- a meeting moved for one week (4 November 2026) ----------------------
+// The same cases as the server's week-rules.spec.ts «a meeting moved for one
+// week»: the move sets the day, hour and place; it counts only in its own
+// week; it never overrides a visit; it never brings back a cancelled meeting.
+{
+  const timed = {
+    midweekDow: 4,
+    weekendDow: 7,
+    midweekTime: '19:00',
+    weekendTime: '10:00',
+    address: 'Musterstraße 1',
+  };
+  const move = { weekStartDate: WEEK, eventType: 'midweek', date: '2026-04-07', time: '18:30', address: null };
+  const at = (events, moves) => weekRules({ weekStartISO: WEEK, version: timed, events, moves });
+  const pickM = (m) => [m.date, m.time, m.place, m.held];
+
+  const r1 = at([], [move]);
+  check('перенос: новый день, час, зал', pickM(r1.meetingOf('midweek')), ['2026-04-07', '18:30', 'Musterstraße 1', true]);
+  check('перенос: откуда — обычный день и час', r1.meetingOf('midweek').moved?.from, { date: '2026-04-09', time: '19:00' });
+  check('перенос: другая встреча на месте', pickM(r1.meetingOf('weekend')), ['2026-04-12', '10:00', 'Musterstraße 1', true]);
+  check('перенос: место с переноса', at([], [{ ...move, address: ' Stadthalle ' }]).placeOf('midweek'), 'Stadthalle');
+  check(
+    'перенос выходной — только её',
+    [at([], [{ ...move, eventType: 'weekend', date: '2026-04-11', time: '15:00' }]).dateOf('weekend'), at([], [{ ...move, eventType: 'weekend', date: '2026-04-11', time: '15:00' }]).dateOf('midweek')],
+    ['2026-04-11', '2026-04-09'],
+  );
+  const other = weekRules({ weekStartISO: '2026-04-13', version: timed, events: [], moves: [move] });
+  check('перенос — только в своей неделе', [other.dateOf('midweek'), other.moveOf('midweek')], ['2026-04-16', null]);
+  const visit = at([{ id: 'v', type: 'circuit_overseer_visit', date: '2026-04-06', coMidweekDow: 2 }], [{ ...move, date: '2026-04-08' }]);
+  check('перенос не перебивает визит', [visit.dateOf('midweek'), visit.moveOf('midweek')], ['2026-04-07', null]);
+  const congress = at([{ id: 'c', type: 'regional_convention', date: '2026-04-10', endDate: '2026-04-12' }], [move]);
+  check('перенос не возвращает отменённую встречу', congress.meetingOf('midweek').held, false);
+  check('без переноса — moved пуст', at([], []).meetingOf('midweek').moved, null);
 }
 
 // ---- which schedule version is in force (26 September) --------------------

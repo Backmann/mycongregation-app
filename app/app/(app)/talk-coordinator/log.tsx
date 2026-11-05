@@ -36,6 +36,7 @@ import {
   VisitingSpeaker,
   meetingSettingsApi,
   specialEventsApi,
+  MeetingMove,
   MeetingSettingsVersion,
   extractErrorMessage,
   absencesApi,
@@ -102,6 +103,7 @@ import type {
   Line,
   WeekModel,
 } from "../../../components/talk-log/JournalWeeks";
+import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 
 const QK = ["talk-exchange"] as const;
 
@@ -150,6 +152,7 @@ function buildWeeks(
   versions: MeetingSettingsVersion[],
   fallback: MeetingSettingsVersion | null,
   events: SpecialEvent[],
+  moves: MeetingMove[],
 ): WeekRow[] {
   const rows: WeekRow[] = [];
   let monday = startOfWeekMonday(new Date(`${YEAR_FROM - 1}-12-22T00:00:00`));
@@ -162,6 +165,7 @@ function buildWeeks(
       weekStartISO: mISO,
       version: effectiveVersionFor(versions, mISO) ?? fallback,
       events,
+      moves,
     }).meetingOf('weekend');
     const wd = m.date ? new Date(`${m.date}T00:00:00`) : addDays(monday, 6);
     const y = wd.getFullYear();
@@ -329,6 +333,7 @@ export default function TalkExchangeYearScreen() {
     queryKey: ["meeting-settings"],
     queryFn: () => meetingSettingsApi.getOverview(),
   });
+  const moves = useMeetingMoves();
   const eventsQuery = useQuery({
     queryKey: ["special-events", "all"],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -844,7 +849,7 @@ export default function TalkExchangeYearScreen() {
   const months = useMemo<MonthBlock[]>(() => {
     const versions = settingsQuery.data?.versions ?? [];
     const fallback = settingsQuery.data?.effective ?? null;
-    const weeks = buildWeeks(versions, fallback, eventsQuery.data ?? []);
+    const weeks = buildWeeks(versions, fallback, eventsQuery.data ?? [], moves);
     const byMonth = new Map<string, WeekRow[]>();
     for (const w of weeks) {
       const key = w.date.slice(0, 7);
@@ -856,7 +861,7 @@ export default function TalkExchangeYearScreen() {
       title: dayjs(`${key}-01`).locale(i18n.language).format("MMMM YYYY"),
       rows,
     }));
-  }, [settingsQuery.data, eventsQuery.data, i18n.language]);
+  }, [settingsQuery.data, eventsQuery.data, moves, i18n.language]);
 
   // Плоский список недель для модалки «Заменить докладчика».
   const weeksFlat = useMemo<WeekRow[]>(

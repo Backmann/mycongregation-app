@@ -22,6 +22,7 @@ import { FONT } from '../lib/typography';
 import { DutiesSection } from './DutiesSection';
 import { placeKey, virtualDuties } from '../lib/duty-places';
 import { FreeAtMeeting } from './duties/IdleCard';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 
 export type DutyMeeting = 'midweek' | 'weekend' | 'memorial';
 
@@ -71,6 +72,7 @@ export function DutiesMeetingEditor({
   } = useDutiesWeek(weekStartISO, nextWeekISO);
 
   const rosterQ = useQuery({ queryKey: ['publishers', 'roster'], queryFn: () => publishersApi.roster() });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const assignmentsQ = useQuery({
@@ -81,8 +83,8 @@ export function DutiesMeetingEditor({
   const version = effectiveVersionFor(settingsQ.data?.versions, weekStartISO);
   const events = eventsQ.data;
   const rules = useMemo(
-    () => weekRules({ weekStartISO, version, events: events ?? [] }),
-    [weekStartISO, version, events],
+    () => weekRules({ weekStartISO, version, events: events ?? [] , moves }),
+    [weekStartISO, version, events, moves],
   );
   // The congregation's places for this kind of meeting (27 October 2026). A
   // midweek or weekend meeting nobody has filled yet shows them as they WILL

@@ -106,6 +106,7 @@ import { ConductLiveCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 import { formatDayRange } from "../../../lib/date-range";
 import { absenceNote } from "../../../lib/absence-note";
+import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -1933,6 +1934,7 @@ function useHomeData(todayISO: string) {
     queryFn: () => serviceGroupsApi.list({}),
     staleTime: 30 * 60 * 1000,
   });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({
     queryKey: ["special-events", "home"],
     queryFn: () => specialEventsApi.fromThisWeek(),
@@ -2100,6 +2102,7 @@ function useHomeData(todayISO: string) {
       myServiceGroupId: myPublisher?.serviceGroupId ?? null,
       myPublisherId: myPublisherId ?? null,
       events: eventsQ.data ?? [],
+      moves,
       eldersMeetings: eldersMeetingsQ.data ?? [],
       absences: absencesQ.data ?? [],
       coVisits: coVisitQ.data ?? [],
@@ -2136,6 +2139,7 @@ function useHomeData(todayISO: string) {
     programmeRows,
     publishersQ.data,
     eventsQ.data,
+    moves,
     tasksQ.data,
     absencesQ.data,
     eldersMeetingsQ.data,

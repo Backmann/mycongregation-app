@@ -23,6 +23,7 @@ import { Dialog } from '../../../components/Dialog';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { weekRules } from '../../../lib/week-rules';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 /**
  * «Места собрания» — the places of the midweek and the weekend meeting, kept
@@ -97,12 +98,14 @@ export default function DutyPlacesScreen() {
   }, [latest, saved]);
   // The meeting's own day, not its week's Monday.
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const latestDate = latest
     ? (weekRules({
         weekStartISO: latest.weekStartDate,
         version: effectiveVersionFor(settingsQ.data?.versions, latest.weekStartDate),
         events: eventsQ.data ?? [],
+        moves,
       }).dateOf(kind) ?? latest.weekStartDate)
     : null;
   const takeLatest = () => {

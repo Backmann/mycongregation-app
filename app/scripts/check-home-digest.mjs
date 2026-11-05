@@ -155,7 +155,7 @@ const resolvePart = (it) => ({
   partnerName: it.partnerName ?? null,
 });
 
-function run({ me, group, items, absences = [], events = [], nowHM = '20:58', today = TODAY, titles }) {
+function run({ me, group, items, absences = [], events = [], moves = [], nowHM = '20:58', today = TODAY, titles }) {
   const timeline = buildTimeline({
     versions: VERSIONS,
     fieldServiceMeetings: SATURDAY,
@@ -164,6 +164,7 @@ function run({ me, group, items, absences = [], events = [], nowHM = '20:58', to
     myServiceGroupId: group,
     myPublisherId: me,
     events,
+    moves,
     absences,
     myItems: items,
     todayISO: today,
@@ -456,6 +457,23 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('17а часть в день отъезда — конфликт на самой строке', wed.awayConflict?.id, 'school');
   const first = timeline.near.find((g) => g.dateISO === '2026-09-30').entries.find((e) => e.type === 'meeting');
   check('17б без отъезда — без конфликта', first.awayConflict ?? null, null);
+}
+
+// --- 18. A meeting moved for one week (4 November 2026) ----------------------
+// The midweek meeting of 28 September moved from Wednesday 30th 19:00 to
+// Thursday 1 October 18:30: the row, its hour and the brother's part go there.
+{
+  const items = [part('2026-09-28', 'midweek', 'midweek_chairman', 1)];
+  const moves = [
+    { id: 'm1', weekStartDate: '2026-09-28', eventType: 'midweek', date: '2026-10-01', time: '18:30', address: null },
+  ];
+  const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items, moves });
+  const meetingOn = (d) =>
+    (timeline.near.find((g) => g.dateISO === d)?.entries ?? []).filter((e) => e.type === 'meeting');
+  check('18а перенесённой встречи нет в старый день', meetingOn('2026-09-30').length, 0);
+  check('18б она в новый день, в новый час', meetingOn('2026-10-01').map((e) => e.time), ['18:30']);
+  check('18в моя часть — с ней', labels(meetingOn('2026-10-01')[0]), ['midweek_chairman']);
+  check('18г ближайшее — новый день', digest.next?.dateISO, '2026-10-01');
 }
 
 if (failures) {

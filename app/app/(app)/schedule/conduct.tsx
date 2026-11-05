@@ -82,6 +82,7 @@ import { HeaderMenu } from '../../../components/HeaderMenu';
 import { HEADER_ICON } from '../../../lib/header';
 import { tapSaved } from '../../../lib/haptics';
 import { NoAccess } from '../../../components/NoAccess';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 /**
  * CONDUCT MODE — what the chairman keeps open on a tablet while the midweek
@@ -367,6 +368,7 @@ export default function ConductScreen({
   // the result in place of Wednesday's. After the day the screen only shows
   // the result; the server refuses the rest (conduct-runs/meeting-day).
   // The same key the duties sheet reads the events by.
+  const moves = useMeetingMoves();
   const eventsQuery = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -379,9 +381,10 @@ export default function ConductScreen({
             weekStartISO: week,
             version: effectiveVersionFor(settingsQuery.data?.versions, week),
             events: eventsQuery.data ?? [],
+            moves,
           }).meetingOf(kind)
         : null,
-    [week, settingsQuery.data, eventsQuery.data, kind],
+    [week, settingsQuery.data, eventsQuery.data, moves, kind],
   );
   const meetingDay = meeting?.date ?? null;
   // A meeting that is not held at all (a convention week, the one the

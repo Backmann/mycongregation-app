@@ -9,6 +9,7 @@ import { weekRules } from '../lib/week-rules';
 import { FONT } from '../lib/typography';
 import { CleaningSection } from './CleaningSection';
 import { UndoBar } from './UndoBar';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 
 /**
  * One week's cleaning, editable by whoever may edit it — the SAME detail the
@@ -33,6 +34,7 @@ export function CleaningWeekEditor({ weekStartISO }: { weekStartISO: string }) {
   } = useCleaningWeek(weekStartISO);
 
   const rosterQ = useQuery({ queryKey: ['publishers', 'roster'], queryFn: () => publishersApi.roster() });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const publishersById = new Map<string, Publisher>((rosterQ.data?.data ?? []).map((p) => [p.id, p]));
@@ -43,6 +45,7 @@ export function CleaningWeekEditor({ weekStartISO }: { weekStartISO: string }) {
     weekStartISO,
     version: effectiveVersionFor(settingsQ.data?.versions, weekStartISO),
     events: eventsQ.data ?? [],
+    moves,
   });
 
   const canEdit = perms.canEditCleaning;

@@ -3,6 +3,7 @@
  * full-list screen so the two never drift apart.
  */
 import {
+  MeetingMove,
   MeetingSettingsVersion,
   MyAssignmentItem,
   SpecialEvent,
@@ -49,6 +50,8 @@ export function refineMyTasks(
    * has always known better; it simply was not asked here.
    */
   events: SpecialEvent[] = [],
+  /** One-week moves: a part goes with its meeting to the day it is moved to. */
+  moves: MeetingMove[],
 ): RefinedTask[] {
   const refined: RefinedTask[] = [];
   for (const item of items) {
@@ -68,6 +71,7 @@ export function refineMyTasks(
             weekStartISO: week,
             version: effectiveVersionFor(versions, week),
             events,
+            moves,
           }).timeOf('weekend') ?? undefined;
       }
     } else if (
@@ -90,6 +94,7 @@ export function refineMyTasks(
         weekStartISO: item.weekStartDate,
         version: v,
         events,
+        moves,
       });
       const kind = item.eventType === 'midweek' ? 'midweek' : 'weekend';
       // One answer for the meeting (4 November 2026): its real day, its hour

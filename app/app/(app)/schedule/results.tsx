@@ -14,6 +14,7 @@ import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { clock } from '../../../components/ConductSummary';
 import { NoAccess } from '../../../components/NoAccess';
 import { failsScreen } from '../../../lib/screen-failure';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 /**
  * «ИТОГИ ВСТРЕЧ» — one place to find them (Lionel, 25 October 2026).
@@ -55,6 +56,7 @@ export default function ConductResults() {
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 60 * 60 * 1000,
   });
+  const moves = useMeetingMoves();
   const { data: events } = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -78,6 +80,7 @@ export default function ConductResults() {
           weekStartISO: x.week,
           version: effectiveVersionFor(settings?.versions, x.week),
           events: events ?? [],
+          moves,
         }).dateOf(x.kind) ?? x.week;
       return { ...x, day };
     })

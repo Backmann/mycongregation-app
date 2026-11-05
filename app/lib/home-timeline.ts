@@ -35,6 +35,7 @@ import {
   MyCoVisit,
   MyCoVisitItem,
   CoVisitFieldServiceWeek,
+  MeetingMove,
 } from './api';
 import { effectiveVersionFor } from './meeting-schedule';
 import { addDays, formatDateISO, startOfWeekMonday } from './dates';
@@ -419,6 +420,8 @@ export interface BuildTimelineInput {
   myServiceGroupId?: string | null;
   myPublisherId?: string | null;
   events: SpecialEvent[];
+  /** One-week meeting moves — required, like the events (lib/week-rules.ts). */
+  moves: MeetingMove[];
   /** Approved meetings of the body; empty for anybody who is not an elder. */
   eldersMeetings?: {
     id: string;
@@ -526,6 +529,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     myServiceGroupId = null,
     myPublisherId = null,
     events,
+    moves,
     eldersMeetings = [],
     absences = [],
     coVisits = [],
@@ -589,13 +593,13 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       startOfWeekMonday(new Date(`${placementDate(r, todayISO)}T00:00:00`)),
     );
     const v = effectiveVersionFor(versions, monISO);
-    return !!weekRules({ weekStartISO: monISO, version: v, events }).congress;
+    return !!weekRules({ weekStartISO: monISO, version: v, events, moves }).congress;
   };
   // Events go in so a visit week places a part on the day the meeting was
   // actually moved to, rather than on the weekday the settings name.
   // A part of a meeting that is not held stays out of Home, as before; «Мои
   // назначения» shows it muted with the reason.
-  const refined = refineMyTasks(myItems, versions, todayISO, events).filter(
+  const refined = refineMyTasks(myItems, versions, todayISO, events, moves).filter(
     (r) => !droppedByCongress(r) && r.notHeldBy === undefined,
   );
 
@@ -628,7 +632,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   // module is the single authority, shared with the schedule screen.
   for (const weekISO of weekMondays) {
     const v = effectiveVersionFor(versions, weekISO);
-    const rules = weekRules({ weekStartISO: weekISO, version: v, events });
+    const rules = weekRules({ weekStartISO: weekISO, version: v, events, moves });
     if (rules.congress) continue;
     if (!v) continue;
     for (const kind of ['midweek', 'weekend'] as const) {

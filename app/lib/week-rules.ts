@@ -25,7 +25,7 @@
  *
  * Модуль чистый: ни i18n, ни React, ни запросов — только даты и правила.
  */
-import { MeetingSettingsVersion, SpecialEvent } from './api';
+import { MeetingMove, MeetingSettingsVersion, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
 
 export type MeetingKind = 'midweek' | 'weekend';
@@ -39,7 +39,12 @@ export interface WeekRules {
   congress: SpecialEvent | null;
   /** False during a convention week: the congregation does not meet at all. */
   meetingsHeld: boolean;
-  /** Actual weekday of a meeting (1=Mon..7=Sun), the CO-visit shift included. */
+  /**
+   * The one-week move of this meeting, if there is one and it counts — never
+   * against a visit, which sets the midweek day itself. The server's `moveOf`.
+   */
+  moveOf: (kind: MeetingKind) => MeetingMove | null;
+  /** Actual weekday of a meeting (1=Mon..7=Sun), the CO-visit shift and a move included. */
   dowOf: (kind: MeetingKind) => number | undefined;
   /** Actual calendar date of a meeting, or null when it has no day. */
   dateOf: (kind: MeetingKind) => string | null;
@@ -80,6 +85,8 @@ export interface WeekMeeting {
   notHeld: NotHeldReason | null;
   /** The event standing in for it (convention, Memorial, flagged event). */
   by: SpecialEvent | null;
+  /** Moved for this one week — and from where (the usual day and hour). */
+  moved: { from: { date: string | null; time: string | null }; move: MeetingMove } | null;
 }
 
 /**
@@ -129,6 +136,12 @@ export function weekRules(input: {
   version: MeetingSettingsVersion | null | undefined;
   /** All known events; filtered to this week internally. */
   events: SpecialEvent[];
+  /**
+   * One-week moves of meetings, any weeks (4 November 2026). REQUIRED on
+   * purpose: a screen that forgot them would show a moved meeting on its old
+   * day, and the compiler is what finds every such screen.
+   */
+  moves: MeetingMove[];
 }): WeekRules {
   const { weekStartISO, version } = input;
   const weekStart = new Date(`${weekStartISO}T00:00:00`);
@@ -138,11 +151,34 @@ export function weekRules(input: {
     events.find((e) => e.type === 'circuit_overseer_visit') ?? null;
   const congress = events.find(isCongressEvent) ?? null;
 
-  const dowOf = (kind: MeetingKind): number | undefined => {
+  const weekLastISO = formatDateISO(addDays(weekStart, 6));
+  // A move counts only inside its own week and never against a visit — the
+  // same rule as the server's.
+  const moveOf = (kind: MeetingKind): MeetingMove | null => {
+    if (kind === 'midweek' && coVisit) return null;
+    return (
+      input.moves.find(
+        (m) =>
+          m.eventType === kind &&
+          m.weekStartDate === weekStartISO &&
+          m.date >= weekStartISO &&
+          m.date <= weekLastISO,
+      ) ?? null
+    );
+  };
+
+  /** The weekday WITHOUT a move — what a move is «from». */
+  const usualDowOf = (kind: MeetingKind): number | undefined => {
     if (kind === 'weekend') return version?.weekendDow ?? undefined;
     // During a visit the midweek meeting commonly moves to Tuesday.
     if (coVisit) return coVisit.coMidweekDow ?? 2;
     return version?.midweekDow ?? undefined;
+  };
+
+  const dowOf = (kind: MeetingKind): number | undefined => {
+    const move = moveOf(kind);
+    if (move) return isoDowOf(move.date);
+    return usualDowOf(kind);
   };
 
   const dateOf = (kind: MeetingKind): string | null => {
@@ -210,16 +246,24 @@ export function weekRules(input: {
   const isTakenAway = (kind: MeetingKind): boolean =>
     !!congress || !!replacedBy(kind);
 
-  const timeOf = (kind: MeetingKind): string | null => {
-    const dateISO = dateOf(kind);
-    if (!dateISO) return null;
+  /** The hour on a day without a move: an event's changed hour, else the settings'. */
+  const hourOn = (dateISO: string, kind: MeetingKind): string | null => {
     const changed = changedOn(events, dateISO, 'meetingTime');
     if (changed?.meetingTime) return changed.meetingTime.slice(0, 5);
     const t = kind === 'midweek' ? version?.midweekTime : version?.weekendTime;
     return t ? t.slice(0, 5) : null;
   };
 
+  const timeOf = (kind: MeetingKind): string | null => {
+    const move = moveOf(kind);
+    if (move) return move.time.slice(0, 5);
+    const dateISO = dateOf(kind);
+    return dateISO ? hourOn(dateISO, kind) : null;
+  };
+
   const placeOf = (kind: MeetingKind): string | null => {
+    const move = moveOf(kind);
+    if (move) return move.address?.trim() || version?.address?.trim() || null;
     const dateISO = dateOf(kind);
     if (!dateISO) return null;
     const changed = changedOn(events, dateISO, 'meetingAddress');
@@ -229,6 +273,8 @@ export function weekRules(input: {
 
   const meetingOf = (kind: MeetingKind): WeekMeeting => {
     const date = dateOf(kind);
+    const move = moveOf(kind);
+    const usualDow = usualDowOf(kind);
     const replaced = replacedBy(kind);
     const notHeld: NotHeldReason | null = congress
       ? 'congress'
@@ -245,6 +291,19 @@ export function weekRules(input: {
       held: !!date && notHeld === null,
       notHeld,
       by: congress ?? replaced ?? null,
+      moved: move
+        ? {
+            move,
+            from: {
+              date: usualDow
+                ? formatDateISO(addDays(weekStart, usualDow - 1))
+                : null,
+              time: usualDow
+                ? hourOn(formatDateISO(addDays(weekStart, usualDow - 1)), kind)
+                : null,
+            },
+          }
+        : null,
     };
   };
 
@@ -255,6 +314,7 @@ export function weekRules(input: {
     memorial,
     memorialTakes,
     meetingsHeld: !congress,
+    moveOf,
     dowOf,
     dateOf,
     replacedBy,

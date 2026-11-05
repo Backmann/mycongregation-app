@@ -39,6 +39,7 @@ import { PioneerEndSheet } from './PioneerEndSheet';
 import { NoQuotaSheet } from './NoQuotaSheet';
 import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
+import { useMeetingMoves } from '../../lib/useMeetingMoves';
 
 /**
  * THE PUBLISHER'S CARD, READ (28 October 2026, Lionel: «premium, convenient,
@@ -486,6 +487,7 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
   // meeting moved by the circuit overseer's visit on its moved day, the
   // Memorial on its own date (Lionel, 28 October 2026: the day, not the week).
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const dayOf = (i: ActivityItem): string | null => {
     if (!settingsQ.data || !eventsQ.data) return null;
@@ -493,6 +495,7 @@ function MeetingsBlock({ publisherId }: { publisherId: string }) {
       weekStartISO: i.weekStartDate,
       version: effectiveVersionFor(settingsQ.data.versions, i.weekStartDate),
       events: eventsQ.data,
+      moves,
     });
     if (i.eventType === 'memorial') return rules.memorial?.date ?? null;
     if (i.eventType === 'midweek' || i.eventType === 'weekend') return rules.dateOf(i.eventType);

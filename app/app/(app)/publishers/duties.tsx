@@ -28,6 +28,7 @@ import { useMayOpen } from '../../../lib/useMayOpen';
 import { OPTIONAL_DUTY_TYPES } from '../../../lib/duty-count';
 import { capitalizeFirst } from '../../../lib/relative-time';
 import { countedPlaces } from '../../../lib/duty-places';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 const INK = '#0f172a';
 const SOFT = '#64748b';
@@ -105,6 +106,7 @@ export default function DutiesScreen() {
     queryFn: () => dutiesApi.list({ weekStart: thisMonday, weekEnd: endISO }),
     enabled: canView,
   });
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({ queryKey: ['special-events', 'all'], queryFn: () => specialEventsApi.list({ all: true }) });
   const settingsQ = useQuery({ queryKey: ['meeting-settings'], queryFn: () => meetingSettingsApi.getOverview() });
   const rosterQ = useQuery({ queryKey: ['publishers', 'roster'], queryFn: () => publishersApi.roster() });
@@ -143,7 +145,7 @@ export default function DutiesScreen() {
   const rows: Row[] = [];
   for (const week of weeks) {
     const version = effectiveVersionFor(settingsQ.data?.versions, week);
-    const rules = weekRules({ weekStartISO: week, version, events: eventsQ.data ?? [] });
+    const rules = weekRules({ weekStartISO: week, version, events: eventsQ.data ?? [] , moves });
     if (rules.congress) {
       rows.push({ kind: 'congress', week, event: t(`specialEvents.types.${rules.congress.type}`) });
       continue;

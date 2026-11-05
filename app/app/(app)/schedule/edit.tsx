@@ -105,6 +105,7 @@ import { SECTION_COLORS } from "../../../lib/section-colors";
 import { useDutiesWeek } from "../../../lib/useDutiesWeek";
 import { failsScreen } from "../../../lib/screen-failure";
 import { formatDayRange } from "../../../lib/date-range";
+import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -195,6 +196,7 @@ function ProgrammeEditor() {
   // and not pressable — an edit must never land on a week not on screen.
   const showingPreviousWeek = assignmentsQuery.isPlaceholderData;
 
+  const moves = useMeetingMoves();
   const specialEventsQuery = useQuery({
     queryKey: ["special-events", "all"],
     queryFn: () => specialEventsApi.list({ all: true }),
@@ -259,6 +261,7 @@ function ProgrammeEditor() {
         weekStartISO: weekStartISO2,
         version: effectiveVersionFor(settingsVersions, weekStartISO2),
         events: allSpecialEvents ?? [],
+        moves,
       });
       const memorial = rules.memorialTakes === k ? rules.memorial : null;
       return {
@@ -267,7 +270,7 @@ function ProgrammeEditor() {
         coVisit: k === "midweek" && !!rules.coVisit,
       };
     },
-    [settingsVersions, allSpecialEvents],
+    [settingsVersions, allSpecialEvents, moves],
   );
   // Opens the picked meeting's section after a drawer jump. The week is part
   // of the focus because switching weeks unmounts the sections while the new
@@ -565,8 +568,9 @@ function ProgrammeEditor() {
         weekStartISO,
         version: meetingVersion,
         events: specialEvents ?? [],
+        moves,
       }),
-    [weekStartISO, meetingVersion, specialEvents],
+    [weekStartISO, meetingVersion, specialEvents, moves],
   );
   const coVisitEvent = rules.coVisit ?? undefined;
   const dowFor = (kind: "midweek" | "weekend") => rules.dowOf(kind);
@@ -740,6 +744,7 @@ function ProgrammeEditor() {
           weekStartISO: monISO,
           version: effectiveVersionFor(settingsVersions, monISO),
           events,
+          moves,
         });
       };
       const usualTime = (
