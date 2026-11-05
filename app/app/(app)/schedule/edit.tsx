@@ -780,6 +780,17 @@ function ProgrammeEditor() {
           // changed — and then both are said (review, 4 November 2026).
           headerNote:
             [
+              // Moved for this week: said on paper too, with the day it
+              // would have had — a sheet on the board cannot be asked
+              // (5 November 2026).
+              m.held && m.moved?.from.date
+                ? t("schedule.print.movedFrom", {
+                    day: new Date(`${m.moved.from.date}T00:00:00`).toLocaleDateString(
+                      i18n.language,
+                      { weekday: "long", day: "numeric", month: "long" },
+                    ),
+                  })
+                : null,
               visit ? t("schedule.print.coVisitNote") : null,
               otherHour ? t("schedule.print.startsAt", { time: m.time }) : null,
             ]

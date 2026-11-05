@@ -6,6 +6,7 @@ import { extractErrorMessage, meetingMovesApi } from '../lib/api';
 import { notify } from '../lib/error-bus';
 import { confirm } from './ConfirmHost';
 import { refreshAfterMove } from './MeetingMoveSheet';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
 import type { MeetingKind, WeekRules } from '../lib/week-rules';
 
 /**
@@ -31,6 +32,7 @@ export function MeetingMoveBar({
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
+  const moves = useMeetingMoves();
   const m = rules.meetingOf(kind);
   const day = (iso: string | null, opts: Intl.DateTimeFormatOptions) =>
     iso ? new Intl.DateTimeFormat(i18n.language, opts).format(new Date(`${iso}T00:00:00`)) : '';
@@ -39,6 +41,36 @@ export function MeetingMoveBar({
   const past = (m.date ?? '') < todayISO || (from?.date ?? '') < todayISO;
   const may = canMove && (!past || canMoveAfterwards);
 
+  // A move a visit or a convention made void, entered after it: the rules
+  // ignore it, the row is still there. Said here, with the way to clear it
+  // — nobody is told, nothing else changes (5 November 2026).
+  const raw = moves.find(
+    (x) => x.weekStartDate === rules.weekStartISO && x.eventType === kind,
+  );
+  if (raw && !m.moved) {
+    const clear = async () => {
+      try {
+        await meetingMovesApi.moveBack(rules.weekStartISO, kind);
+        await refreshAfterMove(qc);
+        notify(t('schedule.move.voidDone'), undefined, 'success');
+      } catch (err) {
+        notify(t('common.error'), extractErrorMessage(err));
+      }
+    };
+    return (
+      <View style={[styles.moved, styles.voided]}>
+        <View style={styles.voidHead}>
+          <Ionicons name="alert-circle-outline" size={18} color="#9a3412" />
+          <Text style={[styles.from, { flexShrink: 1 }]}>{t('schedule.move.void')}</Text>
+        </View>
+        {canMove ? (
+          <Pressable accessibilityRole="button" style={[styles.btn, styles.btnQuiet]} onPress={clear}>
+            <Text style={[styles.btnText, styles.btnQuietText]}>{t('schedule.move.voidRemove')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    );
+  }
   if (!m.held) return null;
   if (!m.moved) {
     if (!may) return null;
@@ -140,5 +172,7 @@ const styles = StyleSheet.create({
   },
   btnText: { color: '#0e7490', fontSize: 14, fontFamily: 'Manrope_700Bold' },
   btnQuiet: { borderColor: '#cbd5e1' },
+  voidHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+  voided: { backgroundColor: '#fffbeb', borderColor: '#fcd34d' },
   btnQuietText: { color: '#334155' },
 });
