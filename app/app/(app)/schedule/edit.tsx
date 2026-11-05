@@ -106,6 +106,8 @@ import { useDutiesWeek } from "../../../lib/useDutiesWeek";
 import { failsScreen } from "../../../lib/screen-failure";
 import { formatDayRange } from "../../../lib/date-range";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
+import { MeetingMoveSheet } from "../../../components/MeetingMoveSheet";
+import { MeetingMoveBar } from "../../../components/MeetingMoveBar";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -318,6 +320,9 @@ function ProgrammeEditor() {
       ? locksQuery.data
       : undefined;
   const [retroWeek, setRetroWeek] = useState<string | null>(null);
+  // Moving a meeting for this one week (4 November 2026): which meeting's
+  // sheet is open, if any.
+  const [moveKind, setMoveKind] = useState<"midweek" | "weekend" | null>(null);
   const retro = retroWeek === weekStartISO;
   const frozenNow = (k: "midweek" | "weekend") =>
     !!locks?.meetings[k]?.frozen && !retro;
@@ -1068,6 +1073,18 @@ function ProgrammeEditor() {
           onChange={setWeekStart}
           onOpenDrawer={() => setDrawerOpen(true)}
         />
+        <MeetingMoveSheet
+          visible={moveKind !== null}
+          onClose={() => setMoveKind(null)}
+          rules={rules}
+          initialKind={moveKind ?? "midweek"}
+          canMove={{
+            midweek: perms.canMoveMidweek,
+            weekend: perms.canMoveWeekend,
+          }}
+          todayISO={formatDateISO(new Date())}
+          hallAddress={meetingVersion?.address ?? null}
+        />
         <WeekDrawer
           visible={drawerOpen}
           onClose={() => setDrawerOpen(false)}
@@ -1251,13 +1268,23 @@ function ProgrammeEditor() {
                         })
                       }
                       banner={
-                        canEditMidweekSchedule ? (
-                          <ProgrammeNoticeLine
-                            weekStartDate={items[0].weekStartDate}
-                            eventType="midweek"
-                            changed={changedKey(items)}
+                        <>
+                          {canEditMidweekSchedule ? (
+                            <ProgrammeNoticeLine
+                              weekStartDate={items[0].weekStartDate}
+                              eventType="midweek"
+                              changed={changedKey(items)}
+                            />
+                          ) : null}
+                          <MeetingMoveBar
+                            rules={rules}
+                            kind="midweek"
+                            canMove={perms.canMoveMidweek}
+                            canMoveAfterwards={perms.canMoveAfterwards}
+                            todayISO={formatDateISO(new Date())}
+                            onOpen={setMoveKind}
                           />
-                        ) : undefined
+                        </>
                       }
                     >
                       <ProgrammeLockNote
@@ -1325,13 +1352,23 @@ function ProgrammeEditor() {
                         })
                       }
                       banner={
-                        canEditWeekendSchedule ? (
-                          <ProgrammeNoticeLine
-                            weekStartDate={items[0].weekStartDate}
-                            eventType="weekend"
-                            changed={changedKey(items)}
+                        <>
+                          {canEditWeekendSchedule ? (
+                            <ProgrammeNoticeLine
+                              weekStartDate={items[0].weekStartDate}
+                              eventType="weekend"
+                              changed={changedKey(items)}
+                            />
+                          ) : null}
+                          <MeetingMoveBar
+                            rules={rules}
+                            kind="weekend"
+                            canMove={perms.canMoveWeekend}
+                            canMoveAfterwards={perms.canMoveAfterwards}
+                            todayISO={formatDateISO(new Date())}
+                            onOpen={setMoveKind}
                           />
-                        ) : undefined
+                        </>
                       }
                     >
                       <ProgrammeLockNote

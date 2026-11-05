@@ -4847,7 +4847,32 @@ export interface MeetingMoveResult {
   attendanceMoved: boolean;
 }
 
+/** Before a move: who is told, and who with a part there is away that day. */
+export interface MeetingMovePreview {
+  members: number;
+  ownNotice: number;
+  away: {
+    name: string;
+    items: (
+      | { kind: "meeting"; label: string; asAssistant: boolean }
+      | { kind: "duty"; label: string; slotIndex?: number }
+    )[];
+  }[];
+}
+
 export const meetingMovesApi = {
+  /** For the confirm screen; only for whoever may move that meeting. */
+  async preview(
+    week: string,
+    kind: "midweek" | "weekend",
+    date: string,
+  ): Promise<MeetingMovePreview> {
+    const { data } = await api.get<MeetingMovePreview>(
+      `/meeting-moves/${week}/${kind}/preview`,
+      { params: { date } },
+    );
+    return data;
+  },
   /** Every move (or from a week on). Read by every member: the rules need them. */
   async list(fromWeek?: string): Promise<MeetingMove[]> {
     const { data } = await api.get<MeetingMove[]>("/meeting-moves", {

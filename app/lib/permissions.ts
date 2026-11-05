@@ -77,6 +77,14 @@ export interface Permissions {
    */
   canEditMidweekSchedule: boolean;
   canEditWeekendSchedule: boolean;
+  /**
+   * Moving a meeting for one week (4 November 2026): the same people who
+   * edit its programme; a meeting already past — the administrator or the
+   * body coordinator only. The server decides; these only hide the button.
+   */
+  canMoveMidweek: boolean;
+  canMoveWeekend: boolean;
+  canMoveAfterwards: boolean;
   canEditCleaning: boolean;
   canEditCartWitnessing: boolean;
   canEditFieldServiceMeetings: boolean;
@@ -207,6 +215,9 @@ export function usePermissions(): Permissions {
       // Responsibility-aware (Phase 2): admin OR specific responsibility.
       canEditMidweekSchedule: editsMidweek,
       canEditWeekendSchedule: editsWeekend,
+      canMoveMidweek: editsMidweek,
+      canMoveWeekend: editsWeekend,
+      canMoveAfterwards: isAdmin || holds("body_coordinator"),
       canEditCleaning: isAdmin || holds("cleaning_coordinator"),
       canEditCartWitnessing: isAdmin || holds("public_witnessing"),
       canEditFieldServiceMeetings:

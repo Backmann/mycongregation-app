@@ -42,6 +42,7 @@ const SELF_CONTAINED = new Map([
   ['components/talk-log/QuickVisit.tsx', 'a sheet'],
   ['components/FieldServiceMeetingSheet.tsx', 'a sheet'],
   ['components/FieldServiceRuleSheet.tsx', 'a sheet'],
+  ['components/MeetingMoveSheet.tsx', 'a sheet'],
   ['components/PioneerMeetingForm.tsx', 'a sheet'],
   ['components/MemorialMeetingBlock.tsx', 'its fields are in its sheet'],
   ['components/DutiesSection.tsx', 'its fields are in its dialog'],
