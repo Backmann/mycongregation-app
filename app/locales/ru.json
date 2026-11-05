@@ -5614,7 +5614,13 @@
       "weekOf": "с {{date}}",
       "cleaningMine": "Ваша группа: {{kind}}, {{when}}",
       "thisWeek": "на этой неделе",
-      "localNeeds": "Ближайшая: {{day}} — {{what}}"
+      "localNeeds": "Ближайшая: {{day}} — {{what}}",
+      "thisWeekMeetings": "На этой неделе: {{list}}",
+      "kind": {
+        "midweek": "будняя",
+        "weekend": "выходная"
+      },
+      "noMeeting": "не проводится"
     }
   },
   "cleaningHall": {

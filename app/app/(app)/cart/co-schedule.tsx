@@ -812,7 +812,8 @@ export default function CoScheduleScreen() {
         out.push({
           kind: 'midweek',
           date: mw.date,
-          time: mw.time ?? eff.midweekTime,
+          // The rules' hour; none only with no settings at all.
+          time: mw.time ?? '',
           place: mw.place ?? eff.address ?? null,
           talks: [coTalk].filter((x): x is string => !!x),
         });
@@ -825,7 +826,7 @@ export default function CoScheduleScreen() {
         out.push({
           kind: 'weekend',
           date: we.date,
-          time: we.time ?? eff.weekendTime,
+          time: we.time ?? '',
           place: we.place ?? eff.address ?? null,
           talks: [publicTalk, coConcluding].filter(
             (x): x is string => !!x,

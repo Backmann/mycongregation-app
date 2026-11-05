@@ -96,6 +96,20 @@ check('отсутствия: своего нет — строки нет', lines
 check('возвещатели: не для него — строки нет', lines({}).publishers, undefined);
 check('группы: со своей', lines({ myGroup: { name: 'Ahlen', overseerName: null } }).groups.text, 'groupsMine');
 
+// «На этой неделе: …» under the usual order (5 November 2026).
+{
+  const place = { meetingPlace: { midweekDow: 3, midweekTime: '19:00', weekendDow: 7, weekendTime: '10:00' } };
+  const week = (mw, we) => ({ meetingOf: (k) => (k === 'midweek' ? mw : we) });
+  const usualMw = { date: '2026-11-11', time: '19:00', held: true, moved: null };
+  const usualWe = { date: '2026-11-15', time: '10:00', held: true, moved: null };
+  const at = (rules) => congregationLines({ ...base, ...place }, perms, t, 'ru', rules).meetingPlace.text;
+  check('встречи: обычная неделя — одна строка', at(week(usualMw, usualWe)).includes('\n'), false);
+  check('встречи: без правил — одна строка', at(null).includes('\n'), false);
+  check('встречи: перенос — вторая строка', at(week({ ...usualMw, date: '2026-11-12', time: '18:30', moved: {} }, usualWe)).split('\n')[1], 'thisWeekMeetings');
+  check('встречи: другой час — вторая строка', at(week({ ...usualMw, time: '18:00' }, usualWe)).split('\n').length, 2);
+  check('встречи: конгресс — вторая строка', at(week({ ...usualMw, held: false }, { ...usualWe, held: false })).split('\n').length, 2);
+}
+
 if (failures) {
   console.error(`\nСтроки «Собрания»: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

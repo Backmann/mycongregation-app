@@ -2,6 +2,7 @@ import type { MeetingSettingsVersion, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
 import { effectiveVersionFor } from './meeting-schedule';
 import { takesMeetingMode } from './event-meeting';
+import { visitMidweekDowOf } from './week-rules';
 
 /**
  * How the events screen reads an event (27 September): what kind it is, the
@@ -82,7 +83,7 @@ export function serviceYearOf(iso: string): number {
 
 /** The midweek meeting day of a circuit visit. */
 export function visitMidweekDay(e: SpecialEvent): string {
-  return addDaysISO(mondayOfISO(e.date), (e.coMidweekDow ?? 2) - 1);
+  return addDaysISO(mondayOfISO(e.date), visitMidweekDowOf(e) - 1);
 }
 
 export type Effect =

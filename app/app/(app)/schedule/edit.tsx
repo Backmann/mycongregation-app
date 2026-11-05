@@ -846,7 +846,9 @@ function ProgrammeEditor() {
           if (items.length === 0) continue;
           buildMidweekPartTimes(
             items,
-            meetingTimeOf.get(w.weekStartDate) ?? meetingVersion.midweekTime,
+            // That week's hour from the rules; a week without one (not
+            // held) has no programme to time.
+            meetingTimeOf.get(w.weekStartDate) ?? null,
           ).forEach(
             (iv, id) => timeById.set(id, iv.start),
           );

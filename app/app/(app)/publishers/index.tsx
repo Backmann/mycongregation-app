@@ -4,7 +4,11 @@ import { useFocusEffect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
-import { congregationSummaryApi, localNeedsApi } from '../../../lib/api';
+import { congregationSummaryApi, localNeedsApi, meetingSettingsApi, specialEventsApi } from '../../../lib/api';
+import { weekRules } from '../../../lib/week-rules';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
+import { effectiveVersionFor } from '../../../lib/meeting-schedule';
+import { mondayOfISO } from '../../../lib/event-view';
 import { nextLocalNeeds, shortDayLabel } from '../../../lib/local-needs';
 import { congregationLines, type DoorLine } from '../../../lib/congregation-lines';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
@@ -49,12 +53,36 @@ export default function CongregationScreen() {
       void refetch();
     }, [refetch]),
   );
+  // This week as the rules give it — for «На этой неделе: …» under the usual
+  // days and hours (5 November 2026). The same keys as every other screen.
+  const moves = useMeetingMoves();
+  const settingsQ = useQuery({
+    queryKey: ['meeting-settings'],
+    queryFn: () => meetingSettingsApi.getOverview(),
+    staleTime: 60 * 60 * 1000,
+  });
+  const eventsQ = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 60 * 1000,
+  });
+  const thisMonday = summaryQ.data ? mondayOfISO(summaryQ.data.today) : null;
+  const thisWeek =
+    thisMonday && settingsQ.data && eventsQ.data
+      ? weekRules({
+          weekStartISO: thisMonday,
+          version: effectiveVersionFor(settingsQ.data.versions, thisMonday) ?? null,
+          events: eventsQ.data,
+          moves,
+        })
+      : null;
   const baseLines: Record<string, DoorLine> = summaryQ.data
     ? congregationLines(
         summaryQ.data,
         { manageAbsences: perms.canManageAbsences, editCleaning: perms.canEditCleaning },
         t as never,
         i18n.language,
+        thisWeek,
       )
     : {};
   // «Ближайшая: ср 11 нояб. — тема не выбрана» under «Местные потребности».
@@ -278,6 +306,8 @@ export default function CongregationScreen() {
   const retryLines = () => {
     void refetch();
     void lnWeeksQ.refetch();
+    void settingsQ.refetch();
+    void eventsQ.refetch();
   };
 
   return (
@@ -286,7 +316,7 @@ export default function CongregationScreen() {
       lines={lines}
       // The one request every line is read from (9 October 2026): when it did
       // not come, the screen says that the lines are not shown.
-      notice={<PartlyShown queries={[summaryQ, lnWeeksQ]} onRetry={retryLines} />}
+      notice={<PartlyShown queries={[summaryQ, lnWeeksQ, settingsQ, eventsQ]} onRetry={retryLines} />}
     />
   );
 }

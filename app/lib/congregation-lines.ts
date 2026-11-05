@@ -1,3 +1,4 @@
+import type { WeekRules } from './week-rules';
 import type { CongregationSummary } from './api';
 
 /**
@@ -65,6 +66,12 @@ export function congregationLines(
   perms: LinePermissions,
   t: TFn,
   locale: string,
+  /**
+   * This week's rules, when the screen has them (5 November 2026): the
+   * «Ср 19:00 · Вс 10:00» line then says when THIS week differs — a moved
+   * meeting, a visit's Tuesday, an event's other hour, a convention.
+   */
+  thisWeek?: WeekRules | null,
 ): Record<string, DoorLine> {
   const lines: Record<string, DoorLine> = {};
   const today = summary.today;
@@ -192,8 +199,10 @@ export function congregationLines(
 
   if (summary.meetingPlace) {
     const m = summary.meetingPlace;
+    const usual = `${dowShort(m.midweekDow, locale)} ${m.midweekTime} · ${dowShort(m.weekendDow, locale)} ${m.weekendTime}`;
+    const differs = thisWeek ? thisWeekDiffers(thisWeek, m, t, locale) : null;
     lines.meetingPlace = {
-      text: `${dowShort(m.midweekDow, locale)} ${m.midweekTime} · ${dowShort(m.weekendDow, locale)} ${m.weekendTime}`,
+      text: differs ? `${usual}\n${t('congregationHub.live.thisWeekMeetings', { list: differs })}` : usual,
       due: false,
     };
   }
@@ -229,3 +238,33 @@ function capitalize(x: string): string {
 function localDay(instant: string): string {
   return ymd(new Date(instant));
 }
+
+/**
+ * What of this week's meetings differs from the usual order, in a few words
+ * («чт 12 нояб., 18:30»; «нет встречи» for one not held) — null when the
+ * week is as usual.
+ */
+function thisWeekDiffers(
+  rules: WeekRules,
+  usual: { midweekDow: number; midweekTime: string; weekendDow: number; weekendTime: string },
+  t: TFn,
+  locale: string,
+): string | null {
+  const bits: string[] = [];
+  for (const kind of ['midweek', 'weekend'] as const) {
+    const m = rules.meetingOf(kind);
+    if (!m.date) continue;
+    const name = t(`congregationHub.live.kind.${kind}`);
+    if (!m.held) {
+      bits.push(`${name} — ${t('congregationHub.live.noMeeting')}`);
+      continue;
+    }
+    const dow = new Date(`${m.date}T00:00:00`).getDay() || 7;
+    const usualDow = kind === 'midweek' ? usual.midweekDow : usual.weekendDow;
+    const usualTime = (kind === 'midweek' ? usual.midweekTime : usual.weekendTime).slice(0, 5);
+    if (dow === usualDow && (m.time ?? usualTime) === usualTime && !m.moved) continue;
+    bits.push(`${name} — ${dayMonth(m.date, locale, true)}${m.time ? `, ${m.time}` : ''}`);
+  }
+  return bits.length ? bits.join(' · ') : null;
+}
+

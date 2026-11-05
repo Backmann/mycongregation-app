@@ -48,6 +48,7 @@ import {
 } from './SpecialEventForm';
 import { EventFormScreen } from './EventFormScreen';
 import { failsScreen } from '../lib/screen-failure';
+import { visitMidweekDowOf } from '../lib/week-rules';
 
 function toForm(e: SpecialEvent): EventFormValue {
   return {
@@ -70,7 +71,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     coWifeName: e.coWifeName ?? '',
     coRole: e.coRole ?? 'overseer',
     coAccommodationAddress: e.coAccommodationAddress ?? '',
-    coMidweekDow: e.coMidweekDow ?? 2,
+    coMidweekDow: visitMidweekDowOf(e),
     auxReducedHours: e.auxReducedHours ?? false,
   };
 }
