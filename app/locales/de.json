@@ -1161,7 +1161,8 @@
       "coVisitNote": "Besuch des Kreisaufsehers",
       "startsAt": "Beginn um {{time}}",
       "weekendTitle": "Wochenendzusammenkunft",
-      "watchtowerPrefix": "Wachtturm"
+      "watchtowerPrefix": "Wachtturm",
+      "movedFrom": "Verlegt — sonst {{day}}"
     },
     "movedTo": "Unter {{path}}",
     "lock": {
@@ -1217,7 +1218,10 @@
       "done": "Zusammenkunft verlegt",
       "doneBack": "Zusammenkunft wieder am üblichen Tag",
       "markFrom": "sonst {{when}}",
-      "markTo": "auf {{when}}"
+      "markTo": "auf {{when}}",
+      "void": "Die Verlegung gilt nicht mehr: ein Kreisaufseherbesuch oder ein Kongress hat diese Woche geändert.",
+      "voidRemove": "Verlegung entfernen",
+      "voidDone": "Verlegung entfernt"
     }
   },
   "audit": {
@@ -4059,7 +4063,8 @@
       "annual_report": "Jahresbericht (S-10)",
       "monthly_report": "Monatsübersicht (S-1)",
       "aux_application": "Bewerbungen als Hilfspionier",
-      "pioneer_meeting": "Treffen mit den Pionieren"
+      "pioneer_meeting": "Treffen mit den Pionieren",
+      "meeting_move": "Zusammenkunft verlegt"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -5991,7 +5996,8 @@
       "MOVE_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs legt der Besuch den Tag unter der Woche fest.",
       "MOVE_NOT_FOUND": "Diese Zusammenkunft ist nicht verlegt.",
       "MOVE_PAST_NEEDS_COORDINATOR": "Eine vergangene Zusammenkunft verlegt ein Administrator oder der Koordinator der Ältestenschaft.",
-      "MOVE_ATTENDANCE_CLASH": "Für den {{date}} ist die Anwesenheit dieser Zusammenkunft bereits erfasst — das Verlegen würde die Zahlen vermischen."
+      "MOVE_ATTENDANCE_CLASH": "Für den {{date}} ist die Anwesenheit dieser Zusammenkunft bereits erfasst — das Verlegen würde die Zahlen vermischen.",
+      "EVENT_MEETING_MOVED": "An diesem Tag ({{date}}) ist die für diese Woche verlegte Zusammenkunft. Bitte die Verlegung selbst ändern, nicht das Ereignis."
     }
   },
   "stage": {

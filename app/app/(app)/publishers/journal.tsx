@@ -74,6 +74,7 @@ const SECTION_TONE: Record<string, string> = {
   elders_meeting: '#64748b',
   agenda_item: '#64748b',
   meeting_settings: '#64748b',
+  meeting_move: '#c2410c',
   annual_report: '#0e7490',
   monthly_report: '#0e7490',
 };
@@ -104,6 +105,7 @@ const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
   elders_meeting: 'people-outline',
   agenda_item: 'list-outline',
   meeting_settings: 'time-outline',
+  meeting_move: 'swap-horizontal',
   annual_report: 'lock-closed-outline',
   monthly_report: 'lock-closed-outline',
 };
@@ -145,6 +147,7 @@ const FILTERS = [
   'congregation',
   'backup',
   'meeting_settings',
+  'meeting_move',
   'elder_task',
   'annual_report',
   'monthly_report',
