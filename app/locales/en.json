@@ -1215,7 +1215,9 @@
       "moveBackBody": "The meeting will be {{when}} again. The whole congregation is notified.",
       "moveBackBodyPast": "The meeting will be {{when}} again. No notices — it is already past.",
       "done": "Meeting moved",
-      "doneBack": "Meeting back on its usual day"
+      "doneBack": "Meeting back on its usual day",
+      "markFrom": "usually {{when}}",
+      "markTo": "to {{when}}"
     }
   },
   "audit": {

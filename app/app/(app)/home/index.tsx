@@ -107,6 +107,7 @@ import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 import { formatDayRange } from "../../../lib/date-range";
 import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
+import { MovedMark } from "../../../components/MovedMark";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -1106,6 +1107,9 @@ function NextBody({
           {!entry.atHall && entry.address ? (
             <Text style={s.nextPlace}>{entry.address}</Text>
           ) : null}
+          {entry.movedFrom ? (
+            <MovedMark mode="from" dateISO={entry.movedFrom} time={entry.movedFromTime} />
+          ) : null}
         </View>
         <View style={s.nextFoot}>
           <View style={{ flex: 1, gap: 1 }}>
@@ -1406,6 +1410,24 @@ function EntryBody({
     </Text>
   );
 
+  // The old day of a meeting moved for this week: its kind and hour crossed
+  // out, and where it went (5 November 2026).
+  if (en.type === "meeting" && en.kind !== "field_service" && en.movedTo) {
+    return (
+      <>
+        <Text style={[s.rowKind, s.rowKindStruck, { color: KIND_COLOR[en.kind] }]}>
+          {[
+            t(en.kind === "midweek" ? "feed.kindMidweek" : "feed.kindWeekend"),
+            en.time || null,
+            dayWord,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Text>
+        <MovedMark mode="to" dateISO={en.movedTo} time={en.movedToTime} compact />
+      </>
+    );
+  }
   if (en.type === "meeting" && en.replacedBy && !en.memorial) {
     const e = en.replacedBy;
     return (
@@ -1506,6 +1528,9 @@ function EntryBody({
         ) : null}
         {en.meetingChangeNote ? (
           <Text style={s.rowSub}>{en.meetingChangeNote}</Text>
+        ) : null}
+        {en.movedFrom ? (
+          <MovedMark mode="from" dateISO={en.movedFrom} time={en.movedFromTime} compact />
         ) : null}
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
@@ -2696,6 +2721,7 @@ const s = StyleSheet.create({
   dayEntries: { flex: 1, minWidth: 0, gap: 12 },
   entry: { gap: 3 },
   rowKind: { fontSize: 12.5, fontFamily: "Manrope_700Bold" },
+  rowKindStruck: { textDecorationLine: "line-through", opacity: 0.55 },
   rowTitle: {
     fontSize: 15,
     lineHeight: 20,
