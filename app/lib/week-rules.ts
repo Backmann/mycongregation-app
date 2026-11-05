@@ -28,6 +28,19 @@
 import { MeetingMove, MeetingSettingsVersion, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
 
+/**
+ * The weekday a circuit visit holds the midweek meeting on, when the visit
+ * does not say: Tuesday. ONE place for it (5 November 2026) — the rules, the
+ * event's page and its form all read it here; the server keeps the same in
+ * common/week-rules.ts.
+ */
+export const VISIT_MIDWEEK_DOW_DEFAULT = 2;
+
+/** The midweek weekday of a visit (1=Mon…7=Sun). */
+export function visitMidweekDowOf(e: Pick<SpecialEvent, 'coMidweekDow'>): number {
+  return e.coMidweekDow ?? VISIT_MIDWEEK_DOW_DEFAULT;
+}
+
 export type MeetingKind = 'midweek' | 'weekend';
 
 export interface WeekRules {
@@ -171,7 +184,7 @@ export function weekRules(input: {
   const usualDowOf = (kind: MeetingKind): number | undefined => {
     if (kind === 'weekend') return version?.weekendDow ?? undefined;
     // During a visit the midweek meeting commonly moves to Tuesday.
-    if (coVisit) return coVisit.coMidweekDow ?? 2;
+    if (coVisit) return visitMidweekDowOf(coVisit);
     return version?.midweekDow ?? undefined;
   };
 

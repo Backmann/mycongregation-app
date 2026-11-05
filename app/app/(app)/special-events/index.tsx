@@ -40,6 +40,9 @@ import { useEffectText } from '../../../lib/event-effect-text';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDayRange } from '../../../lib/date-range';
+import { mondayOfISO } from '../../../lib/event-view';
+import { weekRules } from '../../../lib/week-rules';
+import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -65,6 +68,7 @@ export default function SpecialEventsListScreen() {
   const wide = width >= 900;
   const [picked, setPicked] = useState<string | null>(null);
 
+  const moves = useMeetingMoves();
   const eventsQ = useQuery({
     throwOnError: failsScreen,
     // Everything ever recorded, and the bin for those who keep it: the past
@@ -114,8 +118,19 @@ export default function SpecialEventsListScreen() {
   const byMonth = groupBy(rest, (x) => x.date.slice(0, 7));
   const byYear = groupBy(past, (x) => String(serviceYearOf(x.date)));
 
-  const weekendTime = (iso: string) =>
-    effectiveVersionFor(versions, iso)?.weekendTime ?? null;
+  // A talk's hour is the weekend meeting's hour THAT week, as the rules give
+  // it — a moved meeting or an event's changed hour included (5 November
+  // 2026); the settings' hour was shown whatever the week held.
+  const liveEvents = (eventsQ.data ?? []).filter((e) => !e.deletedAt);
+  const talkHour = (iso: string) => {
+    const week = mondayOfISO(iso);
+    return weekRules({
+      weekStartISO: week,
+      version: effectiveVersionFor(versions, week) ?? null,
+      events: liveEvents,
+      moves,
+    }).timeOf('weekend');
+  };
 
   const firstEvent = upcoming.find((x) => x.kind === 'event');
   const selected =
@@ -151,7 +166,7 @@ export default function SpecialEventsListScreen() {
               <Hero
                 item={hero}
                 today={today}
-                weekendTime={weekendTime(hero.date)}
+                talkHour={talkHour(hero.date)}
                 link={programmeLinkOf(hero, versions)}
               />
             </>
@@ -169,7 +184,7 @@ export default function SpecialEventsListScreen() {
                     item={x}
                     first={i === 0}
                     manager={canManageEvents}
-                    weekendTime={weekendTime(x.date)}
+                    talkHour={talkHour(x.date)}
                     link={programmeLinkOf(x, versions)}
                   />
                 ))}
@@ -219,7 +234,7 @@ export default function SpecialEventsListScreen() {
                         first={i === 0}
                         manager={false}
                         past
-                        weekendTime={weekendTime(x.date)}
+                        talkHour={talkHour(x.date)}
                         link={programmeLinkOf(x, versions)}
                       />
                     ))}
@@ -241,7 +256,7 @@ export default function SpecialEventsListScreen() {
                     first={i === 0}
                     manager={false}
                     removed
-                    weekendTime={null}
+                    talkHour={null}
                     link={null}
                   />
                 ))}
@@ -292,7 +307,7 @@ function groupBy<T>(items: T[], key: (x: T) => string): [string, T[]][] {
 }
 
 /** Kind, title, the line under it — shared by the card on top and the rows. */
-function useItemText(item: EventListItem, weekendTime: string | null) {
+function useItemText(item: EventListItem, talkHour: string | null) {
   const { t } = useTranslation();
   const kind = kindOf(item);
   const kindLabel =
@@ -304,7 +319,7 @@ function useItemText(item: EventListItem, weekendTime: string | null) {
     return {
       kind,
       kindLabel,
-      time: weekendTime,
+      time: talkHour,
       title: x.theme,
       meta: x.speaker
         ? [x.speaker, x.speakerCongregation].filter(Boolean).join(', ')
@@ -364,18 +379,18 @@ function openItem(
 function Hero({
   item,
   today,
-  weekendTime,
+  talkHour,
   link,
 }: {
   item: EventListItem;
   today: string;
-  weekendTime: string | null;
+  talkHour: string | null;
   link: { week: string; meeting: string } | null;
 }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
   const open = useContext(OpenCtx);
-  const text = useItemText(item, weekendTime);
+  const text = useItemText(item, talkHour);
   const effect = effectOf(item);
   const effectText = useEffectText(effect);
   const look = KIND_LOOK[text.kind];
@@ -461,7 +476,7 @@ function Row({
   manager,
   past = false,
   removed = false,
-  weekendTime,
+  talkHour,
   link,
 }: {
   item: EventListItem;
@@ -469,12 +484,12 @@ function Row({
   manager: boolean;
   past?: boolean;
   removed?: boolean;
-  weekendTime: string | null;
+  talkHour: string | null;
   link: { week: string; meeting: string } | null;
 }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
-  const text = useItemText(item, weekendTime);
+  const text = useItemText(item, talkHour);
   const effect = past || removed ? null : effectOf(item);
   const effectText = useEffectText(effect);
   const hint = useManagerHint(item);

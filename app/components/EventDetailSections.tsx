@@ -8,7 +8,10 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import 'dayjs/locale/de';
 import type { MeetingSettingsVersion, SpecialEvent } from '../lib/api';
-import { talkExchangeApi } from '../lib/api';
+import { specialEventsApi, talkExchangeApi } from '../lib/api';
+import { weekRules } from '../lib/week-rules';
+import { useMeetingMoves } from '../lib/useMeetingMoves';
+import { MovedMark } from './MovedMark';
 import { effectiveVersionFor } from '../lib/meeting-schedule';
 import {
   addDaysISO,
@@ -136,8 +139,25 @@ export function VisitWeek({
   const loc = i18n.language;
   const week = mondayOfISO(event.date);
   const v = effectiveVersionFor(versions, week);
-  const midweek = visitMidweekDay(event);
-  const weekend = v ? addDaysISO(week, v.weekendDow - 1) : null;
+  // The week's meetings as the rules give them (5 November 2026): the
+  // weekend meeting of a visit week may be moved, and an event may keep a
+  // meeting at another hour — the page said the settings' Sunday and hours.
+  const moves = useMeetingMoves();
+  const eventsQ = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 60_000,
+  });
+  const rules = weekRules({
+    weekStartISO: week,
+    version: v ?? null,
+    events: eventsQ.data ?? [event],
+    moves,
+  });
+  const mw = rules.meetingOf('midweek');
+  const we = rules.meetingOf('weekend');
+  const midweek = mw.date ?? visitMidweekDay(event);
+  const weekend = we.held ? we.date : null;
   const usualMidweekDow = v?.midweekDow ?? null;
   const moved = usualMidweekDow != null && usualMidweekDow !== (event.coMidweekDow ?? 2);
   const coName = [event.coFirstName, event.coLastName].filter(Boolean).join(' ');
@@ -175,7 +195,7 @@ export function VisitWeek({
           </View>
           <Text style={styles.meetingDay}>
             {day(midweek)}
-            {v?.midweekTime ? ` · ${v.midweekTime}` : ''}
+            {mw.time ? ` · ${mw.time}` : ''}
           </Text>
           {midweekKept ? (
             <Text style={styles.kept}>{t('specialEvents.page.midweekKept')}</Text>
@@ -197,8 +217,11 @@ export function VisitWeek({
             </Text>
             <Text style={styles.meetingDay}>
               {day(weekend)}
-              {v?.weekendTime ? ` · ${v.weekendTime}` : ''}
+              {we.time ? ` · ${we.time}` : ''}
             </Text>
+            {we.moved?.from.date ? (
+              <MovedMark mode="from" dateISO={we.moved.from.date} time={we.moved.from.time} compact />
+            ) : null}
             <Text style={styles.change}>
               {t('specialEvents.page.publicTalk')}
               {' — '}

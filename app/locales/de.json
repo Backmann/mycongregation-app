@@ -5438,7 +5438,13 @@
       "weekOf": "ab {{date}}",
       "cleaningMine": "Ihre Gruppe: {{kind}}, {{when}}",
       "thisWeek": "diese Woche",
-      "localNeeds": "Nächste: {{day}} — {{what}}"
+      "localNeeds": "Nächste: {{day}} — {{what}}",
+      "thisWeekMeetings": "Diese Woche: {{list}}",
+      "kind": {
+        "midweek": "unter der Woche",
+        "weekend": "Wochenende"
+      },
+      "noMeeting": "findet nicht statt"
     }
   },
   "cleaningHall": {
