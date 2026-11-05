@@ -470,7 +470,14 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items, moves });
   const meetingOn = (d) =>
     (timeline.near.find((g) => g.dateISO === d)?.entries ?? []).filter((e) => e.type === 'meeting');
-  check('18а перенесённой встречи нет в старый день', meetingOn('2026-09-30').length, 0);
+  // The old day keeps a crossed-out stand-in that says where it went
+  // (5 November 2026) — nobody's part, never the «next» card.
+  check(
+    '18а в старый день — только отметка, куда перенесена',
+    meetingOn('2026-09-30').map((e) => [e.cancelled, e.movedTo, e.movedToTime, e.myParts.length]),
+    [[true, '2026-10-01', '18:30', 0]],
+  );
+  check('18д на новой — откуда', [meetingOn('2026-10-01')[0].movedFrom, meetingOn('2026-10-01')[0].movedFromTime], ['2026-09-30', '19:00']);
   check('18б она в новый день, в новый час', meetingOn('2026-10-01').map((e) => e.time), ['18:30']);
   check('18в моя часть — с ней', labels(meetingOn('2026-10-01')[0]), ['midweek_chairman']);
   check('18г ближайшее — новый день', digest.next?.dateISO, '2026-10-01');

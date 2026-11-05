@@ -35,6 +35,7 @@ import { FieldNotice } from '../../../components/FieldNotice';
 import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
 import { sessionVerdict } from '../../../lib/session-verdict';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
+import { MovedMark } from '../../../components/MovedMark';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   // As the language writes a span (lib/date-range.ts): «19–OCTOBER 25» was
@@ -199,6 +200,16 @@ export default function MyAssignmentsScreen() {
                         {taskMeta(head, t, i18n.language)}
                       </Text>
                     </View>
+                    {head.movedFrom?.date ? (
+                      <View style={styles.movedWrap}>
+                        <MovedMark
+                          mode="from"
+                          dateISO={head.movedFrom.date}
+                          time={head.movedFrom.time}
+                          compact
+                        />
+                      </View>
+                    ) : null}
                     {g.rows.map((r, idx) => (
                       <View
                         key={`${r.item.kind}-${idx}-${r.dateISO}`}
@@ -449,6 +460,7 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 15, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
   notHeldRow: { opacity: 0.6 },
+  movedWrap: { paddingHorizontal: 14 },
   notHeldNote: {
     fontSize: 12,
     fontFamily: 'Manrope_600SemiBold',

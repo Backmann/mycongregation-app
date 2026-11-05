@@ -1215,7 +1215,9 @@
       "moveBackBody": "Die Zusammenkunft ist wieder {{when}}. Die ganze Versammlung wird benachrichtigt.",
       "moveBackBodyPast": "Die Zusammenkunft ist wieder {{when}}. Keine Mitteilungen — sie ist schon vorbei.",
       "done": "Zusammenkunft verlegt",
-      "doneBack": "Zusammenkunft wieder am üblichen Tag"
+      "doneBack": "Zusammenkunft wieder am üblichen Tag",
+      "markFrom": "sonst {{when}}",
+      "markTo": "auf {{when}}"
     }
   },
   "audit": {

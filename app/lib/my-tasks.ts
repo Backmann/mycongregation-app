@@ -31,6 +31,8 @@ export interface RefinedTask {
    * Home leaves it out, as it always did.
    */
   notHeldBy?: SpecialEvent | null;
+  /** The meeting is moved for this week: its usual day and hour (5 November 2026). */
+  movedFrom?: { date: string | null; time: string | null };
 }
 
 /**
@@ -59,6 +61,7 @@ export function refineMyTasks(
     let weekOnly = false;
     let meetingTime: string | undefined;
     let notHeldBy: SpecialEvent | null | undefined;
+    let movedFrom: RefinedTask['movedFrom'];
     if (item.date) {
       dateISO = item.date;
       // The lunch bag is brought for the meeting: its hour is the meeting's.
@@ -106,6 +109,7 @@ export function refineMyTasks(
         dateISO = m.date;
         meetingTime = m.time ?? undefined;
         if (!m.held) notHeldBy = m.by;
+        if (m.moved) movedFrom = m.moved.from;
       }
     }
     if (!dateISO) {
@@ -127,6 +131,7 @@ export function refineMyTasks(
       weekOnly,
       meetingTime,
       ...(notHeldBy !== undefined ? { notHeldBy } : {}),
+      ...(movedFrom ? { movedFrom } : {}),
     });
   }
   refined.sort(

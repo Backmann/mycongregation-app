@@ -79,6 +79,7 @@ import {
 import { lowerFirst } from "../../../lib/lower-first";
 import { capitalizeFirst } from "../../../lib/relative-time";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
+import { MovedMark } from "../../../components/MovedMark";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -188,6 +189,8 @@ type MeetingItem = {
   kind: Kind;
   time: string | null;
   movedByVisit: boolean;
+  /** Moved for this one week — its usual day and hour (5 November 2026). */
+  movedFrom: { date: string | null; time: string | null } | null;
   /** An event that day changes the meeting — another hour, place, programme. */
   change: SpecialEvent | null;
 };
@@ -595,6 +598,7 @@ export default function ProgrammeFeedScreen() {
         // The hour the rules give — an event's changed hour included.
         time: rules.timeOf(kind),
         movedByVisit: kind === "midweek" && !!rules.coVisit,
+        movedFrom: rules.meetingOf(kind).moved?.from ?? null,
         change,
       });
     }
@@ -1395,6 +1399,7 @@ function Row({
   mine,
   status,
   tag,
+  tagMoved,
   color,
   past,
   open,
@@ -1431,6 +1436,8 @@ function Row({
   mine?: string | null;
   status?: { color: string; text: string } | null;
   tag?: string | null;
+  /** «перенесена» wears the amber of the moved mark everywhere else. */
+  tagMoved?: boolean;
   color: string;
   past: boolean;
   open?: boolean;
@@ -1495,7 +1502,7 @@ function Row({
             <Text style={styles.status}>{status.text}</Text>
           </View>
         ) : null}
-        {tag ? <Text style={styles.tag}>{tag}</Text> : null}
+        {tag ? <Text style={[styles.tag, tagMoved && styles.tagMoved]}>{tag}</Text> : null}
       </View>
       {onPress ? (
         <Ionicons name={select ? "chevron-forward" : open ? "chevron-up" : "chevron-down"} size={18} color={SOFT} style={styles.chev} />
@@ -1661,7 +1668,9 @@ function Meeting({
         mine={mine}
         status={status}
         tag={
-          item.movedByVisit
+          item.movedFrom
+            ? t("schedule.move.moved")
+            : item.movedByVisit
             ? t("feed.movedByVisit")
             : item.change
               ? t("feed.withChanges", { event: eventLabel(item.change) })
@@ -1669,6 +1678,7 @@ function Meeting({
                 ? t("feed.specialTalk")
                 : null
         }
+        tagMoved={!!item.movedFrom}
         color={KIND[item.kind].color}
         past={past}
         open={open}
@@ -1693,6 +1703,9 @@ function Meeting({
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
+          {item.movedFrom?.date ? (
+            <MovedMark mode="from" dateISO={item.movedFrom.date} time={item.movedFrom.time} />
+          ) : null}
           {item.change ? (
             <Pressable onPress={() => router.push(`/special-events/${item.change!.id}`)}>
               <MeetingChangeNote event={item.change} />
@@ -2483,6 +2496,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
+  tagMoved: { color: "#ffffff", backgroundColor: "#c2410c" },
   chev: { marginTop: 4 },
   inset: {
     backgroundColor: "#f6f8fb",

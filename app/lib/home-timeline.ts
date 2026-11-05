@@ -172,6 +172,13 @@ export interface MeetingEntry {
   /** Field service: the stand-in on a moved meeting's old day — where it went (ISO). */
   movedTo?: string | null;
   /**
+   * A congregation meeting moved for one week (5 November 2026): the hour it
+   * would have had — beside `movedFrom`, its usual day. On the stand-in,
+   * `movedToTime` is the new hour.
+   */
+  movedFromTime?: string | null;
+  movedToTime?: string | null;
+  /**
    * Field service: whose group, and whether the service overseer is coming.
    *
    * The home timeline is the THIRD place a field-service meeting is drawn —
@@ -651,6 +658,42 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // one week will (4 November 2026).
       const time = memorial ? (memorial.time ?? '') : (rules.timeOf(kind) ?? '');
       const place = memorial ? (memorial.address ?? v.address) : (rules.placeOf(kind) ?? v.address);
+      // Moved for this one week: the old day keeps a crossed-out line that
+      // says where the meeting went — whoever looks at Wednesday must not
+      // read an empty evening as «no meeting» (5 November 2026). Never the
+      // «next» card, nobody's part: the stand-in of a moved field meeting.
+      const moved = memorial ? null : rules.meetingOf(kind).moved;
+      if (moved?.from.date && moved.from.date !== dateISO && inNear(moved.from.date)) {
+        entries.push({
+          type: 'meeting',
+          key: `${kind}-${moved.from.date}-moved`,
+          dateISO: moved.from.date,
+          time: moved.from.time ?? '',
+          kind,
+          address: null,
+          atHall: true,
+          title: null,
+          speaker: null,
+          speakerIsMine: false,
+          titlePartKey: null,
+          titleIsMine: false,
+          specialTalk: false,
+          agenda: [],
+          memorial: null,
+          weekStartISO: weekISO,
+          conductorName: null,
+          unassignedConductor: false,
+          topic: null,
+          sourceUrl: null,
+          replacedBy: null,
+          myParts: [],
+          weeklyCleaning: false,
+          isGeneral: false,
+          cancelled: true,
+          movedTo: dateISO,
+          movedToTime: time || null,
+        });
+      }
       if (!inNear(dateISO)) continue;
 
       /**
@@ -726,6 +769,8 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         myParts,
         weeklyCleaning: cleanAfterMeetingWeeks.has(weekISO),
         isGeneral: false,
+        movedFrom: moved?.from.date ?? null,
+        movedFromTime: moved?.from.time ?? null,
       });
     }
   }
