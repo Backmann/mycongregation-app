@@ -47,6 +47,10 @@ function statusOf(e: unknown): number | undefined {
   return (e as { response?: { status?: number } } | null)?.response?.status;
 }
 
+
+/** How often the hall screen asks again what day and hour each meeting is. */
+const STAGE_RULES_REFRESH_MS = 2 * 60 * 1000;
+
 export default function StageScreen() {
   const { t, i18n } = useTranslation();
   const { user, isLoading, signOut } = useAuth();
@@ -61,18 +65,26 @@ export default function StageScreen() {
   const today = formatDateISO(now);
 
   const isStage = user?.role === 'stage';
+  // What decides the day and the hour is asked again every few minutes
+  // (7 November 2026). The screen stays open for days and the app never
+  // refetches on focus, so a meeting moved this morning, a special event
+  // added or new settings reached the hall only after someone reloaded it —
+  // the tablet would have waited for Sunday 10:00 while the hall met on
+  // Saturday evening.
   const settingsQuery = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 60 * 60 * 1000,
     enabled: isStage,
+    refetchInterval: isStage ? STAGE_RULES_REFRESH_MS : false,
   });
-  const moves = useMeetingMoves();
+  const moves = useMeetingMoves({ refetchInterval: isStage ? STAGE_RULES_REFRESH_MS : undefined });
   const eventsQuery = useQuery({
     queryKey: ['special-events', 'all'],
     queryFn: () => specialEventsApi.list({ all: true }),
     staleTime: 60 * 60 * 1000,
     enabled: isStage,
+    refetchInterval: isStage ? STAGE_RULES_REFRESH_MS : false,
   });
 
   /** The meetings of this week and the next three, by their real day. */

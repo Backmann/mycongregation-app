@@ -12,12 +12,15 @@ const NONE: MeetingMove[] = [];
  * rules need besides the settings and the events. A server that does not know
  * moves yet answers 404: no moves, nothing breaks.
  */
-export function useMeetingMoves(): MeetingMove[] {
+export function useMeetingMoves(options?: { refetchInterval?: number }): MeetingMove[] {
   const q = useQuery({
     queryKey: MEETING_MOVES_KEY,
     queryFn: () => meetingMovesApi.list(),
     staleTime: 5 * 60 * 1000,
     retry: false,
+    // Only a screen that stays open for days asks again by itself (the hall
+    // screen); everywhere else a move is seen on the next visit.
+    refetchInterval: options?.refetchInterval,
   });
   return q.data ?? NONE;
 }
