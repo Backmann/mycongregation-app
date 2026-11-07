@@ -2371,6 +2371,7 @@
     "howLong": "Wie lange",
     "keep": "Ich bleibe dabei",
     "late": "nach der Veröffentlichung eingetragen",
+    "afterDeadline": "nach der Frist eingetragen (bis {{date}})",
     "legendOff": "abgesagt",
     "legendOthers": "andere",
     "legendYou": "Sie",
@@ -2424,6 +2425,7 @@
     "statHours": "Stunden zusammen",
     "statPeople": "Personen",
     "statusCollectingUntil": "Eintragung offen bis {{date}}",
+    "statusCollectingPast": "Eintragung war bis {{date}} — ein Wunsch ist noch möglich; wer plant, sieht, dass er später kam",
     "steps": {
       "draft": "Tage",
       "collecting": "Eintragung",

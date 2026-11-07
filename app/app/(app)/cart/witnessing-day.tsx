@@ -198,6 +198,14 @@ export default function WitnessingDayScreen() {
         }
         if (src?.withWhomNote) mates.push(t('witnessing.wantsWithWritten', { who: src.withWhomNote }));
         if ('late' in r && r.late) bits.push(t('witnessing.late'));
+        // After the last day for signing up (7 November 2026): still a wish,
+        // only marked — whoever arranges decides.
+        else if ('afterDeadline' in r && r.afterDeadline && week?.signupUntil)
+          bits.push(
+            t('witnessing.afterDeadline', {
+              date: parseISODate(week.signupUntil).toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
+            }),
+          );
         const partner = r.publisherId ? pairs[r.publisherId]?.[0] : undefined;
         if (partner) bits.push(t('witnessing.recentlyWith', { name: partner.name }));
         return { ...r, note: bits.join(' · '), mates, absent: !!r.absent };

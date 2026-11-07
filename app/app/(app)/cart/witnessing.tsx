@@ -258,7 +258,11 @@ export default function WitnessingScreen() {
     if (week.status === 'published') return t('witnessing.statusPublished');
     if (week.status === 'collecting')
       return week.signupUntil
-        ? t('witnessing.statusCollectingUntil', { date: shortDay(week.signupUntil) })
+        ? // Past the last day the wish is still taken, only marked late
+          // (7 November 2026) — said, so that nobody thinks it is hopeless.
+          todayISO > week.signupUntil
+          ? t('witnessing.statusCollectingPast', { date: shortDay(week.signupUntil) })
+          : t('witnessing.statusCollectingUntil', { date: shortDay(week.signupUntil) })
         : t('witnessing.statusCollecting');
     return t('witnessing.statusDraft');
   };
