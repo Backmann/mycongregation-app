@@ -2371,6 +2371,7 @@
     "howLong": "How long",
     "keep": "I’ll be there",
     "late": "signed up after publishing",
+    "afterDeadline": "signed up after the deadline ({{date}})",
     "legendOff": "called off",
     "legendOthers": "others",
     "legendYou": "you",
@@ -2424,6 +2425,7 @@
     "statHours": "hours, all together",
     "statPeople": "people",
     "statusCollectingUntil": "Sign-up open until {{date}}",
+    "statusCollectingPast": "Sign-up was due by {{date}} — you can still leave a wish; whoever arranges will see it came late",
     "steps": {
       "draft": "Days",
       "collecting": "Sign-up",

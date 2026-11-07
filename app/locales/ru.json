@@ -2437,6 +2437,7 @@
     "howLong": "Сколько",
     "keep": "Остаюсь",
     "late": "записался после публикации",
+    "afterDeadline": "записался после срока (до {{date}})",
     "legendOff": "отменено",
     "legendOthers": "другие",
     "legendYou": "вы",
@@ -2496,6 +2497,7 @@
     "statHours": "часов всех вместе",
     "statPeople": "человек",
     "statusCollectingUntil": "Идёт запись до {{date}}",
+    "statusCollectingPast": "Срок записи был до {{date}} — пожелание ещё можно оставить, ответственный увидит, что оно позднее",
     "steps": {
       "draft": "Дни",
       "collecting": "Запись",

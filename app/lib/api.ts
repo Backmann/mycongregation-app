@@ -3350,6 +3350,8 @@ export interface CartWishView extends CartSpan {
   withPublishers?: { id: string; name: string }[];
   /** Asked after publication: a request for free time. */
   late?: boolean;
+  /** Left after the last day for signing up (7 November 2026): taken, marked. */
+  afterDeadline?: boolean;
   absent?: boolean;
 }
 
