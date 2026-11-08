@@ -220,6 +220,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/profile/my-tasks': 'all',
   '/profile/contacts': 'all',
   '/profile/notifications': 'all',
+  '/profile/calendar': 'all', // one's own calendar link; the server keys it to the login
   '/profile/change-password': 'all',
   '/profile/delete-account': 'all',
   '/profile/notification-reach': 'self', // forwards whoever is not an admin
