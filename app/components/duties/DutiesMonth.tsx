@@ -41,6 +41,7 @@ import {
 import { placeKey } from '../../lib/duty-places';
 import { storage } from '../../lib/storage';
 import { monthTable, rowTitle } from '../../lib/duty-month-table';
+import { NotHeldCard, useNotHeld } from '../NotHeldCard';
 import { absenceOn, busyAt, candidatesFor, dutyPool, freeAt, idleInMonth, isServing, shortName } from '../../lib/duty-load';
 import { capitalizeFirst } from '../../lib/relative-time';
 import { LoadFailure } from '../LoadFailure';
@@ -128,6 +129,14 @@ export function DutiesMonth({
   const pool = useMemo(() => dutyPool(publishers), [publishers]);
 
   const meetings = useMemo(() => q.data?.meetings ?? [], [q.data]);
+  const notHeldQ = useNotHeld();
+  const notHeldWeeks = [
+    ...new Set(
+      (notHeldQ.data?.meetings ?? [])
+        .filter((m) => m.canDuties && m.duties.length > 0 && (m.date ?? m.weekStartDate).startsWith(month))
+        .map((m) => m.weekStartDate),
+    ),
+  ];
   // The duties before the month: the queue goes by who stood where. The same
   // query «Заполнить пустые» reads, so the panel and the button agree.
   const firstMonday = meetings[0]?.weekStartDate ?? `${month}-01`;
@@ -497,6 +506,12 @@ export function DutiesMonth({
             </View>
           </View>
         ) : null}
+
+        {/* Duties on a meeting of this month that is not held: the table
+            leaves such a meeting's column empty, so they are named here. */}
+        {notHeldWeeks.map((w) => (
+          <NotHeldCard key={w} week={w} scope="duties" />
+        ))}
 
         <View style={styles.table} testID="duties-month-table">
           {/* The places stay where they are while the meetings scroll by. */}

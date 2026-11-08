@@ -80,6 +80,7 @@ import { lowerFirst } from "../../../lib/lower-first";
 import { capitalizeFirst } from "../../../lib/relative-time";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MovedMark } from "../../../components/MovedMark";
+import { useNotHeld } from "../../../components/NotHeldCard";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -205,6 +206,8 @@ type SpecialItem = {
   eventId?: string;
   /** Its own hour, when it has one. */
   time?: string | null;
+  /** The meetings it takes away: their leftover assignments get a mark. */
+  notHeld?: { week: string; kind: Kind | null };
 };
 /**
  * The Memorial — a meeting of its own kind, opened like one (23 September).
@@ -552,6 +555,7 @@ export default function ProgrammeFeedScreen() {
         date: rules.congress.date,
         title: t(`specialEvents.types.${rules.congress.type}`),
         line: t("feed.noMeetings"),
+        notHeld: { week, kind: null },
       });
     }
     if (rules.memorial && rules.memorialTakes) {
@@ -584,6 +588,7 @@ export default function ProgrammeFeedScreen() {
             title: by.title,
             line: t("feed.noMeetingThatDay"),
             eventId: by.id,
+            notHeld: { week, kind },
           });
         }
         continue;
@@ -880,6 +885,7 @@ export default function ProgrammeFeedScreen() {
     let body: ReactNode;
     if (x.type === "special") {
       body = (
+        <>
         <Row
           date={x.date}
           kindLabel={t("feed.kindSpecial")}
@@ -891,9 +897,12 @@ export default function ProgrammeFeedScreen() {
           past={isPast}
           onPress={x.eventId ? () => router.push(`/special-events/${x.eventId}`) : undefined}
         />
+        {x.notHeld ? <NotHeldChip week={x.notHeld.week} kind={x.notHeld.kind} /> : null}
+        </>
       );
     } else if (x.type === "memorial") {
       body = (
+        <>
         <MemorialDay
           item={x}
           past={isPast}
@@ -903,6 +912,8 @@ export default function ProgrammeFeedScreen() {
           duties={dutiesOf.get(`${x.week}|memorial`) ?? []}
           canEdit={perms.isAdmin || perms.isElder}
         />
+        <NotHeldChip week={x.week} kind={x.takes} />
+        </>
       );
     } else if (x.type === "field") {
       body = (
@@ -1382,6 +1393,32 @@ function DetailHead({
 }
 
 /** The collapsed row every dated thing shares. */
+/**
+ * «N назначений без встречи ›» under an event that takes meetings away
+ * (8 November 2026): seen in the list without opening the week, and only by
+ * whoever may take them off (the server filters what it gives).
+ */
+function NotHeldChip({ week, kind }: { week: string; kind: Kind | null }) {
+  const { t } = useTranslation();
+  const q = useNotHeld();
+  const n = (q.data?.meetings ?? [])
+    .filter((m) => m.weekStartDate === week && (kind === null || m.eventType === kind))
+    .reduce((sum, m) => sum + (m.canParts ? m.parts.length : 0) + (m.canDuties ? m.duties.length : 0), 0);
+  if (n === 0) return null;
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.notHeldChip, pressed && { opacity: 0.7 }]}
+      onPress={() => router.push(`/schedule/edit?week=${week}`)}
+      accessibilityRole="button"
+      testID={`not-held-chip-${week}`}
+    >
+      <Ionicons name="alert-circle-outline" size={16} color="#7c2d12" />
+      <Text style={styles.notHeldChipText}>{t("notHeld.chip", { n })}</Text>
+      <Ionicons name="chevron-forward" size={14} color="#7c2d12" />
+    </Pressable>
+  );
+}
+
 function Row({
   date,
   kindLabel,
@@ -2458,6 +2495,23 @@ const styles = StyleSheet.create({
   detailMine: { fontSize: 14, fontFamily: FONT.bold, color: ACC, marginTop: 8 },
   detailStatus: { paddingLeft: 0 },
   dateCol: { width: 40, alignItems: "center", paddingTop: 1 },
+  notHeldChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    marginLeft: 70,
+    marginTop: -6,
+    marginBottom: 12,
+    marginRight: 16,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 99,
+    backgroundColor: "#fff7ed",
+    borderWidth: 1.5,
+    borderColor: "#fcd9a8",
+  },
+  notHeldChipText: { fontSize: 13.5, fontFamily: FONT.extrabold, color: "#7c2d12", flexShrink: 1 },
   day: { fontSize: 25, lineHeight: 27, fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
   dow: { fontSize: 11, fontFamily: FONT.bold, letterSpacing: 0.9, color: SOFT, marginTop: 3 },
   pastText: { color: SOFT },

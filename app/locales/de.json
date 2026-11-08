@@ -4017,6 +4017,32 @@
     "lateOutMissed": "{{name}} – der Bericht ist in keinem gesendeten Bericht enthalten: abgegeben, bevor verspätete Berichte übertragen wurden",
     "attendanceIncomplete": "In diesem Monat fehlt die Anwesenheit von {{count}} Zusammenkunft/Zusammenkünften — der Durchschnitt ist aus den übrigen gerechnet. Tragen Sie sie vor dem Senden unter „Anwesenheit der Zusammenkünfte“ ein."
   },
+  "notHeld": {
+    "title_one": "{{count}} Aufgabe bei Zusammenkünften, die nicht stattfinden",
+    "title_other": "{{count}} Aufgaben bei Zusammenkünften, die nicht stattfinden",
+    "lead": "Die Betroffenen sehen „Zusammenkunft fällt aus“ und erhalten keine Erinnerungen. Entfernen Sie die Aufgaben, damit das Programm sauber bleibt. Niemand wird benachrichtigt.",
+    "meeting": {
+      "midweek": "Unter der Woche, {{day}}",
+      "weekend": "Wochenende, {{day}}"
+    },
+    "parts_one": "{{count}} Programmpunkt",
+    "parts_other": "{{count}} Programmpunkte",
+    "duties_one": "{{count}} Dienst",
+    "duties_other": "{{count}} Dienste",
+    "guestShort": "Gastredner",
+    "guest": "Gastredner. Beim Entfernen erhält der Vortragskoordinator die Bitte, seiner Versammlung mitzuteilen, dass er nicht kommen muss.",
+    "clearN": "{{n}} entfernen",
+    "clearAll": "Alle {{n}} entfernen",
+    "canGiveBack": "Wird das Ereignis verschoben, können Sie das Entfernte mit einem Tippen zurückholen.",
+    "heldAgainTitle": "Die Zusammenkünfte finden wieder statt",
+    "heldAgainText": "Am {{day}} wurden die Aufgaben dieser Woche wegen eines Ereignisses entfernt ({{n}}). Jetzt finden die Zusammenkünfte wieder statt.",
+    "heldAgainHint": "Sie kommen an ihre Stellen zurück; die Betroffenen erhalten die übliche Benachrichtigung.",
+    "giveBack": "{{n}} zurückholen",
+    "cleared": "Entfernt: {{n}}",
+    "undo": "Rückgängig",
+    "skipped": "Nicht zurückgeholt — die Stelle ist schon besetzt: {{names}}",
+    "chip": "Aufgaben ohne Zusammenkunft: {{n}}"
+  },
   "journal": {
     "title": "Änderungsprotokoll",
     "rowSubtitle": "Wer was in der Versammlung geändert hat",
@@ -4066,7 +4092,8 @@
       "monthly_report": "Monatsübersicht (S-1)",
       "aux_application": "Bewerbungen als Hilfspionier",
       "pioneer_meeting": "Treffen mit den Pionieren",
-      "meeting_move": "Zusammenkunft verlegt"
+      "meeting_move": "Zusammenkunft verlegt",
+      "not_held_clearance": "Aufgaben bei einer ausfallenden Zusammenkunft"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -6001,6 +6028,10 @@
       "MOVE_CHANGED_EVENT_DAY": "Am {{date}} ändert bereits ein Ereignis die Zusammenkunft (Uhrzeit oder Ort). Bitte zuerst das Ereignis entfernen oder anpassen.",
       "MOVE_SAME_AS_USUAL": "Das sind der übliche Tag, die übliche Uhrzeit und der übliche Ort — es gibt nichts zu verlegen.",
       "MOVE_NOT_HELD": "Diese Zusammenkunft findet in dieser Woche nicht statt — es gibt nichts zu verlegen.",
+      "NOT_HELD_MEETING_HELD": "Diese Zusammenkunft findet statt — es gibt nichts zu entfernen.",
+      "NOT_HELD_NOTHING_CHOSEN": "Es wurde nichts zum Entfernen ausgewählt.",
+      "NOT_HELD_PAST": "Diese Zusammenkunft ist schon vorbei — ihre Aufgaben bleiben, wie sie sind.",
+      "NOT_HELD_ALREADY_RESTORED": "Das wurde bereits zurückgeholt.",
       "MOVE_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs legt der Besuch den Tag unter der Woche fest.",
       "MOVE_NOT_FOUND": "Diese Zusammenkunft ist nicht verlegt.",
       "MOVE_PAST_NEEDS_COORDINATOR": "Eine vergangene Zusammenkunft verlegt ein Administrator oder der Koordinator der Ältestenschaft.",
