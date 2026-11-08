@@ -4955,6 +4955,79 @@ export const meetingMovesApi = {
   },
 };
 
+/** Assignments on a meeting that is not held (server: not-held). */
+export type MeetingNotHeldReason = "congress" | "memorial" | "replaced";
+export interface NotHeldMeeting {
+  weekStartDate: string;
+  eventType: "midweek" | "weekend";
+  /** Its usual day. */
+  date: string | null;
+  reason: MeetingNotHeldReason;
+  event: {
+    id: string;
+    type: string;
+    title: string;
+    date: string;
+    endDate: string | null;
+  } | null;
+  parts: {
+    id: string;
+    partKey: string;
+    label: string;
+    people: string[];
+    /** A guest speaker: «name · congregation». */
+    guest: string | null;
+  }[];
+  duties: { id: string; dutyType: string; label: string; person: string | null }[];
+  canParts: boolean;
+  canDuties: boolean;
+}
+export interface NotHeldRestorable {
+  clearanceId: string;
+  weekStartDate: string;
+  eventType: "midweek" | "weekend";
+  clearedAt: string;
+  parts: number;
+  duties: number;
+  /** The meeting is held again: the offer to give back. */
+  heldAgain: boolean;
+}
+export interface NotHeldView {
+  meetings: NotHeldMeeting[];
+  restorable: NotHeldRestorable[];
+}
+
+export const notHeldApi = {
+  /** Only what the reader may act on; empty for everybody else. */
+  async view(): Promise<NotHeldView> {
+    const { data } = await api.get<NotHeldView>("/not-held");
+    return data;
+  },
+  async clear(body: {
+    weekStartDate: string;
+    eventType: "midweek" | "weekend";
+    parts: boolean;
+    duties: boolean;
+  }): Promise<{ clearanceId: string; parts: number; duties: number }> {
+    const { data } = await api.post<{
+      clearanceId: string;
+      parts: number;
+      duties: number;
+    }>("/not-held/clear", body);
+    return data;
+  },
+  async restore(
+    clearanceId: string,
+  ): Promise<{ parts: number; duties: number; skipped: string[] }> {
+    const { data } = await api.post<{
+      parts: number;
+      duties: number;
+      skipped: string[];
+    }>(`/not-held/restore/${clearanceId}`);
+    return data;
+  },
+};
+
 export const specialEventsApi = {
   /**
    * Upcoming events by default; `all` for everything ever recorded; `since`
