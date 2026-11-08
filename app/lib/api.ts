@@ -4326,7 +4326,58 @@ export interface Inbox {
   items: InboxItem[];
 }
 
+/**
+ * The person's calendar subscription (server: /me/calendar-feed, 8 November
+ * 2026). `url` is the secret link a phone's calendar reads; `webcalUrl` the
+ * same link for a one-tap subscribe on Apple devices.
+ */
+export interface CalendarFeedOptions {
+  mine: boolean;
+  events: boolean;
+  names: boolean;
+}
+export interface CalendarFeedView {
+  connected: boolean;
+  url: string | null;
+  webcalUrl: string | null;
+  options: CalendarFeedOptions;
+  createdAt: string | null;
+  lastFetchedAt: string | null;
+  /** google, apple, outlook or other — as far as the calendar's request said. */
+  lastClient: string | null;
+  /** Why it stopped when it was switched off for the person, e.g. sessions_ended. */
+  revokedReason: string | null;
+}
+
 export const meApi = {
+  async calendarFeed(): Promise<CalendarFeedView> {
+    const { data } = await api.get<CalendarFeedView>("/me/calendar-feed");
+    return data;
+  },
+  /** Connects, or returns the link already there. */
+  async connectCalendarFeed(): Promise<CalendarFeedView> {
+    const { data } = await api.post<CalendarFeedView>("/me/calendar-feed");
+    return data;
+  },
+  async rotateCalendarFeed(): Promise<CalendarFeedView> {
+    const { data } = await api.post<CalendarFeedView>(
+      "/me/calendar-feed/rotate",
+    );
+    return data;
+  },
+  async setCalendarFeedOptions(
+    patch: Partial<CalendarFeedOptions>,
+  ): Promise<CalendarFeedView> {
+    const { data } = await api.patch<CalendarFeedView>(
+      "/me/calendar-feed",
+      patch,
+    );
+    return data;
+  },
+  async disconnectCalendarFeed(): Promise<CalendarFeedView> {
+    const { data } = await api.delete<CalendarFeedView>("/me/calendar-feed");
+    return data;
+  },
   /** «Мои уведомления»: what I was told lately, newest first. */
   async inbox(): Promise<Inbox> {
     const { data } = await api.get<Inbox>("/me/inbox");

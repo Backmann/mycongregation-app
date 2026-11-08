@@ -38,6 +38,10 @@ export default function ProfileLayout() {
         options={{ title: t('notificationPrefs.title') }}
       />
       <Stack.Screen
+        name="calendar"
+        options={{ title: t('calendarFeed.title') }}
+      />
+      <Stack.Screen
         name="notification-reach"
         options={{ title: t('notifyDevice.reach.title') }}
       />

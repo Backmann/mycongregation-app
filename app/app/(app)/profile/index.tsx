@@ -105,6 +105,14 @@ export default function ProfileScreen() {
   const myTasks = myTasksQuery.data ?? [];
   // The contacts line below reads the real card, never the kept one.
   const { myPublisher, asked: myPublisherQuery } = useMyPublisher({ kept: false });
+  // The calendar row says whether the phone's calendar is connected.
+  // Same key as the calendar screen, so a change there shows here at once.
+  const calendarFeed = useQuery({
+    queryKey: ["calendar-feed"],
+    queryFn: () => meApi.calendarFeed(),
+    enabled: !!myPublisher,
+    retry: false,
+  });
   const { t, i18n } = useTranslation();
   const buildLine = useBuildLine();
   const [langModalVisible, setLangModalVisible] = useState(false);
@@ -157,9 +165,9 @@ export default function ProfileScreen() {
         {/* Offline the name, «Где вы вошли», «Мои задачи» and the contacts
             row are simply not drawn: say so, rather than look complete. */}
         <PartlyShown
-          queries={[signedInQuery, myTasksQuery, myPublisherQuery]}
+          queries={[signedInQuery, myTasksQuery, myPublisherQuery, calendarFeed]}
           onRetry={() => {
-            for (const q of [signedInQuery, myTasksQuery, myPublisherQuery]) if (q.isError) void q.refetch();
+            for (const q of [signedInQuery, myTasksQuery, myPublisherQuery, calendarFeed]) if (q.isError) void q.refetch();
           }}
         />
         <View style={styles.section}>
@@ -327,6 +335,44 @@ export default function ProfileScreen() {
             </Pressable>
           </View>
         </View>
+
+        {/* The calendar of the phone (8 November 2026): a live
+            subscription to the person's own agenda. Its own section, under
+            notifications: the two are how the app reaches a person when the
+            app is closed. */}
+        {myPublisher ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel} accessibilityRole="header">
+              {t("calendarFeed.title")}
+            </Text>
+            <View style={styles.card}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.row,
+                  pressed && styles.rowPressed,
+                ]}
+                onPress={() => router.push("/profile/calendar" as never)}
+              >
+                <View style={styles.rowIcon}>
+                  <Ionicons name="calendar-outline" size={20} color="#0ea5e9" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowTitle}>
+                    {t("calendarFeed.rowTitle")}
+                  </Text>
+                  <Text style={styles.rowSubtitle}>
+                    {calendarFeed.data?.connected
+                      ? t("calendarFeed.rowOn")
+                      : calendarFeed.data?.revokedReason
+                        ? t("calendarFeed.rowStopped")
+                        : t("calendarFeed.rowOff")}
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
 
         {/* One «Мои данные» section: the contacts and what one may do with
             one's own data used to be two sections under the same heading. */}
