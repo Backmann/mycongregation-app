@@ -4040,6 +4040,7 @@
     "giveBack": "{{n}} zurückholen",
     "cleared": "Entfernt: {{n}}",
     "undo": "Rückgängig",
+    "clearedOn": "Am {{day}} entfernt: {{n}}. Die Zusammenkunft findet weiterhin nicht statt.",
     "skipped": "Nicht zurückgeholt — die Stelle ist schon besetzt: {{names}}",
     "chip": "Aufgaben ohne Zusammenkunft: {{n}}"
   },
@@ -6030,6 +6031,7 @@
       "MOVE_NOT_HELD": "Diese Zusammenkunft findet in dieser Woche nicht statt — es gibt nichts zu verlegen.",
       "NOT_HELD_MEETING_HELD": "Diese Zusammenkunft findet statt — es gibt nichts zu entfernen.",
       "NOT_HELD_NOTHING_CHOSEN": "Es wurde nichts zum Entfernen ausgewählt.",
+      "NOT_HELD_NOTHING_LEFT": "Hier wurde bereits alles entfernt.",
       "NOT_HELD_PAST": "Diese Zusammenkunft ist schon vorbei — ihre Aufgaben bleiben, wie sie sind.",
       "NOT_HELD_ALREADY_RESTORED": "Das wurde bereits zurückgeholt.",
       "MOVE_VISIT_WEEK": "In der Woche des Kreisaufseherbesuchs legt der Besuch den Tag unter der Woche fest.",
