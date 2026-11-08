@@ -6977,7 +6977,7 @@
     "stoppedTitle": "Kalender abgeschaltet",
     "stopped_sessions_ended": "Der Link hat beim Ändern des Passworts oder bei einer Anmeldung mit neuem Code aufgehört zu funktionieren — damit kein fremdes Gerät Ihre Aufgaben sieht. Verbinden Sie den Kalender neu.",
     "stopped_other": "Der Link funktioniert nicht mehr. Verbinden Sie den Kalender neu.",
-    "googleSteps": "Google Kalender öffnet sich im Browser: Tippen Sie auf „Hinzufügen“. Auf dem Android-Handy erscheint der Kalender nach der Synchronisierung; falls nicht, öffnen Sie in der Google-Kalender-App die Einstellungen, wählen diesen Kalender und schalten „Synchronisieren“ ein.",
+    "googleSteps": "Google Kalender öffnet sich im Browser: Tippen Sie auf „Hinzufügen“. Auf dem Handy erscheint der Kalender nach der Synchronisierung, meist innerhalb weniger Minuten. Samsung Kalender: ☰ → „Kalender verwalten“ → den Versammlungskalender einschalten. Ist er noch nicht da: Einstellungen → Konten → Ihr Google-Konto → Synchronisieren → „Kalender“ → „Jetzt synchronisieren“. Mit der Google-Kalender-App: Einstellungen → dieser Kalender → „Synchronisieren“.",
     "copied": "Link kopiert",
     "shareMessage": "Link zum Abonnieren des Kalenders (nicht weitergeben): {{url}}",
     "linkLabel": "Link zum Abonnieren",

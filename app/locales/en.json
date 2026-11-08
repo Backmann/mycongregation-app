@@ -6977,7 +6977,7 @@
     "stoppedTitle": "Calendar switched off",
     "stopped_sessions_ended": "The link stopped working when the password changed or you signed in with a new code — so that another device cannot see your assignments. Connect the calendar again.",
     "stopped_other": "The link no longer works. Connect the calendar again.",
-    "googleSteps": "Google Calendar opens in the browser: tap \"Add\". On an Android phone the calendar appears after syncing; if it does not, open Settings in the Google Calendar app, choose this calendar and turn on \"Sync\".",
+    "googleSteps": "Google Calendar opens in the browser: tap \"Add\". On the phone the calendar appears after syncing, usually within a few minutes. Samsung Calendar: ☰ → \"Manage calendars\" → turn on the congregation calendar. If it is not there yet: Settings → Accounts → your Google account → Sync → \"Calendar\" → \"Sync now\". With the Google Calendar app: Settings → this calendar → \"Sync\".",
     "copied": "Link copied",
     "shareMessage": "Calendar subscription link (do not forward it): {{url}}",
     "linkLabel": "Subscription link",
