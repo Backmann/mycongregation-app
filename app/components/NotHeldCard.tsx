@@ -116,17 +116,28 @@ export function NotHeldCard({
   const meetings = (q.data?.meetings ?? [])
     .filter((m) => m.weekStartDate === week && (!kind || m.eventType === kind))
     .filter((m) => shown(m, scope).count > 0);
-  const back: NotHeldRestorable[] = (q.data?.restorable ?? []).filter(
+  // A record gives back all it took: on the duties screens only those that
+  // took duties alone, or a duties coordinator would give back parts too.
+  const ours = (q.data?.restorable ?? []).filter(
     (r) =>
       r.weekStartDate === week &&
       (!kind || r.eventType === kind) &&
-      r.heldAgain &&
-      (scope === 'programme' || r.duties > 0) &&
+      (scope === 'programme' || (r.duties > 0 && r.parts === 0)) &&
       !undo?.ids.includes(r.clearanceId),
   );
+  const back: NotHeldRestorable[] = ours.filter((r) => r.heldAgain);
+  // Taken off earlier and the meeting is still not held: the undo, kept.
+  const later: NotHeldRestorable[] = ours.filter((r) => !r.heldAgain);
   const busy = clear.isPending || restore.isPending;
 
-  if (meetings.length === 0 && back.length === 0 && !undo && !skipped?.length && !error) {
+  if (
+    meetings.length === 0 &&
+    back.length === 0 &&
+    later.length === 0 &&
+    !undo &&
+    !skipped?.length &&
+    !error
+  ) {
     return null;
   }
 
@@ -254,6 +265,26 @@ export function NotHeldCard({
               <Text style={styles.btnText}>{t('notHeld.giveBack', { n: backTotal })}</Text>
             </Pressable>
           </View>
+        </View>
+      )}
+
+      {later.length > 0 && !undo && (
+        <View style={styles.later} testID="not-held-later">
+          <Text style={styles.laterText}>
+            {t('notHeld.clearedOn', {
+              day: dayjs(later[0].clearedAt).locale(lang).format('D MMMM'),
+              n: later.reduce((n, r) => n + r.parts + r.duties, 0),
+            })}
+          </Text>
+          <Pressable
+            style={({ pressed }) => [styles.laterBtn, (pressed || busy) && styles.btnPressed]}
+            disabled={busy}
+            onPress={() => restore.mutate(later.map((r) => r.clearanceId))}
+            accessibilityRole="button"
+            testID="not-held-later-restore"
+          >
+            <Text style={styles.laterBtnText}>{t('notHeld.undo')}</Text>
+          </Pressable>
         </View>
       )}
 
@@ -388,6 +419,22 @@ const styles = StyleSheet.create({
   toastText: { color: '#fff', fontSize: 14.5, fontFamily: 'Manrope_600SemiBold', flexShrink: 1 },
   toastAction: { minHeight: 44, justifyContent: 'center', paddingLeft: 12 },
   toastActionText: { color: '#7dd3fc', fontFamily: 'Manrope_800ExtraBold', fontSize: 14.5 },
+  later: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingLeft: 14,
+    paddingRight: 6,
+    minHeight: 52,
+    marginBottom: 8,
+  },
+  laterText: { flex: 1, fontSize: 14, lineHeight: 19, fontFamily: 'Manrope_600SemiBold', color: '#334155' },
+  laterBtn: { minHeight: 44, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'center' },
+  laterBtnText: { color: '#0e7490', fontFamily: 'Manrope_800ExtraBold', fontSize: 14.5 },
   warn: {
     fontSize: 13.5,
     lineHeight: 19,

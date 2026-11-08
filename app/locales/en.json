@@ -4040,6 +4040,7 @@
     "giveBack": "Give back {{n}}",
     "cleared": "Taken off: {{n}}",
     "undo": "Undo",
+    "clearedOn": "Taken off on {{day}}: {{n}}. The meeting is still not held.",
     "skipped": "Not given back — the place is already taken: {{names}}",
     "chip": "Assignments without a meeting: {{n}}"
   },
@@ -6030,6 +6031,7 @@
       "MOVE_NOT_HELD": "This meeting is not held this week — there is nothing to move.",
       "NOT_HELD_MEETING_HELD": "This meeting is held — there is nothing to take off.",
       "NOT_HELD_NOTHING_CHOSEN": "Nothing was chosen to take off.",
+      "NOT_HELD_NOTHING_LEFT": "Everything here has already been taken off.",
       "NOT_HELD_PAST": "This meeting is already past — its assignments stay as they are.",
       "NOT_HELD_ALREADY_RESTORED": "This has already been given back.",
       "MOVE_VISIT_WEEK": "In a circuit overseer visit week, the visit sets the midweek day.",
