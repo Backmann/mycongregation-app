@@ -3095,7 +3095,9 @@
     "pioneerMeeting": {
       "conduct": "Sie leiten das Treffen mit den Pionieren",
       "invited": "Jährliches Treffen der Ältesten mit den Pionieren",
-      "by": "Leitung: {{name}}"
+      "by": "Leitung: {{name}}",
+      "byTwo": "Leitung: {{a}} und {{b}}",
+      "with": "gemeinsam mit {{name}}"
     }
   },
   "halls": {
@@ -6022,7 +6024,12 @@
       "PIONEER_NO_QUOTA_DATE": "Das Datum des Beschlusses liegt in seinem jetzigen Pionierdienst und spätestens heute.",
       "PIONEER_MEETING_NOT_FOUND": "Dieses Treffen gibt es nicht — bitte neu laden.",
       "PIONEER_MEETING_INVALID": "Ein Datum ist nötig, die Zeit als HH:MM, und das Ende nach dem Beginn.",
-      "PIONEER_MEETING_NOT_ELDER": "Das Treffen mit den Pionieren leitet ein Ältester.",
+      "PIONEER_MEETING_NOT_APPOINTED": "Das Treffen mit den Pionieren leitet ein Ältester oder ein Dienstamtgehilfe.",
+      "PIONEER_MEETING_NO_CONDUCTOR": "Geben Sie an, wer das Treffen leitet: aus der Liste wählen oder Namen eintragen.",
+      "PIONEER_MEETING_SAME_CONDUCTOR": "Dieselbe Person ist zweimal angegeben.",
+      "PIONEER_MEETING_OUT_OF_SEASON": "Das Treffen mit den Pionieren findet im Dezember oder Januar statt.",
+      "PIONEER_MEETING_SEASON_TAKEN": "Für diese Saison ist das Treffen schon angesetzt — {{date}}. Ändern Sie dieses stattdessen.",
+      "PIONEER_MEETING_PAST_LOCKED": "Das Treffen hat stattgefunden — es bleibt, wie es war.",
       "ATTENDANCE_ONLINE_TOO_MANY": "Die per Video Verbundenen gehören zur Gesamtzahl und können nicht mehr sein als sie.",
       "ATTENDANCE_NOT_FOUND": "Diesen Eintrag gibt es nicht — vielleicht wurde er schon gelöscht.",
       "ATTENDANCE_MOVE_TARGET": "Diese Zusammenkunft hat schon ihre eigene Zahl.",
@@ -6837,7 +6844,7 @@
   "pioneerMeeting": {
     "title": "Jährliches Treffen der Ältesten mit den Pionieren",
     "short": "Treffen mit den Pionieren",
-    "about": "Einmal im Jahr, im Dezember oder Januar, trifft sich ein von der Ältestenschaft bestimmter Ältester mit den allgemeinen Pionieren, Sonderpionieren und Missionaren im Feld — nach der Gliederung S-211.",
+    "about": "Einmal im Jahr, im Dezember oder Januar, treffen sich die von der Ältestenschaft bestimmten Ältesten (gewöhnlich zwei) mit den allgemeinen Pionieren, Sonderpionieren und Missionaren im Feld — nach der Gliederung S-211.",
     "noneComing": "Noch kein Treffen festgelegt.",
     "setNew": "Treffen festlegen",
     "past": "Frühere Treffen",
@@ -6848,17 +6855,17 @@
     "awayCount_other": "{{count}} abwesend",
     "away": "abwesend",
     "nobody": "An diesem Tag gibt es keine Pioniere.",
-    "whoHint": "Eingeladen sind die allgemeinen Pioniere, Sonderpioniere und Missionare, die am Tag des Treffens dienen. Die Liste ergänzt sich selbst: ein später ernannter Pionier wird auch eingeladen.",
+    "whoHint": "Eingeladen sind die allgemeinen Pioniere, Sonderpioniere und Missionare, die am Tag des Treffens dienen. Die Liste ergänzt sich selbst: ein später ernannter Pionier wird auch eingeladen. Die Leitenden stehen nicht hier: Sie sind durch die Leitung eingeladen.",
     "outline": "Nach der Gliederung S-211.",
     "newTitle": "Treffen festlegen",
     "editTitle": "Treffen ändern",
-    "lead": "Die Eingeladenen und der leitende Älteste werden benachrichtigt und am Vorabend erinnert. Den Leitenden erinnern wir auch eine Woche vorher.",
+    "lead": "Die Eingeladenen und die Leitenden werden benachrichtigt und am Vorabend erinnert. Die Leitenden erinnern wir auch eine Woche vorher.",
     "date": "Datum",
     "from": "Beginn",
     "to": "Ende",
     "place": "Ort",
     "placeHint": "Zum Beispiel Königreichssaal",
-    "conductor": "Leitung (Ältester)",
+    "conductor": "Leitung",
     "note": "Notiz",
     "set": "Festlegen und benachrichtigen",
     "save": "Speichern",
@@ -6871,8 +6878,26 @@
     "warn": {
       "outsideSeason": "Laut den Anweisungen findet das Treffen im Dezember oder Januar statt.",
       "conductorAway": "Der Leitende ist an diesem Tag abwesend.",
-      "event": "An diesem Tag: {{title}}."
-    }
+      "event": "An diesem Tag: {{title}}.",
+      "conductorAwayNamed": "{{name}} ist an diesem Tag abwesend."
+    },
+    "secondConductor": "Zweiter Leiter (falls vorhanden)",
+    "servantsToggle": "Auch Dienstamtgehilfen anzeigen",
+    "servantsOff": "Älteste werden angezeigt",
+    "servantsOn": "Älteste und Dienstamtgehilfen werden angezeigt",
+    "writeName": "Namen selbst eintragen",
+    "chooseFromList": "Aus der Liste wählen",
+    "namePlaceholder": "Vor- und Nachname",
+    "nameHint": "Wer nur mit Namen eingetragen ist, wird nicht benachrichtigt: Er hat keine Anmeldung. Die Pioniere und die Ältesten sehen seinen Namen.",
+    "sameConductor": "Dieselbe Person ist zweimal gewählt — wählen Sie eine andere oder lassen Sie den Platz leer.",
+    "seasonHint": "Das Treffen findet einmal pro Saison statt — im Dezember oder Januar.",
+    "outOfSeason": "Wählen Sie einen Tag im Dezember oder Januar.",
+    "conductOne": "Leitung",
+    "conductTwo": "Leitung",
+    "tagServant": "Dienstamtgehilfe",
+    "tagWritten": "eingetragen",
+    "namesTwo": "{{a}} und {{b}}",
+    "conductedByTwo": "Leitung: {{names}}"
   },
   "merge": {
     "title": "Karteikarten zusammenführen",

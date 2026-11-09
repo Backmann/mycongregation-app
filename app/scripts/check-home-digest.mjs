@@ -539,6 +539,32 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('20д дальняя встреча — её часть', farMtg?.agendaIds, ['part:far']);
 }
 
+// --- 21. The meeting with the pioneers: who conducts it, on the row ---------
+// (9 November 2026). Two may conduct it: the invited read both, a conductor
+// reads the other one; one alone reads as before.
+{
+  const { taskMeta } = await import(pathToFileURL(join(out, 'my-tasks.mjs')));
+  const t = (k, o) => `${k}${o ? JSON.stringify(o) : ''}`;
+  const row = (item) => ({ item: { kind: 'pioneer_meeting', sortDate: '2026-12-05', date: '2026-12-05', ...item } });
+  const meta = (item) => taskMeta(row(item), t, 'ru');
+  check(
+    '21а приглашённый: оба проводящих',
+    meta({ label: 'invited', partnerName: 'A, B', partnerNames: ['A', 'B'] }).includes('home.pioneerMeeting.byTwo{"a":"A","b":"B"}'),
+    true,
+  );
+  check(
+    '21б проводящий: второй проводящий',
+    meta({ label: 'conduct', partnerName: 'B', partnerNames: ['B'] }).includes('home.pioneerMeeting.with{"name":"B"}'),
+    true,
+  );
+  check('21в проводящий один: о себе ничего', meta({ label: 'conduct' }).includes('pioneerMeeting'), false);
+  check(
+    '21г старый сервер: одно имя — «проводит»',
+    meta({ label: 'invited', partnerName: 'A' }).includes('home.pioneerMeeting.by{"name":"A"}'),
+    true,
+  );
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

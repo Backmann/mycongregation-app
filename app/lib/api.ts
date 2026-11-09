@@ -4202,6 +4202,11 @@ export interface MyAssignmentItem {
   asAssistant?: boolean;
   /** The other person in a pair, by name. */
   partnerName?: string;
+  /**
+   * The same people one by one where there may be two — those who conduct
+   * the meeting with the pioneers (9 November 2026).
+   */
+  partnerNames?: string[];
   /** Field-service visit: he comes as the service overseer's assistant. */
   asOverseerAssistant?: boolean;
   /** Field-service visit: whose group is being visited. */
@@ -7529,14 +7534,35 @@ export interface PioneerMeetingView {
   place: string | null;
   note: string | null;
   serviceYear: number;
+  /**
+   * Those who conduct it, one or two (9 November 2026): a card — an elder or
+   * a ministerial servant — or a name written by hand (id null).
+   */
+  conductors?: PioneerMeetingConductor[];
+  /** The first of them; servers before 9 November 2026 send only this. */
   conductor: { id: string; name: string };
+  /** The pioneers invited — those who conduct it are not among them. */
   invitedCount: number;
+}
+
+export interface PioneerMeetingConductor {
+  id: string | null;
+  name: string;
+  appointment: string | null;
+}
+
+/** Who conducts it, from either server: the list, or the old one elder. */
+export function meetingConductors(m: PioneerMeetingView): PioneerMeetingConductor[] {
+  if (m.conductors) return m.conductors;
+  return m.conductor.name
+    ? [{ id: m.conductor.id || null, name: m.conductor.name, appointment: "elder" }]
+    : [];
 }
 
 export type PioneerMeetingWarning =
   | { kind: "outsideSeason" }
   | { kind: "event"; eventType: string; title: string }
-  | { kind: "conductorAway" };
+  | { kind: "conductorAway"; name?: string };
 
 export interface PioneerMeetingDetail extends PioneerMeetingView {
   invited: { id: string; name: string; kind: string; away: boolean }[];
@@ -7549,7 +7575,8 @@ export interface PioneerMeetingInput {
   timeStart?: string | null;
   timeEnd?: string | null;
   place?: string | null;
-  conductorPublisherId: string;
+  /** One or two: a card, or a name written by hand. */
+  conductors: { publisherId: string | null; name: string | null }[];
   note?: string | null;
 }
 

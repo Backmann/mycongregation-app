@@ -81,8 +81,14 @@ interface Props {
    * month is not one yet — that is what pioneerActive/pioneerSince settle.
    */
   pioneerFilter?: "regular";
-  /** If set, only publishers with this appointment are shown (hard filter). */
-  appointmentFilter?: "elder" | "ministerial_servant";
+  /**
+   * If set, only publishers with this appointment are shown (hard filter);
+   * a list — any of them (elders and ministerial servants, for instance).
+   */
+  appointmentFilter?:
+    | "elder"
+    | "ministerial_servant"
+    | readonly ("elder" | "ministerial_servant")[];
   /**
    * Appointments that cannot be chosen here at all. Used where the privilege
    * itself is not open to them — an auxiliary pioneer, for instance, must be a
@@ -110,6 +116,12 @@ interface Props {
   scopeDutyType?: string;
   /** Soft-filter to this appointment (e.g. 'elder'); "Show all" reveals others. */
   preferAppointment?: "elder" | "ministerial_servant";
+  /**
+   * The switch's own words where «show all publishers» would be untrue —
+   * the meeting with the pioneers, whose list only widens from the elders
+   * to the ministerial servants (9 November 2026).
+   */
+  showAllWords?: { toggle: string; off: string; on: string };
   /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
   variant?: "field" | "chip";
   /** Label for the empty chip in chip variant. Defaults to common.none. */
@@ -177,6 +189,7 @@ export function PublisherSelector({
   matchGenderOfPublisherId,
   scopeDutyType,
   preferAppointment,
+  showAllWords,
   preferGender,
   variant = "field",
   emptyLabel,
@@ -359,7 +372,13 @@ export function PublisherSelector({
       if (!isActivePermanentPioneer(p.pioneerType, p.pioneerSince))
         return false;
     }
-    if (appointmentFilter && p.appointment !== appointmentFilter) return false;
+    if (
+      appointmentFilter &&
+      !(typeof appointmentFilter === "string"
+        ? p.appointment === appointmentFilter
+        : (appointmentFilter as readonly string[]).includes(String(p.appointment)))
+    )
+      return false;
     if (
       excludeAppointments &&
       p.appointment &&
@@ -562,10 +581,14 @@ export function PublisherSelector({
           >
             <View style={{ flex: 1 }}>
               <Text style={styles.toggleLabel}>
-                {t("pickers.showAllOverride")}
+                {showAllWords?.toggle ?? t("pickers.showAllOverride")}
               </Text>
               <Text style={styles.toggleHint}>
-                {nobodyHasCapability && !showAll && softBrothersActive
+                {showAllWords
+                  ? showAll
+                    ? showAllWords.on
+                    : showAllWords.off
+                  : nobodyHasCapability && !showAll && softBrothersActive
                   ? t("pickers.nobodyHasCapabilityBrothers", { name: capabilityLabel })
                   : softBrothersActive
                   ? t("pickers.showingBrothers")
