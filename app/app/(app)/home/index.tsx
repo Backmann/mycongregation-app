@@ -26,7 +26,6 @@ import {
   useAttendanceDue,
 } from "../../../components/AttendanceCard";
 import {
-  ReportCollectionCard,
   useReportCollection,
 } from "../../../components/ReportCollectionCard";
 import { usePermissions } from "../../../lib/permissions";
@@ -533,6 +532,42 @@ function TodoSection() {
       />,
     );
   }
+  // The month's reports being collected (secretary, coordinator): a line of
+  // this card, no longer a card of its own (9 November 2026).
+  if (collection && mayOpen("/service-reports/summary")) {
+    const month = new Date(`${collection.reportMonth.slice(0, 7)}-01T00:00:00`).toLocaleDateString(
+      i18n.language,
+      { month: "long" },
+    );
+    const deadline = dayMonth(collection.deadline.slice(0, 10));
+    const allIn = collection.expected > 0 && collection.received >= collection.expected;
+    duty.push(
+      <Strip
+        key="collection"
+        icon="clipboard-outline"
+        text={capitalizeFirst(t("reports.collection.title", { month }))}
+        sub={[
+          allIn
+            ? t("reports.collection.allIn", { expected: collection.expected })
+            : t("reports.collection.progress", {
+                received: collection.received,
+                expected: collection.expected,
+              }),
+          lowerFirst(
+            allIn
+              ? t("reports.collection.canClose")
+              : collection.pastDeadline
+                ? t("reports.collection.overdue", { date: deadline })
+                : t("reports.collection.due", { date: deadline }),
+            i18n.language,
+          ),
+        ].join(" · ")}
+        onPress={() =>
+          router.push(`/service-reports/summary?from=${encodeURIComponent("/home")}` as never)
+        }
+      />,
+    );
+  }
   if (attention && attention.notReady > 0) {
     duty.push(
       <Strip
@@ -563,6 +598,36 @@ function TodoSection() {
         icon="close-circle-outline"
         text={t("home.attention.restrictedTalks", { count: attention.talks })}
         onPress={() => router.push("/publishers/public-talks-retire" as never)}
+      />,
+    );
+  }
+
+  // Attendance owed for past meetings: a line here; today's meeting keeps its
+  // own card below, with the fields to type the figure in.
+  if (
+    attendance &&
+    !attendance.meeting &&
+    !attendance.recorded &&
+    attendance.owed > 0 &&
+    mayOpen("/service-reports/attendance")
+  ) {
+    duty.push(
+      <Strip
+        key="attendance"
+        icon="people-outline"
+        text={
+          attendance.previousYear > 0
+            ? t("attendance.backlogWithPrevious", {
+                count: attendance.owed,
+                previous: attendance.previousYear,
+              })
+            : t("attendance.backlog", { count: attendance.owed })
+        }
+        onPress={() =>
+          router.push(
+            `/service-reports/attendance?from=${encodeURIComponent("/home")}` as never,
+          )
+        }
       />,
     );
   }
@@ -660,8 +725,7 @@ function TodoSection() {
       ) : null}
       </View>
       ) : null}
-      <ReportCollectionCard />
-      <AttendanceCard />
+      <AttendanceCard inlineBacklog />
       <EnableNotificationsCard nudge={nudge} />
     </View>
   );
@@ -2619,21 +2683,20 @@ export default function HomeScreen() {
                 myName={data.myName}
                 onWindows={setWindows}
                 compact
-                last={i === meetingsNear.length - 1}
               />
             </View>
           );
         })}
+        <Pressable
+          onPress={() => router.push("/schedule" as never)}
+          style={({ pressed }) => [s.allMine, s.cardFoot, pressed && { opacity: 0.6 }]}
+          accessibilityRole="link"
+        >
+          <Text style={s.allMineText}>{t("home.list.wholeProgramme")}</Text>
+          <Text style={s.allMineHint}>›</Text>
+        </Pressable>
         </View>
       )}
-      <Pressable
-        onPress={() => router.push("/schedule" as never)}
-        style={({ pressed }) => [s.allMine, pressed && { opacity: 0.6 }]}
-        accessibilityRole="link"
-      >
-        <Text style={s.allMineText}>{t("home.list.wholeProgramme")}</Text>
-        <Text style={s.allMineHint}>›</Text>
-      </Pressable>
     </View>
   );
 

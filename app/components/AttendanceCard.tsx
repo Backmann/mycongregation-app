@@ -81,7 +81,15 @@ export function useAttendanceDue() {
   };
 }
 
-export function AttendanceCard() {
+export function AttendanceCard({
+  inlineBacklog = false,
+}: {
+  /**
+   * Home says the backlog itself, as a line of its «Нужно сделать» card
+   * (9 November 2026); the card then shows only today's meeting.
+   */
+  inlineBacklog?: boolean;
+} = {}) {
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const narrow = width < 420;
@@ -169,6 +177,7 @@ export function AttendanceCard() {
 
   // Nothing today — the holes of the year, as one line.
   if (!meeting && !recorded) {
+    if (inlineBacklog) return null;
     return backlogLine ? <View style={styles.stripWrap}>{backlogLine}</View> : null;
   }
 
