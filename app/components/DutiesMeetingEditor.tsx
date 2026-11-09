@@ -17,6 +17,7 @@ import { usePermissions } from '../lib/permissions';
 import { useDutiesWeek } from '../lib/useDutiesWeek';
 import { autoDutyIdsOf } from '../lib/auto-duty-ids';
 import { weekRules } from '../lib/week-rules';
+import { NotHeldCard } from './NotHeldCard';
 import { capitalizeFirst } from '../lib/relative-time';
 import { FONT } from '../lib/typography';
 import { DutiesSection } from './DutiesSection';
@@ -151,7 +152,10 @@ export function DutiesMeetingEditor({
             ? t('dutiesScreen.congress', { event: t(`specialEvents.types.${rules.congress.type}`) })
             : t('dutiesScreen.notHeld')}
         </Text>
-      ) : (
+      ) : null}
+      {/* Duties still standing on it: seen and taken off here. */}
+      {placeKind ? <NotHeldCard key={weekStartISO} week={weekStartISO} scope="duties" kind={placeKind} /> : null}
+      {!held ? null : (
         <View>
           {/* Who is still free at this meeting — for whoever fills it. */}
           {canEdit && placeKind ? <FreeAtMeeting weekStartISO={weekStartISO} eventType={placeKind} /> : null}

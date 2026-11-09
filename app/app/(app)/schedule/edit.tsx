@@ -78,6 +78,7 @@ import {
 } from "../../../lib/meetingSchedulePdf";
 import { FieldServiceSection } from "../../../components/FieldServiceSection";
 import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
+import { NotHeldCard } from "../../../components/NotHeldCard";
 import { usePermissions } from "../../../lib/permissions";
 import { useMayOpen } from "../../../lib/useMayOpen";
 import { SpecialEventsWeekBanner } from "../../../components/SpecialEventsWeekBanner";
@@ -1188,6 +1189,12 @@ function ProgrammeEditor() {
               />
               {congressThisWeek && (
                 <CongressWeekBanner event={congressThisWeek} />
+              )}
+              {/* What still stands on a meeting this week will not hold: the
+                  meetings themselves are hidden below, so here it is seen
+                  and taken off (only by whoever may edit that meeting). */}
+              {!showingPreviousWeek && (
+                <NotHeldCard key={weekStartISO} week={weekStartISO} />
               )}
               {EVENT_TYPE_ORDER.map((eventType) => {
                 const items = grouped.get(eventType) ?? [];

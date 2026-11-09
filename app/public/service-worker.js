@@ -216,6 +216,12 @@ function routeForNotification(data) {
         path: '/schedule/edit',
         params: data.weekStartDate ? { week: data.weekStartDate } : {},
       };
+    // Assignments on a meeting that is not held: the week, to take them off.
+    case 'meeting_not_held':
+      return {
+        path: '/schedule/edit',
+        params: data.weekStartDate ? { week: data.weekStartDate } : {},
+      };
     // «Отправить пробное» is sent from this screen; tapping it comes back.
     case 'test':
       return { path: '/profile/notifications', params: {} };

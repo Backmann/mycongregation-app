@@ -4017,6 +4017,33 @@
     "lateOutMissed": "{{name}} — the report is in no sent report: submitted before late reports were carried over",
     "attendanceIncomplete": "Attendance of {{count}} meeting(s) this month is not entered — the average is counted from the rest. Enter them in “Meeting attendance” before sending."
   },
+  "notHeld": {
+    "title_one": "{{count}} assignment on meetings that will not take place",
+    "title_other": "{{count}} assignments on meetings that will not take place",
+    "lead": "People see “meeting not held” and get no reminders. Take the assignments off to keep the program clean. Nobody is notified.",
+    "meeting": {
+      "midweek": "Midweek, {{day}}",
+      "weekend": "Weekend, {{day}}"
+    },
+    "parts_one": "{{count}} part",
+    "parts_other": "{{count}} parts",
+    "duties_one": "{{count}} duty",
+    "duties_other": "{{count}} duties",
+    "guestShort": "visiting speaker",
+    "guest": "Visiting speaker. When this is taken off, the talk coordinator is asked to tell his congregation that he need not come.",
+    "clearN": "Take off {{n}}",
+    "clearAll": "Take off all {{n}}",
+    "canGiveBack": "If the event is moved, what was taken off can be given back with one tap.",
+    "heldAgainTitle": "The meetings are held again",
+    "heldAgainText": "On {{day}} this week's assignments were taken off because of an event ({{n}}). The meetings are held again now.",
+    "heldAgainHint": "They return to their places; people get the usual assignment notice.",
+    "giveBack": "Give back {{n}}",
+    "cleared": "Taken off: {{n}}",
+    "undo": "Undo",
+    "clearedOn": "Taken off on {{day}}: {{n}}. The meeting is still not held.",
+    "skipped": "Not given back — the place is already taken: {{names}}",
+    "chip": "Assignments without a meeting: {{n}}"
+  },
   "journal": {
     "title": "Activity log",
     "rowSubtitle": "Who changed what in the congregation",
@@ -4066,7 +4093,8 @@
       "monthly_report": "Monthly summary (S-1)",
       "aux_application": "Auxiliary pioneer applications",
       "pioneer_meeting": "Meeting with the pioneers",
-      "meeting_move": "Meeting moved"
+      "meeting_move": "Meeting moved",
+      "not_held_clearance": "Assignments on a meeting not held"
     },
     "actions": {
       "CREATE": "added",
@@ -6001,6 +6029,11 @@
       "MOVE_CHANGED_EVENT_DAY": "An event already changes the meeting on {{date}} (hour or place). Remove or adjust the event first.",
       "MOVE_SAME_AS_USUAL": "That is the usual day, hour and place — there is nothing to move.",
       "MOVE_NOT_HELD": "This meeting is not held this week — there is nothing to move.",
+      "NOT_HELD_MEETING_HELD": "This meeting is held — there is nothing to take off.",
+      "NOT_HELD_NOTHING_CHOSEN": "Nothing was chosen to take off.",
+      "NOT_HELD_NOTHING_LEFT": "Everything here has already been taken off.",
+      "NOT_HELD_PAST": "This meeting is already past — its assignments stay as they are.",
+      "NOT_HELD_ALREADY_RESTORED": "This has already been given back.",
       "MOVE_VISIT_WEEK": "In a circuit overseer visit week, the visit sets the midweek day.",
       "MOVE_NOT_FOUND": "This meeting is not moved.",
       "MOVE_PAST_NEEDS_COORDINATOR": "A past meeting is moved by an administrator or the coordinator of the body of elders.",
