@@ -32,15 +32,21 @@ export default function PioneerMeetingsScreen() {
     throwOnError: failsScreen,
   });
   const [formOpen, setFormOpen] = useState(false);
-  // From the body's task: «Назначить встречу» opens the form at once.
-  useEffect(() => {
-    if (params.new === '1' && q.data?.canManage) setFormOpen(true);
-  }, [params.new, q.data?.canManage]);
 
   const today = formatDateISO(new Date());
   const all = q.data?.meetings ?? [];
   const coming = all.filter((m) => m.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   const past = all.filter((m) => m.date < today);
+  // Once a season (Lionel, 9 November 2026): while a meeting is coming there
+  // is no second one to set — the button changes it instead. After its day
+  // the next season's meeting can be set again.
+  const current = coming[0] ?? null;
+
+  // From the body's task: «Назначить встречу» opens the form at once — the
+  // coming meeting's, if one is already set.
+  useEffect(() => {
+    if (params.new === '1' && q.data?.canManage) setFormOpen(true);
+  }, [params.new, q.data?.canManage]);
 
   const when = (m: PioneerMeetingView) =>
     [
@@ -96,8 +102,8 @@ export default function PioneerMeetingsScreen() {
           )}
           {q.data?.canManage ? (
             <Pressable onPress={() => setFormOpen(true)} style={styles.add} accessibilityRole="button" testID="pioneer-meeting-new">
-              <Ionicons name="add" size={18} color="#fff" />
-              <Text style={styles.addText}>{t('pioneerMeeting.setNew')}</Text>
+              <Ionicons name={current ? 'create-outline' : 'add'} size={18} color="#fff" />
+              <Text style={styles.addText}>{current ? t('pioneerMeeting.editComing') : t('pioneerMeeting.setNew')}</Text>
             </Pressable>
           ) : null}
 
@@ -118,8 +124,12 @@ export default function PioneerMeetingsScreen() {
       )}
       <PioneerMeetingForm
         visible={formOpen}
+        meeting={current}
         onClose={() => setFormOpen(false)}
-        onSaved={() => void qc.invalidateQueries({ queryKey: ['pioneer-meetings'] })}
+        onSaved={() => {
+          void qc.invalidateQueries({ queryKey: ['pioneer-meetings'] });
+          if (current) void qc.invalidateQueries({ queryKey: ['pioneer-meeting', current.id] });
+        }}
       />
     </ScrollView>
   );

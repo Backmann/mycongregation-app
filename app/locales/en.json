@@ -6847,6 +6847,7 @@
     "about": "Once a year, in December or January, the elders chosen by the body (usually two) meet the regular and special pioneers and the missionaries serving in the field — on the outline S-211.",
     "noneComing": "No meeting set yet.",
     "setNew": "Set the meeting",
+    "editComing": "Change the meeting",
     "past": "Earlier meetings",
     "conductedBy": "Conducted by {{name}}",
     "invitedCount_one": "{{count}} invited",
