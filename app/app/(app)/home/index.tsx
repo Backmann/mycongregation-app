@@ -1,7 +1,7 @@
 import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { HoursCard } from "../../../components/hours/HoursCard";
 import { useLogUndo } from "../../../components/hours/useLogUndo";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Animated,
   AppState,
@@ -88,7 +88,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime, isOwnEntry } from "../../../lib/home-digest";
+import { digestHome, entryTime, isOwnEntry, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -108,6 +108,7 @@ import { formatDayRange } from "../../../lib/date-range";
 import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MovedMark } from "../../../components/MovedMark";
+import { useNotHeld } from "../../../components/NotHeldCard";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -486,6 +487,20 @@ function TodoSection() {
   // A device that receives nothing: one line here, last — the things with a
   // date come first — which unfolds into the full explanation (4 October).
   const nudge = useNotifyNudge();
+  const perms = usePermissions();
+  // Assignments left on a meeting that is not held (8 November 2026): one
+  // line for whoever may take them off.
+  const notHeldQ = useNotHeld(
+    perms.canEditMidweekSchedule || perms.canEditWeekendSchedule || perms.canEditDuties,
+  );
+  const notHeld = (notHeldQ.data?.meetings ?? []).filter(
+    (m) => (m.canParts && m.parts.length > 0) || (m.canDuties && m.duties.length > 0),
+  );
+  const notHeldCount = notHeld.reduce(
+    (n, m) => n + (m.canParts ? m.parts.length : 0) + (m.canDuties ? m.duties.length : 0),
+    0,
+  );
+  const [allDuty, setAllDuty] = useState(false);
   // Not once the secretary has closed the month: the report is refused then,
   // and the Reports screen sends the person to the secretary instead.
   const reportDue = !!report && !report.submitted && !report.closed;
@@ -495,7 +510,8 @@ function TodoSection() {
     !collection &&
     !attendance &&
     !attention &&
-    !nudge.show
+    !nudge.show &&
+    notHeldCount === 0
   )
     return null;
 
@@ -504,6 +520,62 @@ function TodoSection() {
       day: "numeric",
       month: "long",
     });
+
+  // What the person's duties in the congregation ask of them, the nearest
+  // first; three on the screen, the rest one tap away (9 November 2026), so
+  // a busy elder's list does not push his own things off Home.
+  const duty: ReactNode[] = [];
+  if (notHeldCount > 0) {
+    const first = notHeld[0];
+    duty.push(
+      <Strip
+        key="not-held"
+        icon="calendar-clear-outline"
+        text={t("home.todo.notHeld", { count: notHeldCount })}
+        onPress={() =>
+          router.push(`/schedule/edit?week=${first.weekStartDate}` as never)
+        }
+      />,
+    );
+  }
+  if (attention && attention.notReady > 0) {
+    duty.push(
+      <Strip
+        key="programme"
+        icon="calendar-outline"
+        text={t("home.attention.programme", {
+          count: attention.notReady,
+          window: t("home.attention.window", { count: attention.weeks }),
+        })}
+        onPress={() => router.push("/schedule/edit" as never)}
+      />,
+    );
+  }
+  if (attention && attention.overdue > 0 && mayOpen("/tasks")) {
+    duty.push(
+      <Strip
+        key="tasks"
+        icon="alarm-outline"
+        text={t("home.attention.tasksOverdue", { count: attention.overdue })}
+        onPress={() => router.push("/tasks" as never)}
+      />,
+    );
+  }
+  if (attention && attention.talks > 0 && mayOpen("/publishers/public-talks-retire")) {
+    duty.push(
+      <Strip
+        key="talks"
+        icon="close-circle-outline"
+        text={t("home.attention.restrictedTalks", { count: attention.talks })}
+        onPress={() => router.push("/publishers/public-talks-retire" as never)}
+      />,
+    );
+  }
+
+  const personalCount =
+    (reportDue ? 1 : 0) + (pending?.items.length ?? 0) + (pending && pending.more > 0 ? 1 : 0);
+  const dutyShown = allDuty ? duty : duty.slice(0, DUTY_SHOWN);
+  const dutyRest = duty.length - dutyShown.length;
 
   return (
     <View style={s.section}>
@@ -571,33 +643,20 @@ function TodoSection() {
           onPress={() => router.push("/profile/my-tasks" as never)}
         />
       ) : null}
-      {attention && attention.notReady > 0 ? (
-        <Strip
-          icon="calendar-outline"
-          text={t("home.attention.programme", {
-            count: attention.notReady,
-            window: t("home.attention.window", { count: attention.weeks }),
-          })}
-          onPress={() => router.push("/schedule/edit" as never)}
-        />
-      ) : null}
-      {attention && attention.overdue > 0 && mayOpen("/tasks") ? (
-        <Strip
-          icon="alarm-outline"
-          text={t("home.attention.tasksOverdue", { count: attention.overdue })}
-          onPress={() => router.push("/tasks" as never)}
-        />
-      ) : null}
-      {attention &&
-      attention.talks > 0 &&
-      mayOpen("/publishers/public-talks-retire") ? (
-        <Strip
-          icon="close-circle-outline"
-          text={t("home.attention.restrictedTalks", { count: attention.talks })}
-          onPress={() =>
-            router.push("/publishers/public-talks-retire" as never)
-          }
-        />
+      {dutyShown.length ? (
+        <>
+          {personalCount > 0 ? (
+            <Text style={s.todoGroup}>{t("home.todo.byDuty")}</Text>
+          ) : null}
+          {dutyShown}
+          {dutyRest > 0 ? (
+            <Strip
+              icon="ellipsis-horizontal"
+              text={t("home.todo.moreDuty", { count: dutyRest })}
+              onPress={() => setAllDuty(true)}
+            />
+          ) : null}
+        </>
       ) : null}
       <ReportCollectionCard />
       <AttendanceCard />
@@ -866,6 +925,57 @@ function fieldPeople(
 // 2. «Ваше ближайшее»
 // ---------------------------------------------------------------------------
 
+/** Same key as the calendar screen, so both read one answer. */
+const CALENDAR_FEED_KEY = ["calendar-feed"] as const;
+/** A calendar that has fetched within this long is taken as working. */
+const CALENDAR_FRESH_MS = 2 * 24 * 3600 * 1000;
+
+/**
+ * Is the person's calendar following the app (9 November 2026)? «on» when a
+ * calendar fetched the feed within two days, «off» when none is connected,
+ * null while unknown or when a connected calendar has gone quiet — Home then
+ * says nothing rather than something untrue.
+ */
+function useCalendarState(): "on" | "off" | null {
+  const q = useQuery({
+    queryKey: CALENDAR_FEED_KEY,
+    queryFn: () => meApi.calendarFeed(),
+    staleTime: 10 * 60 * 1000,
+  });
+  if (!q.data) return null;
+  if (!q.data.connected) return "off";
+  const at = q.data.lastFetchedAt ? Date.parse(q.data.lastFetchedAt) : NaN;
+  return Number.isFinite(at) && Date.now() - at < CALENDAR_FRESH_MS ? "on" : null;
+}
+
+function CalendarLine() {
+  const { t } = useTranslation();
+  const state = useCalendarState();
+  if (state === "on") {
+    return (
+      <View style={s.calLine} testID="home-calendar-on">
+        <Ionicons name="checkmark" size={16} color="#166534" />
+        <Text style={s.calOn}>{t("home.next.inCalendar")}</Text>
+      </View>
+    );
+  }
+  if (state === "off") {
+    return (
+      <Pressable
+        onPress={() => router.push("/profile/calendar" as never)}
+        style={({ pressed }) => [s.calLine, s.calOffBtn, pressed && { opacity: 0.6 }]}
+        accessibilityRole="link"
+        hitSlop={4}
+        testID="home-calendar-off"
+      >
+        <Ionicons name="calendar-outline" size={16} color="#0e7490" />
+        <Text style={s.calOff}>{t("home.next.addToCalendar")}</Text>
+      </Pressable>
+    );
+  }
+  return null;
+}
+
 function NextCard({
   entry,
   following,
@@ -960,6 +1070,7 @@ function NextCard({
               </Text>
             </View>
           ) : null}
+          <CalendarLine />
         </MyGlowRow>
       </Pressable>
       {following ? (
@@ -1386,6 +1497,7 @@ function EntryBody({
   myGroupName,
   myName,
   onWindows,
+  compact = false,
 }: {
   en: TimelineEntry;
   nextKey: string | null;
@@ -1393,6 +1505,12 @@ function EntryBody({
   myGroupName: string | null;
   myName: string | null;
   onWindows: (w: number[]) => void;
+  /**
+   * «Встречи собрания» (9 November 2026, Lionel's choice «в»): a meeting
+   * shows what it is about and the person's own lines in full; the rest of
+   * its programme is one tap away in «Программа».
+   */
+  compact?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const loc = i18n.language;
@@ -1480,7 +1598,16 @@ function EntryBody({
       ? en.memorial.title
       : (en.title ??
         en.occasion?.title ??
+        // Compact: the weekday's first talk names the evening.
+        (compact && agenda.length ? agenda[0].text : null) ??
         (agenda.length ? null : t(`home.eventTypes.${en.kind}`)));
+    // Compact: only the person's own lines, never the one already the title;
+    // nothing at all on the row the card on top is about — it points up.
+    const shownAgenda = compact
+      ? isNext
+        ? []
+        : agenda.filter((l) => l.mine && !(title === agenda[0]?.text && l === agenda[0]))
+      : agenda;
     const lower = (x: string | null) => (x ? lowerFirst(x, loc) : x);
     return (
       <>
@@ -1508,7 +1635,14 @@ function EntryBody({
           ) : null}
         </Text>
         {title ? (
-          <Text style={[s.rowTitle, en.titleIsMine && s.titleMine]}>
+          <Text
+            style={[
+              s.rowTitle,
+              (en.titleIsMine ||
+                (compact && agenda[0]?.mine && title === agenda[0]?.text)) &&
+                s.titleMine,
+            ]}
+          >
             {title}
           </Text>
         ) : null}
@@ -1535,8 +1669,11 @@ function EntryBody({
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
         ) : null}
-        <AgendaList lines={agenda} />
+        <AgendaList lines={shownAgenda} />
         {mine ? <MineLine text={mine} /> : null}
+        {compact && isNext ? (
+          <Text style={s.upNext}>{t("home.list.upNext")}</Text>
+        ) : null}
         {en.weeklyCleaning && !isNext ? (
           <CleaningLine text={t("home.timeline.cleaningAfterMeeting")} />
         ) : null}
@@ -1637,7 +1774,13 @@ function EntryBody({
     return (
       <>
         <Text style={[s.rowKind, { color: v.color }]}>
-          {[taskSubsectionLabel(it, t), entryTime(en), dayWord]
+          {[
+            taskSubsectionLabel(it, t) ??
+              // A cart shift said what it is: the row's title is only the place.
+              (it.kind === "cart" ? capitalizeFirst(t("home.kinds.cart")) : null),
+            entryTime(en),
+            dayWord,
+          ]
             .filter(Boolean)
             .join(" · ")}
         </Text>
@@ -1794,7 +1937,9 @@ function DayRow({
   myGroupName,
   myName,
   onWindows,
+  compact = false,
 }: {
+  compact?: boolean;
   group: DayGroup;
   nextKey: string | null;
   todayISO: string;
@@ -1831,6 +1976,7 @@ function DayRow({
               myGroupName={myGroupName}
               myName={myName}
               onWindows={onWindows}
+              compact={compact}
             />
           );
           return canOpen(en) ? (
@@ -2275,7 +2421,7 @@ export default function HomeScreen() {
   ) : digest.next ? (
     <NextCard
       entry={digest.next}
-      following={digest.nextIsFar ? null : digest.following}
+      following={null}
       awayDuring={digest.awayDuring}
       isFar={digest.nextIsFar}
       now={now}
@@ -2286,11 +2432,109 @@ export default function HomeScreen() {
     />
   ) : null;
 
+  // The three lists after the card — lib/home-digest.ts splitHome.
+  const nextKey = digest.next?.key ?? null;
+  const split = splitHome(data.timeline, nextKey);
+  const meetingsNear = split.meetings;
+  const aheadAll = split.ahead;
+  const aheadShown = aheadAll.slice(0, AHEAD_SHOWN);
+  const aheadRest = aheadAll.length - aheadShown.length;
+  const aheadUntil = aheadAll.length ? aheadAll[aheadAll.length - 1].dateISO : null;
+  // «до октября 2027»: the month, and the year when it is not this one.
+  const monthYear = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+      month: "long",
+      ...(iso.slice(0, 4) !== todayISO.slice(0, 4) ? { year: "numeric" } : {}),
+    });
+  const important = split.important.filter(
+    (en): en is MeetingEntry => en.type === "meeting",
+  );
+
+  // Nothing of one's own at all — an account without a card, or a person
+  // with no assignment yet: no empty block, the meetings follow.
+  const ahead = data.loading || data.failed || (!digest.next && aheadAll.length === 0) ? null : (
+    <View style={s.section}>
+      <SectionLabel>{t("home.ahead.title")}</SectionLabel>
+      {aheadShown.length === 0 ? (
+        <View style={s.quietCard}>
+          <Text style={s.quietSub}>{t("home.ahead.none")}</Text>
+        </View>
+      ) : (
+        aheadShown.map((en) => (
+          <DayRow
+            key={en.key}
+            group={{ dateISO: en.dateISO, entries: [en] }}
+            nextKey={null}
+            todayISO={todayISO}
+            myGroupName={data.myGroupName}
+            myName={data.myName}
+            onWindows={setWindows}
+            compact
+          />
+        ))
+      )}
+      <Pressable
+        onPress={() => router.push("/home/my-assignments" as never)}
+        style={({ pressed }) => [s.allMine, pressed && { opacity: 0.6 }]}
+        accessibilityRole="link"
+      >
+        <Text style={s.allMineText}>{t("home.list.allMine")}</Text>
+        <Text style={s.allMineHint}>
+          {aheadRest > 0 && aheadUntil
+            ? `${t("home.ahead.more", { count: aheadRest, until: monthYear(aheadUntil) })} ›`
+            : "›"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+
+  const importantBlock = important.length ? (
+    <View style={s.section}>
+      <SectionLabel>{t("home.important.title")}</SectionLabel>
+      {important.map((en) => (
+        <Pressable
+          key={en.key}
+          onPress={canOpen(en) ? () => openEntry(en) : undefined}
+          disabled={!canOpen(en)}
+          style={({ pressed }) => [s.importantCard, pressed && { opacity: 0.7 }]}
+          accessibilityRole={canOpen(en) ? "button" : undefined}
+        >
+          <Ionicons name="information-circle-outline" size={20} color="#0c4a6e" />
+          <View style={{ flex: 1 }}>
+            <Text style={s.importantTitle}>
+              {capitalizeFirst(shortDay(en.dateISO, i18n.language))}
+              {" · "}
+              {t(
+                en.kind === "field_service"
+                  ? "home.important.fieldService"
+                  : en.kind === "midweek"
+                    ? "feed.kindMidweek"
+                    : "feed.kindWeekend",
+              )}
+              {en.time ? ` ${en.time}` : ""}
+            </Text>
+            <Text style={s.importantText}>
+              {en.cancelled
+                ? [t("home.important.cancelled"), en.cancelReason].filter(Boolean).join(": ")
+                : en.movedFrom
+                  ? t("home.important.moved", {
+                      from: [shortDay(en.movedFrom, i18n.language), en.movedFromTime]
+                        .filter(Boolean)
+                        .join(", "),
+                    })
+                  : (en.notice ?? en.meetingChangeNote ?? "").trim()}
+            </Text>
+          </View>
+        </Pressable>
+      ))}
+    </View>
+  ) : null;
+
   const list = (
     <View style={s.section}>
       <View style={s.listHead}>
-        <Text style={s.listTitle} accessibilityRole="header">
-          {t("home.list.title")}
+        <Text style={s.sectionLabel} accessibilityRole="header">
+          {t("home.list.meetings")}
         </Text>
         <Text style={s.listRange}>
           {fmtDay(todayISO)} – {fmtDay(nearTo)}
@@ -2308,17 +2552,17 @@ export default function HomeScreen() {
         <SkeletonCard rows={4} />
       ) : data.failed ? (
         <LoadError onRetry={data.retry} />
-      ) : data.timeline.near.length === 0 ? (
+      ) : meetingsNear.length === 0 ? (
         <View style={s.quietCard}>
           <Text style={s.quietSub}>{t("home.timeline.emptyNear")}</Text>
         </View>
       ) : (
-        data.timeline.near.map((g, i) => {
+        meetingsNear.map((g, i) => {
           const month = g.dateISO.slice(0, 7);
           const prev =
             i === 0
               ? todayISO.slice(0, 7)
-              : data.timeline.near[i - 1].dateISO.slice(0, 7);
+              : meetingsNear[i - 1].dateISO.slice(0, 7);
           return (
             <View key={g.dateISO}>
               {month !== prev ? (
@@ -2340,22 +2584,19 @@ export default function HomeScreen() {
                 myGroupName={data.myGroupName}
                 myName={data.myName}
                 onWindows={setWindows}
+                compact
               />
             </View>
           );
         })
       )}
       <Pressable
-        onPress={() => router.push("/home/my-assignments" as never)}
+        onPress={() => router.push("/schedule" as never)}
         style={({ pressed }) => [s.allMine, pressed && { opacity: 0.6 }]}
         accessibilityRole="link"
       >
-        <Text style={s.allMineText}>{t("home.list.allMine")}</Text>
-        <Text style={s.allMineHint}>
-          {digest.moreCount > 0 && digest.moreUntil
-            ? `${t("home.list.more", { count: digest.moreCount, date: fmtDay(digest.moreUntil) })} ›`
-            : "›"}
-        </Text>
+        <Text style={s.allMineText}>{t("home.list.wholeProgramme")}</Text>
+        <Text style={s.allMineHint}>›</Text>
       </Pressable>
     </View>
   );
@@ -2433,25 +2674,31 @@ export default function HomeScreen() {
                 <GreetingHeader now={now} />
                 <WelcomeCard />
                 <ReportDone />
-                <HoursCard onSaved={logUndo.saved} />
                 <ConductLiveCard />
                 <ConductLiveCard kind="weekend" />
                 {next}
+                <HoursCard onSaved={logUndo.saved} />
                 <TodoSection />
+                {ahead}
+              </View>
+              <View style={s.colRight}>
+                {importantBlock}
+                {list}
                 {soon}
               </View>
-              <View style={s.colRight}>{list}</View>
             </>
           ) : (
             <>
               <GreetingHeader now={now} />
               <WelcomeCard />
               <ReportDone />
-              <HoursCard onSaved={logUndo.saved} />
               <ConductLiveCard />
               <ConductLiveCard kind="weekend" />
               {next}
+              <HoursCard onSaved={logUndo.saved} />
+              {importantBlock}
               <TodoSection />
+              {ahead}
               {list}
               {soon}
             </>
@@ -2464,13 +2711,40 @@ export default function HomeScreen() {
   );
 }
 
+/** How many of one's own rows «Дальше у вас» shows before «Все мои назначения». */
+const AHEAD_SHOWN = 4;
+/** How many lines «Нужно сделать» shows from the person's duties before «ещё N». */
+const DUTY_SHOWN = 3;
+
 const s = StyleSheet.create({
+  calLine: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 2 },
+  calOn: { fontSize: 13.5, fontFamily: "Manrope_700Bold", color: "#166534" },
+  calOffBtn: { minHeight: 36, alignSelf: "flex-start" },
+  calOff: { fontSize: 13.5, fontFamily: "Manrope_800ExtraBold", color: "#0e7490" },
+  upNext: { fontSize: 13.5, fontFamily: "Manrope_700Bold", color: "#0e7490", marginTop: 4 },
+  todoGroup: {
+    fontSize: 12.5,
+    fontFamily: "Manrope_800ExtraBold",
+    color: "#475569",
+    marginTop: 4,
+  },
+  importantCard: {
+    flexDirection: "row",
+    gap: 10,
+    backgroundColor: "#e0f2fe",
+    borderRadius: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    minHeight: 44,
+  },
+  importantTitle: { fontSize: 15, fontFamily: "Manrope_800ExtraBold", color: "#0c4a6e" },
+  importantText: { fontSize: 14, lineHeight: 20, fontFamily: "Manrope_500Medium", color: "#0c4a6e", marginTop: 2 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, alignItems: "center" },
   frame: { width: "100%", maxWidth: MAX_WIDTH, gap: 22 },
   frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 40 },
   colLeft: { width: 400, gap: 22 },
-  colRight: { flex: 1, minWidth: 0 },
+  colRight: { flex: 1, minWidth: 0, gap: 22 },
   section: { gap: 8 },
   sectionLabel: {
     fontSize: 12,

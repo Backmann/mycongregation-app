@@ -5,9 +5,10 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { formatDuration, useLogOverview } from '../../lib/useServiceLog';
-import { capitalize, monthName } from '../../lib/aux-application';
+import { monthName } from '../../lib/aux-application';
 import type { ServiceLogMonth } from '../../lib/api';
 import { LogSheet } from './LogSheet';
+import { paceHours } from '../../lib/hours-pace';
 
 const INTRO_KEY = 'mycongregation.hours-intro-seen';
 
@@ -19,10 +20,15 @@ export function daysLeft(today: string): number {
 }
 
 /**
- * «ОКТЯБРЬ · МОЙ УЧЁТ» on Home (29 October 2026, mockup screen 1): what is
- * written this month, against the goal where there is one, and the button
- * to write more. Only for those whose report asks for hours; nothing for
- * anybody else. A quiet line under it says it is his alone.
+ * The hours of this month on Home — one row (9 November 2026, Home variant
+ * Б): what is written, against the goal where there is one, how far the
+ * plan expects by today, and the button to write more. It used to be a large
+ * tile above «Ваше ближайшее», which pushed the person's next assignment off
+ * the first screen of a phone. Only for those whose report asks for hours.
+ *
+ * The first time it appears it carries «Новое» (29 October 2026: written
+ * after every outing, summed into the report); a tap on the row or on
+ * «+ Время» settles it. The lock says it is his alone.
  */
 export function HoursCard({
   onSaved,
@@ -32,8 +38,6 @@ export function HoursCard({
   const { t, i18n } = useTranslation();
   const { months } = useLogOverview();
   const [open, setOpen] = useState(false);
-  // The first time the card appears, one line on what it is for (Lionel,
-  // 29 October 2026): written after every outing, summed into the report.
   const [intro, setIntro] = useState(false);
   const shown = !!months && months.length > 0;
   useEffect(() => {
@@ -44,7 +48,8 @@ export function HoursCard({
       })
       .catch(() => undefined);
   }, [shown]);
-  const closeIntro = () => {
+  const seen = () => {
+    if (!intro) return;
     setIntro(false);
     void AsyncStorage.setItem(INTRO_KEY, '1').catch(() => undefined);
   };
@@ -58,173 +63,134 @@ export function HoursCard({
   const min = m.fieldMinutes % 60;
   const share = m.goal ? Math.min(1, m.fieldMinutes / (m.goal * 60)) : 0;
   const done = !!m.goal && m.fieldMinutes >= m.goal * 60;
-  const kicker = `${capitalize(monthName(m.month, i18n.language, false))} · ${t(
-    aux ? 'hoursLog.home.kickerAux' : 'hoursLog.home.kicker',
-  )}`;
-  const sub = [
-    m.goal ? t('hoursLog.home.of', { n: m.goal }) : null,
-    done
-      ? t('hoursLog.home.goalReached')
-      : isCurrent
-        ? t('hoursLog.home.daysLeft', { count: daysLeft(m.today) })
-        : t('hoursLog.home.reportDue'),
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const month = monthName(m.month, i18n.language, false);
+  const pace = m.goal && isCurrent && !done ? paceHours(m.goal, m.today) : null;
+  const paceShare = pace !== null && m.goal ? Math.min(1, pace / m.goal) : null;
+  const sub = done
+    ? t('hoursLog.home.goalReached')
+    : !isCurrent
+      ? t('hoursLog.home.reportDue')
+      : pace !== null
+        ? t('hoursLog.home.pace', { n: pace })
+        : t('hoursLog.home.toReport', { month });
 
   return (
-    <View>
-      {intro ? (
-        <View style={styles.intro}>
-          <View style={styles.introHead}>
-            <View style={styles.introBadge}>
-              <Text style={styles.introBadgeText}>{t('hoursLog.intro.badge')}</Text>
-            </View>
-            <Text style={styles.introTitle}>{t('hoursLog.intro.title')}</Text>
-          </View>
-          <Text style={styles.introText}>{t('hoursLog.intro.text')}</Text>
-          <Pressable onPress={closeIntro} accessibilityRole="button" hitSlop={6}>
-            <Text style={styles.introOk}>{t('hoursLog.intro.ok')}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-      <View style={[styles.hero, aux && styles.heroAux]}>
+    <View style={[styles.card, aux && styles.cardAux]}>
       <Pressable
-        onPress={() => router.push(`/cart/my-hours?month=${m.month}` as never)}
+        style={styles.main}
+        onPress={() => {
+          seen();
+          router.push(`/cart/my-hours?month=${m.month}` as never);
+        }}
         accessibilityRole="button"
         testID="hours-card"
       >
-        <View style={styles.kickRow}>
-          <Text style={styles.kicker}>{kicker}</Text>
-          <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
-        </View>
-        <View style={styles.bigRow}>
-          <Text style={styles.big}>{h}</Text>
-          <Text style={styles.unit}>{t('hoursLog.unitH')}</Text>
-          <Text style={[styles.big, { marginLeft: 8 }]}>{min}</Text>
-          <Text style={styles.unit}>{t('hoursLog.unitM')}</Text>
-        </View>
-        <Text style={styles.sub}>{sub}</Text>
-        {m.goal ? (
-          <View style={styles.track}>
-            <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
-          </View>
-        ) : null}
-      </Pressable>
-        <View style={styles.row}>
-          {m.creditMinutes > 0 ? (
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>
-                {t('hoursLog.home.credit', { dur: formatDuration(m.creditMinutes, t) })}
-              </Text>
-            </View>
-          ) : (
-            <View />
-          )}
-          {m.open ? (
-            <Pressable
-              onPress={() => setOpen(true)}
-              style={styles.plus}
-              accessibilityRole="button"
-              hitSlop={6}
-              testID="hours-add"
-            >
-              <Ionicons name="add" size={18} color="#0e7490" />
-              <Text style={styles.plusText}>{t('hoursLog.home.add')}</Text>
-            </Pressable>
-          ) : m.report ? (
-            <View style={styles.pill}>
-              <Text style={styles.pillText}>
-                {t('hoursLog.home.reported', { n: m.report.hours ?? 0 })}
-              </Text>
+        <View style={styles.topRow}>
+          <Text style={styles.big}>
+            {min > 0
+              ? t('hoursLog.home.hm', { h, m: min })
+              : t('hoursLog.home.h', { h })}
+          </Text>
+          <Text style={styles.of}>
+            {m.goal
+              ? t('hoursLog.home.ofMonth', { n: m.goal, month })
+              : t('hoursLog.home.forMonth', { month })}
+          </Text>
+          <Ionicons
+            name="lock-closed-outline"
+            size={12}
+            color="#94a3b8"
+            accessibilityLabel={t('hoursLog.onlyYou')}
+          />
+          {intro ? (
+            <View style={styles.newTag}>
+              <Text style={styles.newTagText}>{t('hoursLog.intro.badge')}</Text>
             </View>
           ) : null}
         </View>
-      </View>
-      <View style={styles.lock}>
-        <Ionicons name="lock-closed-outline" size={12} color="#94a3b8" />
-        <Text style={styles.lockText}>{t('hoursLog.onlyYou')}</Text>
-      </View>
+        {m.goal ? (
+          <View style={styles.track}>
+            <View style={[styles.fill, { width: `${Math.round(share * 100)}%` }]} />
+            {paceShare !== null && paceShare > 0 ? (
+              <View style={[styles.paceMark, { left: `${Math.round(paceShare * 100)}%` }]} />
+            ) : null}
+          </View>
+        ) : null}
+        <Text style={styles.sub}>
+          {aux ? `${t('hoursLog.home.kickerAux')} · ` : ''}
+          {sub}
+          {m.creditMinutes > 0
+            ? ` · ${t('hoursLog.home.credit', { dur: formatDuration(m.creditMinutes, t) })}`
+            : ''}
+        </Text>
+      </Pressable>
+      {m.open ? (
+        <Pressable
+          onPress={() => {
+            seen();
+            setOpen(true);
+          }}
+          style={({ pressed }) => [styles.plus, pressed && { opacity: 0.7 }]}
+          accessibilityRole="button"
+          hitSlop={6}
+          testID="hours-add"
+        >
+          <Ionicons name="add" size={18} color="#0e5f75" />
+          <Text style={styles.plusText}>{t('hoursLog.home.add')}</Text>
+        </Pressable>
+      ) : m.report ? (
+        <Text style={styles.reported}>
+          {t('hoursLog.home.reported', { n: m.report.hours ?? 0 })}
+        </Text>
+      ) : null}
       <LogSheet visible={open} onClose={() => setOpen(false)} today={m.today} onSaved={onSaved} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  intro: {
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#a5f3fc',
     borderRadius: 18,
-    padding: 14,
-    marginBottom: 10,
-    gap: 6,
+    paddingVertical: 12,
+    paddingLeft: 14,
+    paddingRight: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
-  introHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  introBadge: { backgroundColor: '#0e7490', borderRadius: 999, paddingVertical: 3, paddingHorizontal: 9 },
-  introBadgeText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, color: '#fff', letterSpacing: 0.4 },
-  introTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: '#0f172a', flex: 1 },
-  introText: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: '#334155', lineHeight: 20 },
-  introOk: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: '#0e7490', alignSelf: 'flex-end' },
-  hero: {
-    backgroundColor: '#0e7490',
-    borderRadius: 22,
-    padding: 18,
-    shadowColor: '#0e7490',
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
-    backgroundImage: 'linear-gradient(160deg, #0e7490, #0b5a70)',
-  } as object,
-  heroAux: {
-    backgroundColor: '#0f766e',
-    backgroundImage: 'linear-gradient(160deg, #0f766e, #115e59)',
-  } as object,
-  kickRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  kicker: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    color: 'rgba(255,255,255,0.75)',
-  },
-  bigRow: { flexDirection: 'row', alignItems: 'baseline', marginTop: 6 },
+  cardAux: { borderColor: '#99f6e4' },
+  main: { flex: 1, minWidth: 0 },
+  topRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', columnGap: 6, rowGap: 2 },
   big: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 40,
-    color: '#fff',
-    letterSpacing: -1,
+    fontSize: 19,
+    color: '#0f172a',
     fontVariant: ['tabular-nums'],
   },
-  unit: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 17,
-    color: 'rgba(255,255,255,0.72)',
-    marginLeft: 4,
-  },
-  sub: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: 'rgba(255,255,255,0.88)', marginTop: 4 },
+  of: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#475569' },
+  newTag: { backgroundColor: '#0e7490', borderRadius: 999, paddingVertical: 2, paddingHorizontal: 8 },
+  newTagText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11.5, color: '#fff', letterSpacing: 0.3 },
   track: {
-    height: 8,
-    borderRadius: 5,
-    backgroundColor: 'rgba(255,255,255,0.22)',
-    marginTop: 12,
-    overflow: 'hidden',
+    height: 6,
+    borderRadius: 99,
+    backgroundColor: '#e2e8f0',
+    marginTop: 8,
   },
-  fill: { height: '100%', backgroundColor: '#67e8f9', borderRadius: 5 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 },
-  pill: { backgroundColor: 'rgba(255,255,255,0.16)', borderRadius: 999, paddingVertical: 5, paddingHorizontal: 11 },
-  pillText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12, color: '#fff' },
+  fill: { height: '100%', backgroundColor: '#0e7490', borderRadius: 99 },
+  paceMark: { position: 'absolute', top: -3, bottom: -3, width: 2, marginLeft: -1, backgroundColor: '#b45309' },
+  sub: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: '#475569', marginTop: 6 },
   plus: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    minHeight: 44,
+    backgroundColor: '#e6f4f7',
+    borderRadius: 12,
+    paddingHorizontal: 14,
   },
-  plusText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: '#0e7490' },
-  lock: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 7, marginLeft: 4 },
-  lockText: { fontFamily: 'Manrope_700Bold', fontSize: 11.5, color: '#94a3b8' },
+  plusText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: '#0e5f75' },
+  reported: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13, color: '#166534' },
 });
