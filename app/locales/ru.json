@@ -2990,6 +2990,22 @@
       "cancelled": "Отменена",
       "moved": "Перенесена: обычно {{from}}"
     },
+    "changes": {
+      "new": "новое",
+      "changed": "Изменено",
+      "was": "было: {{what}}",
+      "partner": "напарник {{names}}",
+      "partners": "напарники {{names}}",
+      "noPartner": "без напарника",
+      "place": "место: {{place}}",
+      "noPlace": "без адреса",
+      "removedTitle": "Снято с вас",
+      "removedHint": "С прошлого раза, когда вы открывали Главную.",
+      "moreChanged_one": "изменено ещё {{count}}",
+      "moreChanged_few": "изменено ещё {{count}}",
+      "moreChanged_many": "изменено ещё {{count}}",
+      "moreChanged_other": "изменено ещё {{count}}"
+    },
     "ahead": {
       "title": "Дальше у вас",
       "none": "Других назначений пока нет.",

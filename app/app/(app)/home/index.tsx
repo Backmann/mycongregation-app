@@ -108,6 +108,13 @@ import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MovedMark } from "../../../components/MovedMark";
 import { useNotHeld } from "../../../components/NotHeldCard";
+import {
+  ChangeMark,
+  RemovedCard,
+  useAgendaChanges,
+  useMarkSeen,
+} from "../../../components/ChangeMark";
+import { entryAgendaIds, unshownCount } from "../../../lib/home-changes";
 
 /*
  * HOME, REBUILT (26 September) — the screen is the face of the app, so it
@@ -1084,6 +1091,7 @@ function NextCard({
               what: shortWhat(entry, t),
             })}
           </Text>
+          <ChangeMark ids={entryAgendaIds(entry)} />
         </Pressable>
       </View>
     );
@@ -1130,6 +1138,7 @@ function NextCard({
           </View>
           <View style={s.nextInner}>
             {body}
+            <ChangeMark ids={entryAgendaIds(entry)} style={{ marginTop: -4 }} />
             {awayDuring ? (
               <View style={s.awayNote}>
                 <Ionicons name="warning-outline" size={17} color="#b45309" />
@@ -2074,6 +2083,7 @@ function DayRow({
               compact={compact}
             />
           );
+          const mark = <ChangeMark ids={entryAgendaIds(en)} />;
           return canOpen(en) ? (
             <Pressable
               key={en.key}
@@ -2082,10 +2092,12 @@ function DayRow({
               accessibilityRole="button"
             >
               {body}
+              {mark}
             </Pressable>
           ) : (
             <View key={en.key} style={s.entry}>
               {body}
+              {mark}
             </View>
           );
         })}
@@ -2478,6 +2490,9 @@ export default function HomeScreen() {
   const [windows, setWindows] = useState<number[] | null>(null);
 
   const data = useHomeData(todayISO);
+  // «Изменено» since Home was last seen; seen once Home has been shown.
+  const changes = useAgendaChanges();
+  useMarkSeen(!data.loading && !data.failed);
   const digest = useMemo(
     () =>
       digestHome({
@@ -2553,6 +2568,16 @@ export default function HomeScreen() {
       .map((p) => p.value)
       .join(" ");
   };
+  // Changes on rows Home does not show (beyond the first few of «Дальше у
+  // вас»): counted where the full list opens, which marks them too.
+  const hiddenChanges = unshownCount(changes.data, [
+    ...(digest.next ? entryAgendaIds(digest.next) : []),
+    ...aheadShown.flatMap(entryAgendaIds),
+    ...meetingsNear.flatMap((g) => g.entries.flatMap(entryAgendaIds)),
+  ]);
+  const removedBlock = (
+    <RemovedCard todayISO={todayISO} data={changes.data} />
+  );
   const important = split.important.filter(
     (en): en is MeetingEntry => en.type === "meeting",
   );
@@ -2586,6 +2611,11 @@ export default function HomeScreen() {
         accessibilityRole="link"
       >
         <Text style={s.allMineText}>{t("home.list.allMine")}</Text>
+        {hiddenChanges > 0 ? (
+          <Text style={s.hiddenChanges}>
+            {t("home.changes.moreChanged", { count: hiddenChanges })}
+          </Text>
+        ) : null}
         <Text style={s.allMineHint}>
           {aheadRest > 0 && aheadUntil
             ? `${t("home.ahead.more", { count: aheadRest, until: monthYear(aheadUntil) })} ›`
@@ -2788,6 +2818,7 @@ export default function HomeScreen() {
                 <ConductLiveCard />
                 <ConductLiveCard kind="weekend" />
                 {next}
+                {removedBlock}
                 <HoursCard onSaved={logUndo.saved} />
                 <TodoSection />
                 {ahead}
@@ -2806,6 +2837,7 @@ export default function HomeScreen() {
               <ConductLiveCard />
               <ConductLiveCard kind="weekend" />
               {next}
+              {removedBlock}
               <HoursCard onSaved={logUndo.saved} />
               {importantBlock}
               <TodoSection />
@@ -3158,6 +3190,18 @@ const s = StyleSheet.create({
   dateToday: { color: "#0369a1" },
   dayEntries: { flex: 1, minWidth: 0, gap: 12 },
   entry: { gap: 3 },
+  hiddenChanges: {
+    color: "#78350f",
+    backgroundColor: "#fde68a",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 1,
+    fontSize: 12,
+    fontFamily: "Manrope_700Bold",
+    overflow: "hidden",
+    marginLeft: "auto",
+    marginRight: 6,
+  },
   rowKind: { fontSize: 12.5, fontFamily: "Manrope_700Bold" },
   rowKindStruck: { textDecorationLine: "line-through", opacity: 0.55 },
   rowTitle: {

@@ -515,6 +515,30 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('19д карточка не повторяется в «Дальше у вас»', keys(sp2.ahead), ['cart-10', 'cart-12', 'mw-25']);
 }
 
+// --- 20. «Изменено» finds its row: each row lists its own agenda ids --------
+// (9 November 2026). The parts and the duty of the week's midweek meeting,
+// the cleaning after the meetings on both rows, the field service he
+// conducts; a far meeting likewise; nothing for a row that is not his.
+{
+  const W = '2026-09-28';
+  const items = [
+    part(W, 'midweek', 'bible_reading', 5, { agendaId: 'part:a1' }),
+    { ...part(W, 'midweek', 'microphone', undefined), kind: 'duty', partKey: undefined, label: 'Микрофон 1', agendaId: 'duty:d1' },
+    part(W, 'weekend', 'weekend_chairman', 1, { agendaId: 'part:w1' }),
+    { kind: 'cleaning', sortDate: W, weekStartDate: W, label: 'after_meeting', agendaId: 'cleaning:c1' },
+    part('2026-10-26', 'midweek', 'bible_reading', 5, { agendaId: 'part:far' }),
+  ];
+  const { timeline } = run({ me: 'p-lesch', group: HAMM, items });
+  const all = [...timeline.near, ...timeline.far].flatMap((g) => g.entries);
+  const ids = (key) => all.find((e) => e.key === key)?.agendaIds;
+  check('20а будний день: часть, обязанность, уборка', ids('midweek-2026-09-30'), ['part:a1', 'duty:d1', 'cleaning:c1']);
+  check('20б выходные: своя часть и та же уборка', ids('weekend-2026-10-04'), ['part:w1', 'cleaning:c1']);
+  check('20в встреча для проповеди, которую он проводит', ids('fs-f-hamm'), ['field_service:f-hamm']);
+  check('20г чужая встреча для проповеди — ничего', ids('fs-f-open'), []);
+  const farMtg = all.find((e) => e.type === 'meeting' && e.dateISO === '2026-10-28' && e.myParts.length);
+  check('20д дальняя встреча — её часть', farMtg?.agendaIds, ['part:far']);
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

@@ -2892,6 +2892,20 @@
       "cancelled": "Canceled",
       "moved": "Moved: usually {{from}}"
     },
+    "changes": {
+      "new": "new",
+      "changed": "Changed",
+      "was": "was: {{what}}",
+      "partner": "partner {{names}}",
+      "partners": "partners {{names}}",
+      "noPartner": "no partner",
+      "place": "place: {{place}}",
+      "noPlace": "no address",
+      "removedTitle": "No longer yours",
+      "removedHint": "Since you last opened Home.",
+      "moreChanged_one": "{{count}} more changed",
+      "moreChanged_other": "{{count}} more changed"
+    },
     "ahead": {
       "title": "Coming up for you",
       "none": "No other assignments yet.",
