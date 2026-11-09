@@ -6847,6 +6847,7 @@
     "about": "Einmal im Jahr, im Dezember oder Januar, treffen sich die von der Ältestenschaft bestimmten Ältesten (gewöhnlich zwei) mit den allgemeinen Pionieren, Sonderpionieren und Missionaren im Feld — nach der Gliederung S-211.",
     "noneComing": "Noch kein Treffen festgelegt.",
     "setNew": "Treffen festlegen",
+    "editComing": "Treffen ändern",
     "past": "Frühere Treffen",
     "conductedBy": "Leitung: {{name}}",
     "invitedCount_one": "{{count}} eingeladen",
