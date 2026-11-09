@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { openedFromIcon } from "./this-place";
 import { renewalRetryDelayMs, sessionVerdict } from "./session-verdict";
 import type { ApplyParsedPayload } from "./mwb-parser";
+import type { AgendaChanges } from "./home-changes";
 import i18n from "./i18n";
 import { requestErrorText } from "./error-text";
 import { refusalText } from "./refusal-text";
@@ -4176,6 +4177,12 @@ export type MyAssignmentKind =
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
+  /**
+   * The same assignment's id in the server's agenda, or its first part —
+   * Home ties «изменено» to its rows by it (lib/home-changes.ts). Missing
+   * from servers before 9 November 2026.
+   */
+  agendaId?: string;
   sortDate: string;
   weekStartDate?: string;
   dayOfWeek?: number;
@@ -4350,6 +4357,15 @@ export interface CalendarFeedView {
 }
 
 export const meApi = {
+  /** What changed in one's own coming assignments since Home was last seen. */
+  async agendaChanges(): Promise<AgendaChanges> {
+    const { data } = await api.get<AgendaChanges>("/me/agenda/changes");
+    return data;
+  },
+  /** Home was seen: the marks go out on every device. */
+  async agendaSeen(): Promise<void> {
+    await api.post("/me/agenda/seen");
+  },
   async calendarFeed(): Promise<CalendarFeedView> {
     const { data } = await api.get<CalendarFeedView>("/me/calendar-feed");
     return data;

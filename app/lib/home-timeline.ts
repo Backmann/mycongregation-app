@@ -271,6 +271,12 @@ export interface MeetingEntry {
    * what is the person's own; the feed still lists them all.
    */
   folded?: { kind: 'groupOnVisit' | 'youOnVisit'; count: number } | null;
+  /**
+   * The signed-in person's own assignments drawn in this row, by their
+   * agenda id — the parts and duties, the cleaning after it, the field
+   * service he conducts — so «изменено» finds its row (lib/home-changes.ts).
+   */
+  agendaIds?: string[];
   /** My service group cleans the hall after this meeting. */
   weeklyCleaning: boolean;
   /** A combined field-service meeting for the whole congregation. */
@@ -639,6 +645,19 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           ),
       ),
   );
+  // The same cleanings by their agenda id — «изменено» on the meeting rows.
+  const cleanAfterMeetingAgendaIds = new Map<string, string[]>();
+  for (const r of refined) {
+    if (r.item.kind !== 'cleaning' || r.item.label !== 'after_meeting') continue;
+    if (!r.item.agendaId) continue;
+    const wk =
+      r.item.weekStartDate ??
+      formatDateISO(startOfWeekMonday(new Date(`${taskPlacement(r)}T00:00:00`)));
+    cleanAfterMeetingAgendaIds.set(wk, [
+      ...(cleanAfterMeetingAgendaIds.get(wk) ?? []),
+      r.item.agendaId,
+    ]);
+  }
 
   // ---- Regular meetings (midweek / weekend), per the week's rules ----
   // Weeks with a convention hold no congregation meetings at all — the rules
@@ -774,6 +793,17 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         replacedBy,
         myParts,
         weeklyCleaning: cleanAfterMeetingWeeks.has(weekISO),
+        agendaIds: [
+          ...myItems
+            .filter(
+              (it) =>
+                (it.kind === 'meeting' || it.kind === 'duty') &&
+                it.weekStartDate === weekISO &&
+                it.eventType === myEventType,
+            )
+            .map((it) => it.agendaId),
+          ...(cleanAfterMeetingAgendaIds.get(weekISO) ?? []),
+        ].filter((x): x is string => !!x),
         isGeneral: false,
         movedFrom: moved?.from.date ?? null,
         movedFromTime: moved?.from.time ?? null,
@@ -861,6 +891,10 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       serviceOverseerVisit: !!m.serviceOverseerVisit,
       weekStartISO: m.weekStartDate,
       myRole: iConduct ? 'conduct' : onVisitAs,
+      // The server's agenda names a field-service meeting by its own id; the
+      // old day's stand-in of a moved one is not where it happens.
+      agendaIds:
+        (iConduct || onVisitAs) && !m.movedTo ? [`field_service:${m.id}`] : [],
       visitPeople: m.serviceOverseerVisit
         ? {
             overseer:
@@ -1181,6 +1215,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           .sort(byProgramme)
           .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' })),
         weeklyCleaning: false,
+        agendaIds: rs
+          .map((r) => r.item.agendaId)
+          .filter((x): x is string => !!x),
         isGeneral: false,
       });
     }

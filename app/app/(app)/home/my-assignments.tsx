@@ -36,6 +36,7 @@ import { KeptNotice, LoadFailed } from '../../../components/ConnectionState';
 import { sessionVerdict } from '../../../lib/session-verdict';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 import { MovedMark } from '../../../components/MovedMark';
+import { ChangeMark } from '../../../components/ChangeMark';
 
 function weekHeaderLabel(weekStartISO: string, locale: string): string {
   // As the language writes a span (lib/date-range.ts): «19–OCTOBER 25» was
@@ -275,6 +276,7 @@ export default function MyAssignmentsScreen() {
                         {r.item.kind === 'field_service' ? (
                           <FieldNotice text={r.item.notice} />
                         ) : null}
+                        <ChangeMark ids={[r.item.agendaId]} />
                         {r.item.kind === 'cleaning' ? (
                           <CleaningRowExtras
                             item={r.item}

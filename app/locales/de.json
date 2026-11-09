@@ -2892,6 +2892,20 @@
       "cancelled": "Abgesagt",
       "moved": "Verlegt: sonst {{from}}"
     },
+    "changes": {
+      "new": "neu",
+      "changed": "Geändert",
+      "was": "vorher: {{what}}",
+      "partner": "Partner {{names}}",
+      "partners": "Partner {{names}}",
+      "noPartner": "ohne Partner",
+      "place": "Ort: {{place}}",
+      "noPlace": "ohne Adresse",
+      "removedTitle": "Nicht mehr Ihre Aufgabe",
+      "removedHint": "Seit Sie die Startseite zuletzt geöffnet haben.",
+      "moreChanged_one": "noch {{count}} geändert",
+      "moreChanged_other": "noch {{count}} geändert"
+    },
     "ahead": {
       "title": "Als Nächstes bei Ihnen",
       "none": "Noch keine weiteren Aufgaben.",
