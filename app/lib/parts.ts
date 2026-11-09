@@ -33,6 +33,11 @@ export interface SubsectionMeta {
   color: string;
   /** Lighter shade for accents. */
   colorMuted: string;
+  /**
+   * The colour for words written in it on white or on colorMuted, where
+   * `color` itself is too light to read (the workbook's gold).
+   */
+  ink?: string;
   /** Ionicon name for banner. */
   icon: string;
   /** i18n key for the section title. */
@@ -50,35 +55,40 @@ export const SUBSECTIONS: Record<Subsection, SubsectionMeta> = {
   treasures: {
     key: 'treasures',
     color: '#0e7490',
-    colorMuted: '#cffafe',
+    colorMuted: '#e0f1f5',
     icon: 'diamond-outline',
     i18nKey: 'schedule.subsection.treasures',
   },
   apply_yourself: {
     key: 'apply_yourself',
-    color: '#b45309',
-    colorMuted: '#fef3c7',
+    // The workbook's own gold and maroon (9 November 2026, the programme
+    // redesign: «в духе красок JW Library»). Gold now means this section and
+    // nothing else in the app.
+    color: '#9b6d17',
+    colorMuted: '#f6eedc',
+    ink: '#7c560f',
     icon: 'paper-plane-outline',
     i18nKey: 'schedule.subsection.applyYourself',
   },
   christian_life: {
     key: 'christian_life',
-    color: '#991b1b',
-    colorMuted: '#fee2e2',
+    color: '#942926',
+    colorMuted: '#f6e5e4',
     icon: 'people-outline',
     i18nKey: 'schedule.subsection.christianLife',
   },
   public_talk: {
     key: 'public_talk',
-    color: '#5b21b6',
-    colorMuted: '#f3eefe',
+    // One violet for the weekend, as its card and filter chip.
+    color: '#6d28d9',
+    colorMuted: '#efe9fb',
     icon: 'mic-outline',
     i18nKey: 'schedule.subsection.publicTalk',
   },
   watchtower: {
     key: 'watchtower',
     color: '#6d28d9',
-    colorMuted: '#f5f0ff',
+    colorMuted: '#efe9fb',
     icon: 'book-outline',
     i18nKey: 'schedule.subsection.watchtower',
   },
@@ -100,6 +110,11 @@ export const SUBSECTIONS: Record<Subsection, SubsectionMeta> = {
     i18nKey: 'schedule.subsection.opening',
   },
 };
+
+/** The colour to write a section's words in: its ink, or the colour itself. */
+export function sectionInk(meta: SubsectionMeta): string {
+  return meta.ink ?? meta.color;
+}
 
 // ---------- Midweek meeting (Жизнь и служение) ----------
 

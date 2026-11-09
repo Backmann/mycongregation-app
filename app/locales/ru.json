@@ -5237,8 +5237,6 @@
     "youLead": "Вы ведёте в {{time}}",
     "dutiesShort": "обязанности {{assigned}} из {{total}}",
     "speaker": "Докладчик",
-    "lead": "Ведущий",
-    "minutes": "{{time}} · {{n}} мин",
     "editProgramme": "Править программу",
     "editDuties": "Править обязанности",
     "dayNotSet": "день ещё не назначен",
@@ -5279,8 +5277,6 @@
     "youLeadShort": "ведёте в {{time}}",
     "youGo": "Вы идёте на посещение в {{time}}",
     "youGoShort": "посещение в {{time}}",
-    "assistantLabel": "Помощник",
-    "readerLabel": "Чтец",
     "mineAsAssistant": "{{part}} — помощник",
     "fieldVisit": "Посещение служебным старейшиной · группа {{group}}",
     "fieldGroup": "Группа {{group}}",
@@ -5302,7 +5298,14 @@
     "fieldOthersHide": "Скрыть встречи других групп",
     "noMeetingThatDay": "Встречи собрания в этот день нет",
     "withChanges": "{{event}} · с изменениями",
-    "until": "до {{date}}"
+    "until": "до {{date}}",
+    "kindMidweekDay": "Будний день",
+    "midweekTitle": "Жизнь и служение",
+    "kindPublicTalk": "Публичная речь",
+    "kindWeekendDay": "Выходной день",
+    "collapse": "Свернуть",
+    "pairAssistant": "помощник",
+    "pairReader": "чтец"
   },
   "conduct": {
     "title": "Ведение встречи",

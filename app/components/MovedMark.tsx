@@ -11,6 +11,21 @@ import { useTranslation } from 'react-i18next';
  *  - `from`: on the meeting, on its new day — «Перенесена · обычно ср, 11 нояб., 19:00»;
  *  - `to`: on the old day's stand-in — «Перенесена на чт, 12 нояб., 18:30».
  */
+/** «ср, 11 нояб., 19:00» — the day and hour a moved meeting usually has. */
+export function movedWhen(dateISO: string, time: string | null | undefined, lang: string): string {
+  return [
+    new Date(`${dateISO}T12:00:00Z`).toLocaleDateString(lang, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    }),
+    time || null,
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
 export function MovedMark({
   mode,
   dateISO,
@@ -24,17 +39,7 @@ export function MovedMark({
   compact?: boolean;
 }) {
   const { t, i18n } = useTranslation();
-  const when = [
-    new Date(`${dateISO}T12:00:00Z`).toLocaleDateString(i18n.language, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-    }),
-    time || null,
-  ]
-    .filter(Boolean)
-    .join(', ');
+  const when = movedWhen(dateISO, time, i18n.language);
   const text = t(mode === 'from' ? 'schedule.move.markFrom' : 'schedule.move.markTo', { when });
   return (
     <View

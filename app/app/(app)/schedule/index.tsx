@@ -54,9 +54,11 @@ import type { FieldPlace } from "../../../lib/field-audience";
 import {
   SUBSECTIONS,
   buildMidweekPartTimes,
+  buildPartNumbers,
   buildWeekendPartTimes,
   getPartLabel,
   resolveSubsection,
+  sectionInk,
 } from "../../../lib/parts";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
 import { KeptEnd, KeptNotice, LoadFailed } from "../../../components/ConnectionState";
@@ -79,7 +81,7 @@ import {
 import { lowerFirst } from "../../../lib/lower-first";
 import { capitalizeFirst } from "../../../lib/relative-time";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
-import { MovedMark } from "../../../components/MovedMark";
+import { MovedMark, movedWhen } from "../../../components/MovedMark";
 import { useNotHeld } from "../../../components/NotHeldCard";
 
 /**
@@ -150,15 +152,29 @@ const KIND = {
   midweek: { color: "#0e7490", icon: "book-outline" },
   weekend: { color: "#6d28d9", icon: "sunny-outline" },
   field: { color: "#15803d", icon: "paper-plane-outline" },
-  special: { color: "#b45309", icon: "star-outline" },
+  // An event: a quiet slate (9 November 2026) — the amber it wore before is
+  // the workbook's gold now, and means one section and nothing else.
+  special: { color: "#475569", icon: "star-outline" },
 } as const;
+/**
+ * The date tile's ground for each colour a row is drawn in (the redesign of
+ * 9 November 2026): the date reads as WHAT the day is before a word is read.
+ */
+const TILE_BG: Record<string, string> = {
+  "#0e7490": "#e0f1f5",
+  "#6d28d9": "#efe9fb",
+  "#15803d": "#e3f3e7",
+  "#475569": "#eef1f5",
+};
+/** The Memorial: a tile of its own, filled. */
+const MEMORIAL_COLOR = "#7f1d1d";
 const PAST_COLOR = "#94a3b8";
-const TAB_DOT: Record<Tab, string> = { programme: "#f59e0b", duties: "#dc2626", cleaning: "#0ea5e9" };
 const SLOT_ORDER = ["after_meeting", "thorough", "general"];
 
 const INK = "#0f172a";
 const MUTE = "#475569";
 const SOFT = "#64748b";
+const PLAIN = "#334155";
 const ACC = "#0369a1";
 const ACC_BG = "#e0f2fe";
 const OK = "#15803d";
@@ -1422,7 +1438,6 @@ function NotHeldChip({ week, kind }: { week: string; kind: Kind | null }) {
 function Row({
   date,
   kindLabel,
-  icon,
   title,
   time,
   line,
@@ -1438,6 +1453,7 @@ function Row({
   tag,
   tagMoved,
   color,
+  solid,
   past,
   open,
   select,
@@ -1446,7 +1462,8 @@ function Row({
   date: string;
   /** Which kind of meeting, small and in its colour, above the title. */
   kindLabel: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  /** Kept for callers; the card shows the date tile instead of a sign. */
+  icon?: keyof typeof Ionicons.glyphMap;
   /** The main line: what the meeting is about. */
   title: string;
   time?: string | null;
@@ -1476,6 +1493,8 @@ function Row({
   /** «перенесена» wears the amber of the moved mark everywhere else. */
   tagMoved?: boolean;
   color: string;
+  /** The date tile filled in the colour, the date white — the Memorial. */
+  solid?: boolean;
   past: boolean;
   open?: boolean;
   /** A list row on a wide screen: a tap chooses the meeting instead of opening it here. */
@@ -1486,21 +1505,29 @@ function Row({
   const d = atMidnight(date);
   const dow = d.toLocaleDateString(i18n.language, { weekday: "short" }).replace(".", "").toUpperCase();
   const tone = past ? PAST_COLOR : color;
+  // THE CARD (9 November 2026, «вариант 5»): a tile with the date in the
+  // colour of what the day is; then what it is, in that colour; the title;
+  // the hour in bold with the one line that matters after it.
+  const tileBg = past ? "#f1f5f9" : solid ? color : (TILE_BG[color] ?? "#eef1f5");
+  const tileInk = past ? PAST_COLOR : solid ? "#ffffff" : color;
   const content = (
     <>
-      <View style={styles.dateCol}>
-        <Text style={[styles.day, past && styles.pastText]}>{d.getDate()}</Text>
-        <Text style={styles.dow}>{dow}</Text>
+      <View style={[styles.tile, { backgroundColor: tileBg }]}>
+        <Text style={[styles.day, { color: tileInk }]}>{d.getDate()}</Text>
+        <Text style={[styles.dow, { color: tileInk }]}>{dow}</Text>
       </View>
       <View style={styles.rowBody}>
-        <View style={styles.rowTop}>
-          <Ionicons name={icon} size={14} color={tone} />
-          <Text style={[styles.kind, { color: tone }]}>{time ? `${kindLabel} · ${time}` : kindLabel}</Text>
-        </View>
+        <Text style={[styles.kind, { color: tone }]}>{kindLabel}</Text>
         <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={wholeTitle ? undefined : 2}>
           {title}
         </Text>
-        {line ? <Text style={styles.line}>{line}</Text> : null}
+        {time || line ? (
+          <Text style={styles.line}>
+            {time ? <Text style={[styles.lineTime, past && styles.pastTitle]}>{time}</Text> : null}
+            {time && line ? " · " : null}
+            {line ?? null}
+          </Text>
+        ) : null}
         {who ? (
           <View style={styles.whoLine}>
             <WhoLine who={who} />
@@ -1524,11 +1551,12 @@ function Row({
         {moved?.map((mv, i) => <FieldMoved key={`m${i}`} from={mv.from} to={mv.to} />)}
         {cancelled?.map((r, i) => <FieldCancelled key={`c${i}`} reason={r} />)}
         {mine ? (
-          <View style={styles.mineRow}>
-            {/* The sign of «yours», not the word «Вы» (26 September): the list
-                may be read on someone else's device. */}
-            <View style={[styles.minePill, past && styles.minePillPast]} accessibilityLabel={t("feed.you")}>
-              <Ionicons name="person" size={12} color={past ? SOFT : ACC} />
+          // The sign of «yours», not the word «Вы» (26 September): the list
+          // may be read on someone else's device. A filled mark now, the
+          // one blue that means «yours» across the app.
+          <View style={[styles.minePill, past && styles.minePillPast]}>
+            <View style={styles.mineDot} accessibilityLabel={t("feed.you")}>
+              <Ionicons name="person" size={11} color={past ? SOFT : "#ffffff"} />
             </View>
             <Text style={[styles.mine, past && styles.minePast]}>{mine}</Text>
           </View>
@@ -1539,7 +1567,16 @@ function Row({
             <Text style={styles.status}>{status.text}</Text>
           </View>
         ) : null}
-        {tag ? <Text style={[styles.tag, tagMoved && styles.tagMoved]}>{tag}</Text> : null}
+        {tag ? (
+          tagMoved ? (
+            <View style={styles.tagMoved}>
+              <Ionicons name="swap-horizontal" size={14} color={PLAIN} />
+              <Text style={styles.tagMovedText}>{tag}</Text>
+            </View>
+          ) : (
+            <Text style={styles.tag}>{tag}</Text>
+          )
+        ) : null}
       </View>
       {onPress ? (
         <Ionicons name={select ? "chevron-forward" : open ? "chevron-up" : "chevron-down"} size={18} color={SOFT} style={styles.chev} />
@@ -1634,17 +1671,21 @@ function Meeting({
     e.type ? t(`specialEvents.types.${e.type}`, { defaultValue: e.title }) : e.title;
   const chair = parts.find((p) => CHAIR_KEYS.has(p.partKey));
   const talk = parts.find((p) => p.partKey === "public_talk_speaker");
-  const firstTalk = parts.find((p) => p.partKey === "treasures_talk");
-  let title = kindTitle;
+  // THE CARD SAYS WHICH MEETING IT IS (9 November 2026, «вариант 5»): the
+  // weekday is «Жизнь и служение», whatever its first talk — that talk on the
+  // closed card read as the meeting's theme («всё также вижу первую речь»);
+  // the weekend is its public talk, who gives it and from where.
+  let cardLabel = item.kind === "midweek" ? t("feed.kindMidweekDay") : t("feed.kindWeekendDay");
+  let title = item.kind === "midweek" ? t("feed.midweekTitle") : kindTitle;
   let line: string;
   if (parts.length === 0) line = t("feed.notLoaded");
   else if (item.kind === "weekend" && talk) {
+    cardLabel = t("feed.kindPublicTalk");
     title = partDisplay(talk.partKey, talk.partTitle).label;
     const speaker = who(talk);
     const from = whoFrom(talk);
     line = speaker ? (from ? `${speaker} · ${from}` : speaker) : t("feed.speakerUnassigned");
   } else {
-    if (item.kind === "midweek" && firstTalk) title = partDisplay(firstTalk.partKey, firstTalk.partTitle).label;
     line = t("feed.chairman", { name: (chair?.publisherId && name(chair.publisherId)) || t("feed.unassigned") });
   }
 
@@ -1697,8 +1738,7 @@ function Meeting({
       {mode !== "detail" ? (
       <Row
         date={item.date}
-        kindLabel={item.kind === "midweek" ? t("feed.kindMidweek") : t("feed.kindWeekend")}
-        icon={KIND[item.kind].icon}
+        kindLabel={cardLabel}
         title={title}
         time={item.time}
         line={line}
@@ -1706,7 +1746,13 @@ function Meeting({
         status={status}
         tag={
           item.movedFrom
-            ? t("schedule.move.moved")
+            ? // The whole of it on the card — «перенесена · обычно ср, 11
+              // нояб., 19:00» — so the open sheet need not say it again.
+              item.movedFrom.date
+              ? `${t("schedule.move.moved")} · ${t("schedule.move.markFrom", {
+                  when: movedWhen(item.movedFrom.date, item.movedFrom.time, i18n.language),
+                })}`
+              : t("schedule.move.moved")
             : item.movedByVisit
             ? t("feed.movedByVisit")
             : item.change
@@ -1727,11 +1773,11 @@ function Meeting({
           date={item.date}
           time={item.time}
           kind={
-            title === kindTitle
-              ? kindTitle
-              : item.kind === "weekend" && talk?.specialTalk
-                ? `${kindTitle} · ${t("feed.specialTalk")}: ${title}`
-                : `${kindTitle} · ${title}`
+            item.kind === "weekend" && talk?.specialTalk
+              ? `${kindTitle} · ${t("feed.specialTalk")}: ${title}`
+              : item.kind === "weekend" && talk
+                ? `${kindTitle} · ${title}`
+                : title
           }
           line={line}
           mine={mine ? t(past ? "feed.minePast" : "feed.mine", { list: mine }) : null}
@@ -1740,7 +1786,7 @@ function Meeting({
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
-          {item.movedFrom?.date ? (
+          {mode === "detail" && item.movedFrom?.date ? (
             <MovedMark mode="from" dateISO={item.movedFrom.date} time={item.movedFrom.time} />
           ) : null}
           {item.change ? (
@@ -1764,13 +1810,14 @@ function Meeting({
           <SegmentedControl<Tab>
             value={tab}
             onChange={setTab}
+            tone={past ? PAST_COLOR : KIND[item.kind].color}
             segments={[
-              { key: "programme", label: t("feed.tabProgramme"), dot: TAB_DOT.programme },
-              { key: "duties", label: t("feed.tabDuties"), dot: TAB_DOT.duties },
-              { key: "cleaning", label: t("feed.tabCleaning"), dot: TAB_DOT.cleaning },
+              { key: "programme", label: t("feed.tabProgramme") },
+              { key: "duties", label: t("feed.tabDuties") },
+              { key: "cleaning", label: t("feed.tabCleaning") },
             ]}
           />
-          <View style={styles.card}>
+          <View style={mode === "detail" ? styles.cardDetail : styles.card}>
             {tab === "programme" ? (
               <Programme parts={parts} kind={item.kind} time={item.time} me={me} name={name} who={who} whoFrom={whoFrom} />
             ) : tab === "duties" ? (
@@ -1849,10 +1896,30 @@ function Meeting({
               onPress={() => router.push(`/publishers/cleaning-week?week=${item.week}` as never)}
             />
           ) : null}
+          {mode === "inline" ? <CollapseLink onPress={onToggle} /> : null}
           <WindowsPlanDialog windows={planWindows} onClose={() => setPlanWindows(null)} />
         </View>
       ) : null}
     </View>
+  );
+}
+
+/**
+ * «Свернуть» at the foot of an open meeting (9 November 2026): a long
+ * programme is read to its end, and the chevron that closes it is a screen
+ * away by then.
+ */
+function CollapseLink({ onPress }: { onPress: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.collapse, pressed && styles.pressed]}
+      accessibilityRole="button"
+    >
+      <Ionicons name="chevron-up" size={16} color={PLAIN} />
+      <Text style={styles.collapseText}>{t("feed.collapse")}</Text>
+    </Pressable>
   );
 }
 
@@ -1897,9 +1964,12 @@ function Programme({
     );
   }
   let lastSub: string | null = null;
-  // The colour of the section a part is in: its people are written in it, so
-  // the eye finds the names down the sheet (25 September).
+  // The colour of the section a part is in: the part's name is written in it,
+  // the people in black under it (the redesign of 9 November 2026).
   let tone = INK;
+  // The workbook numbers the weekday's parts 1, 2, 3…; the weekend's are not
+  // numbered there, so not here either.
+  const numbers = kind === "midweek" ? buildPartNumbers(parts) : new Map<string, number | null>();
   // Songs get no interval of their own from the schedule screen's counter; a
   // song starts where the part before it ends — the same minute, no new rule.
   let lastEnd: string | null = null;
@@ -1914,8 +1984,17 @@ function Programme({
     if (sub !== lastSub) {
       if (LABELLED.has(sub)) {
         const meta = SUBSECTIONS[sub];
-        out.push(<SectionChip key={`s${p.id}`} label={t(meta.i18nKey)} color={meta.color} soft={meta.colorMuted} />);
-        tone = meta.color;
+        out.push(
+          <SectionChip
+            key={`s${p.id}`}
+            label={t(meta.i18nKey)}
+            color={meta.color}
+            soft={meta.colorMuted}
+            ink={sectionInk(meta)}
+            icon={meta.icon}
+          />,
+        );
+        tone = sectionInk(meta);
       } else tone = INK;
       lastSub = sub;
     }
@@ -1936,32 +2015,38 @@ function Programme({
     } else if (PRAYER_KEYS.has(p.partKey)) {
       const text = [enrichSongRef(shown.subtitle, songTitles), shown.label].filter(Boolean).join(" · ");
       out.push(<PrayerLine key={p.id} time={start} label={text} name={person} mine={mine} />);
-    } else if (p.partKey === "public_talk_speaker" || p.partKey === "co_concluding_talk") {
+    } else if (p.partKey === "public_talk_speaker") {
+      // The theme heads the meeting's own card; here the row says who gives
+      // it and from where (a special talk says so on the card as well).
       out.push(
-        <Topic
+        <PartLine
           key={p.id}
-          meta={
-            // A special talk says so: its theme alone reads like any other.
-            (p.specialTalk ? `${upperFirst(t("feed.specialTalk"))} · ` : "") +
-            t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 30 })
-          }
-          title={shown.label}
-        >
-          <PairLine label={t("feed.speaker")} name={person} extra={whoFrom(p)} mine={mine} tone={tone} />
-        </Topic>,
+          time={start}
+          minutes={t("feed.minutesOnly", { n: p.partDurationMin ?? 30 })}
+          title={p.specialTalk ? upperFirst(t("feed.specialTalk")) : t("feed.speaker")}
+          name={person}
+          extra={whoFrom(p)}
+          mine={mine}
+          tone={tone}
+        />,
       );
     } else if (p.partKey === "watchtower_conductor") {
       const reader = parts.find((x) => x.partKey === "watchtower_reader");
       out.push(
-        <Topic key={p.id} meta={t("feed.minutes", { time: start ?? "", n: p.partDurationMin ?? 60 })} title={shown.label}>
-          <PairLine label={t("feed.lead")} name={person} mine={mine} tone={tone} />
-          <PairLine
-            label={t("schedule.weekend.reader")}
-            name={who(reader)}
-            mine={!!me && reader?.publisherId === me}
-            tone={tone}
-          />
-        </Topic>,
+        <PartLine
+          key={p.id}
+          time={start}
+          minutes={t("feed.minutesOnly", { n: p.partDurationMin ?? 60 })}
+          title={shown.label}
+          name={person}
+          helper={
+            reader
+              ? { label: t("feed.pairReader"), name: who(reader), mine: !!me && reader.publisherId === me }
+              : null
+          }
+          mine={mine}
+          tone={tone}
+        />,
       );
     } else {
       const readerKey = READER_OF[p.partKey];
@@ -1974,15 +2059,16 @@ function Programme({
       // Irina Benz's, Dina Backmann helps — the sheet said «Вы · Бакманн
       // Дина»).
       const helper = p.assistantPublisherId
-        ? { label: t("feed.assistantLabel"), name: name(p.assistantPublisherId), mine: !!me && p.assistantPublisherId === me }
+        ? { label: t("feed.pairAssistant"), name: name(p.assistantPublisherId), mine: !!me && p.assistantPublisherId === me }
         : reader
-          ? { label: t("feed.readerLabel"), name: who(reader), mine: !!me && reader.publisherId === me }
+          ? { label: t("feed.pairReader"), name: who(reader), mine: !!me && reader.publisherId === me }
           : null;
       out.push(
         <PartLine
           key={p.id}
           time={start}
           minutes={minutes}
+          number={numbers.get(p.id) ?? null}
           title={shown.label}
           name={person}
           extra={helper ? null : whoFrom(p)}
@@ -2235,7 +2321,7 @@ function FieldDay({
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
-          <View style={[styles.card, styles.cardFirst]}>
+          <View style={mode === "detail" ? [styles.cardDetail, styles.cardFirst] : [styles.card, styles.cardFirst]}>
             {day.shown.map(lineOf)}
             {day.others.length ? (
               <Pressable
@@ -2252,6 +2338,7 @@ function FieldDay({
             ) : null}
             {showOthers ? day.others.map(lineOf) : null}
           </View>
+          {mode === "inline" ? <CollapseLink onPress={onToggle} /> : null}
         </View>
       ) : null}
     </View>
@@ -2294,7 +2381,8 @@ function MemorialDay({
           title={title}
           time={item.event.time ?? null}
           line={line}
-          color={KIND.special.color}
+          color={MEMORIAL_COLOR}
+          solid
           past={past}
           open={open}
           select={mode === "row"}
@@ -2305,7 +2393,7 @@ function MemorialDay({
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
-          <View style={[styles.card, styles.cardFirst]}>
+          <View style={mode === "detail" ? [styles.cardDetail, styles.cardFirst] : [styles.card, styles.cardFirst]}>
             <MemorialMeetingBlock bare event={item.event} canEdit={false} hiddenCount={0} duties={duties} />
           </View>
           {canEdit ? (
@@ -2314,6 +2402,7 @@ function MemorialDay({
               onPress={() => router.push(`/schedule/edit?week=${item.week}&meeting=${item.takes}` as never)}
             />
           ) : null}
+          {mode === "inline" ? <CollapseLink onPress={onToggle} /> : null}
         </View>
       ) : null}
     </View>
@@ -2362,15 +2451,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   chipText: { fontSize: 14, fontFamily: FONT.bold },
-  monthRow: {
-    backgroundColor: "#f1f5f9",
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: "#e2e8f0",
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-  },
-  monthText: { fontSize: 16, fontFamily: FONT.extrabold, color: INK },
+  monthRow: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 2 },
+  monthText: { fontSize: 17, fontFamily: FONT.extrabold, color: INK },
   pastHead: {
     minHeight: 56,
     flexDirection: "row",
@@ -2467,22 +2549,33 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   today: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 18, paddingBottom: 4 },
-  todayText: { fontSize: 12, fontFamily: FONT.extrabold, letterSpacing: 0.7, color: ACC, textTransform: "uppercase" },
+  todayText: { fontSize: 13.5, fontFamily: FONT.extrabold, color: ACC },
   todayRule: { flex: 1, height: 2, borderRadius: 2, backgroundColor: ACC_BG },
+  // Each dated thing is a card of its own (9 November 2026, «вариант 5»):
+  // white on the grey ground, rounded, a hairline of shadow.
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 14,
-    paddingHorizontal: 16,
+    marginHorizontal: 12,
+    marginTop: 10,
+    paddingHorizontal: 14,
     paddingVertical: 14,
     minHeight: 44,
     backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "transparent",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  rowOpen: { borderBottomWidth: 0 },
-  rowSelected: { backgroundColor: "#f0f9ff" },
-  split: { flex: 1, flexDirection: "row", backgroundColor: "#ffffff" },
+  // Open, the card goes on below the row: the programme is part of it.
+  rowOpen: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, shadowOpacity: 0 },
+  rowSelected: { backgroundColor: "#f2fafc", borderColor: "#0e7490" },
+  split: { flex: 1, flexDirection: "row", backgroundColor: "#eef1f4" },
   listPane: { width: 440, flexGrow: 0, borderRightWidth: 1, borderRightColor: "#e2e8f0" },
   listContent: { paddingBottom: 40 },
   detailPane: { flex: 1, backgroundColor: "#f6f8fb" },
@@ -2494,15 +2587,15 @@ const styles = StyleSheet.create({
   detailSub: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, marginTop: 4 },
   detailMine: { fontSize: 14, fontFamily: FONT.bold, color: ACC, marginTop: 8 },
   detailStatus: { paddingLeft: 0 },
-  dateCol: { width: 40, alignItems: "center", paddingTop: 1 },
+  tile: { width: 50, height: 56, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   notHeldChip: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
     gap: 6,
-    marginLeft: 70,
-    marginTop: -6,
-    marginBottom: 12,
+    marginLeft: 90,
+    marginTop: 8,
+    marginBottom: 2,
     marginRight: 16,
     minHeight: 36,
     paddingHorizontal: 12,
@@ -2512,32 +2605,41 @@ const styles = StyleSheet.create({
     borderColor: "#fcd9a8",
   },
   notHeldChipText: { fontSize: 13.5, fontFamily: FONT.extrabold, color: "#7c2d12", flexShrink: 1 },
-  day: { fontSize: 25, lineHeight: 27, fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
-  dow: { fontSize: 11, fontFamily: FONT.bold, letterSpacing: 0.9, color: SOFT, marginTop: 3 },
-  pastText: { color: SOFT },
+  day: { fontSize: 23, lineHeight: 25, fontFamily: FONT.extrabold, fontVariant: ["tabular-nums"] },
+  dow: { fontSize: 12, fontFamily: FONT.extrabold, marginTop: 2 },
   rowBody: { flex: 1, minWidth: 0 },
-  rowTop: { flexDirection: "row", alignItems: "center", gap: 6 },
-  kind: { fontSize: 13, fontFamily: FONT.bold, fontVariant: ["tabular-nums"] },
-  title: { fontSize: 16, lineHeight: 21, fontFamily: FONT.bold, color: INK, marginTop: 3 },
-  pastTitle: { color: MUTE },
-  line: { fontSize: 14, fontFamily: FONT.medium, color: MUTE, marginTop: 2 },
-  mineRow: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginTop: 6 },
+  kind: { fontSize: 13.5, lineHeight: 18, fontFamily: FONT.bold },
+  title: { fontSize: 17.5, lineHeight: 23, fontFamily: FONT.extrabold, color: INK, marginTop: 2 },
+  pastTitle: { color: SOFT },
+  line: { fontSize: 15, lineHeight: 20, fontFamily: FONT.medium, color: MUTE, marginTop: 4 },
+  lineTime: { fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
   minePill: {
-    flexShrink: 0,
-    marginTop: 1,
-    width: 22,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    marginTop: 9,
+    paddingLeft: 4,
+    paddingRight: 12,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: ACC,
+    maxWidth: "100%",
+  },
+  minePillPast: { backgroundColor: "#e2e8f0" },
+  mineDot: {
+    width: 20,
     height: 20,
-    borderRadius: 6,
-    backgroundColor: ACC_BG,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.22)",
     alignItems: "center",
     justifyContent: "center",
   },
-  minePillPast: { color: SOFT, backgroundColor: "#f1f5f9" },
-  mine: { flexShrink: 1, fontSize: 14, fontFamily: FONT.semibold, color: ACC },
-  minePast: { color: SOFT },
-  statusRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 },
-  statusDot: { width: 6, height: 6, borderRadius: 3 },
-  status: { fontSize: 12, fontFamily: FONT.medium, color: SOFT, flexShrink: 1 },
+  mine: { flexShrink: 1, fontSize: 14, lineHeight: 19, fontFamily: FONT.bold, color: "#ffffff" },
+  minePast: { color: MUTE },
+  statusRow: { flexDirection: "row", alignItems: "flex-start", gap: 7, marginTop: 8 },
+  statusDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
+  status: { fontSize: 13.5, fontFamily: FONT.semibold, color: MUTE, flexShrink: 1 },
   tag: {
     alignSelf: "flex-start",
     marginTop: 6,
@@ -2550,15 +2652,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 3,
   },
-  tagMoved: { color: "#ffffff", backgroundColor: "#c2410c" },
+  // Moved: an outline with arrows — not a colour of its own, so the colours
+  // keep meaning what the meeting is (9 November 2026).
+  tagMoved: {
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    maxWidth: "100%",
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+  },
+  tagMovedText: { flexShrink: 1, fontSize: 13.5, fontFamily: FONT.bold, color: PLAIN },
   chev: { marginTop: 4 },
+  // The open part of the card, under its row, on the same white.
   inset: {
-    backgroundColor: "#f6f8fb",
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
+    backgroundColor: "#ffffff",
+    marginHorizontal: 12,
+    paddingHorizontal: 14,
+    paddingTop: 2,
+    paddingBottom: 8,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    borderWidth: 1.5,
+    borderTopWidth: 0,
+    borderColor: "transparent",
   },
   strip: {
     flexDirection: "row",
@@ -2572,18 +2694,32 @@ const styles = StyleSheet.create({
   },
   stripText: { flex: 1, fontSize: 14, fontFamily: FONT.semibold, color: ACC },
   stripTab: { fontSize: 13, fontFamily: FONT.bold, color: ACC },
-  card: {
+  // The sheet inside an open card: no frame of its own — the bands and the
+  // rows reach the card's edges past the inset's padding.
+  card: { marginTop: 10 },
+  // On the right of a wide screen the sheet is a card of its own.
+  cardDetail: {
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e8edf3",
     borderRadius: 16,
-    // The chairman's block and the section bands reach the card's edges.
     overflow: "hidden",
     paddingHorizontal: 14,
-    paddingTop: 6,
-    paddingBottom: 12,
+    paddingBottom: 6,
     marginTop: 10,
   },
+  collapse: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    minHeight: 44,
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+  },
+  collapseText: { fontSize: 14, fontFamily: FONT.bold, color: PLAIN },
   cardFirst: { marginTop: 0 },
   empty: { fontSize: 14, fontFamily: FONT.medium, color: SOFT, paddingVertical: 12 },
   edit: {
