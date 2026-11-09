@@ -78,6 +78,7 @@ const STEPS = [
   // Home's «Ваше ближайшее» and its two weeks — the stand's own week and every
   // rule the card carries (26 September).
   ['Главная: ближайшее и лента', 'node', ['scripts/check-home-digest.mjs']],
+  ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
   // The lines under the «Собрание» doors: which are amber, whose absences
   // (27 September).
   ['Строки «Собрания»', 'node', ['scripts/check-congregation-lines.mjs']],

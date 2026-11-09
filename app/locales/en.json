@@ -2886,6 +2886,18 @@
     }
   },
   "home": {
+    "important": {
+      "title": "Important",
+      "fieldService": "Field service",
+      "cancelled": "Canceled",
+      "moved": "Moved: usually {{from}}"
+    },
+    "ahead": {
+      "title": "Coming up for you",
+      "none": "No other assignments yet.",
+      "more_one": "{{count}} more · until {{until}}",
+      "more_other": "{{count}} more · until {{until}}"
+    },
     "title": "Home",
     "actions": {
       "myGroup": "My group"
@@ -2995,6 +3007,8 @@
       "duty": "Duty"
     },
     "next": {
+      "inCalendar": "In your calendar",
+      "addToCalendar": "Add to calendar ›",
       "title": "Up next for you",
       "today": "today",
       "tomorrow": "tomorrow",
@@ -3016,17 +3030,23 @@
       "talkNamed": "talk “{{title}}”"
     },
     "todo": {
+      "byDuty": "For your duties in the congregation",
+      "moreDuty_one": "{{count}} more",
+      "moreDuty_other": "{{count}} more",
+      "notHeld_one": "{{count}} assignment on meetings that will not take place",
+      "notHeld_other": "{{count}} assignments on meetings that will not take place",
       "title": "To do",
       "report": "Submit the report for {{month}}"
     },
     "list": {
-      "title": "Next two weeks",
+      "meetings": "Congregation meetings",
+      "wholeProgramme": "Whole program",
+      "upNext": "↑ your next",
       "yourGroup": "Your group {{name}}",
       "groupOnVisit": "On this day, your group attends only the service overseer’s visit",
       "youOnVisit_one": "{{count}} more meeting that day — you are at the visit",
       "youOnVisit_other": "{{count}} more meetings that day — you are at the visit",
       "allMine": "All my assignments",
-      "more": "{{count}} more · until {{date}}",
       "partial": "Not everything loaded — pull down to refresh.",
       "kindCleaning": "Cleaning",
       "watchtower": "Watchtower: {{title}}",
@@ -4022,8 +4042,8 @@
     "title_other": "{{count}} assignments on meetings that will not take place",
     "lead": "People see “meeting not held” and get no reminders. Take the assignments off to keep the program clean. Nobody is notified.",
     "meeting": {
-      "midweek": "Midweek, {{day}}",
-      "weekend": "Weekend, {{day}}"
+      "midweek": "Midweek · {{day}}",
+      "weekend": "Weekend · {{day}}"
     },
     "parts_one": "{{count}} part",
     "parts_other": "{{count}} parts",
@@ -6596,7 +6616,12 @@
       "creditShort": "credit"
     },
     "home": {
-      "kicker": "my hours",
+      "h": "{{h}} h",
+      "hm": "{{h}} h {{m}} min",
+      "ofMonth": "of {{n}} · {{month}}",
+      "forMonth": "{{month}}",
+      "pace": "on plan by today ≈ {{n}} h",
+      "toReport": "goes into the {{month}} report",
       "kickerAux": "auxiliary pioneering",
       "of": "of {{n}}",
       "daysLeft_one": "{{count}} day left this month",
@@ -6649,10 +6674,7 @@
       "text_other": "{{count}} hours entries have not reached the server. Connect to send them, or sign out without them."
     },
     "intro": {
-      "badge": "New",
-      "title": "My hours",
-      "text": "Log your time after every outing in the ministry. At the start of next month your entries add up to your report. Only you see them.",
-      "ok": "Got it"
+      "badge": "New"
     },
     "report": {
       "fromLog": "From your log: {{dur}} of ministry",

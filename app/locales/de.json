@@ -2886,6 +2886,18 @@
     }
   },
   "home": {
+    "important": {
+      "title": "Wichtig",
+      "fieldService": "Predigtdienst",
+      "cancelled": "Abgesagt",
+      "moved": "Verlegt: sonst {{from}}"
+    },
+    "ahead": {
+      "title": "Als Nächstes bei Ihnen",
+      "none": "Noch keine weiteren Aufgaben.",
+      "more_one": "noch {{count}} · bis {{until}}",
+      "more_other": "noch {{count}} · bis {{until}}"
+    },
     "title": "Start",
     "actions": {
       "myGroup": "Meine Gruppe"
@@ -2995,6 +3007,8 @@
       "duty": "Dienst"
     },
     "next": {
+      "inCalendar": "In Ihrem Kalender",
+      "addToCalendar": "Zum Kalender hinzufügen ›",
       "title": "Als Nächstes für Sie",
       "today": "heute",
       "tomorrow": "morgen",
@@ -3016,17 +3030,23 @@
       "talkNamed": "Ansprache „{{title}}“"
     },
     "todo": {
+      "byDuty": "Für Ihre Aufgaben in der Versammlung",
+      "moreDuty_one": "noch {{count}}",
+      "moreDuty_other": "noch {{count}}",
+      "notHeld_one": "{{count}} Aufgabe bei Zusammenkünften, die nicht stattfinden",
+      "notHeld_other": "{{count}} Aufgaben bei Zusammenkünften, die nicht stattfinden",
       "title": "Zu erledigen",
       "report": "Bericht für {{month}} abgeben"
     },
     "list": {
-      "title": "Die nächsten zwei Wochen",
+      "meetings": "Zusammenkünfte der Versammlung",
+      "wholeProgramme": "Ganzes Programm",
+      "upNext": "↑ Ihr Nächstes",
       "yourGroup": "Ihre Gruppe {{name}}",
       "groupOnVisit": "An diesem Tag trifft sich Ihre Gruppe nur zum Besuch des Dienstaufsehers",
       "youOnVisit_one": "Noch {{count}} Zusammenkunft an diesem Tag — Sie sind beim Besuch",
       "youOnVisit_other": "Noch {{count}} Zusammenkünfte an diesem Tag — Sie sind beim Besuch",
       "allMine": "Alle meine Zuteilungen",
-      "more": "noch {{count}} · bis {{date}}",
       "partial": "Nicht alles wurde geladen — zum Aktualisieren nach unten ziehen.",
       "kindCleaning": "Reinigung",
       "watchtower": "Wachtturm: {{title}}",
@@ -4022,8 +4042,8 @@
     "title_other": "{{count}} Aufgaben bei Zusammenkünften, die nicht stattfinden",
     "lead": "Die Betroffenen sehen „Zusammenkunft fällt aus“ und erhalten keine Erinnerungen. Entfernen Sie die Aufgaben, damit das Programm sauber bleibt. Niemand wird benachrichtigt.",
     "meeting": {
-      "midweek": "Unter der Woche, {{day}}",
-      "weekend": "Wochenende, {{day}}"
+      "midweek": "Unter der Woche · {{day}}",
+      "weekend": "Wochenende · {{day}}"
     },
     "parts_one": "{{count}} Programmpunkt",
     "parts_other": "{{count}} Programmpunkte",
@@ -6596,7 +6616,12 @@
       "creditShort": "Gutschrift"
     },
     "home": {
-      "kicker": "meine Stunden",
+      "h": "{{h}} Std.",
+      "hm": "{{h}} Std. {{m}} Min.",
+      "ofMonth": "von {{n}} · {{month}}",
+      "forMonth": "{{month}}",
+      "pace": "laut Plan bis heute ≈ {{n}} Std.",
+      "toReport": "kommt in den Bericht für {{month}}",
       "kickerAux": "Hilfspionierdienst",
       "of": "von {{n}}",
       "daysLeft_one": "noch {{count}} Tag im Monat",
@@ -6649,10 +6674,7 @@
       "text_other": "{{count}} Stundeneinträge sind noch nicht auf dem Server. Verbinden Sie sich zum Senden oder melden Sie sich ohne sie ab."
     },
     "intro": {
-      "badge": "Neu",
-      "title": "Meine Stunden",
-      "text": "Tragen Sie Ihre Zeit nach jedem Einsatz im Dienst ein. Am Anfang des nächsten Monats ergeben die Einträge Ihren Bericht. Nur Sie sehen sie.",
-      "ok": "Verstanden"
+      "badge": "Neu"
     },
     "report": {
       "fromLog": "Aus Ihren Einträgen: {{dur}} Dienst",

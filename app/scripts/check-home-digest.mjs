@@ -63,7 +63,7 @@ export const readerTitleOrNull = (x) => x ?? null;\n`,
 );
 
 const { buildTimeline, clockPlus } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
-const { digestHome, isOver, entryTime } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+const { digestHome, isOver, entryTime, splitHome } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
 
 let failures = 0;
 let passed = 0;
@@ -481,6 +481,38 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('18б она в новый день, в новый час', meetingOn('2026-10-01').map((e) => e.time), ['18:30']);
   check('18в моя часть — с ней', labels(meetingOn('2026-10-01')[0]), ['midweek_chairman']);
   check('18г ближайшее — новый день', digest.next?.dateISO, '2026-10-01');
+}
+
+// --- 19. Variant Б: what goes where after the card (9 November 2026) -------
+{
+  const mtg = (key, dateISO, extra = {}) => ({ type: 'meeting', key, dateISO, kind: 'midweek', time: '19:00', myParts: [], weeklyCleaning: false, ...extra });
+  const task = (key, dateISO) => ({ type: 'task', key, dateISO, task: { item: { kind: 'cart', time: '10:00' } } });
+  const ev = (key, dateISO) => ({ type: 'event', key, dateISO, event: { id: key, type: 'regional_convention' } });
+  const timeline = {
+    near: [
+      { dateISO: '2026-11-10', entries: [task('cart-10', '2026-11-10')] },
+      { dateISO: '2026-11-11', entries: [mtg('old-11', '2026-11-11', { cancelled: true, movedTo: '2026-11-12' })] },
+      { dateISO: '2026-11-12', entries: [mtg('new-12', '2026-11-12', { movedFrom: '2026-11-11' }), task('cart-12', '2026-11-12')] },
+      { dateISO: '2026-11-14', entries: [mtg('fs-14', '2026-11-14', { kind: 'field_service', notice: 'другой зал' })] },
+      { dateISO: '2026-11-15', entries: [mtg('we-15', '2026-11-15', { kind: 'weekend', myParts: [{ partKey: 'x' }] })] },
+      { dateISO: '2026-11-20', entries: [ev('congress', '2026-11-20')] },
+    ],
+    far: [
+      { dateISO: '2026-11-25', entries: [mtg('mw-25', '2026-11-25', { myParts: [{ partKey: 'y' }] }), mtg('mw-25-bg', '2026-11-25')] },
+    ],
+  };
+  const keys = (xs) => xs.map((e) => e.key);
+  const sp = splitHome(timeline, 'cart-10');
+  check('19а «Встречи собрания» — встречи и события, без своих строк другого рода',
+    sp.meetings.map((g) => [g.dateISO, keys(g.entries)]),
+    [['2026-11-11', ['old-11']], ['2026-11-12', ['new-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
+  check('19б «Дальше у вас» — свои строки другого рода, потом всё своё после двух недель, без карточки',
+    keys(sp.ahead), ['cart-12', 'mw-25']);
+  check('19в «Важно» — новый день переноса и другой зал, без старого дня',
+    keys(sp.important), ['new-12', 'fs-14']);
+  const sp2 = splitHome(timeline, 'new-12');
+  check('19г «Важно» — не о том, что уже в карточке', keys(sp2.important), ['fs-14']);
+  check('19д карточка не повторяется в «Дальше у вас»', keys(sp2.ahead), ['cart-10', 'cart-12', 'mw-25']);
 }
 
 if (failures) {

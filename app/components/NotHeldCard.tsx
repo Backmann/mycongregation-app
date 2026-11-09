@@ -25,8 +25,8 @@ import {
  */
 export const NOT_HELD_KEY = ['not-held'] as const;
 
-export function useNotHeld() {
-  return useQuery({ queryKey: NOT_HELD_KEY, queryFn: () => notHeldApi.view() });
+export function useNotHeld(enabled = true) {
+  return useQuery({ queryKey: NOT_HELD_KEY, queryFn: () => notHeldApi.view(), enabled });
 }
 
 type Scope = 'programme' | 'duties';
