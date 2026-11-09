@@ -382,25 +382,20 @@ function Strip({
     <Pressable
       style={({ pressed }) => [
         s.strip,
-        due ? s.stripDue : s.stripDone,
-        pressed && { opacity: 0.7 },
+        pressed && { backgroundColor: "#f8fafc" },
       ]}
       onPress={onPress}
       accessibilityRole="button"
     >
-      <Ionicons name={icon} size={20} color={due ? "#b45309" : "#16794f"} />
+      <View style={[s.stripIcon, due ? s.stripIconDue : s.stripIconDone]}>
+        <Ionicons name={icon} size={19} color={due ? "#b45309" : "#16794f"} />
+      </View>
       <View style={{ flex: 1 }}>
-        <Text style={[s.stripText, due ? s.stripTextDue : s.stripTextDone]}>
-          {text}
-        </Text>
-        {sub ? (
-          <Text style={[s.stripSub, due ? s.stripTextDue : s.stripTextDone]}>
-            {sub}
-          </Text>
-        ) : null}
+        <Text style={s.stripText}>{text}</Text>
+        {sub ? <Text style={s.stripSub}>{sub}</Text> : null}
       </View>
       {due ? (
-        <Ionicons name="chevron-forward" size={18} color="#b45309" />
+        <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
       ) : null}
     </Pressable>
   );
@@ -580,6 +575,11 @@ function TodoSection() {
   return (
     <View style={s.section}>
       <SectionLabel>{t("home.todo.title")}</SectionLabel>
+      {personalCount + duty.length > 0 ? (
+      <View style={s.todoCard}>
+      {personalCount > 0 && duty.length > 0 ? (
+        <Text style={s.todoGroup}>{t("home.todo.yours")}</Text>
+      ) : null}
       {reportDue && report ? (
         <Strip
           icon="document-text-outline"
@@ -657,6 +657,8 @@ function TodoSection() {
             />
           ) : null}
         </>
+      ) : null}
+      </View>
       ) : null}
       <ReportCollectionCard />
       <AttendanceCard />
@@ -1048,9 +1050,10 @@ function NextCard({
         accessibilityRole={pressable ? "button" : undefined}
         style={({ pressed }) => pressed && { opacity: 0.85 }}
       >
-        <MyGlowRow kind={kind} radius={16} style={s.nextCard}>
-          <View style={s.nextHead}>
-            <View style={[s.nextDot, { backgroundColor: tone }]} />
+        {/* White, with the kind of assignment as a strip on the left and
+            a soft band for when (9 November 2026, Home variant Б). */}
+        <View style={[s.nextWhite, { borderLeftColor: tone }]}>
+          <View style={[s.nextBand, { backgroundColor: SECTION_COLORS[kind].soft }]}>
             <Text style={[s.nextWhen, { color: darker(kind) }]}>
               {whenLabel(entry.dateISO, headTime, loc)}
             </Text>
@@ -1061,17 +1064,19 @@ function NextCard({
               {relativeLabel(entry.dateISO, time, now, todayISO, t)}
             </Text>
           </View>
-          {body}
-          {awayDuring ? (
-            <View style={s.awayNote}>
-              <Ionicons name="warning-outline" size={17} color="#b45309" />
-              <Text style={s.awayText}>
-                {t("home.next.away", { range: absenceRange(awayDuring, loc) })}
-              </Text>
-            </View>
-          ) : null}
-          <CalendarLine />
-        </MyGlowRow>
+          <View style={s.nextInner}>
+            {body}
+            {awayDuring ? (
+              <View style={s.awayNote}>
+                <Ionicons name="warning-outline" size={17} color="#b45309" />
+                <Text style={s.awayText}>
+                  {t("home.next.away", { range: absenceRange(awayDuring, loc) })}
+                </Text>
+              </View>
+            ) : null}
+            <CalendarLine />
+          </View>
+        </View>
       </Pressable>
       {following ? (
         <Text style={s.followingLine}>
@@ -1938,8 +1943,11 @@ function DayRow({
   myName,
   onWindows,
   compact = false,
+  last = false,
 }: {
   compact?: boolean;
+  /** The last row of its card: no rule under it. */
+  last?: boolean;
   group: DayGroup;
   nextKey: string | null;
   todayISO: string;
@@ -1958,7 +1966,18 @@ function DayRow({
   // its date — the one sign in the list, instead of «Ваше — выше».
   const hasOwn = group.entries.some(isOwnEntry);
   return (
-    <View style={s.dayRow}>
+    <View style={[s.dayRow, compact && s.dayRowCard, last && { borderBottomWidth: 0 }]}>
+      {compact ? (
+      <View style={s.dateColShort}>
+        {/* «ср, 18» — the short date of the mockup (9 November 2026). */}
+        <Text style={[s.dateShort, isToday && s.dateToday]}>
+          {`${weekday.toLowerCase()}, ${d.getDate()}`}
+        </Text>
+        {hasOwn ? (
+          <View style={[s.dot, s.dateDot]} accessibilityLabel={t("home.timeline.yoursHere")} />
+        ) : null}
+      </View>
+      ) : (
       <View style={s.dateCol}>
         <Text style={[s.dateNum, isToday && s.dateToday]}>{d.getDate()}</Text>
         <Text style={[s.dateDow, isToday && s.dateToday]}>{weekday}</Text>
@@ -1966,6 +1985,7 @@ function DayRow({
           <View style={[s.dot, s.dateDot]} accessibilityLabel={t("home.timeline.yoursHere")} />
         ) : null}
       </View>
+      )}
       <View style={s.dayEntries}>
         {group.entries.map((en) => {
           const body = (
@@ -2471,7 +2491,8 @@ export default function HomeScreen() {
           <Text style={s.quietSub}>{t("home.ahead.none")}</Text>
         </View>
       ) : (
-        aheadShown.map((en) => (
+        <View style={s.listCard}>
+        {aheadShown.map((en) => (
           <DayRow
             key={en.key}
             group={{ dateISO: en.dateISO, entries: [en] }}
@@ -2482,11 +2503,10 @@ export default function HomeScreen() {
             onWindows={setWindows}
             compact
           />
-        ))
-      )}
+        ))}
       <Pressable
         onPress={() => router.push("/home/my-assignments" as never)}
-        style={({ pressed }) => [s.allMine, pressed && { opacity: 0.6 }]}
+        style={({ pressed }) => [s.allMine, s.cardFoot, pressed && { opacity: 0.6 }]}
         accessibilityRole="link"
       >
         <Text style={s.allMineText}>{t("home.list.allMine")}</Text>
@@ -2496,6 +2516,8 @@ export default function HomeScreen() {
             : "›"}
         </Text>
       </Pressable>
+        </View>
+      )}
     </View>
   );
 
@@ -2568,7 +2590,8 @@ export default function HomeScreen() {
           <Text style={s.quietSub}>{t("home.timeline.emptyNear")}</Text>
         </View>
       ) : (
-        meetingsNear.map((g, i) => {
+        <View style={s.listCard}>
+        {meetingsNear.map((g, i) => {
           const month = g.dateISO.slice(0, 7);
           const prev =
             i === 0
@@ -2596,10 +2619,12 @@ export default function HomeScreen() {
                 myName={data.myName}
                 onWindows={setWindows}
                 compact
+                last={i === meetingsNear.length - 1}
               />
             </View>
           );
-        })
+        })}
+        </View>
       )}
       <Pressable
         onPress={() => router.push("/schedule" as never)}
@@ -2737,7 +2762,9 @@ const s = StyleSheet.create({
     fontSize: 12.5,
     fontFamily: "Manrope_800ExtraBold",
     color: "#475569",
-    marginTop: 4,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 2,
   },
   importantCard: {
     flexDirection: "row",
@@ -2942,19 +2969,70 @@ const s = StyleSheet.create({
   strip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingVertical: 12,
+    gap: 12,
+    minHeight: 52,
+    paddingVertical: 10,
     paddingHorizontal: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#eef1f5",
   },
+  stripIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  stripIconDue: { backgroundColor: "#fef3c7" },
+  stripIconDone: { backgroundColor: "#dcfce7" },
+  todoCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    overflow: "hidden",
+    // The first row needs no rule above it.
+    marginTop: -1,
+  },
+  nextWhite: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    borderLeftWidth: 5,
+    overflow: "hidden",
+    shadowColor: "#0f172a",
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
+  },
+  nextBand: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+  },
+  nextInner: { padding: 16, paddingTop: 12, gap: 12 },
+  listCard: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    paddingHorizontal: 12,
+  },
+  cardFoot: { paddingHorizontal: 4 },
+  dayRowCard: { paddingVertical: 12, paddingHorizontal: 2 },
+  dateColShort: { width: 56, paddingTop: 1 },
+  dateShort: { fontSize: 14.5, fontFamily: "Manrope_800ExtraBold", color: "#0e5f75" },
   stripDue: { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
   stripDone: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0" },
   stripText: {
     fontSize: 14.5,
+    lineHeight: 20,
     fontFamily: "Manrope_700Bold",
+    color: "#0f172a",
   },
-  stripSub: { fontFamily: "Manrope_400Regular", fontSize: 13, marginTop: 1 },
+  stripSub: { fontFamily: "Manrope_500Medium", fontSize: 13.5, marginTop: 1, color: "#475569" },
   stripTextDue: { color: "#92400e" },
   stripTextDone: { color: "#166534" },
 

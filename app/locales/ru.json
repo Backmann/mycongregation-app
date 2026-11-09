@@ -3138,6 +3138,7 @@
       "talkNamed": "речь «{{title}}»"
     },
     "todo": {
+      "yours": "Вам лично",
       "byDuty": "По обязанностям в собрании",
       "moreDuty_one": "ещё {{count}}",
       "moreDuty_few": "ещё {{count}}",

@@ -3030,6 +3030,7 @@
       "talkNamed": "talk “{{title}}”"
     },
     "todo": {
+      "yours": "For you",
       "byDuty": "For your duties in the congregation",
       "moreDuty_one": "{{count}} more",
       "moreDuty_other": "{{count}} more",

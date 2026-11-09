@@ -3030,6 +3030,7 @@
       "talkNamed": "Ansprache „{{title}}“"
     },
     "todo": {
+      "yours": "Für Sie",
       "byDuty": "Für Ihre Aufgaben in der Versammlung",
       "moreDuty_one": "noch {{count}}",
       "moreDuty_other": "noch {{count}}",
