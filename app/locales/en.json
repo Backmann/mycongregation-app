@@ -5121,7 +5121,10 @@
     "kindWeekendDay": "Weekend",
     "collapse": "Collapse",
     "pairAssistant": "assistant",
-    "pairReader": "reader"
+    "pairReader": "reader",
+    "liveNow": "on now",
+    "liveSpan": "{{from}} – ≈{{to}}",
+    "liveNowPart": "now: {{part}}"
   },
   "conduct": {
     "title": "Conducting the meeting",

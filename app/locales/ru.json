@@ -5305,7 +5305,10 @@
     "kindWeekendDay": "Выходной день",
     "collapse": "Свернуть",
     "pairAssistant": "помощник",
-    "pairReader": "чтец"
+    "pairReader": "чтец",
+    "liveNow": "идёт сейчас",
+    "liveSpan": "{{from}} — ≈{{to}}",
+    "liveNowPart": "сейчас «{{part}}»"
   },
   "conduct": {
     "title": "Ведение встречи",
