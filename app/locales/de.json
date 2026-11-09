@@ -5057,8 +5057,6 @@
     "youLead": "Sie leiten um {{time}}",
     "dutiesShort": "Dienste {{assigned}} von {{total}}",
     "speaker": "Redner",
-    "lead": "Leiter",
-    "minutes": "{{time}} · {{n}} Min.",
     "editProgramme": "Programm bearbeiten",
     "editDuties": "Dienste bearbeiten",
     "dayNotSet": "noch kein Tag festgelegt",
@@ -5097,8 +5095,6 @@
     "youLeadShort": "leiten um {{time}}",
     "youGo": "Sie gehen um {{time}} zum Besuch",
     "youGoShort": "Besuch um {{time}}",
-    "assistantLabel": "Partner",
-    "readerLabel": "Leser",
     "mineAsAssistant": "{{part}} — als Partner",
     "fieldVisit": "Besuch des Dienstaufsehers · Gruppe {{group}}",
     "fieldGroup": "Gruppe {{group}}",
@@ -5118,7 +5114,14 @@
     "fieldOthersHide": "Treffpunkte anderer Gruppen ausblenden",
     "noMeetingThatDay": "An diesem Tag keine Zusammenkunft der Versammlung",
     "withChanges": "{{event}} · mit Änderungen",
-    "until": "bis {{date}}"
+    "until": "bis {{date}}",
+    "kindMidweekDay": "Unter der Woche",
+    "midweekTitle": "Unser Leben und Dienst als Christ",
+    "kindPublicTalk": "Öffentlicher Vortrag",
+    "kindWeekendDay": "Wochenende",
+    "collapse": "Einklappen",
+    "pairAssistant": "Partner",
+    "pairReader": "Leser"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

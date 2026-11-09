@@ -99,6 +99,7 @@ import {
   buildWeekendPartTimes,
   isNumberedPart,
   resolveSubsection,
+  sectionInk,
 } from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard } from "../../../components/ConductEntry";
@@ -1527,7 +1528,7 @@ function AgendaList({
             <Text
               style={[
                 s.agendaSection,
-                { color: SUBSECTIONS[l.opensSection].color },
+                { color: sectionInk(SUBSECTIONS[l.opensSection]) },
               ]}
             >
               {t(SUBSECTIONS[l.opensSection].i18nKey).toUpperCase()}

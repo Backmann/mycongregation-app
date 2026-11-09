@@ -5057,8 +5057,6 @@
     "youLead": "You are conducting at {{time}}",
     "dutiesShort": "duties {{assigned}} of {{total}}",
     "speaker": "Speaker",
-    "lead": "Conductor",
-    "minutes": "{{time}} · {{n}} min",
     "editProgramme": "Edit program",
     "editDuties": "Edit duties",
     "dayNotSet": "no day set yet",
@@ -5097,8 +5095,6 @@
     "youLeadShort": "conducting at {{time}}",
     "youGo": "You are making the visit at {{time}}",
     "youGoShort": "visit at {{time}}",
-    "assistantLabel": "Assistant",
-    "readerLabel": "Reader",
     "mineAsAssistant": "{{part}} — assistant",
     "fieldVisit": "Service overseer's visit · group {{group}}",
     "fieldGroup": "Group {{group}}",
@@ -5118,7 +5114,14 @@
     "fieldOthersHide": "Hide other groups' meetings",
     "noMeetingThatDay": "No congregation meeting that day",
     "withChanges": "{{event}} · with changes",
-    "until": "until {{date}}"
+    "until": "until {{date}}",
+    "kindMidweekDay": "Midweek",
+    "midweekTitle": "Life and Ministry",
+    "kindPublicTalk": "Public talk",
+    "kindWeekendDay": "Weekend",
+    "collapse": "Collapse",
+    "pairAssistant": "assistant",
+    "pairReader": "reader"
   },
   "conduct": {
     "title": "Conducting the meeting",

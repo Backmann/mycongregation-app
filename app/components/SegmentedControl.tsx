@@ -19,10 +19,17 @@ export function SegmentedControl<K extends string>({
   segments,
   value,
   onChange,
+  tone,
 }: {
   segments: Segment<K>[];
   value: K;
   onChange: (key: K) => void;
+  /**
+   * The chosen position filled in this colour, its label white — a meeting's
+   * own tabs in the meeting's colour (the programme redesign, 9 November
+   * 2026). Without it, the chosen position is white.
+   */
+  tone?: string;
 }) {
   return (
     <View style={styles.track} accessibilityRole="tablist">
@@ -32,12 +39,12 @@ export function SegmentedControl<K extends string>({
           <Pressable
             key={s.key}
             onPress={() => onChange(s.key)}
-            style={[styles.segment, on && styles.segmentOn]}
+            style={[styles.segment, on && (tone ? { backgroundColor: tone } : styles.segmentOn)]}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
           >
             {s.dot ? <View style={[styles.dot, { backgroundColor: s.dot }]} /> : null}
-            <Text style={[styles.label, on && styles.labelOn]} numberOfLines={1}>
+            <Text style={[styles.label, on && (tone ? styles.labelTone : styles.labelOn)]} numberOfLines={1}>
               {s.label}
             </Text>
           </Pressable>
@@ -72,4 +79,5 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3 },
   label: { fontSize: 14, fontFamily: FONT.bold, color: '#64748b' },
   labelOn: { color: '#0f172a' },
+  labelTone: { color: '#ffffff' },
 });
