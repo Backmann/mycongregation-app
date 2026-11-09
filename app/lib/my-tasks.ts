@@ -134,9 +134,18 @@ export function refineMyTasks(
       ...(movedFrom ? { movedFrom } : {}),
     });
   }
+  // By day, then by the hour of the day — a cart shift at 13:00 before a
+  // meeting at 18:30, even when the meeting was moved to that day (seen on
+  // the stand, 9 November 2026: the meeting came first) — then in the order
+  // of the programme within one meeting.
+  const hourOf = (r: RefinedTask) => {
+    const h = r.meetingTime ?? r.item.time ?? '99:99';
+    return /^\d:/.test(h) ? `0${h}` : h;
+  };
   refined.sort(
     (a, b) =>
       a.dateISO.localeCompare(b.dateISO) ||
+      hourOf(a).localeCompare(hourOf(b)) ||
       (a.item.partOrder ?? 999) - (b.item.partOrder ?? 999),
   );
   return refined;
