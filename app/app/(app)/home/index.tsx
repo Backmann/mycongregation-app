@@ -2440,12 +2440,23 @@ export default function HomeScreen() {
   const aheadShown = aheadAll.slice(0, AHEAD_SHOWN);
   const aheadRest = aheadAll.length - aheadShown.length;
   const aheadUntil = aheadAll.length ? aheadAll[aheadAll.length - 1].dateISO : null;
-  // «до октября 2027»: the month, and the year when it is not this one.
-  const monthYear = (iso: string) =>
-    new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+  // «до октября 2027»: the month as a date names it («октября», not
+  // «октябрь»), and the year when it is not this one. Taken from a full
+  // date's parts; where those are missing (Hermes), the full date says it.
+  const monthYear = (iso: string) => {
+    const fmt = new Intl.DateTimeFormat(i18n.language, {
+      day: "numeric",
       month: "long",
       ...(iso.slice(0, 4) !== todayISO.slice(0, 4) ? { year: "numeric" } : {}),
     });
+    const d = new Date(`${iso}T00:00:00`);
+    if (typeof fmt.formatToParts !== "function") return fmt.format(d);
+    return fmt
+      .formatToParts(d)
+      .filter((p) => p.type === "month" || p.type === "year")
+      .map((p) => p.value)
+      .join(" ");
+  };
   const important = split.important.filter(
     (en): en is MeetingEntry => en.type === "meeting",
   );
