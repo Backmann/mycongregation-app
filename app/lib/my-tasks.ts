@@ -468,8 +468,17 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
   } else if (r.item.kind === 'pioneer_meeting') {
     // Where, and — for the invited — who conducts it.
     if (r.item.location) bits.push(r.item.location);
-    if (r.item.label !== 'conduct' && r.item.partnerName) {
-      bits.push(t('home.pioneerMeeting.by', { name: r.item.partnerName }));
+    // Two may conduct it (9 November 2026): the invited read both, a
+    // conductor reads the other one.
+    const names = r.item.partnerNames ?? (r.item.partnerName ? [r.item.partnerName] : []);
+    if (r.item.label === 'conduct') {
+      if (r.item.partnerNames?.[0]) {
+        bits.push(t('home.pioneerMeeting.with', { name: r.item.partnerNames[0] }));
+      }
+    } else if (names.length > 1) {
+      bits.push(t('home.pioneerMeeting.byTwo', { a: names[0], b: names[1] }));
+    } else if (names[0]) {
+      bits.push(t('home.pioneerMeeting.by', { name: names[0] }));
     }
   } else if (r.item.kind === 'guest_lunch') {
     // Where he comes from, and where to bring it.

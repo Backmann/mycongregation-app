@@ -3095,7 +3095,9 @@
     "pioneerMeeting": {
       "conduct": "You conduct the meeting with the pioneers",
       "invited": "Annual meeting of the elders with the pioneers",
-      "by": "conducted by {{name}}"
+      "by": "conducted by {{name}}",
+      "byTwo": "conducted by {{a}} and {{b}}",
+      "with": "together with {{name}}"
     }
   },
   "halls": {
@@ -6022,7 +6024,12 @@
       "PIONEER_NO_QUOTA_DATE": "The decision is a day of his present pioneering, today at the latest.",
       "PIONEER_MEETING_NOT_FOUND": "There is no such meeting — refresh the screen.",
       "PIONEER_MEETING_INVALID": "A date is needed, and a time as HH:MM that ends after it starts.",
-      "PIONEER_MEETING_NOT_ELDER": "The meeting with the pioneers is conducted by an elder.",
+      "PIONEER_MEETING_NOT_APPOINTED": "The meeting with the pioneers is conducted by an elder or a ministerial servant.",
+      "PIONEER_MEETING_NO_CONDUCTOR": "Say who conducts the meeting: choose from the list or write a name.",
+      "PIONEER_MEETING_SAME_CONDUCTOR": "The same person is given twice.",
+      "PIONEER_MEETING_OUT_OF_SEASON": "The meeting with the pioneers is held in December or January.",
+      "PIONEER_MEETING_SEASON_TAKEN": "This season already has its meeting — {{date}}. Change that one instead.",
+      "PIONEER_MEETING_PAST_LOCKED": "The meeting has taken place — it is kept as it was.",
       "ATTENDANCE_ONLINE_TOO_MANY": "Those by video are part of the total and cannot be more than it.",
       "ATTENDANCE_NOT_FOUND": "There is no such attendance entry — perhaps it was already deleted.",
       "ATTENDANCE_MOVE_TARGET": "That meeting already has its own figure.",
@@ -6837,7 +6844,7 @@
   "pioneerMeeting": {
     "title": "Annual meeting of the elders with the pioneers",
     "short": "Meeting with the pioneers",
-    "about": "Once a year, in December or January, an elder chosen by the body meets the regular and special pioneers and the missionaries serving in the field — on the outline S-211.",
+    "about": "Once a year, in December or January, the elders chosen by the body (usually two) meet the regular and special pioneers and the missionaries serving in the field — on the outline S-211.",
     "noneComing": "No meeting set yet.",
     "setNew": "Set the meeting",
     "past": "Earlier meetings",
@@ -6848,17 +6855,17 @@
     "awayCount_other": "{{count}} away",
     "away": "away",
     "nobody": "No pioneers on that day.",
-    "whoHint": "Invited are the regular and special pioneers and missionaries serving on the day of the meeting. The list keeps itself: a pioneer appointed later is invited too.",
+    "whoHint": "Invited are the regular and special pioneers and missionaries serving on the day of the meeting. The list keeps itself: a pioneer appointed later is invited too. Those who conduct it are not listed here: conducting it is their invitation.",
     "outline": "On the outline S-211.",
     "newTitle": "Set the meeting",
     "editTitle": "Change the meeting",
-    "lead": "The invited and the conducting elder are notified, and reminded the evening before. The conductor is also reminded a week ahead.",
+    "lead": "The invited and those who conduct it are notified, and reminded the evening before. The conductors are also reminded a week ahead.",
     "date": "Date",
     "from": "From",
     "to": "To",
     "place": "Place",
     "placeHint": "For example, Kingdom Hall",
-    "conductor": "Conducted by (elder)",
+    "conductor": "Conducted by",
     "note": "Note",
     "set": "Set and notify",
     "save": "Save",
@@ -6871,8 +6878,26 @@
     "warn": {
       "outsideSeason": "The instructions place the meeting in December or January.",
       "conductorAway": "The conductor is away that day.",
-      "event": "That day: {{title}}."
-    }
+      "event": "That day: {{title}}.",
+      "conductorAwayNamed": "{{name}} is away that day."
+    },
+    "secondConductor": "Second conductor (if any)",
+    "servantsToggle": "Show ministerial servants too",
+    "servantsOff": "Showing elders",
+    "servantsOn": "Showing elders and ministerial servants",
+    "writeName": "Write a name instead",
+    "chooseFromList": "Choose from the list",
+    "namePlaceholder": "First and last name",
+    "nameHint": "Someone written in by name is not notified: he has no sign-in. The pioneers and the elders will see his name.",
+    "sameConductor": "The same person is chosen twice — choose someone else or leave the place empty.",
+    "seasonHint": "The meeting is held once a season — in December or January.",
+    "outOfSeason": "Choose a day in December or January.",
+    "conductOne": "Conducted by",
+    "conductTwo": "Conducted by",
+    "tagServant": "ministerial servant",
+    "tagWritten": "written in",
+    "namesTwo": "{{a}} and {{b}}",
+    "conductedByTwo": "Conducted by {{names}}"
   },
   "merge": {
     "title": "Merge cards",

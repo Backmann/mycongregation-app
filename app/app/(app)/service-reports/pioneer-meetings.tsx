@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { pioneerMeetingsApi, type PioneerMeetingView } from '../../../lib/api';
+import { meetingConductors, pioneerMeetingsApi, type PioneerMeetingView } from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDateISO } from '../../../lib/dates';
@@ -50,6 +50,12 @@ export default function PioneerMeetingsScreen() {
       .filter(Boolean)
       .join(' · ');
 
+  /** «Вебер Андреас и Фогт Маркус» — one or two. */
+  const who = (m: PioneerMeetingView) => {
+    const names = meetingConductors(m).map((c) => c.name);
+    return names.length > 1 ? t('pioneerMeeting.namesTwo', { a: names[0], b: names[1] }) : (names[0] ?? '');
+  };
+
   const open = (m: PioneerMeetingView) =>
     router.push({ pathname: '/service-reports/pioneer-meeting', params: { id: m.id } } as never);
 
@@ -77,7 +83,11 @@ export default function PioneerMeetingsScreen() {
               <Pressable key={m.id} onPress={() => open(m)} style={styles.card} accessibilityRole="button">
                 <Text style={styles.when}>{when(m)}</Text>
                 {m.place ? <Text style={styles.sub}>{m.place}</Text> : null}
-                <Text style={styles.sub}>{t('pioneerMeeting.conductedBy', { name: m.conductor.name })}</Text>
+                <Text style={styles.sub}>
+                  {meetingConductors(m).length > 1
+                    ? t('pioneerMeeting.conductedByTwo', { names: who(m) })
+                    : t('pioneerMeeting.conductedBy', { name: who(m) })}
+                </Text>
                 <View style={styles.pill}>
                   <Text style={styles.pillText}>{t('pioneerMeeting.invitedCount', { count: m.invitedCount })}</Text>
                 </View>
@@ -98,7 +108,7 @@ export default function PioneerMeetingsScreen() {
                 <Pressable key={m.id} onPress={() => open(m)} style={styles.row} accessibilityRole="button">
                   <Text style={styles.rowDate}>{formatDay(m.date, lang, { year: 'always' })}</Text>
                   <Text style={styles.rowWho} numberOfLines={1}>
-                    {m.conductor.name}
+                    {who(m)}
                   </Text>
                 </Pressable>
               ))}

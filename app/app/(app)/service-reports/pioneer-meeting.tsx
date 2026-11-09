@@ -4,7 +4,12 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { extractErrorMessage, pioneerMeetingsApi, type PioneerMeetingWarning } from '../../../lib/api';
+import {
+  extractErrorMessage,
+  meetingConductors,
+  pioneerMeetingsApi,
+  type PioneerMeetingWarning,
+} from '../../../lib/api';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDay } from '../../../lib/date-range';
@@ -40,7 +45,9 @@ export default function PioneerMeetingScreen() {
     w.kind === 'outsideSeason'
       ? t('pioneerMeeting.warn.outsideSeason')
       : w.kind === 'conductorAway'
-        ? t('pioneerMeeting.warn.conductorAway')
+        ? w.name
+          ? t('pioneerMeeting.warn.conductorAwayNamed', { name: w.name })
+          : t('pioneerMeeting.warn.conductorAway')
         : t('pioneerMeeting.warn.event', { title: w.title });
 
   const cancel = async () => {
@@ -70,6 +77,7 @@ export default function PioneerMeetingScreen() {
     );
   }
   const away = m.invited.filter((p) => p.away).length;
+  const conductors = meetingConductors(m);
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -81,10 +89,20 @@ export default function PioneerMeetingScreen() {
             .filter(Boolean)
             .join(' · ')}
         </Text>
-        <View style={styles.byRow}>
-          <Ionicons name="person-circle-outline" size={18} color={BRAND} />
-          <Text style={styles.by}>{t('pioneerMeeting.conductedBy', { name: m.conductor.name })}</Text>
-        </View>
+        <Text style={styles.byHead}>
+          {conductors.length > 1 ? t('pioneerMeeting.conductTwo') : t('pioneerMeeting.conductOne')}
+        </Text>
+        {conductors.map((c, i) => (
+          <View key={`${c.id ?? c.name}-${i}`} style={styles.byRow}>
+            <Ionicons name="person-circle-outline" size={18} color={BRAND} />
+            <Text style={styles.by}>{c.name}</Text>
+            {c.appointment === 'ministerial_servant' ? (
+              <Text style={styles.tag}>{t('pioneerMeeting.tagServant')}</Text>
+            ) : !c.id ? (
+              <Text style={styles.tag}>{t('pioneerMeeting.tagWritten')}</Text>
+            ) : null}
+          </View>
+        ))}
         <Text style={styles.outline}>{t('pioneerMeeting.outline')}</Text>
         {m.note ? <Text style={styles.note}>{m.note}</Text> : null}
       </View>
@@ -148,7 +166,25 @@ const styles = StyleSheet.create({
   kicker: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, letterSpacing: 0.6, textTransform: 'uppercase', color: '#94a3b8' },
   when: { fontFamily: 'Manrope_800ExtraBold', fontSize: 22, color: INK, marginTop: 4 },
   sub: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#334155' },
-  byRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  byHead: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 11,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    marginTop: 10,
+  },
+  byRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' },
+  tag: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 11.5,
+    color: MUTED,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    overflow: 'hidden',
+  },
   by: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: BRAND },
   outline: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 4 },
   note: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: '#334155', marginTop: 8, lineHeight: 19 },
