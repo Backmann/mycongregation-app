@@ -1491,7 +1491,14 @@ function MineLine({ text }: { text: string }) {
  * The announcement under a meeting: its numbered parts, the person's own lit
  * where it stands instead of being said again below (27 September).
  */
-function AgendaList({ lines }: { lines: AgendaLine[] }) {
+function AgendaList({
+  lines,
+  named = false,
+}: {
+  lines: AgendaLine[];
+  /** Only the person's own lines: each says which part it is. */
+  named?: boolean;
+}) {
   const { t } = useTranslation();
   const { fontScale } = useWindowDimensions();
   if (!lines.length) return null;
@@ -1532,7 +1539,7 @@ function AgendaList({ lines }: { lines: AgendaLine[] }) {
             {/* In full, however long (Lionel, 5 October): two lines cut a
                 part's name in the middle of a word — «…приносить жер». */}
             <Text style={[s.agendaText, l.mine && s.agendaMine]}>
-              {l.text}
+              {named && l.label ? `${l.label} — ${l.text}` : l.text}
             </Text>
           </View>
         </Fragment>
@@ -1738,7 +1745,7 @@ function EntryBody({
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
         ) : null}
-        <AgendaList lines={shownAgenda} />
+        <AgendaList lines={shownAgenda} named={compact} />
         {mine ? <MineLine text={mine} /> : null}
         {compact && isNext ? (
           <Text style={s.upNext}>{t("home.list.upNext")}</Text>
@@ -1846,7 +1853,11 @@ function EntryBody({
           {[
             taskSubsectionLabel(it, t) ??
               // A cart shift said what it is: the row's title is only the place.
-              (it.kind === "cart" ? capitalizeFirst(t("home.kinds.cart")) : null),
+              (it.kind === "cart"
+                ? capitalizeFirst(t("home.kinds.cart"))
+                : it.kind === "field_service"
+                  ? t("feed.kindField")
+                  : null),
             entryTime(en),
             dayWord,
           ]
@@ -2334,6 +2345,7 @@ function useHomeData(todayISO: string) {
             partKey: p.partKey,
             n,
             text,
+            label: text === shown.label ? null : shown.label,
             mine: isMine(p),
             opensSection,
           });

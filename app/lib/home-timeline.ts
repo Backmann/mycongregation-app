@@ -283,6 +283,12 @@ export interface AgendaLine {
   /** The part's number in the programme, if it has one. */
   n: number | null;
   text: string;
+  /**
+   * The part's own name when `text` is what it is about instead (the gems'
+   * question, the study's source) — said before it where only the person's
+   * own lines are shown (9 November 2026).
+   */
+  label?: string | null;
   mine: boolean;
   /**
    * The first line of «Христианская жизнь» carries the section's name, as
