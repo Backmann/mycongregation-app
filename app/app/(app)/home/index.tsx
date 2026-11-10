@@ -1808,15 +1808,21 @@ function EntryBody({
           note={
             en.fieldNote?.kind === "onlyFor"
               ? t("feed.fieldOnlyFor", { group: en.fieldNote.groupName })
-              : null
+              : // He goes to another group's visit that day: this meeting is
+                // shown whole, with the hour of his visit beside it, and he
+                // sees for himself whether the two clash (10 November 2026).
+                en.fieldNote?.kind === "awayOnVisit"
+                ? en.fieldNote.visitTime
+                  ? t("home.list.awayOnVisitAt", {
+                      group: en.fieldNote.groupName,
+                      time: en.fieldNote.visitTime,
+                    })
+                  : t("feed.fieldAwayOnVisit", { group: en.fieldNote.groupName })
+                : null
           }
         />
         {en.folded ? (
-          <Text style={s.rowQuiet}>
-            {en.folded.kind === "groupOnVisit"
-              ? t("home.list.groupOnVisit")
-              : t("home.list.youOnVisit", { count: en.folded.count })}
-          </Text>
+          <Text style={s.rowQuiet}>{t("home.list.groupOnVisit")}</Text>
         ) : null}
       </>
     );
@@ -1882,6 +1888,24 @@ function EntryBody({
             .join(" · ")}
         </Text>
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
+        {/* A visit to another group: what else the congregation has that
+            day, each with its hour (10 November 2026). */}
+        {en.alsoThatDay?.length ? (
+          <View style={s.alsoDay}>
+            <Text style={s.alsoDayHead}>{t("home.list.alsoThatDay")}</Text>
+            {en.alsoThatDay.map((x) => (
+              <Text key={`${x.time}|${x.audience}|${x.groupName}`} style={s.rowSub}>
+                <Text style={s.alsoDayTime}>{x.time}</Text>
+                {"  "}
+                {(x.audience === "general"
+                  ? t("feed.fieldGeneral")
+                  : x.audience === "group"
+                    ? t("feed.fieldGroup", { group: x.groupName })
+                    : t("feed.fieldOpen")) + (x.own ? ` ${t("feed.fieldYours")}` : "")}
+              </Text>
+            ))}
+          </View>
+        ) : null}
       </>
     );
   }
@@ -2029,6 +2053,11 @@ function eventRange(e: SpecialEvent, loc: string): string {
 
 /** Which meeting a day of «Встречи собрания» is, for its date tile. */
 function toneOf(en: TimelineEntry | undefined): MeetingTone {
+  // One's own rows beyond the two weeks: field service and a cart shift
+  // are field service, a talk elsewhere is a weekend's talk.
+  if (en?.type === "task" && (en.task.item.kind === "field_service" || en.task.item.kind === "cart"))
+    return "field_service";
+  if (en?.type === "outgoing_talk") return "weekend";
   if (!en || en.type !== "meeting") return "event";
   if (en.memorial) return "memorial";
   if (en.replacedBy) return "event";
@@ -2179,13 +2208,17 @@ function useHomeData(todayISO: string) {
     queryFn: () => meetingSettingsApi.getOverview(),
     staleTime: 5 * 60 * 1000,
   });
-  // Three weeks in ONE request; the end bound is exclusive.
+  // Eight weeks in ONE request, the end bound exclusive — the same span and
+  // key as the Programme feed's first piece, so the two share it. Eight, not
+  // three (10 November 2026): a visit beyond the two weeks names the day's
+  // other meetings too.
+  const fieldTo = formatDateISO(addDays(baseMonday, 8 * 7));
   const fieldServiceQ = useQuery({
-    queryKey: ["field-service", "range", mon0],
+    queryKey: ["field-service", "range", mon0, fieldTo],
     queryFn: () =>
       fieldServiceApi.list({
         weekStart: mon0,
-        weekEnd: formatDateISO(addDays(baseMonday, 21)),
+        weekEnd: fieldTo,
         // Crossed out where called off (13 October 2026). The same key and
         // answer as «Служение», which leaves them out of its count itself.
         cancelled: true,
@@ -2213,7 +2246,6 @@ function useHomeData(todayISO: string) {
     () => (programmeQ.data ? null : earlierPiece<Assignment>("assignments", user?.id, mon0, programmeTo)),
     [programmeQ.data, user?.id, mon0, programmeTo],
   );
-  const fieldTo = formatDateISO(addDays(baseMonday, 21));
   const fieldEarlier = useMemo(
     () => (fieldServiceQ.data ? null : earlierPiece<FieldServiceMeeting>("field-service", user?.id, mon0, fieldTo)),
     [fieldServiceQ.data, user?.id, mon0, fieldTo],
@@ -3205,6 +3237,9 @@ const s = StyleSheet.create({
     color: "#b45309",
     fontFamily: "Manrope_600SemiBold",
   },
+  alsoDay: { marginTop: 6, gap: 1 },
+  alsoDayHead: { fontSize: 13, lineHeight: 18, fontFamily: "Manrope_700Bold", color: "#64748b" },
+  alsoDayTime: { fontFamily: "Manrope_800ExtraBold", color: MEETING_INK.field_service },
   rowQuiet: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#94a3b8" },
   topic: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#475569" },
   link: {

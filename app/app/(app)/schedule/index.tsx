@@ -67,6 +67,7 @@ import { earlierPiece } from "../../../lib/offline-keep";
 import { useAuth } from "../../../lib/auth";
 import { sessionVerdict } from "../../../lib/session-verdict";
 import { FONT } from "../../../lib/typography";
+import { splitTopic } from "../../../lib/field-topic";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
 import { ConductResultLink } from "../../../components/ConductEntry";
@@ -1573,6 +1574,7 @@ function Row({
   title,
   time,
   line,
+  topic,
   lines,
   who,
   meetings,
@@ -1600,6 +1602,12 @@ function Row({
   title: string;
   time?: string | null;
   line?: string | null;
+  /**
+   * Field service, one meeting, the card open: what the meeting is about,
+   * in bold right under the hour (10 November 2026: it read as small print
+   * below the notice and «всё сливается»).
+   */
+  topic?: string | null;
   /** Several lines under the title, one each — a field-service day's meetings. */
   lines?: string[];
   /** Field service, one meeting: who leads it, as every screen says it. */
@@ -1677,6 +1685,7 @@ function Row({
             {line ?? null}
           </Text>
         ) : null}
+        {topic ? <Text style={styles.rowTopic}>{topic}</Text> : null}
         {who ? (
           <View style={styles.whoLine}>
             <WhoLine who={who} />
@@ -2448,6 +2457,12 @@ function FieldDay({
   // wide screen's right side — each meeting whole (variant A, 14 October
   // 2026: the open day repeated the title and the notice of the row above).
   const whole = mode === "detail" || !single || ownVisit !== undefined;
+  // One meeting, open in the list: its topic goes up under the hour, in bold;
+  // the block below keeps the place, the length and the material.
+  const topicInHead =
+    mode === "inline" && open && single && !whole && !single.meeting.cancelledAt
+      ? splitTopic(single.meeting.topic).text
+      : null;
   const narrowScreen = useWindowDimensions().width < 361;
   const lineOf = (p: FieldPlace, i: number) => {
     const m = p.meeting;
@@ -2487,6 +2502,7 @@ function FieldDay({
           movedTo={whole && m.movedTo ? movedDayLabel(m.movedTo, i18n.language) : null}
           movedFrom={whole ? (movedFromShown(m, today) ? movedDayLabel(m.movedFromDate as string, i18n.language) : null) : null}
           topic={m.topic}
+          topicShownAbove={!!topicInHead}
           place={m.address}
           sourceUrl={m.sourceUrl}
           note={noteOf(p)}
@@ -2503,7 +2519,11 @@ function FieldDay({
           kindLabel={t("feed.kindField")}
           icon={ownVisit ? "walk-outline" : KIND.field.icon}
           title={title}
-          time={firstTime}
+          // The hour of the meeting the title names: a visit the person leads
+          // at 11:00 said «10:30», the hour of the day's first meeting
+          // (10 November 2026).
+          time={(lead ?? ownVisit)?.meeting.startTime ?? firstTime}
+          topic={topicInHead}
           lines={lines}
           who={singleWho}
           meetings={several}
@@ -2859,6 +2879,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 17.5, lineHeight: 23, fontFamily: FONT.extrabold, color: INK, marginTop: 2 },
   pastTitle: { color: SOFT },
   line: { fontSize: 15, lineHeight: 20, fontFamily: FONT.medium, color: MUTE, marginTop: 4 },
+  rowTopic: { fontSize: 15.5, lineHeight: 21, fontFamily: FONT.bold, color: INK, marginTop: 6 },
   lineTime: { fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
   live: { marginTop: 9, gap: 6 },
   liveBar: { height: 6, borderRadius: 99, backgroundColor: "#e2e8f0", overflow: "hidden" },

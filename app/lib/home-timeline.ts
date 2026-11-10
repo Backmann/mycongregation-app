@@ -206,6 +206,12 @@ export interface MeetingEntry {
     kind: NonNullable<FieldNote>['kind'];
     /** The group the note names, if it names one. */
     groupName: string;
+    /**
+     * `awayOnVisit`: the hour of the person's own visit that day, so the row
+     * can say «у вас в этот день посещение … в 11:00» and the reader can see
+     * for himself whether the two clash (10 November 2026).
+     */
+    visitTime?: string | null;
   } | null;
   sourceUrl: string | null;
   /** When a convention/assembly cancels this meeting, the event that did it. */
@@ -277,7 +283,7 @@ export interface MeetingEntry {
    * not go to, folded into one line under the visit (26 September). Home is
    * what is the person's own; the feed still lists them all.
    */
-  folded?: { kind: 'groupOnVisit' | 'youOnVisit'; count: number } | null;
+  folded?: { kind: 'groupOnVisit'; count: number } | null;
   /**
    * The signed-in person's own assignments drawn in this row, by their
    * agenda id — the parts and duties, the cleaning after it, the field
@@ -354,6 +360,23 @@ export interface TaskEntry {
   key: string;
   dateISO: string;
   task: RefinedTask;
+  /**
+   * A service overseer's visit to another group: the congregation's other
+   * field-service meetings of that day — his own group's, the combined one —
+   * so that a row beyond the two weeks still says what else happens then
+   * (10 November 2026: «они тоже должны внятно и чётко отображаться»).
+   */
+  alsoThatDay?: AlsoThatDay[];
+}
+
+/** One field-service meeting of a visit day, for the visit's row. */
+export interface AlsoThatDay {
+  time: string;
+  audience: 'group' | 'general' | 'open';
+  /** The group's name, for `group`. */
+  groupName: string;
+  /** The person's own group. */
+  own: boolean;
 }
 
 /**
@@ -837,6 +860,36 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       for (const p of a.others) hiddenField.add(p.meeting.id);
     }
   }
+  /**
+   * The other field-service meetings of a day that are for this person on an
+   * ordinary day — his group's own, the combined one, an open one — not
+   * called off and not moved away. Said under a visit he goes to elsewhere.
+   */
+  const alsoOn = (dateISO: string): AlsoThatDay[] =>
+    [...fieldPlaces.values()]
+      .filter(
+        (p) =>
+          formatDateISO(
+            addDays(
+              new Date(`${p.meeting.weekStartDate}T00:00:00`),
+              p.meeting.dayOfWeek - 1,
+            ),
+          ) === dateISO &&
+          p.audience !== 'visit' &&
+          !p.mine &&
+          !p.meeting.cancelledAt &&
+          !p.meeting.movedTo,
+      )
+      .sort((a, b) => a.meeting.startTime.localeCompare(b.meeting.startTime))
+      .map((p) => ({
+        time: p.meeting.startTime,
+        audience: p.audience as AlsoThatDay['audience'],
+        groupName: p.meeting.serviceGroupId
+          ? (groupNameById?.get(p.meeting.serviceGroupId) ?? '')
+          : '',
+        own: p.own,
+      }));
+
   for (const m of fieldServiceMeetings) {
     if (hiddenField.has(m.id)) continue;
     const dateISO = formatDateISO(
@@ -929,6 +982,17 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
             n.kind === 'notForYourGroup'
               ? ''
               : (groupNameById?.get(n.groupId) ?? ''),
+          visitTime:
+            n.kind === 'awayOnVisit'
+              ? (fieldServiceMeetings.find(
+                  (v) =>
+                    v.weekStartDate === m.weekStartDate &&
+                    v.dayOfWeek === m.dayOfWeek &&
+                    v.serviceOverseerVisit &&
+                    v.serviceGroupId === n.groupId &&
+                    !v.cancelledAt,
+                )?.startTime ?? null)
+              : null,
         };
       })(),
       myParts: myFieldLine ? [{ section: null, title: myFieldLine }] : [],
@@ -1137,6 +1201,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       key: `task-${r.item.kind}-${dateISO}-${r.item.partKey ?? r.item.label}`,
       dateISO,
       task: r,
+      ...(r.item.kind === 'field_service' && r.item.serviceOverseerVisit
+        ? { alsoThatDay: alsoOn(dateISO) }
+        : {}),
     });
   }
 
@@ -1233,17 +1300,20 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
 
   // ---- Field service on a visit day: fold what the person does not go to ----
   // «В этот день группа идёт только на посещение» (Lionel, 26 September).
-  // The meetings marked so — the group's other meetings, or everything else
-  // when the person himself goes to another group's visit — are taken out
-  // and counted under the visit they go to instead. Without a visit row to
+  // The group's other meetings are taken out and counted under the visit
+  // they go to instead. Without a visit row to
   // stand under (it should not happen: the note exists because of one) they
   // stay as they were rather than vanish.
   {
+    // Only the group's members: the one who goes to ANOTHER group's visit —
+    // the overseer, his assistant, its conductor — sees the day's other
+    // meetings in full, each saying the hour of his visit (10 November
+    // 2026). They may not clash at all, and he should know where the
+    // congregation goes.
     const isFoldable = (en: TimelineEntry): en is MeetingEntry =>
       en.type === 'meeting' &&
       en.kind === 'field_service' &&
-      (en.fieldNote?.kind === 'notForYourGroup' ||
-        en.fieldNote?.kind === 'awayOnVisit');
+      en.fieldNote?.kind === 'notForYourGroup';
     const byDate = new Map<string, MeetingEntry[]>();
     for (const en of entries) {
       if (!isFoldable(en)) continue;
@@ -1259,12 +1329,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           !isFoldable(en),
       );
       if (!host) continue;
-      host.folded = {
-        kind: list.some((en) => en.fieldNote?.kind === 'awayOnVisit')
-          ? 'youOnVisit'
-          : 'groupOnVisit',
-        count: list.length,
-      };
+      host.folded = { kind: 'groupOnVisit', count: list.length };
       for (const en of list) entries.splice(entries.indexOf(en), 1);
     }
   }
