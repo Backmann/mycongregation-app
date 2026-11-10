@@ -3,6 +3,7 @@ import { AppState, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { pushApi } from './api';
 import { useAuth } from './auth';
 import { rememberPushToken } from './push-token-store';
@@ -417,6 +418,7 @@ export function usePushNotifications() {
   }, [user, wake]);
 
   // Tap handler — works whether app is foreground, background, or killed
+  const queryClient = useQueryClient();
   useEffect(() => {
     if (Platform.OS === 'web') return;
 
@@ -424,6 +426,11 @@ export function usePushNotifications() {
       const data = response.notification.request.content.data as
         | NotificationData
         | undefined;
+      // The partner answered: the screen it opens may already be mounted and
+      // would show the old state (10 November 2026).
+      if ((data as { type?: string } | undefined)?.type === 'pair_prep') {
+        void queryClient.invalidateQueries({ queryKey: ['pair-prep'] });
+      }
 
       const route = routeForNotification(data ?? {});
       if (route) {
@@ -437,5 +444,5 @@ export function usePushNotifications() {
     return () => {
       subscription.remove();
     };
-  }, [router]);
+  }, [router, queryClient]);
 }

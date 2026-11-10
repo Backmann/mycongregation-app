@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Sheet } from './Sheet';
 import {
@@ -57,25 +57,25 @@ export function PairPrep({
   const { data } = usePairPrep();
   const item = pairOf(data, agendaId);
   const [choosing, setChoosing] = useState(false);
-  const [busy, setBusy] = useState(false);
-  if (!item) return null;
-
-  const a = item.agreement;
-  const run = async (f: () => Promise<PairPrepItem>, done?: string) => {
-    setBusy(true);
-    try {
-      const next = await f();
+  // Through useMutation like every other save: the app's one place then
+  // gives the tap its feel and a refusal its words (app/_layout.tsx).
+  const act = useMutation({
+    mutationFn: ({ f }: { f: () => Promise<PairPrepItem>; done?: string }) => f(),
+    onSuccess: (next, { done }) => {
       qc.setQueryData<PairPrepItem[]>(PAIR_PREP_KEY, (old) =>
         (old ?? []).map((i) => (i.assignmentId === next.assignmentId ? next : i)),
       );
       if (done) notify(done, undefined, 'success');
-    } catch (err) {
-      notify(t('common.error'), extractErrorMessage(err));
+    },
+    onError: () => {
       void qc.invalidateQueries({ queryKey: PAIR_PREP_KEY });
-    } finally {
-      setBusy(false);
-    }
-  };
+    },
+  });
+  const busy = act.isPending;
+  if (!item) return null;
+
+  const a = item.agreement;
+  const run = (f: () => Promise<PairPrepItem>, done?: string) => act.mutate({ f, done });
 
   if (!item.partnerHasApp) {
     return (
@@ -94,7 +94,7 @@ export function PairPrep({
       onClose={() => setChoosing(false)}
       onChosen={(key) => {
         setChoosing(false);
-        void run(() => pairPrepApi.propose(item.assignmentId, key), t('pairPrep.sent'));
+        run(() => pairPrepApi.propose(item.assignmentId, key), t('pairPrep.sent'));
       }}
     />
   );

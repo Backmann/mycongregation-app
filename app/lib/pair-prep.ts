@@ -1,5 +1,7 @@
 import dayjs from 'dayjs';
+import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
 import type { TFunction } from 'i18next';
 import { pairPrepApi, PairPrepItem } from './api';
 
@@ -13,13 +15,24 @@ import { pairPrepApi, PairPrepItem } from './api';
 export const PAIR_PREP_KEY = ['pair-prep', 'mine'] as const;
 
 export function usePairPrep() {
-  return useQuery({
+  const q = useQuery({
     queryKey: PAIR_PREP_KEY,
     queryFn: () => pairPrepApi.mine(),
     // A screen keeps working without it: the block simply is not drawn.
     throwOnError: false,
     staleTime: 30_000,
   });
+  // Back on the screen — from the partner's notification, another tab, the
+  // phone's home screen — the answer may have come meanwhile. The app does
+  // not refetch on focus by default; this small list does, at most every
+  // fifteen seconds (react-query merges the blocks' calls into one).
+  const { refetch, dataUpdatedAt } = q;
+  useFocusEffect(
+    useCallback(() => {
+      if (Date.now() - dataUpdatedAt > 15_000) void refetch();
+    }, [refetch, dataUpdatedAt]),
+  );
+  return q;
 }
 
 /** The pair item of a programme row, by the row's `part:<id>`. */
