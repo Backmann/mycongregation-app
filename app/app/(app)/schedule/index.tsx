@@ -2154,14 +2154,17 @@ function Programme({
       const text = [enrichSongRef(shown.subtitle, songTitles), shown.label].filter(Boolean).join(" · ");
       out.push(<PrayerLine key={p.id} time={start} label={text} name={person} mine={mine} />);
     } else if (p.partKey === "public_talk_speaker") {
-      // The theme heads the meeting's own card; here the row says who gives
-      // it and from where (a special talk says so on the card as well).
+      // The talk's theme in full here too (10 November 2026: «когда плашка
+      // раскрывается, тоже информация нужна») — the open sheet is read on its
+      // own, on a wide screen without the card above it; then who gives it
+      // and from where. A special talk says so above its theme.
       out.push(
         <PartLine
           key={p.id}
           time={start}
           minutes={t("feed.minutesOnly", { n: p.partDurationMin ?? 30 })}
-          title={p.specialTalk ? upperFirst(t("feed.specialTalk")) : t("feed.speaker")}
+          title={shown.label}
+          subtitle={p.specialTalk ? upperFirst(t("feed.specialTalk")) : null}
           name={person}
           extra={whoFrom(p)}
           mine={mine}

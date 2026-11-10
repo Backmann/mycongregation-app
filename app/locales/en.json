@@ -5056,7 +5056,6 @@
     "minePast": "Yours was: {{list}}",
     "youLead": "You are conducting at {{time}}",
     "dutiesShort": "duties {{assigned}} of {{total}}",
-    "speaker": "Speaker",
     "editProgramme": "Edit program",
     "editDuties": "Edit duties",
     "dayNotSet": "no day set yet",
