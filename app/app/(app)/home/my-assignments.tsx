@@ -194,10 +194,10 @@ export default function MyAssignmentsScreen() {
                         color={v.color}
                         style={{ marginRight: 8 }}
                       />
-                      <Text
-                        style={[styles.cardHeadText, { color: v.color }]}
-                        numberOfLines={1}
-                      >
+                      {/* Whole, never cut: in German the date, the hour and
+                          the meeting's name did not fit one line on a phone
+                          (CI screen check, 10 November). */}
+                      <Text style={[styles.cardHeadText, { color: v.color }]}>
                         {taskMeta(head, t, i18n.language)}
                       </Text>
                     </View>
@@ -225,21 +225,18 @@ export default function MyAssignmentsScreen() {
                             stays, muted, with the reason — so a wrongly
                             entered event is seen, not silently obeyed. */}
                         {r.notHeldBy !== undefined ? (
-                          <Text style={styles.notHeldNote} numberOfLines={2}>
+                          <Text style={styles.notHeldNote}>
                             {r.notHeldBy
                               ? t('home.notHeld.withEvent', { event: r.notHeldBy.title })
                               : t('home.notHeld.plain')}
                           </Text>
                         ) : null}
                         {taskSubsectionLabel(r.item, t) ? (
-                          <Text style={styles.subsection} numberOfLines={1}>
+                          <Text style={styles.subsection}>
                             {taskSubsectionLabel(r.item, t)}
                           </Text>
                         ) : r.item.kind === 'duty' ? (
-                          <Text
-                            style={[styles.subsection, styles.dutyLabel]}
-                            numberOfLines={1}
-                          >
+                          <Text style={[styles.subsection, styles.dutyLabel]}>
                             {t('home.rowKind.duty')}
                           </Text>
                         ) : null}
@@ -270,7 +267,7 @@ export default function MyAssignmentsScreen() {
                             nothing else gains an empty line. */}
                         {r.item.kind === 'field_service' &&
                         (r.item.time || r.item.location) ? (
-                          <Text style={styles.whereWhen} numberOfLines={2}>
+                          <Text style={styles.whereWhen}>
                             {[r.item.time, r.item.location]
                               .filter(Boolean)
                               .join(' · ')}

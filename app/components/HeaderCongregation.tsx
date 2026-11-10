@@ -25,11 +25,18 @@ export function HeaderCongregation({
    * bolder, aligned left, and free to take the width it needs.
    */
   leading,
+  /**
+   * Wrap instead of cutting — where there is height to spare (the side
+   * navigation of the wide layout). «Тестовое собрание» ended in an ellipsis
+   * there (CI screen check, 10 November); the phone header keeps one line.
+   */
+  wrap,
 }: {
   compact?: boolean;
   /** Matches the wordmark opposite it, so the row reads as one line. */
   size: number;
   leading?: boolean;
+  wrap?: boolean;
 }) {
   const { data } = useQuery({
     queryKey: ['meeting-settings'],
@@ -52,7 +59,7 @@ export function HeaderCongregation({
       }}
     >
       <Text
-        numberOfLines={1}
+        numberOfLines={wrap ? undefined : 1}
         ellipsizeMode="tail"
         maxFontSizeMultiplier={1.2}
         style={{

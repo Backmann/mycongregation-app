@@ -22,10 +22,9 @@
  * No dependencies: PNG is decoded with Node's own zlib (8-bit RGB/RGBA,
  * non-interlaced — what Chromium writes). Run from the app folder.
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { inflateSync } from 'node:zlib';
-import { Buffer } from 'node:buffer';
+import { decode } from './png.mjs';
 
 const ROOT = join(process.cwd(), '.screens');
 /** The largest per-channel step still read as rasterising noise (measured: 1). */
@@ -35,46 +34,6 @@ function pick(label) {
   const all = readdirSync(ROOT).filter((n) => n.endsWith(`_${label}`)).sort();
   if (!all.length) { console.error(`Нет папки .screens/*_${label}`); process.exit(1); }
   return all[all.length - 1];
-}
-
-function decode(file) {
-  const buf = readFileSync(file);
-  if (buf.readUInt32BE(0) !== 0x89504e47) throw new Error(`${file}: не PNG`);
-  let pos = 8, width = 0, height = 0, bitDepth = 0, colorType = 0, interlace = 0;
-  const idat = [];
-  while (pos < buf.length) {
-    const len = buf.readUInt32BE(pos);
-    const type = buf.toString('ascii', pos + 4, pos + 8);
-    const data = buf.subarray(pos + 8, pos + 8 + len);
-    if (type === 'IHDR') {
-      width = data.readUInt32BE(0); height = data.readUInt32BE(4);
-      bitDepth = data[8]; colorType = data[9]; interlace = data[12];
-    } else if (type === 'IDAT') idat.push(data);
-    else if (type === 'IEND') break;
-    pos += 12 + len;
-  }
-  if (bitDepth !== 8 || interlace !== 0 || (colorType !== 2 && colorType !== 6))
-    throw new Error(`${file}: неподдержанный вид PNG (глубина ${bitDepth}, цвет ${colorType}, чересстрочный ${interlace})`);
-  const bpp = colorType === 6 ? 4 : 3;
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = width * bpp;
-  const out = Buffer.alloc(stride * height);
-  for (let y = 0; y < height; y++) {
-    const f = raw[y * (stride + 1)];
-    const line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    for (let x = 0; x < stride; x++) {
-      const a = x >= bpp ? out[y * stride + x - bpp] : 0;
-      const b = y > 0 ? out[(y - 1) * stride + x] : 0;
-      const c = x >= bpp && y > 0 ? out[(y - 1) * stride + x - bpp] : 0;
-      let v = line[x];
-      if (f === 1) v += a;
-      else if (f === 2) v += b;
-      else if (f === 3) v += (a + b) >> 1;
-      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? b : c; }
-      out[y * stride + x] = v & 0xff;
-    }
-  }
-  return { width, height, bpp, px: out };
 }
 
 const [la = 'before', lb = 'after'] = process.argv.slice(2);

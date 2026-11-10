@@ -117,6 +117,151 @@ jobs:
         env:
           EXPO_PUBLIC_API_URL: https://example.invalid
         run: npx expo export --platform android
+  # SCREENS: main and the pull request photographed side by side.
+  #
+  # A throwaway server (the server repository's scripts/screens-server.sh)
+  # is filled with an invented congregation; both builds of the web app are
+  # photographed on this one machine, with the same data and a frozen clock,
+  # and the database is put back between them (a screen can write). Changed
+  # frames are reported, not failed — changing a screen is often the point.
+  # What fails: defects on the pull request's own pictures (text cut off,
+  # invisible text, sideways scrolling, raw translation keys, failure screens,
+  # console errors, 5xx). See app/scripts/screens-ci.mjs. Pictures and the
+  # report are attached to the run; the report is also in its summary.
+  #
+  # The server comes from the branch of the same name in the server
+  # repository when there is one — a change the app needs ships there first —
+  # otherwise from its main.
+  screens:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: screens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ci
+      POSTGRES_PASSWORD: ci
+      POSTGRES_DB: screens
+    steps:
+      - name: Checkout the pull request
+        uses: actions/checkout@v4
+        with:
+          path: pr
+          fetch-depth: 0
+      - name: Does it touch the app at all?
+        id: scope
+        working-directory: pr
+        run: |
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | grep -q '^app/'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nothing under app/ changed: no screens to compare."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Checkout main
+        if: steps.scope.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+          path: base
+      - name: Which server
+        if: steps.scope.outputs.run == 'true'
+        id: server
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if git ls-remote --exit-code --heads https://github.com/Backmann/mycongregation-server "$BRANCH" > /dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"; echo "Server: branch $BRANCH"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"; echo "Server: main"
+          fi
+      - name: Checkout the server
+        if: steps.scope.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: Backmann/mycongregation-server
+          ref: ${{ steps.server.outputs.ref }}
+          path: server
+      - name: Setup Node.js
+        if: steps.scope.outputs.run == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            pr/app/package-lock.json
+            base/app/package-lock.json
+            server/package-lock.json
+      - name: Server — build, migrate, fill
+        if: steps.scope.outputs.run == 'true'
+        id: seed
+        working-directory: server
+        run: |
+          set -o pipefail
+          npm ci --no-audit --fund=false
+          npm run build
+          scripts/screens-server.sh | tee seed.out
+          echo "summary=$(tail -1 seed.out)" >> "$GITHUB_OUTPUT"
+      # Installed WITHOUT NODE_ENV=production: that would leave out the dev
+      # dependencies, Playwright among them (the first run failed so).
+      - name: Install both apps
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          for side in base pr; do
+            (cd "$side/app" && npm install --prefer-offline --no-audit --fund=false)
+          done
+      - name: Build both web apps against it
+        if: steps.scope.outputs.run == 'true'
+        env:
+          NODE_ENV: production
+          EXPO_PUBLIC_API_URL: http://localhost:3000/api
+        run: |
+          for side in base pr; do
+            (cd "$side/app" && npx expo export --platform web --output-dir "$GITHUB_WORKSPACE/dist-$side")
+          done
+      - name: Browser
+        if: steps.scope.outputs.run == 'true'
+        working-directory: pr/app
+        run: npx playwright install --with-deps chromium
+      - name: Photograph and compare
+        if: steps.scope.outputs.run == 'true'
+        working-directory: pr/app
+        env:
+          SUMMARY: ${{ steps.seed.outputs.summary }}
+        run: |
+          CURRENT="$(node -e 'console.log(JSON.parse(process.env.SUMMARY).current)')"
+          node scripts/screens-ci.mjs --a "$GITHUB_WORKSPACE/dist-base" --b "$GITHUB_WORKSPACE/dist-pr" \
+            --current "$CURRENT" --out "$GITHUB_WORKSPACE/screens-out" \
+            --reset "$GITHUB_WORKSPACE/server/scripts/screens-server.sh restore"
+      - name: Report in the summary
+        if: always() && steps.scope.outputs.run == 'true'
+        run: cat screens-out/report.md >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "No report." >> "$GITHUB_STEP_SUMMARY"
+      - name: Attach the pictures
+        if: always() && steps.scope.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: screens
+          path: screens-out
+          retention-days: 14
+      - name: Server log on failure
+        if: failure() && steps.scope.outputs.run == 'true'
+        run: tail -80 server/server.log || true
   deploy:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest

@@ -52,7 +52,7 @@ export function SideNav({
       <View style={s.brand}>
         <BrandLockup mark={30} markOnly tone="dark" />
         <View style={{ flex: 1, minWidth: 0 }}>
-          <HeaderCongregation size={15} leading />
+          <HeaderCongregation size={15} leading wrap />
         </View>
       </View>
       {state.routes.map((route, i) => {
