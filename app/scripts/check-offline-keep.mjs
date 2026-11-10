@@ -236,7 +236,7 @@ if (!read('app/(app)/home/index.tsx').includes('<KeptNotice')) problems.push('«
 const home = read('app/(app)/home/index.tsx');
 for (const [where, src, re] of [
   ['Главная: программа', home, /queryKey: \["assignments", "range", mon0, programmeTo\]/],
-  ['Главная: проповедь', home, /queryKey: \["field-service", "range", mon0\]/],
+  ['Главная: проповедь', home, /queryKey: \["field-service", "range", mon0, fieldTo\]/],
   ['Главная: мои назначения', home, /queryKey: \["me", "assignments"\]/],
   ['Мои назначения', mine, /queryKey: \['me', 'assignments'\]/],
   ['Лента: программа кусками', feed, /queryKey: \["assignments", "range", sp\.from, sp\.to\]/],

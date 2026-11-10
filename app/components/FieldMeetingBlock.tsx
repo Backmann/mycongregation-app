@@ -52,6 +52,7 @@ export function FieldMeetingBlock({
   movedFrom,
   movedTo,
   topic,
+  topicShownAbove,
   place,
   sourceUrl,
   note,
@@ -75,6 +76,11 @@ export function FieldMeetingBlock({
   /** The stand-in on a moved meeting's old day: where it went, worded. */
   movedTo?: string | null;
   topic?: string | null;
+  /**
+   * The caller already says the topic above the block (the Programme's open
+   * card): the block keeps only its length, beside the place.
+   */
+  topicShownAbove?: boolean;
   place?: string | null;
   sourceUrl?: string | null;
   /** Said to this reader only: «не для вашей группы», «ваша группа — на посещении». */
@@ -135,7 +141,10 @@ export function FieldMeetingBlock({
       <FieldNotice text={notice} big={big} />
     </>
   );
-  const about = !off && theme ? <Text style={styles.topic}>{theme}</Text> : null;
+  // What the meeting is about: bold, right under its name (10 November
+  // 2026 — small grey print under the notice read as part of the address).
+  const about =
+    !off && theme && !topicShownAbove ? <Text style={styles.topic}>{theme}</Text> : null;
   const noteLine = !off && note ? <Text style={styles.note}>{note}</Text> : null;
 
   return (
@@ -145,8 +154,8 @@ export function FieldMeetingBlock({
         <View style={styles.wideBody}>
           <View style={styles.wideMain}>
             {titleLine}
-            {status}
             {about}
+            {status}
             {noteLine}
           </View>
           <View style={styles.wideSide}>
@@ -157,9 +166,9 @@ export function FieldMeetingBlock({
       ) : (
         <View style={styles.body}>
           {titleLine}
+          {about}
           {people}
           {status}
-          {about}
           {meta}
           {noteLine}
         </View>
@@ -257,7 +266,7 @@ const styles = StyleSheet.create({
   whoName: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, lineHeight: 19, color: '#1e293b' },
   mineText: { fontFamily: 'Manrope_700Bold', color: GREEN },
   emptyText: { fontFamily: 'Manrope_700Bold', color: AMBER },
-  topic: { fontFamily: 'Manrope_400Regular', fontSize: 14, lineHeight: 20, color: BODY },
+  topic: { fontFamily: 'Manrope_700Bold', fontSize: 15, lineHeight: 21, color: INK },
   meta: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 12, rowGap: 3 },
   metaColumn: { flexDirection: 'column', alignItems: 'flex-start', rowGap: 4 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },

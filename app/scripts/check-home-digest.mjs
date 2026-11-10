@@ -219,9 +219,27 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const { timeline, digest } = run({ me: BONDAR, group: HAMM, items });
   check('2а ближайшее — завтрашняя молитва', [digest.next?.dateISO, labels(digest.next)], ['2026-09-27', ['weekend_closing_prayer']]);
   const sat = timeline.near.find((g) => g.dateISO === '2026-10-03').entries;
-  check('2б в день посещения — одна строка', sat.map((e) => e.key), ['fs-f-visit']);
-  check('2в он ведёт посещение', sat[0].myRole, 'conduct');
-  check('2г встречи своей группы и открытая свёрнуты: у вас посещение', sat[0].folded, { kind: 'youOnVisit', count: 2 });
+  // 10 November 2026: the one who goes to another group's visit sees the
+  // day's other meetings in full, each with the hour of his visit.
+  check('2б в день посещения — все встречи дня, по времени', sat.map((e) => e.key), ['fs-f-hamm', 'fs-f-visit', 'fs-f-open']);
+  const visit = sat.find((e) => e.key === 'fs-f-visit');
+  check('2в он ведёт посещение', visit.myRole, 'conduct');
+  check('2г ничего не свёрнуто', sat.map((e) => e.folded ?? null), [null, null, null]);
+  check('2д у остальных — час его посещения',
+    sat.filter((e) => e !== visit).map((e) => [e.fieldNote?.kind, e.fieldNote?.groupName, e.fieldNote?.visitTime]),
+    [['awayOnVisit', 'Ahlen', '10:00'], ['awayOnVisit', 'Ahlen', '10:00']]);
+  // Beyond the two weeks only his own rows are drawn: the visit's row names
+  // what else the congregation has that day.
+  const far = run({ me: BONDAR, group: HAMM, items, today: '2026-09-14', nowHM: '09:00' });
+  const farVisit = [...far.timeline.near, ...far.timeline.far]
+    .flatMap((g) => g.entries)
+    .find((e) => e.type === 'task' && e.task.item.kind === 'field_service');
+  check('2е посещение за двумя неделями — «в этот день также»',
+    [farVisit?.dateISO, farVisit?.alsoThatDay],
+    ['2026-10-03', [
+      { time: '09:30', audience: 'group', groupName: 'Hamm', own: true },
+      { time: '10:30', audience: 'open', groupName: '', own: false },
+    ]]);
 }
 
 // --- 3. Somebody with no group sees the whole Saturday -----------------------
