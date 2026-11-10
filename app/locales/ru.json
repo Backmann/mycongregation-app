@@ -2984,12 +2984,6 @@
     }
   },
   "home": {
-    "important": {
-      "title": "Важно",
-      "fieldService": "Проповедь",
-      "cancelled": "Отменена",
-      "moved": "Перенесена: обычно {{from}}"
-    },
     "changes": {
       "new": "новое",
       "changed": "Изменено",

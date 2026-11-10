@@ -84,6 +84,7 @@ import { capitalizeFirst } from "../../../lib/relative-time";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MovedMark, movedWhen } from "../../../components/MovedMark";
 import { useNotHeld } from "../../../components/NotHeldCard";
+import { MEETING_INK, tileOf } from "../../../lib/palette";
 
 /**
  * THE PROGRAMME — what is coming, one date at a time.
@@ -150,25 +151,15 @@ const LABELLED = new Set(["treasures", "apply_yourself", "christian_life", "publ
  * paper plane of the «Служение» tab. They differ in lightness as well as hue.
  */
 const KIND = {
-  midweek: { color: "#0e7490", icon: "book-outline" },
-  weekend: { color: "#6d28d9", icon: "sunny-outline" },
-  field: { color: "#15803d", icon: "paper-plane-outline" },
+  midweek: { color: MEETING_INK.midweek, icon: "book-outline" },
+  weekend: { color: MEETING_INK.weekend, icon: "sunny-outline" },
+  field: { color: MEETING_INK.field_service, icon: "paper-plane-outline" },
   // An event: a quiet slate (9 November 2026) — the amber it wore before is
   // the workbook's gold now, and means one section and nothing else.
-  special: { color: "#475569", icon: "star-outline" },
+  special: { color: MEETING_INK.event, icon: "star-outline" },
 } as const;
-/**
- * The date tile's ground for each colour a row is drawn in (the redesign of
- * 9 November 2026): the date reads as WHAT the day is before a word is read.
- */
-const TILE_BG: Record<string, string> = {
-  "#0e7490": "#e0f1f5",
-  "#6d28d9": "#efe9fb",
-  "#15803d": "#e3f3e7",
-  "#475569": "#eef1f5",
-};
 /** The Memorial: a tile of its own, filled. */
-const MEMORIAL_COLOR = "#7f1d1d";
+const MEMORIAL_COLOR = MEETING_INK.memorial;
 
 /** «19:30» → minutes into the day. */
 const hm = (t: string) => {
@@ -1507,7 +1498,7 @@ function DetailHead({
   const day = d.toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
   const dow = d.toLocaleDateString(i18n.language, { weekday: "short" }).replace(".", "").toUpperCase();
   return (
-    <View style={[styles.hero, { backgroundColor: TILE_BG[color] ?? "#eef1f5" }]}>
+    <View style={[styles.hero, { backgroundColor: tileOf(color) }]}>
       <View style={styles.heroTop}>
         <View style={[styles.heroTile, { backgroundColor: color }]}>
           <Text style={styles.heroDay}>{d.getDate()}</Text>
@@ -1654,7 +1645,7 @@ function Row({
   // colour of what the day is; then what it is, in that colour; the title;
   // the hour in bold with the one line that matters after it.
   const filled = solid || !!live;
-  const tileBg = past ? "#f1f5f9" : filled ? color : (TILE_BG[color] ?? "#eef1f5");
+  const tileBg = past ? "#f1f5f9" : filled ? color : tileOf(color);
   const tileInk = past ? PAST_COLOR : filled ? "#ffffff" : color;
   const content = (
     <>

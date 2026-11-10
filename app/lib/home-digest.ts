@@ -159,21 +159,20 @@ export function digestHome(input: {
 }
 
 /**
- * Home's three lists after the card (9 November 2026, variant Б):
+ * Home's two lists after the card (9 November 2026, variant Б):
  *  - «Встречи собрания»: the two weeks' meetings and the congregation's
  *    events, without the person's rows of other kinds;
  *  - «Дальше у вас»: those rows of his — a cart shift, a lunch, a talk
  *    elsewhere, an absence — then everything of his beyond the two weeks,
  *    never the card's own row;
- *  - «Важно»: a meeting of the two weeks that is different — another place,
- *    a moved day, called off, a changed programme — said once, on its new
- *    day (never the old day's stand-in), and not for the card's own row,
- *    which says it itself.
+ *
+ * What is different about a meeting — another place, a moved day, called
+ * off, a changed programme — was a third list, «Важно». Since 10 November
+ * 2026 the row of that meeting says it, in the strip every notice wears.
  */
 export interface HomeSplit {
   meetings: DayGroup[];
   ahead: TimelineEntry[];
-  important: TimelineEntry[];
 }
 
 /** A row of the person's own that is not a meeting. */
@@ -194,12 +193,5 @@ export function splitHome(timeline: Timeline, nextKey: string | null): HomeSplit
     ...flat(timeline.near).filter(isOwnElsewhere),
     ...flat(timeline.far).filter(isOwnEntry),
   ].filter((en) => en.key !== nextKey);
-  const important = flat(timeline.near).filter(
-    (en) =>
-      en.type === 'meeting' &&
-      en.key !== nextKey &&
-      !en.movedTo &&
-      (!!en.notice || !!en.cancelled || !!en.movedFrom || !!en.meetingChangeNote),
-  );
-  return { meetings, ahead, important };
+  return { meetings, ahead };
 }

@@ -508,10 +508,13 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     [['2026-11-11', ['old-11']], ['2026-11-12', ['new-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
   check('19б «Дальше у вас» — свои строки другого рода, потом всё своё после двух недель, без карточки',
     keys(sp.ahead), ['cart-12', 'mw-25']);
-  check('19в «Важно» — новый день переноса и другой зал, без старого дня',
-    keys(sp.important), ['new-12', 'fs-14']);
+  // «Важно» is no longer a list of its own (10 November 2026): a meeting
+  // that is different says it in its own row, which stays where it is.
+  check('19в нет отдельного «Важно»: перемены говорит сама строка встречи',
+    Object.keys(sp).sort(), ['ahead', 'meetings']);
   const sp2 = splitHome(timeline, 'new-12');
-  check('19г «Важно» — не о том, что уже в карточке', keys(sp2.important), ['fs-14']);
+  check('19г перенесённая встреча с карточки остаётся строкой в «Встречах собрания»',
+    sp2.meetings.some((g) => keys(g.entries).includes('new-12')), true);
   check('19д карточка не повторяется в «Дальше у вас»', keys(sp2.ahead), ['cart-10', 'cart-12', 'mw-25']);
 }
 

@@ -2886,12 +2886,6 @@
     }
   },
   "home": {
-    "important": {
-      "title": "Wichtig",
-      "fieldService": "Predigtdienst",
-      "cancelled": "Abgesagt",
-      "moved": "Verlegt: sonst {{from}}"
-    },
     "changes": {
       "new": "neu",
       "changed": "Geändert",
