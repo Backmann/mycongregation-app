@@ -98,8 +98,10 @@ const SCREENS = [
   ['profile', '/profile'],
   ['crashes', '/publishers/crashes', 'admin'],
 ];
-// Phone, tablet portrait (below the wide layout at 1024), wide screen.
-const SIZES = [[390, 1400], [820, 1180], [1280, 900]];
+// Phone, tablet portrait, the narrowest wide layout, wide screen.
+// 1024 is where the wide layout begins and is at its tightest: a tab label
+// was cut there and no other width showed it (10 November 2026).
+const SIZES = [[390, 1400], [820, 1180], [1024, 800], [1280, 900]];
 // German has the longest words: a few frames in it, on a phone.
 const GERMAN = ['home', 'midweek', 'mine'];
 

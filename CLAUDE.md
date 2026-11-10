@@ -52,8 +52,9 @@ programme parts, schedules); no names of organisations, no personal data.
 ## Checking screens
 - Every pull request that touches `app/` gets the CI job `screens`: main and
   the PR photographed on an invented congregation (server
-  `scripts/seed-screens.mjs`), 48 frames — phone, tablet, wide; admin and
-  publisher; a few in German. Defects on the PR's frames fail it (text cut
+  `scripts/seed-screens.mjs`), 63 frames — phone 390, tablet 820, the
+  narrowest wide layout 1024 and wide 1280; admin and publisher; a few in
+  German. Defects on the PR's frames fail it (text cut
   off or invisible, sideways scrolling, raw keys, failure screens, console
   errors, 5xx); changed frames are only reported. The report asking
   to deploy names every changed frame and whether it was meant to change;
