@@ -51,6 +51,9 @@ const DERIVED_SUMMARY_KEYS = [
   ["co-visit-meetings"],
   ["co-host-stats"],
   ["cart-pairings"],
+  // Who is in a pair, and their agreement on when to prepare: a changed
+  // partner in the programme voids it (10 November 2026).
+  ["pair-prep", "mine"],
 ] as const;
 
 const queryClient = new QueryClient({

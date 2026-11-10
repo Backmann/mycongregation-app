@@ -4282,6 +4282,83 @@ export const clientErrorsApi = {
   },
 };
 
+// ── «Договориться о подготовке» (10 November 2026) ─────────────────────
+
+export interface PairAgreementView {
+  status: "proposed" | "agreed" | "declined";
+  /** after | before | service | self */
+  kind: string;
+  date: string | null;
+  time: string | null;
+  meeting: "midweek" | "weekend" | null;
+  proposedByMe: boolean;
+  proposedAt: string;
+  answeredAt: string | null;
+}
+
+export interface PairPrepItem {
+  assignmentId: string;
+  meetingDate: string;
+  partnerName: string;
+  partnerHasApp: boolean;
+  /** Before the meeting's day: proposing and answering still possible. */
+  open: boolean;
+  /** A new proposal was started today; the next one tomorrow. */
+  startedToday: boolean;
+  agreement: PairAgreementView | null;
+}
+
+export interface PairPrepOption {
+  key: string;
+  kind: "after" | "before" | "service" | "self";
+  date: string | null;
+  time: string | null;
+  meeting: "midweek" | "weekend" | null;
+}
+
+export interface PairPrepHidden {
+  date: string;
+  kind: string;
+  meeting: "midweek" | "weekend" | null;
+  reason: "my_duty" | "partner_duty" | "cleaning" | "away";
+}
+
+export const pairPrepApi = {
+  async mine(): Promise<PairPrepItem[]> {
+    const { data } = await api.get<PairPrepItem[]>("/pair-prep/mine");
+    return data;
+  },
+  async options(
+    assignmentId: string,
+  ): Promise<{ options: PairPrepOption[]; hidden: PairPrepHidden[] }> {
+    const { data } = await api.get(`/pair-prep/${assignmentId}/options`);
+    return data;
+  },
+  async propose(assignmentId: string, key: string): Promise<PairPrepItem> {
+    const { data } = await api.post<PairPrepItem>(
+      `/pair-prep/${assignmentId}/propose`,
+      { key },
+    );
+    return data;
+  },
+  async answer(
+    assignmentId: string,
+    answer: "agree" | "decline",
+  ): Promise<PairPrepItem> {
+    const { data } = await api.post<PairPrepItem>(
+      `/pair-prep/${assignmentId}/answer`,
+      { answer },
+    );
+    return data;
+  },
+  async cancel(assignmentId: string): Promise<PairPrepItem> {
+    const { data } = await api.delete<PairPrepItem>(
+      `/pair-prep/${assignmentId}`,
+    );
+    return data;
+  },
+};
+
 export const backupsApi = {
   /** Admin only — status of the encrypted DB backups produced by the cron. */
   async status(): Promise<BackupStatus> {

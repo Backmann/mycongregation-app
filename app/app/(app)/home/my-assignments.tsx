@@ -1,3 +1,4 @@
+import { PairPrep } from '../../../components/PairPrep';
 import {
   ActivityIndicator,
   Pressable,
@@ -260,6 +261,13 @@ export default function MyAssignmentsScreen() {
                           <Text style={styles.pair}>
                             {t('home.next.pair', { name: r.item.partnerName })}
                           </Text>
+                        ) : null}
+                        {/* The two agree when to prepare it (10 November 2026). */}
+                        {r.item.kind === 'meeting' && r.item.partnerName ? (
+                          <PairPrep
+                            agendaId={r.item.agendaId}
+                            partName={myPartLine(r.item, t).label}
+                          />
                         ) : null}
                         {/* When and where — shown for a visit because that is
                             what a man needs before setting off, and the screen
