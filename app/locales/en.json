@@ -2886,12 +2886,6 @@
     }
   },
   "home": {
-    "important": {
-      "title": "Important",
-      "fieldService": "Field service",
-      "cancelled": "Canceled",
-      "moved": "Moved: usually {{from}}"
-    },
     "changes": {
       "new": "new",
       "changed": "Changed",

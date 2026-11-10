@@ -93,6 +93,8 @@ import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { SECTION_COLORS, SectionKind } from "../../../lib/section-colors";
+import { MEETING_INK, MEETING_TILE, MeetingTone } from "../../../lib/palette";
+import { FieldNotice } from "../../../components/FieldNotice";
 import {
   SUBSECTIONS,
   buildMidweekPartTimes,
@@ -744,13 +746,8 @@ function TodoSection() {
 // Shared bits of rows
 // ---------------------------------------------------------------------------
 
-const KIND_COLOR: Record<string, string> = {
-  midweek: "#2563eb",
-  weekend: "#7c3aed",
-  field_service: "#16a34a",
-  event: "#b45309",
-  memorial: "#b45309",
-};
+/** Which meeting a row is: the programme feed's colours (lib/palette.ts). */
+const KIND_COLOR: Record<string, string> = MEETING_INK;
 
 /** Section hue for one's own row, by what it is. */
 function ownKind(en: TimelineEntry): SectionKind {
@@ -1755,9 +1752,10 @@ function EntryBody({
         en.occasion.title !== occasion ? (
           <Text style={s.rowSub}>{en.occasion.title}</Text>
         ) : null}
-        {en.meetingChangeNote ? (
-          <Text style={s.rowSub}>{en.meetingChangeNote}</Text>
-        ) : null}
+        {/* What else the occasion changes — said in the row it concerns,
+            in the strip every notice wears (10 November 2026: «Важно» is
+            no longer a block of its own). */}
+        <FieldNotice text={en.meetingChangeNote} />
         {en.movedFrom ? (
           <MovedMark mode="from" dateISO={en.movedFrom} time={en.movedFromTime} compact />
         ) : null}
@@ -2029,6 +2027,14 @@ function eventRange(e: SpecialEvent, loc: string): string {
   return formatDayRange(e.date, e.endDate, loc, { year: 'never' });
 }
 
+/** Which meeting a day of «Встречи собрания» is, for its date tile. */
+function toneOf(en: TimelineEntry | undefined): MeetingTone {
+  if (!en || en.type !== "meeting") return "event";
+  if (en.memorial) return "memorial";
+  if (en.replacedBy) return "event";
+  return en.kind;
+}
+
 function DayRow({
   group,
   nextKey,
@@ -2059,16 +2065,28 @@ function DayRow({
   // A day that holds something of the person's own carries the mark under
   // its date — the one sign in the list, instead of «Ваше — выше».
   const hasOwn = group.entries.some(isOwnEntry);
+  const tone = toneOf(group.entries[0]);
   return (
     <View style={[s.dayRow, compact && s.dayRowCard, last && { borderBottomWidth: 0 }]}>
       {compact ? (
       <View style={s.dateColShort}>
-        {/* «ср, 18» — the short date of the mockup (9 November 2026). */}
-        <Text style={[s.dateShort, isToday && s.dateToday]}>
-          {`${weekday.toLowerCase()}, ${d.getDate()}`}
-        </Text>
+        {/* The date tile of the programme feed, smaller (10 November 2026):
+            the day reads as which meeting it is before a word is read. */}
+        <View
+          style={[
+            s.tile,
+            { backgroundColor: MEETING_TILE[tone] },
+          ]}
+        >
+          <Text style={[s.tileDay, { color: tone === "memorial" ? "#ffffff" : MEETING_INK[tone] }]}>
+            {d.getDate()}
+          </Text>
+          <Text style={[s.tileDow, { color: tone === "memorial" ? "#ffffff" : MEETING_INK[tone] }]}>
+            {weekday}
+          </Text>
+        </View>
         {hasOwn ? (
-          <View style={[s.dot, s.dateDot]} accessibilityLabel={t("home.timeline.yoursHere")} />
+          <View style={[s.dot, s.dateDot, s.tileDot]} accessibilityLabel={t("home.timeline.yoursHere")} />
         ) : null}
       </View>
       ) : (
@@ -2589,9 +2607,6 @@ export default function HomeScreen() {
   const removedBlock = (
     <RemovedCard todayISO={todayISO} data={changes.data} />
   );
-  const important = split.important.filter(
-    (en): en is MeetingEntry => en.type === "meeting",
-  );
 
   // Nothing of one's own at all — an account without a card, or a person
   // with no assignment yet: no empty block, the meetings follow.
@@ -2637,48 +2652,6 @@ export default function HomeScreen() {
       )}
     </View>
   );
-
-  const importantBlock = important.length ? (
-    <View style={s.section}>
-      <SectionLabel>{t("home.important.title")}</SectionLabel>
-      {important.map((en) => (
-        <Pressable
-          key={en.key}
-          onPress={canOpen(en) ? () => openEntry(en) : undefined}
-          disabled={!canOpen(en)}
-          style={({ pressed }) => [s.importantCard, pressed && { opacity: 0.7 }]}
-          accessibilityRole={canOpen(en) ? "button" : undefined}
-        >
-          <Ionicons name="information-circle-outline" size={20} color="#0c4a6e" />
-          <View style={{ flex: 1 }}>
-            <Text style={s.importantTitle}>
-              {capitalizeFirst(shortDay(en.dateISO, i18n.language))}
-              {" · "}
-              {t(
-                en.kind === "field_service"
-                  ? "home.important.fieldService"
-                  : en.kind === "midweek"
-                    ? "feed.kindMidweek"
-                    : "feed.kindWeekend",
-              )}
-              {en.time ? ` ${en.time}` : ""}
-            </Text>
-            <Text style={s.importantText}>
-              {en.cancelled
-                ? [t("home.important.cancelled"), en.cancelReason].filter(Boolean).join(": ")
-                : en.movedFrom
-                  ? t("home.important.moved", {
-                      from: [shortDay(en.movedFrom, i18n.language), en.movedFromTime]
-                        .filter(Boolean)
-                        .join(", "),
-                    })
-                  : (en.notice ?? en.meetingChangeNote ?? "").trim()}
-            </Text>
-          </View>
-        </Pressable>
-      ))}
-    </View>
-  ) : null;
 
   const list = (
     <View style={s.section}>
@@ -2835,7 +2808,6 @@ export default function HomeScreen() {
                 {ahead}
               </View>
               <View style={s.colRight}>
-                {importantBlock}
                 {list}
                 {soon}
               </View>
@@ -2850,7 +2822,6 @@ export default function HomeScreen() {
               {next}
               {removedBlock}
               <HoursCard onSaved={logUndo.saved} />
-              {importantBlock}
               <TodoSection />
               {ahead}
               {list}
@@ -2884,17 +2855,6 @@ const s = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 2,
   },
-  importantCard: {
-    flexDirection: "row",
-    gap: 10,
-    backgroundColor: "#e0f2fe",
-    borderRadius: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    minHeight: 44,
-  },
-  importantTitle: { fontSize: 15, fontFamily: "Manrope_800ExtraBold", color: "#0c4a6e" },
-  importantText: { fontSize: 14, lineHeight: 20, fontFamily: "Manrope_500Medium", color: "#0c4a6e", marginTop: 2 },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, alignItems: "center" },
   frame: { width: "100%", maxWidth: MAX_WIDTH, gap: 22 },
@@ -3147,8 +3107,17 @@ const s = StyleSheet.create({
   },
   cardFoot: { paddingHorizontal: 4 },
   dayRowCard: { paddingVertical: 12, paddingHorizontal: 2 },
-  dateColShort: { width: 56, paddingTop: 1 },
-  dateShort: { fontSize: 14.5, fontFamily: "Manrope_800ExtraBold", color: "#0e5f75" },
+  dateColShort: { width: 54, alignItems: "flex-start" },
+  tile: {
+    width: 42,
+    height: 46,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tileDay: { fontSize: 19, lineHeight: 21, fontFamily: "Manrope_800ExtraBold" },
+  tileDow: { fontSize: 11.5, lineHeight: 14, fontFamily: "Manrope_800ExtraBold", marginTop: 1 },
+  tileDot: { marginLeft: 17.5, marginTop: 6 },
   stripDue: { backgroundColor: "#fffbeb", borderColor: "#fde68a" },
   stripDone: { backgroundColor: "#f0fdf4", borderColor: "#bbf7d0" },
   stripText: {

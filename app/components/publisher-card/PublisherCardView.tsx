@@ -40,6 +40,7 @@ import { NoQuotaSheet } from './NoQuotaSheet';
 import { usePermissions } from '../../lib/permissions';
 import { capitalize, monthName, monthsLabel, runsOf } from '../../lib/aux-application';
 import { useMeetingMoves } from '../../lib/useMeetingMoves';
+import { MEETING_INK } from '../../lib/palette';
 
 /**
  * THE PUBLISHER'S CARD, READ (28 October 2026, Lionel: «premium, convenient,
@@ -72,9 +73,10 @@ export interface PublisherCardActions {
 }
 
 const KIND_COLOR: Record<string, string> = {
-  midweek: '#0e7490',
-  weekend: '#6d28d9',
-  memorial: '#b45309',
+  // The meetings' own colours, one place for the app (lib/palette.ts).
+  midweek: MEETING_INK.midweek,
+  weekend: MEETING_INK.weekend,
+  memorial: MEETING_INK.memorial,
 };
 
 export function PublisherCardView({

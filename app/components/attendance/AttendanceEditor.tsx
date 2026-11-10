@@ -28,6 +28,7 @@ import {
 import { saveAttendance } from '../../lib/attendance-save';
 import { reportError, reportSuccess } from '../../lib/error-bus';
 import { useAuth } from '../../lib/auth';
+import { MEETING_INK } from '../../lib/palette';
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -36,9 +37,10 @@ const BRAND = '#0e7490';
 const AMBER = '#b45309';
 
 export const KIND_COLOR: Record<string, string> = {
-  midweek: '#0e7490',
-  weekend: '#7c3aed',
-  memorial: '#be123c',
+  // The meetings' own colours, one place for the app (lib/palette.ts).
+  midweek: MEETING_INK.midweek,
+  weekend: MEETING_INK.weekend,
+  memorial: MEETING_INK.memorial,
 };
 
 /** Whole numbers only, empty allowed. */
