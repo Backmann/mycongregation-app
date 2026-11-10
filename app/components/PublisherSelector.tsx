@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PersonChip } from "./PersonChip";
 import {
   Absence,
+  BusyInvited,
   absencesApi,
   ActivityItem,
   Publisher,
@@ -287,6 +288,28 @@ export function PublisherSelector({
     return m;
   }, [weekAbsData, currentWeekStart, weekValid, meetingDayISO, absenceDate]);
   const selectedAbsence = value ? absentThisWeek.get(value) : undefined;
+
+  // Invited to a school or the pioneers' meeting on the day (10 November
+  // 2026): busy just as if away. Only who and when come back — the event
+  // itself is for the invited (lib/invitations.ts).
+  const busySpan = meetingDayISO
+    ? { from: meetingDayISO, to: meetingDayISO }
+    : weekValid && currentWeekStart
+      ? { from: currentWeekStart, to: weekEndISO(currentWeekStart) }
+      : null;
+  const { data: busyData } = useQuery({
+    queryKey: ["special-events", "busy", busySpan?.from, busySpan?.to],
+    queryFn: () => specialEventsApi.busy(busySpan!.from, busySpan!.to),
+    enabled: !!busySpan,
+    staleTime: 5 * 60 * 1000,
+  });
+  const invitedBusy = useMemo(() => {
+    const m = new Map<string, BusyInvited>();
+    for (const b of busyData ?? []) if (!m.has(b.publisherId)) m.set(b.publisherId, b);
+    return m;
+  }, [busyData]);
+  const isAway = (id: string) => absentThisWeek.has(id) || invitedBusy.has(id);
+  const selectedBusy = value && !selectedAbsence ? invitedBusy.get(value) : undefined;
   // ----------------------------------------------------------------------
 
   // --- Scope keys for part-scoped history -------------------------------
@@ -427,8 +450,8 @@ export function PublisherSelector({
   // primary. Empty/undefined (never, in 3 months) ranks first.
   const sorted = sortRank
     ? [...filtered].sort((a, b) => {
-        const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
-        const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
+        const aAbsent = isAway(a.id) ? 1 : 0;
+        const bAbsent = isAway(b.id) ? 1 : 0;
         if (aAbsent !== bAbsent) return aAbsent - bAbsent;
         const ra = sortRank(a.id);
         const rb = sortRank(b.id);
@@ -437,8 +460,8 @@ export function PublisherSelector({
       })
     : historyEnabled
       ? [...filtered].sort((a, b) => {
-          const aAbsent = absentThisWeek.has(a.id) ? 1 : 0;
-          const bAbsent = absentThisWeek.has(b.id) ? 1 : 0;
+          const aAbsent = isAway(a.id) ? 1 : 0;
+          const bAbsent = isAway(b.id) ? 1 : 0;
           if (aAbsent !== bAbsent) return aAbsent - bAbsent;
           const aBusy = busyThisMeeting.has(a.id) ? 1 : 0;
           const bBusy = busyThisMeeting.has(b.id) ? 1 : 0;
@@ -490,6 +513,17 @@ export function PublisherSelector({
           <Text style={styles.absenceText}>
             {t("absences.warnAway", {
               range: absenceRangeLabel(selectedAbsence, i18n.language),
+            })}
+          </Text>
+        </View>
+      )}
+      {selectedBusy && (
+        <View style={styles.absenceRow}>
+          <Ionicons name="school-outline" size={12} color="#b45309" />
+          <Text style={styles.absenceText}>
+            {t("specialEvents.invited.busySelected", {
+              what: t(`specialEvents.types.${selectedBusy.type}`),
+              range: formatDayRange(selectedBusy.date, selectedBusy.endDate, i18n.language, { year: "never" }),
             })}
           </Text>
         </View>
@@ -682,6 +716,7 @@ export function PublisherSelector({
                   currentEventType,
                 )}
                 absence={absentThisWeek.get(p.id)}
+                invited={absentThisWeek.has(p.id) ? undefined : invitedBusy.get(p.id)}
                 meta={rowMeta?.(p.id) ?? undefined}
                 metaTone={rowTone?.(p.id)}
                 showHistory={historyEnabled}
@@ -705,6 +740,7 @@ function PublisherOption({
   showCapabilityWarning,
   activity,
   absence,
+  invited,
   meta,
   metaTone,
   showHistory,
@@ -720,6 +756,8 @@ function PublisherOption({
   showCapabilityWarning: boolean;
   activity?: ActivitySummary;
   absence?: Absence;
+  /** Invited to a school or the pioneers' meeting that day (10 November 2026). */
+  invited?: BusyInvited;
   /** Optional gray info line under the name (e.g. rotation stats). */
   meta?: string;
   metaTone?: "free" | "busy";
@@ -783,6 +821,14 @@ function PublisherOption({
             {"\u2708 "}
             {t("absences.warnAway", {
               range: absenceRangeLabel(absence, i18n.language),
+            })}
+          </Text>
+        )}
+        {invited && (
+          <Text style={styles.optionAbsentText}>
+            {t("specialEvents.invited.busy", {
+              range: formatDayRange(invited.date, invited.endDate, i18n.language, { year: "never" }),
+              what: t(`specialEvents.types.${invited.type}`),
             })}
           </Text>
         )}

@@ -68,6 +68,7 @@ import { useAuth } from "../../../lib/auth";
 import { sessionVerdict } from "../../../lib/session-verdict";
 import { FONT } from "../../../lib/typography";
 import { splitTopic } from "../../../lib/field-topic";
+import { formatDayRange } from "../../../lib/date-range";
 import { SegmentedControl } from "../../../components/SegmentedControl";
 import { MemorialMeetingBlock } from "../../../components/MemorialMeetingBlock";
 import { ConductResultLink } from "../../../components/ConductEntry";
@@ -1262,6 +1263,12 @@ export default function ProgrammeFeedScreen() {
     const top = els.current.get(key)?.getBoundingClientRect?.().top;
     if (top !== undefined) keepInPlace.current = { key, top };
   };
+  // The next event this person may see — the server sends an event for the
+  // invited only to the invited (lib/invitations.ts).
+  const todayISOFeed = formatDateISO(new Date());
+  const nextEvent = (eventsQ.data ?? [])
+    .filter((e) => !e.deletedAt && (e.endDate ?? e.date) >= todayISOFeed)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? "").localeCompare(b.time ?? ""))[0];
   const pickFilter = (f: Filter) => {
     setFilter(f);
     // A new filter is a new landing: back to «today», held until touched.
@@ -1312,6 +1319,37 @@ export default function ProgrammeFeedScreen() {
           );
         })}
       </ScrollView>
+      {nextEvent ? (
+        // THE WAY TO THE EVENTS (10 November 2026): it used to be one icon in
+        // the header, behind «⋯» for those who plan. Now the next event the
+        // person may see is named here, under the filters, and the line opens
+        // the events — always in sight, on every screen width.
+        <Pressable
+          onPress={() => router.push("/special-events" as never)}
+          style={({ pressed }) => [styles.nextEvent, pressed && styles.pressed]}
+          accessibilityRole="link"
+        >
+          <Ionicons name="megaphone-outline" size={16} color="#475569" />
+          <Text style={styles.nextEventText}>
+            <Text style={styles.nextEventWhen}>
+              {formatDayRange(nextEvent.date, nextEvent.endDate, i18n.language, { year: "never" })}
+            </Text>
+            {"  "}
+            {nextEvent.title}
+          </Text>
+          <Text style={styles.nextEventAll}>{t("specialEvents.strip.all")}</Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={() => router.push("/special-events" as never)}
+          style={({ pressed }) => [styles.nextEvent, pressed && styles.pressed]}
+          accessibilityRole="link"
+        >
+          <Ionicons name="megaphone-outline" size={16} color="#475569" />
+          <Text style={styles.nextEventText}>{t("specialEvents.strip.title")}</Text>
+          <Text style={styles.nextEventAll}>{t("specialEvents.strip.all")}</Text>
+        </Pressable>
+      )}
     </View>
   );
 
@@ -2661,6 +2699,18 @@ const styles = StyleSheet.create({
   },
   barMonth: { fontSize: 18, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.2 },
   chipsScroll: { marginHorizontal: -16, flexGrow: 0 },
+  nextEvent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    minHeight: 40,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: "#f1f5f9",
+  },
+  nextEventText: { flex: 1, fontSize: 14.5, lineHeight: 20, fontFamily: FONT.semibold, color: INK, paddingVertical: 8 },
+  nextEventWhen: { fontFamily: FONT.extrabold, color: "#475569" },
+  nextEventAll: { fontSize: 14, fontFamily: FONT.bold, color: "#0e7490" },
   chips: { flexDirection: "row", gap: 8, paddingHorizontal: 16 },
   chipsTight: { gap: 6 },
   chipsWrap: { flexWrap: "wrap", rowGap: 6 },

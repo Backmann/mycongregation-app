@@ -4008,6 +4008,13 @@ export interface SpecialEvent {
   id: string;
   congregationId: string;
   title: string;
+  /**
+   * An event for the invited only (lib/invitations.ts): how many are
+   * invited — sent to those who keep the events, absent for anyone else.
+   */
+  invitedCount?: number | null;
+  /** An event for the invited only: whether it is this person's invitation. */
+  invited?: boolean;
   type: string | null;
   date: string;
   endDate: string | null;
@@ -5150,7 +5157,25 @@ export const notHeldApi = {
   },
 };
 
+/** One invited person busy on an event's days (GET /special-events/busy). */
+export interface BusyInvited {
+  publisherId: string;
+  date: string;
+  endDate: string;
+  type: string;
+}
+
 export const specialEventsApi = {
+  /**
+   * Who of the invited is busy when, between two days (10 November 2026) —
+   * for those who plan; an empty list for anyone else.
+   */
+  async busy(from: string, to: string): Promise<BusyInvited[]> {
+    const { data } = await api.get<BusyInvited[]>("/special-events/busy", {
+      params: { from, to },
+    });
+    return data;
+  },
   /**
    * Upcoming events by default; `all` for everything ever recorded; `since`
    * for a window — some of the past without the whole of it.

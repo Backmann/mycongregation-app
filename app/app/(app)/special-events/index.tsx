@@ -43,6 +43,7 @@ import { formatDayRange } from '../../../lib/date-range';
 import { mondayOfISO } from '../../../lib/event-view';
 import { weekRules } from '../../../lib/week-rules';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
+import { InvitedChip } from '../../../components/InvitedChip';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -313,7 +314,10 @@ function useItemText(item: EventListItem, talkHour: string | null) {
   const kindLabel =
     kind === 'other'
       ? t('specialEvents.list.kindOther')
-      : t(`specialEvents.types.${kind}`);
+      : // A kind whose full name is long says it short above the title,
+        // which names it in full (10 November 2026: «Школа царственного
+        // слу…» was cut at the card's edge).
+        t(`specialEvents.kindShort.${kind}`, { defaultValue: t(`specialEvents.types.${kind}`) });
   if (item.kind === 'talk') {
     const x = item.talk;
     return {
@@ -437,6 +441,9 @@ function Hero({
           {[text.time, text.meta].filter(Boolean).join(' · ')}
         </Text>
       ) : null}
+      {item.kind === 'event' ? (
+        <InvitedChip type={item.event.type} count={item.event.invitedCount} />
+      ) : null}
       {effectText ? (
         <View style={styles.effectRow}>
           {effectIsNotable(effect) ? <View style={styles.dot} /> : null}
@@ -532,7 +539,6 @@ function Row({
         </View>
         <Text
           style={[styles.title, (past || removed) && styles.titlePast, removed && styles.removed]}
-          numberOfLines={2}
         >
           {text.title}
         </Text>
@@ -540,6 +546,9 @@ function Row({
           <Text style={styles.meta} numberOfLines={1}>
             {text.meta}
           </Text>
+        ) : null}
+        {item.kind === 'event' ? (
+          <InvitedChip type={item.event.type} count={item.event.invitedCount} />
         ) : null}
         {effectText ? (
           <View style={styles.effectRow}>

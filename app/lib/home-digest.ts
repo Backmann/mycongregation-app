@@ -23,6 +23,7 @@ import type { Absence, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
 import type { DayGroup, Timeline, TimelineEntry } from './home-timeline';
 import { isCongressEvent } from './week-rules';
+import { inviteesOf } from './invitations';
 
 /** A meeting is taken as over this long after it starts. */
 export const MEETING_LENGTH_MIN = 105;
@@ -141,9 +142,13 @@ export function digestHome(input: {
   const soon = events
     .filter(
       (e) =>
-        (e.type === 'circuit_overseer_visit' || e.type === 'memorial' || isCongressEvent(e)) &&
-        e.date > nearEnd &&
-        e.date <= soonEnd,
+        // An event for the invited is an invitation to the person himself
+        // (10 November 2026): it stands here from the day it is entered,
+        // not only in the last two months — a school is planned for.
+        ((e.type === 'circuit_overseer_visit' || e.type === 'memorial' || isCongressEvent(e)) &&
+          e.date > nearEnd &&
+          e.date <= soonEnd) ||
+        (!!inviteesOf(e.type) && e.date > nearEnd),
     )
     .sort((a, b) => a.date.localeCompare(b.date));
 

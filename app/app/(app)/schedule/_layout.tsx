@@ -52,21 +52,13 @@ export default function ScheduleLayout() {
   /**
    * THE PROGRAMME TAB IS THE FEED (23 September). The old screen of weeks and
    * parts is «Составление программы» at /schedule/edit — for those who build
-   * the programme. What used to be five icons here is now: the events, and
-   * for those who plan, the way to planning. One of them shows as its own
-   * icon, two go behind «…» (components/HeaderMenu).
+   * the programme. What used to be five icons here is now the way to the
+   * meeting results and to planning, for those they are for; the events
+   * have their own line under the feed's filters (10 November 2026).
    */
-  const events = {
-    key: 'events',
-    icon: 'megaphone-outline' as const,
-    title: t('specialEvents.title.list'),
-    subtitle: t('schedule.menu.eventsSub'),
-    tint: '#7c3aed',
-    tintBg: '#ede9fe',
-    onPress: () => router.push('/special-events' as any),
-  };
+  // The events have their own line under the feed's filters now
+  // (10 November 2026) — the icon here was easy to miss.
   const feedMenu = [
-    events,
     ...(readsResults
       ? [
           {

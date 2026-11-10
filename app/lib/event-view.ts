@@ -33,6 +33,9 @@ export type KindKey =
   | 'circuit_assembly'
   | 'memorial'
   | 'campaign'
+  | 'kingdom_ministry_school_elders'
+  | 'kingdom_ministry_school_servants'
+  | 'pioneer_special_meeting'
   | 'other';
 
 export function kindOf(item: EventListItem): KindKey {
@@ -46,6 +49,9 @@ export function kindOf(item: EventListItem): KindKey {
     case 'memorial':
     case 'campaign':
     case 'special_talk':
+    case 'kingdom_ministry_school_elders':
+    case 'kingdom_ministry_school_servants':
+    case 'pioneer_special_meeting':
       return type;
     default:
       return 'other';
@@ -61,6 +67,11 @@ export const KIND_LOOK: Record<KindKey, { icon: string; color: string; soft: str
   circuit_assembly: { icon: 'megaphone-outline', color: '#b45309', soft: '#fef3c7' },
   memorial: { icon: 'wine-outline', color: '#be123c', soft: '#ffe4e6' },
   campaign: { icon: 'flag-outline', color: '#047857', soft: '#d1fae5' },
+  // For the invited only (10 November 2026): one quiet indigo, the colour of
+  // «для кого» on the cards.
+  kingdom_ministry_school_elders: { icon: 'school-outline', color: '#4338ca', soft: '#e0e7ff' },
+  kingdom_ministry_school_servants: { icon: 'school-outline', color: '#4338ca', soft: '#e0e7ff' },
+  pioneer_special_meeting: { icon: 'people-outline', color: '#4338ca', soft: '#e0e7ff' },
   other: { icon: 'calendar-outline', color: '#475569', soft: '#f1f5f9' },
 };
 

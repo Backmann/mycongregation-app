@@ -1008,7 +1008,6 @@
     },
     "menu": {
       "more": "More",
-      "eventsSub": "Conventions, the Memorial, the circuit overseer's visit",
       "rulesSub": "Automatic assignments: prayers and microphones",
       "localNeedsSub": "Topics for “Living as Christians”"
     },
@@ -2610,7 +2609,10 @@
         "branch_representative_visit": "Save visit",
         "other": "Save event",
         "special_talk": "Save",
-        "campaign": "Save campaign"
+        "campaign": "Save campaign",
+        "kingdom_ministry_school_elders": "Save the school",
+        "kingdom_ministry_school_servants": "Save the school",
+        "pioneer_special_meeting": "Save the meeting"
       },
       "sum": {
         "title": "What will happen",
@@ -2635,7 +2637,10 @@
       "branch_representative_visit": "Branch representative visit",
       "other": "Other",
       "special_talk": "Special talk",
-      "campaign": "Campaign"
+      "campaign": "Campaign",
+      "kingdom_ministry_school_elders": "Kingdom Ministry School for elders",
+      "kingdom_ministry_school_servants": "Kingdom Ministry School for ministerial servants",
+      "pioneer_special_meeting": "Special meeting with the pioneers of the circuit"
     },
     "weekTitle": "This week's events",
     "replaced": {
@@ -2660,7 +2665,8 @@
       "EVENT_TYPE_UNKNOWN": "There is no such event type.",
       "EVENT_SPECIAL_TALK_IN_JOURNAL": "A special talk is recorded in the talk log — under “Incoming”, with its speaker.",
       "EVENT_MEMORIAL_NEEDS_TIME": "The Memorial needs its starting time — without it no reminder is sent.",
-      "EVENT_MEMORIAL_TAKEN": "This service year already has a Memorial."
+      "EVENT_MEMORIAL_TAKEN": "This service year already has a Memorial.",
+      "EVENT_TYPE_LOCKED": "The kind of this event cannot change: the invitations have gone out. Delete it and enter it again."
     },
     "remove": {
       "title": "Remove “{{title}}”?",
@@ -2739,7 +2745,10 @@
         "memorial": "Takes the place of one meeting; its program is set in the Memorial section",
         "branch_representative_visit": "The meeting usually takes place, with changes — you will be asked which",
         "other": "A cleanup day, a group gathering… Does not affect meetings unless you specify it",
-        "campaign": "Days or weeks; meetings stay as they are. Can let auxiliary pioneers take 15 hours"
+        "campaign": "Days or weeks; meetings stay as they are. Can let auxiliary pioneers take 15 hours",
+        "kingdom_ministry_school_elders": "Seen and announced to the elders only; meetings unchanged",
+        "kingdom_ministry_school_servants": "Seen and announced to the ministerial servants only; meetings unchanged",
+        "pioneer_special_meeting": "For regular and special pioneers and missionaries; meetings unchanged"
       },
       "specialTalk": "A special talk is recorded by the talk coordinator — in the Incoming / Outgoing log, with its speaker.",
       "openLog": "Open the log ›"
@@ -2789,6 +2798,32 @@
       "setAside": "Set aside for the visit: {{name}}",
       "setAsideOpen": "in the talk log",
       "auxReduced": "In these months auxiliary pioneers may serve with a goal of 15 hours."
+    },
+    "invited": {
+      "for": {
+        "elders": "for the elders",
+        "servants": "for the ministerial servants",
+        "pioneers": "for the pioneers of the circuit"
+      },
+      "count_one": "{{count}} invited",
+      "count_other": "{{count}} invited",
+      "formSees": {
+        "elders": "Only the elders will see it and be told. Nobody else is shown this event.",
+        "servants": "Only the ministerial servants will see it and be told. Nobody else is shown this event.",
+        "pioneers": "Only the regular and special pioneers and missionaries will see it and be told. Nobody else is shown this event."
+      },
+      "formReminders": "The invited are reminded a week ahead and the evening before; it appears in their phone calendar.",
+      "busy": "busy {{range}}: {{what}}",
+      "busySelected": "Invited on those days: {{what}}, {{range}}"
+    },
+    "strip": {
+      "title": "Upcoming events",
+      "all": "All events ›"
+    },
+    "kindShort": {
+      "kingdom_ministry_school_elders": "School",
+      "kingdom_ministry_school_servants": "School",
+      "pioneer_special_meeting": "Pioneers’ meeting"
     }
   },
   "calendar": {
@@ -5467,7 +5502,9 @@
       "users": "Sign-ins, roles and passwords",
       "meetingPlace": "Days, times, halls",
       "responsibilities": "Who is responsible for what",
-      "localNeeds": "The elders’ topics for the weeks ahead"
+      "localNeeds": "The elders’ topics for the weeks ahead",
+      "events": "Conventions, visits, schools, the Memorial",
+      "eventsNext": "Next — {{date}}"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties",

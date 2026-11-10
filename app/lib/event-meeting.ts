@@ -18,6 +18,10 @@ const OWN_RULE_TYPES = new Set([
   'circuit_overseer_visit',
   // A campaign leaves every meeting as it is (29 October 2026).
   'campaign',
+  // So do the schools and the pioneers' meeting (10 November 2026).
+  'kingdom_ministry_school_elders',
+  'kingdom_ministry_school_servants',
+  'pioneer_special_meeting',
 ]);
 
 export function takesMeetingMode(type: string | null | undefined): boolean {
