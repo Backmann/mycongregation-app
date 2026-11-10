@@ -218,6 +218,14 @@ jobs:
           npm run build
           scripts/screens-server.sh | tee seed.out
           echo "summary=$(tail -1 seed.out)" >> "$GITHUB_OUTPUT"
+      # Installed WITHOUT NODE_ENV=production: that would leave out the dev
+      # dependencies, Playwright among them (the first run failed so).
+      - name: Install both apps
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          for side in base pr; do
+            (cd "$side/app" && npm install --prefer-offline --no-audit --fund=false)
+          done
       - name: Build both web apps against it
         if: steps.scope.outputs.run == 'true'
         env:
@@ -225,7 +233,7 @@ jobs:
           EXPO_PUBLIC_API_URL: http://localhost:3000/api
         run: |
           for side in base pr; do
-            (cd "$side/app" && npm install --prefer-offline --no-audit --fund=false && npx expo export --platform web --output-dir "$GITHUB_WORKSPACE/dist-$side")
+            (cd "$side/app" && npx expo export --platform web --output-dir "$GITHUB_WORKSPACE/dist-$side")
           done
       - name: Browser
         if: steps.scope.outputs.run == 'true'
