@@ -6237,7 +6237,7 @@
   },
   "screenCrash": {
     "title": "Auf diesem Bildschirm ist ein Fehler aufgetreten",
-    "body": "Der Rest der App funktioniert. Wenn der Fehler wiederkommt, senden Sie den Text unten an den Administrator.",
+    "body": "Der Rest der App funktioniert. Angaben zum Fehler, ohne persönliche Daten, wurden an den Administrator gesendet.",
     "retry": "Erneut versuchen",
     "home": "Zur Startseite"
   },
@@ -7085,5 +7085,17 @@
     "linkWarn": "Das ist der Schlüssel zu Ihren Aufgaben — geben Sie ihn nicht weiter.",
     "noCard": "Der Kalender ist verfügbar, sobald Ihre Anmeldung mit einer Verkündigerkarte verbunden ist.",
     "failed": "Das hat nicht geklappt. Bitte noch einmal versuchen."
+  },
+  "crashes": {
+    "title": "App-Fehler",
+    "rowSubtitle": "Was in 30 Tagen bei Nutzern schiefging — ohne persönliche Daten",
+    "empty": "In 30 Tagen keine Fehler.",
+    "note": "Technische Angaben ohne Namen und Versammlungsdaten. Derselbe Fehler an einem Tag ist eine Zeile mit Zähler. Gespeichert 30 Tage.",
+    "times": "{{count}}-mal",
+    "screen": "Bildschirm öffnete nicht",
+    "uncaught": "Fehler im Code",
+    "before": "vor der Anmeldung",
+    "build": "Build {{id}}",
+    "stack": "Wo im Code"
   }
 }

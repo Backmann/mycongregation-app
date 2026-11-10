@@ -6237,7 +6237,7 @@
   },
   "screenCrash": {
     "title": "Something went wrong on this screen",
-    "body": "The rest of the app keeps working. If it happens again, send the text below to the administrator.",
+    "body": "The rest of the app keeps working. Details of the failure, without personal data, have been sent to the administrator.",
     "retry": "Try again",
     "home": "Go to Home"
   },
@@ -7085,5 +7085,17 @@
     "linkWarn": "This is the key to your assignments — do not pass it on.",
     "noCard": "The calendar is available once your sign-in is linked to a publisher card.",
     "failed": "That did not work. Please try again."
+  },
+  "crashes": {
+    "title": "App failures",
+    "rowSubtitle": "What broke for people in 30 days — no personal data",
+    "empty": "No failures in 30 days.",
+    "note": "Technical details without names or congregation data. The same failure on a day is one row with a count. Kept for 30 days.",
+    "times": "{{count}} times",
+    "screen": "screen did not open",
+    "uncaught": "error in the code",
+    "before": "before sign-in",
+    "build": "build {{id}}",
+    "stack": "Where in the code"
   }
 }

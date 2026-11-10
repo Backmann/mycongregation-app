@@ -128,6 +128,13 @@ export default function PublishersLayout() {
         }}
       />
       <Stack.Screen
+        name="crashes"
+        options={{
+          title: t('crashes.title'),
+          headerLeft: () => <BackButton fallback="/publishers" toParent />,
+        }}
+      />
+      <Stack.Screen
         name="public-talks"
         options={{
           title: t('profile.publicTalks'),

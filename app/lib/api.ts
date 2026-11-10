@@ -4258,6 +4258,30 @@ export interface BackupStatus {
   latest: { name: string; size: number; modifiedAt: string } | null;
 }
 
+/** One failure met in the app, as the journal keeps it (server ClientError). */
+export interface ClientErrorRow {
+  id: string;
+  day: string;
+  platform: string;
+  appCommit: string | null;
+  route: string;
+  role: string | null;
+  source: 'screen' | 'uncaught';
+  message: string;
+  stack: string | null;
+  count: number;
+  firstAt: string;
+  lastAt: string;
+}
+
+export const clientErrorsApi = {
+  /** Admin only — the last thirty days, the latest first. */
+  async list(): Promise<ClientErrorRow[]> {
+    const { data } = await api.get<ClientErrorRow[]>("/client-errors");
+    return data;
+  },
+};
+
 export const backupsApi = {
   /** Admin only — status of the encrypted DB backups produced by the cron. */
   async status(): Promise<BackupStatus> {

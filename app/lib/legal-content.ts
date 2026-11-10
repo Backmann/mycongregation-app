@@ -8,7 +8,7 @@ export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer';
 export type Block = { h?: string; p?: string; li?: string[] };
 export type Doc = { title: string; tab: string; blocks: Block[] };
 
-export const LEGAL_UPDATED = '14.10.2026';
+export const LEGAL_UPDATED = '10.11.2026';
 
 /**
  * Chrome strings for the legal screen itself (header title + footer notes).
@@ -69,7 +69,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Учётная запись: e-mail, пароль (хранится только в виде хеша), роль, язык интерфейса, время последнего входа/активности.',
           'Данные возвещателя: имя, отчество, фамилия, пол, дата рождения, телефон, e-mail, адрес (телефон, e-mail и адрес шифруются в базе), служебное назначение, даты крещения и начала служения, пионерский статус, активность, способности, номера публичных речей, организационные заметки.',
           'Организационные данные: назначения, отсутствия, отчёты о служении (часы, изучения Библии), дежурства, обмен публичными речами, особые события.',
-          'Технические данные: токены push-уведомлений и web-push-подписки; журнал действий «кто что изменил».',
+          'Технические данные: токены push-уведомлений и web-push-подписки; журнал действий «кто что изменил»; журнал сбоев приложения (экран, платформа, версия сборки, текст ошибки, роль — без имён, адресов, e-mail и телефонов).',
         ] },
         { h: 'Особая категория данных (ст. 9 GDPR)' },
         { p: 'Поскольку речь идёт о членах религиозного собрания, данные относятся к религиозным убеждениям (особая категория). Правовое основание — явное согласие субъекта (подписанная форма), ст. 9(2)(a), в рамках законной деятельности религиозной общины в отношении её членов (ст. 9(2)(d)). Поля свободного текста («заметки») предназначены только для организационных пометок; вносить туда чувствительные сведения не следует.' },
@@ -92,6 +92,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Учётная запись — пока активна.',
           'Журнал действий — 12 месяцев.',
           'Итог экрана «Ведение встречи» (сколько времени заняла каждая часть) — 7 дней, затем удаляется.',
+          'Журнал сбоев приложения — 30 дней, затем удаляется.',
           'Резервные копии — в пределах цикла ротации.',
         ] },
         { h: 'Безопасность (ст. 32 GDPR)' },
@@ -162,7 +163,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Konto: E-Mail, Passwort (nur als Hash gespeichert), Rolle, Sprache, Zeitpunkt der letzten Anmeldung/Aktivität.',
           'Verkündigerdaten: Vor-, Vaters- und Nachname, Geschlecht, Geburtsdatum, Telefon, E-Mail, Anschrift (Telefon, E-Mail und Anschrift werden in der Datenbank verschlüsselt), Ernennung, Tauf- und Dienstbeginndatum, Pionierstatus, Aktivität, Fähigkeiten, Nummern öffentlicher Vorträge, organisatorische Notizen.',
           'Organisatorische Daten: Zuteilungen, Abwesenheiten, Dienstberichte (Stunden, Bibelstudien), Aufgaben, Vortragsaustausch, besondere Ereignisse.',
-          'Technische Daten: Push-/Web-Push-Token; Protokoll „wer hat was geändert".',
+          'Technische Daten: Push-/Web-Push-Token; Protokoll „wer hat was geändert"; Fehlerprotokoll der Anwendung (Bildschirm, Plattform, Build-Version, Fehlertext, Rolle — ohne Namen, Adressen, E-Mail und Telefonnummern).',
         ] },
         { h: 'Besondere Datenkategorien (Art. 9 DSGVO)' },
         { p: 'Da es sich um Mitglieder einer religiösen Versammlung handelt, betreffen die Daten religiöse Überzeugungen (besondere Kategorie). Rechtsgrundlage ist die ausdrückliche Einwilligung (unterschriebenes Formular), Art. 9(2)(a), im Rahmen der rechtmäßigen Tätigkeit einer religiösen Gemeinschaft gegenüber ihren Mitgliedern (Art. 9(2)(d)). Freitextfelder („Notizen") dienen nur organisatorischen Zwecken; sensible Angaben sollen dort nicht eingetragen werden.' },
@@ -185,6 +186,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Konto — solange es aktiv ist.',
           'Aktivitätsprotokoll — 12 Monate.',
           'Ergebnis des Bildschirms „Zusammenkunft leiten“ (wie lange jeder Programmpunkt dauerte) — 7 Tage, danach gelöscht.',
+          'Fehlerprotokoll der Anwendung — 30 Tage, danach gelöscht.',
           'Backups — im Rahmen des Rotationszyklus.',
         ] },
         { h: 'Sicherheit (Art. 32 DSGVO)' },
@@ -255,7 +257,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Account: e-mail, password (stored only as a hash), role, interface language, last login/activity time.',
           'Publisher data: first, middle and last name, gender, date of birth, phone, e-mail, address (phone, e-mail and address are encrypted in the database), appointment, baptism and ministry-start dates, pioneer status, activity, capabilities, public-talk numbers, organizational notes.',
           'Organizational data: assignments, absences, field-service reports (hours, Bible studies), duties, talk exchanges, special events.',
-          'Technical data: push / web-push tokens; an audit log of "who changed what".',
+          'Technical data: push / web-push tokens; an audit log of "who changed what"; an application failure log (screen, platform, build version, error text, role — no names, addresses, e-mail or phone numbers).',
         ] },
         { h: 'Special categories (Art. 9 GDPR)' },
         { p: 'As the data concern members of a religious congregation, they relate to religious beliefs (a special category). The legal basis is the data subject\u2019s explicit consent (a signed form), Art. 9(2)(a), within the legitimate activities of a religious body regarding its members (Art. 9(2)(d)). Free-text fields ("notes") are for organizational remarks only; sensitive information should not be entered there.' },
@@ -278,6 +280,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Account — while active.',
           'Audit log — 12 months.',
           'Result of the “Conduct the meeting” screen (how long each part took) — 7 days, then deleted.',
+          'Application failure log — 30 days, then deleted.',
           'Backups — within the rotation cycle.',
         ] },
         { h: 'Security (Art. 32 GDPR)' },

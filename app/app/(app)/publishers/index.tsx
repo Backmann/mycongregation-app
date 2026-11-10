@@ -219,6 +219,14 @@ export default function CongregationScreen() {
   // overseer's page (24 September) and reaches it from the visit; as a row of
   // the contents it stands among the administrator's settings only.
   if (user?.role === 'admin') {
+    // Failures met in the app (10 November 2026): technical, for whoever
+    // runs it.
+    management.push({
+      key: 'crashes',
+      title: t('crashes.title'),
+      subtitle: t('crashes.rowSubtitle'),
+      href: '/publishers/crashes',
+    });
     management.push({
       key: 'circuitOverseer',
       title: t('profile.circuitOverseer'),
