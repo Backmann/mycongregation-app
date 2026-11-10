@@ -250,7 +250,7 @@ export default function SpeakerProfileScreen() {
       </View>
       <View style={styles.visitTalkCol}>
         {v.talkNumber != null ? (
-          <Text style={styles.visitTalk} numberOfLines={2}>
+          <Text style={styles.visitTalk}>
             <Text style={styles.visitNum}>№{v.talkNumber}</Text>
             {v.talkTitle ? ` — ${v.talkTitle}` : ""}
           </Text>

@@ -668,7 +668,7 @@ export default function SpeakersScreen() {
               style={styles.talkChip}
               onPress={() => removeTalk(n)}
             >
-              <Text style={styles.talkChipText} numberOfLines={1}>
+              <Text style={styles.talkChipText}>
                 №{n}
                 {titleByNumber.get(n) ? ` · ${titleByNumber.get(n)}` : ""}
               </Text>

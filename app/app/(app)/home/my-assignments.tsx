@@ -246,15 +246,18 @@ export default function MyAssignmentsScreen() {
                         {/* Named as on the Home card: the whole name of the
                             reader's part, «— помощник», the pair on its own
                             line — «в паре: …» needs no case to agree. */}
-                        <Text style={styles.title} numberOfLines={2}>
+                        <Text style={styles.title}>
                           {r.item.kind === 'meeting'
                             ? myPartLine(r.item, t).label
                             : taskTitle(r.item, t)}
                         </Text>
                         {r.item.kind === 'meeting' && myPartLine(r.item, t).topic ? (
-                          <Text style={styles.topic} numberOfLines={2}>
+                          <Text style={styles.topic}>
                             «{myPartLine(r.item, t).topic}»
                           </Text>
+                        ) : null}
+                        {r.item.kind === 'meeting' && myPartLine(r.item, t).note ? (
+                          <Text style={styles.note}>{myPartLine(r.item, t).note}</Text>
                         ) : null}
                         {r.item.kind === 'meeting' && r.item.partnerName ? (
                           <Text style={styles.pair}>
@@ -470,6 +473,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   topic: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 2, lineHeight: 19 },
+  note: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: '#334155', marginTop: 3, lineHeight: 19 },
   pair: {
     fontFamily: 'Manrope_400Regular',
     alignSelf: 'flex-start',

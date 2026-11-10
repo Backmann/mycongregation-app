@@ -167,15 +167,24 @@ function Person({
       {helper ? (
         <View style={styles.personLine}>
           {helper.mine ? (
-            <MeChip name={helper.name} />
+            <>
+              <MeChip name={helper.name} />
+              <Text style={styles.role}>{`\u00a0·\u00a0${helper.label}`}</Text>
+            </>
           ) : helper.name ? (
-            <Text style={styles.helper}>{helper.name}</Text>
+            // One text, so the role wraps with the last word of the name and
+            // never stands alone on a line (seen in a narrow column, 10
+            // November 2026).
+            <Text style={styles.helper}>
+              {helper.name}
+              <Text style={styles.role}>{`\u00a0·\u00a0${helper.label}`}</Text>
+            </Text>
           ) : (
-            <Nobody />
+            <>
+              <Nobody />
+              <Text style={styles.role}>{`\u00a0·\u00a0${helper.label}`}</Text>
+            </>
           )}
-          {/* The role travels with the last word of the name: a long name
-              wraps, «· помощник» does not stand alone on a line. */}
-          <Text style={styles.role}>{` · ${helper.label}`}</Text>
         </View>
       ) : null}
     </View>

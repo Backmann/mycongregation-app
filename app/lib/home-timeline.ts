@@ -68,6 +68,8 @@ export interface MyPartLine {
    * that he conducts the study.
    */
   topic?: string | null;
+  /** What the workbook says the part is (lib/my-tasks partNote). */
+  note?: string | null;
   /**
    * Minutes from the start of the meeting to this part, as the schedule
    * sheet counts them (lib/run-order.ts) — the card writes the clock from

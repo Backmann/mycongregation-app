@@ -5236,7 +5236,6 @@
     "minePast": "Ваше было: {{list}}",
     "youLead": "Вы ведёте в {{time}}",
     "dutiesShort": "обязанности {{assigned}} из {{total}}",
-    "speaker": "Докладчик",
     "editProgramme": "Править программу",
     "editDuties": "Править обязанности",
     "dayNotSet": "день ещё не назначен",
