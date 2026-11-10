@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FONT } from '../lib/typography';
 
@@ -14,6 +15,11 @@ export interface Segment<K extends string> {
  * next screen that needs it takes this one instead of drawing its own.
  *
  * Every position is at least 44 points tall, whatever the label.
+ *
+ * Every label WHOLE (10 November 2026): positions take the width their words
+ * need rather than equal thirds, and a narrow track — the meeting's tabs on a
+ * 1024-wide screen, «Обязанности» cut to «Обязаннос…» — sets them a size
+ * smaller. Found by walking the live site at 1024.
  */
 export function SegmentedControl<K extends string>({
   segments,
@@ -31,20 +37,33 @@ export function SegmentedControl<K extends string>({
    */
   tone?: string;
 }) {
+  const [width, setWidth] = useState(0);
+  const tight = width > 0 && width < segments.length * 104;
   return (
-    <View style={styles.track} accessibilityRole="tablist">
+    <View
+      style={styles.track}
+      accessibilityRole="tablist"
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
       {segments.map((s) => {
         const on = s.key === value;
         return (
           <Pressable
             key={s.key}
             onPress={() => onChange(s.key)}
-            style={[styles.segment, on && (tone ? { backgroundColor: tone } : styles.segmentOn)]}
+            style={[
+              styles.segment,
+              tight && styles.segmentTight,
+              on && (tone ? { backgroundColor: tone } : styles.segmentOn),
+            ]}
             accessibilityRole="tab"
             accessibilityState={{ selected: on }}
           >
             {s.dot ? <View style={[styles.dot, { backgroundColor: s.dot }]} /> : null}
-            <Text style={[styles.label, on && (tone ? styles.labelTone : styles.labelOn)]} numberOfLines={1}>
+            <Text
+              style={[styles.label, tight && styles.labelTight, on && (tone ? styles.labelTone : styles.labelOn)]}
+              numberOfLines={1}
+            >
               {s.label}
             </Text>
           </Pressable>
@@ -57,7 +76,10 @@ export function SegmentedControl<K extends string>({
 const styles = StyleSheet.create({
   track: { flexDirection: 'row', backgroundColor: '#e9eef4', borderRadius: 12, padding: 3 },
   segment: {
-    flex: 1,
+    // By the words: the longest label gets the room it needs.
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -76,8 +98,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
+  segmentTight: { paddingHorizontal: 4, gap: 4 },
   dot: { width: 6, height: 6, borderRadius: 3 },
   label: { fontSize: 14, fontFamily: FONT.bold, color: '#64748b' },
+  labelTight: { fontSize: 13 },
   labelOn: { color: '#0f172a' },
   labelTone: { color: '#ffffff' },
 });

@@ -1282,11 +1282,19 @@ export default function ProgrammeFeedScreen() {
       <Text style={styles.barMonth} accessibilityRole="header">
         {monthYear(barMonth)}
       </Text>
-      {/* One line, whatever the language: «Predigtdienst» is long. */}
+      {/* One line on a phone, whatever the language: «Predigtdienst» is long,
+          and a finger finds the sideways scroll. A mouse does not: on the
+          wide layout the chips wrap instead, so none hides past the edge
+          (10 November 2026 — in German the last one was cut even at 1440). */}
       <ScrollView
-        horizontal
+        horizontal={!wide}
+        scrollEnabled={!wide}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.chips}
+        contentContainerStyle={[
+          styles.chips,
+          wide && styles.chipsWrap,
+          wide && listWidth < 400 && styles.chipsTight,
+        ]}
         style={styles.chipsScroll}
       >
         {(["all", "midweek", "weekend", "field"] as Filter[]).map((f) => {
@@ -1298,6 +1306,9 @@ export default function ProgrammeFeedScreen() {
               onPress={() => pickFilter(f)}
               style={({ pressed }) => [
                 styles.chip,
+                // The narrowest wide list (360 at 1024): four chips fit
+                // whole instead of the last one cut at the edge.
+                wide && listWidth < 400 && styles.chipTight,
                 on ? { backgroundColor: color, borderColor: color } : null,
                 pressed && styles.pressed,
               ]}
@@ -2640,6 +2651,9 @@ const styles = StyleSheet.create({
   barMonth: { fontSize: 18, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.2 },
   chipsScroll: { marginHorizontal: -16, flexGrow: 0 },
   chips: { flexDirection: "row", gap: 8, paddingHorizontal: 16 },
+  chipsTight: { gap: 6 },
+  chipsWrap: { flexWrap: "wrap", rowGap: 6 },
+  chipTight: { paddingHorizontal: 10 },
   chip: {
     minHeight: 36,
     paddingHorizontal: 12,
