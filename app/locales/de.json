@@ -5121,7 +5121,10 @@
     "kindWeekendDay": "Wochenende",
     "collapse": "Einklappen",
     "pairAssistant": "Partner",
-    "pairReader": "Leser"
+    "pairReader": "Leser",
+    "liveNow": "läuft gerade",
+    "liveSpan": "{{from}} – ≈{{to}}",
+    "liveNowPart": "jetzt: {{part}}"
   },
   "conduct": {
     "title": "Zusammenkunft leiten",

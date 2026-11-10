@@ -168,6 +168,37 @@ const TILE_BG: Record<string, string> = {
 };
 /** The Memorial: a tile of its own, filled. */
 const MEMORIAL_COLOR = "#7f1d1d";
+
+/** «19:30» → minutes into the day. */
+const hm = (t: string) => {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + (m || 0);
+};
+/** Minutes into the day → «20:45». */
+const clock = (min: number) =>
+  `${String(Math.floor(min / 60) % 24).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+/**
+ * The minute of the day, kept current while `active` — only a meeting of
+ * today runs a clock, so the feed does not tick for every row.
+ */
+function useMinuteClock(active: boolean): number | null {
+  const read = () => {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  };
+  const [now, setNow] = useState<number | null>(active ? read() : null);
+  useEffect(() => {
+    if (!active) {
+      setNow(null);
+      return;
+    }
+    setNow(read());
+    const id = setInterval(() => setNow(read()), 30_000);
+    return () => clearInterval(id);
+  }, [active]);
+  return now;
+}
 const PAST_COLOR = "#94a3b8";
 const SLOT_ORDER = ["after_meeting", "thorough", "general"];
 
@@ -850,7 +881,13 @@ export default function ProgrammeFeedScreen() {
   // by itself. One meeting component in three forms — open in place, a list
   // row, the whole right side — not a second copy that one change would miss.
   const { width } = useWindowDimensions();
-  const wide = width >= 900;
+  // From 1024 (9 November 2026): at 900 the list's 440 points left the
+  // meeting a strip of 300, its programme a word to a line. Between, the
+  // phone's one column reads better. The list narrows on the smaller of the
+  // wide screens.
+  const wide = width >= 1024;
+  const listWidth = width >= 1400 ? 440 : width >= 1200 ? 400 : 360;
+  const [detailWidth, setDetailWidth] = useState(0);
   const isOpen = (id: string) => openId === id || (!wide && lingering === id);
   const choose = (id: string) => {
     release();
@@ -1235,7 +1272,7 @@ export default function ProgrammeFeedScreen() {
   );
 
   const listScroll = (
-    <View style={wide ? styles.listPane : styles.screen}>
+    <View style={wide ? [styles.listPane, { width: listWidth }] : styles.screen}>
       {bar}
       <KeptNotice queries={[...feedQueries, ...keptAsked]} onRetry={retryFeed} style={{ marginBottom: 6 }} />
       <Animated.View style={[styles.fill, { opacity: fade }]}>
@@ -1280,7 +1317,16 @@ export default function ProgrammeFeedScreen() {
 
   const chosen = items.find((x) => x.id === openId);
   const detail = !chosen ? null : chosen.type === "meeting" ? (
-    <Meeting key={chosen.id} {...meetingProps(chosen)} open onToggle={() => {}} mode="detail" />
+    <Meeting
+      key={chosen.id}
+      {...meetingProps(chosen)}
+      open
+      onToggle={() => {}}
+      mode="detail"
+      // Two columns of sections once the white card is wide enough for two
+      // programme rows side by side (the card's padding and gap included).
+      columns={detailWidth >= 600}
+    />
   ) : chosen.type === "memorial" ? (
     <MemorialDay
       key={chosen.id}
@@ -1310,7 +1356,11 @@ export default function ProgrammeFeedScreen() {
   return (
     <View style={styles.split}>
       {listScroll}
-      <ScrollView style={styles.detailPane} contentContainerStyle={styles.detailContent}>
+      <ScrollView
+        style={styles.detailPane}
+        contentContainerStyle={styles.detailContent}
+        onLayout={(e) => setDetailWidth(e.nativeEvent.layout.width)}
+      >
         <View style={styles.detailColumn}>{detail}</View>
       </ScrollView>
     </View>
@@ -1374,34 +1424,73 @@ function PastHead({
   );
 }
 
-/** The large head of a meeting shown whole on the right of a wide screen. */
+/**
+ * The head of a meeting shown whole on the right of a wide screen (9 November
+ * 2026, «вариант 5»): a band tinted in the meeting's colour, the date as a
+ * large filled tile, which meeting and its title large, then the hour and the
+ * one line that matters as two quiet chips, and what is yours in blue.
+ */
 function DetailHead({
   date,
   time,
-  kind,
+  label,
+  title,
   line,
   mine,
   status,
+  color,
 }: {
   date: string;
   time?: string | null;
-  kind: string;
+  /** «Будний день», «Публичная речь», «Проповедь». */
+  label: string;
+  title: string;
   line?: string | null;
   mine?: string | null;
   status?: { color: string; text: string } | null;
+  color: string;
 }) {
   const { i18n } = useTranslation();
-  const d = atMidnight(date).toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
-  const head = d.charAt(0).toLocaleUpperCase(i18n.language) + d.slice(1);
+  const d = atMidnight(date);
+  const day = d.toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
+  const dow = d.toLocaleDateString(i18n.language, { weekday: "short" }).replace(".", "").toUpperCase();
   return (
-    <View style={styles.detailHead}>
-      <Text style={styles.detailTitle}>{time ? `${head} · ${time}` : head}</Text>
-      <Text style={styles.detailSub}>{[kind, line].filter(Boolean).join(" · ")}</Text>
-      {mine ? <Text style={styles.detailMine}>{mine}</Text> : null}
-      {status ? (
-        <View style={[styles.statusRow, styles.detailStatus]}>
-          <View style={[styles.statusDot, { backgroundColor: status.color }]} />
-          <Text style={styles.status}>{status.text}</Text>
+    <View style={[styles.hero, { backgroundColor: TILE_BG[color] ?? "#eef1f5" }]}>
+      <View style={styles.heroTop}>
+        <View style={[styles.heroTile, { backgroundColor: color }]}>
+          <Text style={styles.heroDay}>{d.getDate()}</Text>
+          <Text style={styles.heroDow}>{dow}</Text>
+        </View>
+        <View style={styles.rowBody}>
+          <Text style={[styles.heroLabel, { color }]}>{`${label} · ${day}`}</Text>
+          <Text style={styles.heroTitle}>{title}</Text>
+          <View style={styles.heroChips}>
+            {time ? (
+              <View style={styles.heroChip}>
+                <Ionicons name="time-outline" size={15} color={color} />
+                <Text style={[styles.heroChipText, styles.heroChipTime]}>{time}</Text>
+              </View>
+            ) : null}
+            {line ? (
+              <View style={styles.heroChip}>
+                <Text style={styles.heroChipText}>{line}</Text>
+              </View>
+            ) : null}
+          </View>
+          {status ? (
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: status.color }]} />
+              <Text style={styles.status}>{status.text}</Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
+      {mine ? (
+        <View style={styles.heroMine}>
+          <View style={styles.mineDot}>
+            <Ionicons name="person" size={11} color="#ffffff" />
+          </View>
+          <Text style={styles.heroMineText}>{mine}</Text>
         </View>
       ) : null}
     </View>
@@ -1454,6 +1543,7 @@ function Row({
   tagMoved,
   color,
   solid,
+  live,
   past,
   open,
   select,
@@ -1495,6 +1585,12 @@ function Row({
   color: string;
   /** The date tile filled in the colour, the date white — the Memorial. */
   solid?: boolean;
+  /**
+   * Going on now: the tile filled, «идёт сейчас» after the label, and in
+   * place of the line under the title a bar of how far it has gone with the
+   * span and the part on now.
+   */
+  live?: { progress: number; text: string } | null;
   past: boolean;
   open?: boolean;
   /** A list row on a wide screen: a tap chooses the meeting instead of opening it here. */
@@ -1508,8 +1604,9 @@ function Row({
   // THE CARD (9 November 2026, «вариант 5»): a tile with the date in the
   // colour of what the day is; then what it is, in that colour; the title;
   // the hour in bold with the one line that matters after it.
-  const tileBg = past ? "#f1f5f9" : solid ? color : (TILE_BG[color] ?? "#eef1f5");
-  const tileInk = past ? PAST_COLOR : solid ? "#ffffff" : color;
+  const filled = solid || !!live;
+  const tileBg = past ? "#f1f5f9" : filled ? color : (TILE_BG[color] ?? "#eef1f5");
+  const tileInk = past ? PAST_COLOR : filled ? "#ffffff" : color;
   const content = (
     <>
       <View style={[styles.tile, { backgroundColor: tileBg }]}>
@@ -1517,11 +1614,23 @@ function Row({
         <Text style={[styles.dow, { color: tileInk }]}>{dow}</Text>
       </View>
       <View style={styles.rowBody}>
-        <Text style={[styles.kind, { color: tone }]}>{kindLabel}</Text>
+        <Text style={[styles.kind, { color: tone }]}>{live ? `${kindLabel} · ${t("feed.liveNow")}` : kindLabel}</Text>
         <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={wholeTitle ? undefined : 2}>
           {title}
         </Text>
-        {time || line ? (
+        {live ? (
+          <View style={styles.live}>
+            <View style={styles.liveBar}>
+              <View
+                style={[
+                  styles.liveFill,
+                  { backgroundColor: color, width: `${Math.round(Math.min(1, Math.max(0, live.progress)) * 100)}%` },
+                ]}
+              />
+            </View>
+            <Text style={[styles.liveText, { color }]}>{live.text}</Text>
+          </View>
+        ) : time || line ? (
           <Text style={styles.line}>
             {time ? <Text style={[styles.lineTime, past && styles.pastTitle]}>{time}</Text> : null}
             {time && line ? " · " : null}
@@ -1614,6 +1723,7 @@ function Meeting({
   canEditProgramme,
   canEditDuties,
   canEditCleaning,
+  columns = false,
 }: {
   item: MeetingItem;
   past: boolean;
@@ -1637,6 +1747,8 @@ function Meeting({
   canEditProgramme: boolean;
   canEditDuties: boolean;
   canEditCleaning: boolean;
+  /** The programme's sections in two columns (the right side of a wide screen). */
+  columns?: boolean;
 }) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState<Tab>("programme");
@@ -1731,6 +1843,24 @@ function Meeting({
   const mineInProgramme = myParts.length > 0;
   const mineInDuties = myDuties.length > 0;
 
+  // GOING ON NOW (9 November 2026): on its own day, from its hour to its hour
+  // plus a meeting's length — the length Home and «over» already use.
+  const nowMin = useMinuteClock(item.date === formatDateISO(new Date()) && !!item.time && !past);
+  let live: { progress: number; text: string } | null = null;
+  const startMin = item.time && /^\d{1,2}:\d{2}/.test(item.time) ? hm(item.time) : null;
+  if (nowMin !== null && startMin !== null && nowMin >= startMin && nowMin < startMin + MEETING_LENGTH_MIN) {
+    const times = item.kind === "midweek" ? buildMidweekPartTimes(parts, item.time) : buildWeekendPartTimes(parts, item.time);
+    const onNow = parts.find((p) => {
+      const iv = times.get(p.id);
+      return !!iv && hm(iv.start) <= nowMin && nowMin < hm(iv.end);
+    });
+    const span = t("feed.liveSpan", { from: item.time?.slice(0, 5), to: clock(startMin + MEETING_LENGTH_MIN) });
+    live = {
+      progress: (nowMin - startMin) / MEETING_LENGTH_MIN,
+      text: onNow ? `${span} · ${t("feed.liveNowPart", { part: partDisplay(onNow.partKey, onNow.partTitle).label })}` : span,
+    };
+  }
+
   return (
     // The screenshot script finds a meeting by week and kind to check that a
     // link to a week lands on it (data-testid on the web; nothing visible).
@@ -1763,6 +1893,7 @@ function Meeting({
         }
         tagMoved={!!item.movedFrom}
         color={KIND[item.kind].color}
+        live={live}
         past={past}
         open={open}
         select={mode === "row"}
@@ -1772,13 +1903,9 @@ function Meeting({
         <DetailHead
           date={item.date}
           time={item.time}
-          kind={
-            item.kind === "weekend" && talk?.specialTalk
-              ? `${kindTitle} · ${t("feed.specialTalk")}: ${title}`
-              : item.kind === "weekend" && talk
-                ? `${kindTitle} · ${title}`
-                : title
-          }
+          label={item.kind === "weekend" && talk?.specialTalk ? upperFirst(t("feed.specialTalk")) : cardLabel}
+          title={title}
+          color={past ? PAST_COLOR : KIND[item.kind].color}
           line={line}
           mine={mine ? t(past ? "feed.minePast" : "feed.mine", { list: mine }) : null}
           status={status}
@@ -1817,6 +1944,10 @@ function Meeting({
               { key: "cleaning", label: t("feed.tabCleaning") },
             ]}
           />
+          {tab === "programme" && columns ? (
+            <Programme parts={parts} kind={item.kind} time={item.time} me={me} name={name} who={who} whoFrom={whoFrom} columns />
+          ) : null}
+          {tab === "programme" && columns ? null : (
           <View style={mode === "detail" ? styles.cardDetail : styles.card}>
             {tab === "programme" ? (
               <Programme parts={parts} kind={item.kind} time={item.time} me={me} name={name} who={who} whoFrom={whoFrom} />
@@ -1861,6 +1992,7 @@ function Meeting({
               <Text style={styles.empty}>{t("feed.noCleaning")}</Text>
             )}
           </View>
+          )}
           {(!past || overToday) && tab === "programme" && canEditProgramme ? (
             <EditLink
               label={t("feed.editProgramme")}
@@ -1932,6 +2064,7 @@ function Programme({
   name,
   who,
   whoFrom,
+  columns = false,
 }: {
   parts: Assignment[];
   kind: Kind;
@@ -1942,6 +2075,12 @@ function Programme({
   who: (p: Assignment | undefined) => string | null;
   /** A guest's congregation, when the part is his. */
   whoFrom: (p: Assignment | undefined) => string | null;
+  /**
+   * Two columns, each a card: the weekday breaks before «Христианская жизнь»,
+   * the weekend before the Watchtower study — where the printed sheet's
+   * halves are.
+   */
+  columns?: boolean;
 }) {
   const { t } = useTranslation();
   // One request for the whole feed, an hour in the cache (lib/songs).
@@ -1964,6 +2103,7 @@ function Programme({
     );
   }
   let lastSub: string | null = null;
+  let splitAt: number | null = null;
   // The colour of the section a part is in: the part's name is written in it,
   // the people in black under it (the redesign of 9 November 2026).
   let tone = INK;
@@ -1984,6 +2124,7 @@ function Programme({
     if (sub !== lastSub) {
       if (LABELLED.has(sub)) {
         const meta = SUBSECTIONS[sub];
+        if (splitAt === null && (sub === "christian_life" || sub === "watchtower")) splitAt = out.length;
         out.push(
           <SectionChip
             key={`s${p.id}`}
@@ -2078,6 +2219,15 @@ function Programme({
         />,
       );
     }
+  }
+  if (columns) {
+    const cut = splitAt ?? out.length;
+    return (
+      <View style={styles.columns}>
+        <View style={[styles.cardDetail, styles.column]}>{out.slice(0, cut)}</View>
+        {cut < out.length ? <View style={[styles.cardDetail, styles.column]}>{out.slice(cut)}</View> : null}
+      </View>
+    );
   }
   return <>{out}</>;
 }
@@ -2317,7 +2467,7 @@ function FieldDay({
           onPress={onToggle}
         />
       ) : (
-        <DetailHead date={item.date} kind={single ? t("feed.kindField") : title} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : helpingAt ? t("feed.youGo", { time: helpingAt.startTime }) : null} />
+        <DetailHead date={item.date} label={t("feed.kindField")} title={title} color={past ? PAST_COLOR : KIND.field.color} line={line} mine={mineAt ? t("feed.youLead", { time: mineAt.startTime }) : helpingAt ? t("feed.youGo", { time: helpingAt.startTime }) : null} />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
@@ -2389,7 +2539,7 @@ function MemorialDay({
           onPress={onToggle}
         />
       ) : (
-        <DetailHead date={item.date} time={item.event.time ?? null} kind={title} line={line} />
+        <DetailHead date={item.date} time={item.event.time ?? null} label={t("feed.kindMemorial")} title={title} color={past ? PAST_COLOR : MEMORIAL_COLOR} line={line} />
       )}
       {(mode === "inline" && open) || mode === "detail" ? (
         <View style={[styles.inset, mode === "detail" && styles.insetDetail]}>
@@ -2576,17 +2726,60 @@ const styles = StyleSheet.create({
   rowOpen: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, shadowOpacity: 0 },
   rowSelected: { backgroundColor: "#f2fafc", borderColor: "#0e7490" },
   split: { flex: 1, flexDirection: "row", backgroundColor: "#eef1f4" },
-  listPane: { width: 440, flexGrow: 0, borderRightWidth: 1, borderRightColor: "#e2e8f0" },
+  listPane: { flexGrow: 0, borderRightWidth: 1, borderRightColor: "#e2e8f0" },
   listContent: { paddingBottom: 40 },
-  detailPane: { flex: 1, backgroundColor: "#f6f8fb" },
-  detailContent: { padding: 24, alignItems: "center" },
-  detailColumn: { width: "100%", maxWidth: 760 },
-  insetDetail: { backgroundColor: "transparent", paddingHorizontal: 0, borderBottomWidth: 0 },
-  detailHead: { paddingBottom: 12 },
-  detailTitle: { fontSize: 24, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.3 },
-  detailSub: { fontSize: 15, fontFamily: FONT.medium, color: SOFT, marginTop: 4 },
-  detailMine: { fontSize: 14, fontFamily: FONT.bold, color: ACC, marginTop: 8 },
-  detailStatus: { paddingLeft: 0 },
+  detailPane: { flex: 1, backgroundColor: "#eef1f4" },
+  detailContent: { padding: 20, alignItems: "center" },
+  // The chosen meeting: one white card, its head a tinted band.
+  detailColumn: {
+    width: "100%",
+    maxWidth: 1100,
+    backgroundColor: "#ffffff",
+    borderRadius: 18,
+    overflow: "hidden",
+    shadowColor: "#0f172a",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 2,
+  },
+  insetDetail: { marginHorizontal: 0, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 16, borderWidth: 0 },
+  hero: { paddingHorizontal: 22, paddingTop: 20, paddingBottom: 16 },
+  heroTop: { flexDirection: "row", alignItems: "flex-start", gap: 18 },
+  heroTile: { width: 64, height: 70, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  heroDay: { fontSize: 29, lineHeight: 31, fontFamily: FONT.extrabold, color: "#ffffff", fontVariant: ["tabular-nums"] },
+  heroDow: { fontSize: 12.5, fontFamily: FONT.extrabold, color: "#ffffff", marginTop: 3, opacity: 0.9 },
+  heroLabel: { fontSize: 14, fontFamily: FONT.bold },
+  heroTitle: { fontSize: 26, lineHeight: 32, fontFamily: FONT.extrabold, color: INK, letterSpacing: -0.3, marginTop: 2 },
+  heroChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10 },
+  heroChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#ffffff",
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#dbe5ea",
+    paddingHorizontal: 11,
+    paddingVertical: 4,
+    maxWidth: "100%",
+  },
+  heroChipText: { flexShrink: 1, fontSize: 14, fontFamily: FONT.semibold, color: PLAIN },
+  heroChipTime: { fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
+  heroMine: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 12,
+    backgroundColor: ACC,
+  },
+  heroMineText: { flex: 1, fontSize: 14.5, fontFamily: FONT.bold, color: "#ffffff" },
+  // The programme in two columns where the right side is wide enough.
+  columns: { flexDirection: "row", alignItems: "flex-start", gap: 16 },
+  column: { flex: 1, minWidth: 0 },
   tile: { width: 50, height: 56, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   notHeldChip: {
     flexDirection: "row",
@@ -2613,6 +2806,10 @@ const styles = StyleSheet.create({
   pastTitle: { color: SOFT },
   line: { fontSize: 15, lineHeight: 20, fontFamily: FONT.medium, color: MUTE, marginTop: 4 },
   lineTime: { fontFamily: FONT.extrabold, color: INK, fontVariant: ["tabular-nums"] },
+  live: { marginTop: 9, gap: 6 },
+  liveBar: { height: 6, borderRadius: 99, backgroundColor: "#e2e8f0", overflow: "hidden" },
+  liveFill: { height: "100%", borderRadius: 99 },
+  liveText: { fontSize: 13.5, lineHeight: 18, fontFamily: FONT.bold, fontVariant: ["tabular-nums"] },
   minePill: {
     flexDirection: "row",
     alignItems: "center",
