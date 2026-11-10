@@ -50,6 +50,16 @@ programme parts, schedules); no names of organisations, no personal data.
   the change.
 
 ## Checking screens
+- Every pull request that touches `app/` gets the CI job `screens`: main and
+  the PR photographed on an invented congregation (server
+  `scripts/seed-screens.mjs`), 48 frames — phone, tablet, wide; admin and
+  publisher; a few in German. Defects on the PR's frames fail it (text cut
+  off or invisible, sideways scrolling, raw keys, failure screens, console
+  errors, 5xx); changed frames are only reported. The report asking
+  to deploy names every changed frame and whether it was meant to change;
+  the pictures are in the run's `screens` artifact.
+- A screen the app needs data for that the seed lacks: extend the seed in the
+  server repository (same branch name), not the app.
 - Before/after: `node scripts/screens.mjs <label>` twice, then
   `node scripts/screens-compare.mjs <a> <b>`; say in advance which frames must
   differ, and look only at those. Call scripts directly, not via npm.
