@@ -35,6 +35,7 @@ import type {
   ReadinessMeeting,
   SpecialEvent,
 } from "../../../lib/api";
+import { useReduceMotion } from "../../../lib/reduce-motion";
 import { usePermissions } from "../../../lib/permissions";
 import { isCongressEvent, weekRules } from "../../../lib/week-rules";
 import { meetingChangeOn, takesMeetingMode } from "../../../lib/event-meeting";
@@ -454,9 +455,15 @@ export default function ProgrammeFeedScreen() {
     const t = setTimeout(() => setShown(true), waitingFor ? 5000 : 80);
     return () => clearTimeout(t);
   }, [waitingFor, shown]);
+  // With «reduce motion» the list simply appears (CLAUDE.md: animations
+  // respect it). Found by the CI screen check on 10 November: under a frozen
+  // clock the fade never ran and the wide list stayed transparent.
+  const reduceMotion = useReduceMotion();
   useEffect(() => {
-    if (shown) Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
-  }, [shown, fade]);
+    if (!shown) return;
+    if (reduceMotion) fade.setValue(1);
+    else Animated.timing(fade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
+  }, [shown, fade, reduceMotion]);
 
   // EVERYTHING the feed is drawn from — for «shown from before» and for the
   // retry. And what makes it «did not load»: the programme piece at the end,

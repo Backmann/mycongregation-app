@@ -104,13 +104,12 @@ function Row({ door, line }: { door: Door; line?: DoorLineView }) {
       accessibilityHint={line?.text ?? door.subtitle}
     >
       <View style={styles.body}>
-        <Text style={styles.title} numberOfLines={2}>
-          {door.title}
-        </Text>
-        {/* One line: a subtitle that wraps breaks the list's even rhythm.
-            The live line takes the description's place; amber only where
-            there is something to do. */}
-        <Text style={[styles.subtitle, line?.due && styles.due]} numberOfLines={1}>
+        <Text style={styles.title}>{door.title}</Text>
+        {/* The live line takes the description's place; amber only where
+            there is something to do. Whole, never cut: one even line used to
+            hide what was due («…не назначена уборка после встреч» ended in an
+            ellipsis on a phone — CI screen check, 10 November). */}
+        <Text style={[styles.subtitle, line?.due && styles.due]}>
           {line?.text ?? door.subtitle}
         </Text>
       </View>
