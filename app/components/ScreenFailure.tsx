@@ -8,6 +8,7 @@ import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { isRequestError } from '../lib/screen-failure';
 import { extractErrorMessage } from '../lib/api';
 import { LoadFailure } from './LoadFailure';
+import { reportCrash } from '../lib/crash-report';
 
 /**
  * Where a screen's main request lands when it could not reach the server
@@ -35,6 +36,12 @@ class Boundary extends React.Component<
 
   static getDerivedStateFromError(error: unknown) {
     return { error };
+  }
+
+  // A bug, not a lost connection, goes to the failure journal (10 November
+  // 2026): until then it reached us only if somebody sent us the words.
+  componentDidCatch(error: unknown) {
+    if (!isRequestError(error)) void reportCrash('screen', error);
   }
 
   render() {

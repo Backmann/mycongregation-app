@@ -148,6 +148,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/publishers/meeting-settings': 'admin',
   '/publishers/admin-users': 'admin',
   '/publishers/journal': 'admin',
+  '/publishers/crashes': 'admin',
   '/publishers/backups': 'backups',
   '/publishers/public-talks': 'elders',
   '/publishers/public-talks-import': 'elders',

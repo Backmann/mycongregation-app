@@ -1,3 +1,4 @@
+import { setCrashRole } from './crash-report';
 import { forgetQueue } from './service-log-queue';
 import {
   createContext,
@@ -135,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signedInRef = useRef(false);
   useEffect(() => {
     signedInRef.current = user !== null;
+    // The failure journal names the role, never the person.
+    setCrashRole(user?.role ?? null);
   }, [user]);
   const queryClient = useQueryClient();
 

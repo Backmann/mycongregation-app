@@ -2,7 +2,7 @@
 import "../lib/web-tab-scenes";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Platform, Text, View } from "react-native";
-import { Stack } from "expo-router";
+import { Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import {
   MutationCache,
@@ -18,6 +18,7 @@ import i18n, { initI18nFromStorage } from "../lib/i18n";
 import { useAppFonts } from "../lib/fonts";
 import { useSelfApplyingUpdate } from "../lib/self-update";
 import { tapRefused, tapSaved } from "../lib/haptics";
+import { installCrashHandlers, patternOf, setCrashRoute } from "../lib/crash-report";
 
 /**
  * Small SUMMARY endpoints that read a fact somebody else writes.
@@ -114,10 +115,27 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * The screen now shown, by its pattern, for the failure journal
+ * (lib/crash-report.ts): the route's file names, never its ids.
+ */
+function CrashRoute() {
+  const segments = useSegments();
+  useEffect(() => {
+    setCrashRoute(patternOf(segments));
+  }, [segments]);
+  return null;
+}
+
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
   const { fontsLoaded } = useAppFonts();
   const { applying } = useSelfApplyingUpdate();
+
+  // Errors nobody caught go to the failure journal (10 November 2026).
+  useEffect(() => {
+    installCrashHandlers();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -195,6 +213,7 @@ export default function RootLayout() {
             theme will need from the native side. */}
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }} />
+        <CrashRoute />
         <ErrorToast />
         <ConfirmHost />
       </AuthProvider>

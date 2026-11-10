@@ -210,6 +210,9 @@ function routeForNotification(data) {
     // The evening digest is about the reader's own assignments.
     case 'assignment_reminder':
       return { path: '/home/my-assignments', params: {} };
+    // A new kind of failure met in the app — the administrator's journal.
+    case 'client_error':
+      return { path: '/publishers/crashes', params: {} };
     // What a meeting still lacks, for whoever assembles it.
     case 'meeting_gaps':
       return {
