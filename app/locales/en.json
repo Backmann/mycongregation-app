@@ -6085,7 +6085,14 @@
       "MOVE_NOT_FOUND": "This meeting is not moved.",
       "MOVE_PAST_NEEDS_COORDINATOR": "A past meeting is moved by an administrator or the coordinator of the body of elders.",
       "MOVE_ATTENDANCE_CLASH": "Attendance for this meeting is already recorded on {{date}} — moving it would mix up the figures.",
-      "EVENT_MEETING_MOVED": "The meeting moved for this week is held on that day ({{date}}). Change the move itself, not the event."
+      "EVENT_MEETING_MOVED": "The meeting moved for this week is held on that day ({{date}}). Change the move itself, not the event.",
+      "PAIR_PREP_NOT_YOURS": "Only the two people of this part can arrange its preparation.",
+      "PAIR_PREP_CLOSED": "The meeting is today or has passed — arrange it in person.",
+      "PAIR_PREP_NO_APP": "Your partner does not use the app — arrange it in person.",
+      "PAIR_PREP_ONCE_A_DAY": "A new suggestion can be made tomorrow.",
+      "PAIR_PREP_TOO_MANY": "Enough messages for today — arrange it in person.",
+      "PAIR_PREP_OPTION_GONE": "That time no longer fits — choose another.",
+      "PAIR_PREP_NOTHING_TO_ANSWER": "No answer is expected right now — the list was refreshed."
     }
   },
   "stage": {
@@ -7097,5 +7104,61 @@
     "before": "before sign-in",
     "build": "build {{id}}",
     "stack": "Where in the code"
+  },
+  "pairPrep": {
+    "button": "Arrange preparation",
+    "noApp": "{{name}} does not use the app — arrange your preparation in person.",
+    "sent": "Suggestion sent",
+    "nextTomorrow": "A new suggestion can be made tomorrow.",
+    "waiting": "waiting for an answer",
+    "remindInPerson": "No answer yet? Remind each other in person.",
+    "change": "Change",
+    "takeBack": "Take back",
+    "changeAgreed": "Change the arrangement",
+    "proposeOther": "Suggest another time",
+    "agree": "That works",
+    "otherTime": "Another time",
+    "decline": "Not possible",
+    "send": "Send suggestion",
+    "sendNote": "Your partner gets a notification and sees the suggestion in the app. Phone numbers are never shown. At night the notification waits until 8:00.",
+    "whenCaption": "When suits you",
+    "notOffered": "Not offered: {{day}} — {{reason}}.",
+    "mine": {
+      "self": "You suggested arranging your preparation",
+      "moment": "You suggested: {{moment}}"
+    },
+    "theirs": {
+      "self": "{{name}} suggests arranging your preparation",
+      "moment": "{{name}} suggests: {{moment}}"
+    },
+    "agreed": {
+      "self": "Arranged: you will pick the time yourselves",
+      "moment": "Arranged: {{moment}}"
+    },
+    "declined": {
+      "theirs": "{{name}}: not possible on those days",
+      "mine": "You answered: not possible",
+      "inPerson": "Arrange your preparation in person — for example at the next meeting."
+    },
+    "moment": {
+      "after": {
+        "midweek": "after the midweek meeting",
+        "weekend": "after the weekend meeting"
+      },
+      "before": "before the meeting — a last check",
+      "service": "at the meeting for field service",
+      "self": "we will arrange it ourselves",
+      "selfHint": "just let your partner know it is time to prepare"
+    },
+    "when": {
+      "meeting": "{{day}} · starts at {{time}}",
+      "service": "{{day}}, {{time}} · if you are both there"
+    },
+    "hiddenReason": {
+      "my_duty": "you have a duty at this meeting",
+      "partner_duty": "your partner has a duty at this meeting",
+      "cleaning": "cleaning after this meeting",
+      "away": "one of you is away"
+    }
   }
 }

@@ -325,6 +325,9 @@ export function routeForNotification(
     // A new kind of failure met in the app — the administrator's journal.
     case 'client_error':
       return { path: '/publishers/crashes', params: {} };
+    // The two people of a part arranging its preparation: the part's card.
+    case 'pair_prep':
+      return { path: '/home/my-assignments', params: {} };
     // What a meeting still lacks, for whoever assembles it.
     case 'meeting_gaps':
       return {

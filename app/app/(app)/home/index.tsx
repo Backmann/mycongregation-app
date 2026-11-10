@@ -1,3 +1,4 @@
+import { PairPrep } from "../../../components/PairPrep";
 import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { HoursCard } from "../../../components/hours/HoursCard";
 import { useLogUndo } from "../../../components/hours/useLogUndo";
@@ -1287,6 +1288,13 @@ function NextBody({
                 </View>
                 {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
                 {p.note ? <Text style={s.nextNote}>{p.note}</Text> : null}
+                {p.partnerName && !p.isDuty ? (
+                  <PairPrep
+                    agendaId={p.agendaId}
+                    partName={p.label ?? p.title}
+                    compact
+                  />
+                ) : null}
               </View>
             </View>
           ))}

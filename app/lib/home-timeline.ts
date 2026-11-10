@@ -71,6 +71,11 @@ export interface MyPartLine {
   /** What the workbook says the part is (lib/my-tasks partNote). */
   note?: string | null;
   /**
+   * The server's `part:<id>` of this line — «Договориться о подготовке»
+   * finds the pair by it (10 November 2026).
+   */
+  agendaId?: string;
+  /**
    * Minutes from the start of the meeting to this part, as the schedule
    * sheet counts them (lib/run-order.ts) — the card writes the clock from
    * it and the meeting's own hour (28 September). Null for a duty, which
@@ -764,6 +769,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         .sort(byProgramme)
         .map((it) => ({
           ...resolvePart(it),
+          agendaId: it.agendaId,
           isDuty: it.kind === 'duty',
           offsetMin:
             it.kind === 'duty' || !it.partKey
