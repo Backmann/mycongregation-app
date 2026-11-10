@@ -319,8 +319,8 @@ export const ROLE_PARTS = new Set([
 export function myPartLine(
   it: MyAssignmentItem,
   t: TFunc,
-): { label: string; topic: string | null } {
-  if (it.kind !== 'meeting') return { label: taskTitle(it, t), topic: null };
+): { label: string; topic: string | null; note: string | null } {
+  if (it.kind !== 'meeting') return { label: taskTitle(it, t), topic: null, note: null };
   const plain = meetingPartLabel(it);
   const label =
     it.partKey === 'cbs_reader'
@@ -337,7 +337,23 @@ export function myPartLine(
   return {
     label: it.asAssistant ? `${label} — ${t('home.meeting.asAssistant')}` : label,
     topic,
+    note: partNote(it),
   };
+}
+
+/**
+ * What the workbook says the part is — «ПРОПОВЕДЬ ПО ДОМАМ. Предложи
+ * изучение Библии (lmd урок 3, пункт 3)», «Иер 52:6—20 (th урок 5)»: the
+ * note the import keeps after the part's name. Both halves of a pair read
+ * the same words, so they prepare the same scene (9 November 2026). Songs
+ * and prayers carry a neighbour's text there, not their own, so not theirs.
+ */
+export function partNote(it: MyAssignmentItem): string | null {
+  if (it.kind !== 'meeting' || !it.partKey) return null;
+  if (SONG_TASK_KEYS.has(it.partKey) || PRAYER_TASK_KEYS.has(it.partKey)) return null;
+  const idx = it.label.indexOf(': ');
+  if (idx <= 0) return null;
+  return it.label.slice(idx + 2).trim() || null;
 }
 
 export function taskTitle(item: MyAssignmentItem, t: TFunc): string {

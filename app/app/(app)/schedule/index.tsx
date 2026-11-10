@@ -2211,6 +2211,15 @@ function Programme({
           minutes={minutes}
           number={numbers.get(p.id) ?? null}
           title={shown.label}
+          // The workbook's note under a part: on the reader's own part and
+          // its pair, so they prepare the same scene; and the passage of the
+          // Bible reading for everyone (9 November 2026). Elsewhere the sheet
+          // stays a list of names and times.
+          subtitle={
+            mine || (!!me && p.assistantPublisherId === me) || p.partKey === "bible_reading"
+              ? shown.subtitle
+              : null
+          }
           name={person}
           extra={helper ? null : whoFrom(p)}
           helper={helper}

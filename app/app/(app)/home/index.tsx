@@ -1286,6 +1286,7 @@ function NextBody({
                   ) : null}
                 </View>
                 {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
+                {p.note ? <Text style={s.nextNote}>{p.note}</Text> : null}
               </View>
             </View>
           ))}
@@ -2403,6 +2404,7 @@ function useHomeData(todayISO: string) {
         // «— помощник» is added by partText here, so the bare name is taken.
         label: myPartLine({ ...it, asAssistant: false }, t).label,
         topic: myPartLine(it, t).topic,
+        note: myPartLine(it, t).note,
         partKey: it.partKey,
         asAssistant: !!it.asAssistant,
         partnerName: it.partnerName ?? null,
@@ -3018,6 +3020,13 @@ const s = StyleSheet.create({
     fontSize: 14.5,
     color: "#334155",
     fontFamily: "Manrope_600SemiBold",
+  },
+  nextNote: {
+    fontSize: 13.5,
+    lineHeight: 19,
+    color: "#475569",
+    fontFamily: "Manrope_500Medium",
+    marginTop: 2,
   },
   nextFootLink: {
     fontSize: 13,

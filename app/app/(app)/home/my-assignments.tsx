@@ -256,6 +256,9 @@ export default function MyAssignmentsScreen() {
                             «{myPartLine(r.item, t).topic}»
                           </Text>
                         ) : null}
+                        {r.item.kind === 'meeting' && myPartLine(r.item, t).note ? (
+                          <Text style={styles.note}>{myPartLine(r.item, t).note}</Text>
+                        ) : null}
                         {r.item.kind === 'meeting' && r.item.partnerName ? (
                           <Text style={styles.pair}>
                             {t('home.next.pair', { name: r.item.partnerName })}
@@ -470,6 +473,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   topic: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#475569', marginTop: 2, lineHeight: 19 },
+  note: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: '#334155', marginTop: 3, lineHeight: 19 },
   pair: {
     fontFamily: 'Manrope_400Regular',
     alignSelf: 'flex-start',
