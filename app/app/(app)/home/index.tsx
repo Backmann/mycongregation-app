@@ -1317,7 +1317,7 @@ function NextBody({
               {kindName}
             </Text>
             {about ? (
-              <Text style={s.nextFootAbout} numberOfLines={2}>
+              <Text style={s.nextFootAbout}>
                 {about}
               </Text>
             ) : null}

@@ -2474,7 +2474,7 @@ export default function TalkExchangeYearScreen() {
                           t("talkCoordinator.log.unknownSpeaker")}
                       </Text>
                       {talkLabel(inc.publicTalkId) || inc.specialTheme ? (
-                        <Text style={styles.swapRowTalk} numberOfLines={1}>
+                        <Text style={styles.swapRowTalk}>
                           {talkLabel(inc.publicTalkId) ??
                             `${t("talkCoordinator.log.specialTalk")}: ${inc.specialTheme}`}
                         </Text>

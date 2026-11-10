@@ -2016,7 +2016,7 @@ function AssignmentRow({
           ) : null}
         </View>
         {subtitle && (
-          <Text style={styles.partTitle} numberOfLines={2}>
+          <Text style={styles.partTitle}>
             {subtitle}
           </Text>
         )}

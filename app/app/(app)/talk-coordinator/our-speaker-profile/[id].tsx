@@ -172,7 +172,7 @@ export default function OurSpeakerProfileScreen() {
               t("talkCoordinator.ourSpeakerProfile.noCongregation"))}
         </Text>
         {v.talkNumber != null ? (
-          <Text style={styles.visitTalk} numberOfLines={2}>
+          <Text style={styles.visitTalk}>
             <Text style={styles.visitNum}>№{v.talkNumber}</Text>
             {v.talkTitle ? ` — ${v.talkTitle}` : ""}
           </Text>

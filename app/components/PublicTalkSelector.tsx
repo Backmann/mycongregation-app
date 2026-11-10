@@ -97,7 +97,6 @@ export function PublicTalkSelector({
               styles.fieldValue,
               !selectedTalk && styles.fieldValuePlaceholder,
             ]}
-            numberOfLines={2}
           >
             {selectedTalk
               ? `№${selectedTalk.number}. ${selectedTalk.title}`
@@ -221,7 +220,6 @@ function TalkOption({
             styles.optionTitle,
             !talk.isActive && styles.optionTitleRetired,
           ]}
-          numberOfLines={2}
         >
           {talk.title}
         </Text>

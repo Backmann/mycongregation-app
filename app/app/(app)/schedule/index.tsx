@@ -1533,7 +1533,6 @@ function Row({
   lines,
   who,
   meetings,
-  wholeTitle,
   notices,
   cancelled,
   moved,
@@ -1568,8 +1567,6 @@ function Row({
    * «10:30 · Общая встреча собрания · ведёт …» broke inside the name).
    */
   meetings?: { key: string; time: string; title: string; who: string | null }[];
-  /** The title whole, however long (a visit names its group). */
-  wholeTitle?: boolean;
   /** Field service: what is different this time, in amber, one per meeting that says so. */
   notices?: string[];
   /** Field service: the day's one meeting is called off — its reason, in red. */
@@ -1615,7 +1612,7 @@ function Row({
       </View>
       <View style={styles.rowBody}>
         <Text style={[styles.kind, { color: tone }]}>{live ? `${kindLabel} · ${t("feed.liveNow")}` : kindLabel}</Text>
-        <Text style={[styles.title, past && styles.pastTitle]} numberOfLines={wholeTitle ? undefined : 2}>
+        <Text style={[styles.title, past && styles.pastTitle]}>
           {title}
         </Text>
         {live ? (
@@ -2460,7 +2457,6 @@ function FieldDay({
           kindLabel={t("feed.kindField")}
           icon={ownVisit ? "walk-outline" : KIND.field.icon}
           title={title}
-          wholeTitle
           time={firstTime}
           lines={lines}
           who={singleWho}

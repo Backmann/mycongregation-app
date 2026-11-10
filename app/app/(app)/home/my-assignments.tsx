@@ -246,13 +246,13 @@ export default function MyAssignmentsScreen() {
                         {/* Named as on the Home card: the whole name of the
                             reader's part, «— помощник», the pair on its own
                             line — «в паре: …» needs no case to agree. */}
-                        <Text style={styles.title} numberOfLines={2}>
+                        <Text style={styles.title}>
                           {r.item.kind === 'meeting'
                             ? myPartLine(r.item, t).label
                             : taskTitle(r.item, t)}
                         </Text>
                         {r.item.kind === 'meeting' && myPartLine(r.item, t).topic ? (
-                          <Text style={styles.topic} numberOfLines={2}>
+                          <Text style={styles.topic}>
                             «{myPartLine(r.item, t).topic}»
                           </Text>
                         ) : null}
