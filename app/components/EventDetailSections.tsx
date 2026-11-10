@@ -22,6 +22,7 @@ import {
   visitMidweekDay,
 } from '../lib/event-view';
 import { formatDay, formatDayRange } from '../lib/date-range';
+import { InvitedChip } from './InvitedChip';
 
 /**
  * The event's page, by kind (27 September).
@@ -96,6 +97,7 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
       {kind === 'campaign' && event.auxReducedHours ? (
         <Text style={styles.sub}>{t('specialEvents.page.auxReduced')}</Text>
       ) : null}
+      <InvitedChip type={event.type} count={event.invitedCount} />
     </View>
   );
 }

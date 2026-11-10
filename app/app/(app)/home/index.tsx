@@ -94,6 +94,7 @@ import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { SECTION_COLORS, SectionKind } from "../../../lib/section-colors";
 import { MEETING_INK, MEETING_TILE, MeetingTone } from "../../../lib/palette";
+import { inviteesOf } from "../../../lib/invitations";
 import { FieldNotice } from "../../../components/FieldNotice";
 import {
   SUBSECTIONS,
@@ -2297,6 +2298,13 @@ function useHomeData(todayISO: string) {
     enabled: user?.role === "admin" || user?.role === "elder",
     retry: false,
   });
+  // Home is about oneself: an event for the invited only that reaches a
+  // keeper of the events but is not his invitation stays off it
+  // (10 November 2026) — he finds it under «События».
+  const homeEvents = useMemo(
+    () => (eventsQ.data ?? []).filter((e) => !inviteesOf(e.type) || e.invited !== false),
+    [eventsQ.data],
+  );
   const coVisitQ = useQuery({
     queryKey: ["co-visit-mine"],
     queryFn: () => coVisitItemsApi.mine(),
@@ -2440,7 +2448,7 @@ function useHomeData(todayISO: string) {
       groupNameById,
       myServiceGroupId: myPublisher?.serviceGroupId ?? null,
       myPublisherId: myPublisherId ?? null,
-      events: eventsQ.data ?? [],
+      events: homeEvents,
       moves,
       eldersMeetings: eldersMeetingsQ.data ?? [],
       absences: absencesQ.data ?? [],
@@ -2478,7 +2486,7 @@ function useHomeData(todayISO: string) {
     fieldRows,
     programmeRows,
     publishersQ.data,
-    eventsQ.data,
+    homeEvents,
     moves,
     tasksQ.data,
     absencesQ.data,
@@ -2503,7 +2511,7 @@ function useHomeData(todayISO: string) {
 
   return {
     timeline,
-    events: eventsQ.data ?? [],
+    events: homeEvents,
     absences: absencesQ.data ?? [],
     loading:
       (overviewQ.isLoading && !overviewQ.data) ||

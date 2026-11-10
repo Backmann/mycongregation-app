@@ -37,6 +37,7 @@ import { MonthCalendar } from './MonthCalendar';
 import { TimeField } from './TimeField';
 import { RichText } from './RichText';
 import { formatDayRange } from '../lib/date-range';
+import { inviteesOf } from '../lib/invitations';
 
 export const EVENT_TYPES = [
   'regional_convention',
@@ -44,6 +45,10 @@ export const EVENT_TYPES = [
   'memorial',
   'circuit_overseer_visit',
   'branch_representative_visit',
+  // For the invited only (10 November 2026) — lib/invitations.ts.
+  'kingdom_ministry_school_elders',
+  'kingdom_ministry_school_servants',
+  'pioneer_special_meeting',
   // The special talk is not made here any more: it is a talk of the talk
   // journal, with a theme in place of a number (27 September). Its label stays
   // in the translations for the events already in the bin.
@@ -636,7 +641,10 @@ export function SpecialEventForm({
         <Text style={styles.kindName}>
           {isOther ? t('specialEvents.create.other') : kindLabel}
         </Text>
-        {pastLocked ? null : (
+        {/* The kind of an event for the invited is not changed once saved
+            (10 November 2026): the invitations already went to those it
+            names. The server refuses it too (EVENT_TYPE_LOCKED). */}
+        {pastLocked || (!isNew && inviteesOf(kind)) ? null : (
           <Pressable
             hitSlop={8}
             onPress={() => setShowKinds((s) => !s)}
@@ -652,7 +660,7 @@ export function SpecialEventForm({
       </View>
       {showKinds ? (
         <View style={styles.inlineCard}>
-          {EVENT_TYPES.map((key) => {
+          {EVENT_TYPES.filter((key) => isNew || !inviteesOf(key)).map((key) => {
             const active = kind === key;
             const kl = KIND_LOOK[key as KindKey];
             return (
@@ -1292,7 +1300,13 @@ function Summary({
   }
   const { warnings } = eventConflicts(value, others, selfId, t, locale);
   for (const w of warnings) lines.push({ icon: 'alert-circle-outline', text: w, warn: true });
-  lines.push({
+  // For the invited only: who sees it and is told, and the week-ahead
+  // reminder (10 November 2026).
+  const invited = inviteesOf(kind);
+  if (invited && !past) {
+    lines.push({ icon: 'people-outline', text: t(`specialEvents.invited.formSees.${invited}`) });
+    lines.push({ icon: 'notifications-outline', text: t('specialEvents.invited.formReminders') });
+  } else lines.push({
     icon: past ? 'archive-outline' : 'notifications-outline',
     text: past
       ? t('specialEvents.form.problem.pastNotice')

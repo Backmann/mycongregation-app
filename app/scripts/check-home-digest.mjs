@@ -34,6 +34,7 @@ const MODULES = [
   'section-colors',
   'event-meeting',
   'field-moves',
+  'invitations',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -308,6 +309,17 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   ];
   const { digest } = run({ me: 'p-x', group: null, items: [], events });
   check('8 «Скоро»: конгресс через 4 недели; не то, что уже в ленте, не дальше двух месяцев, не прочее', digest.soon.map((e) => e.id), ['congress']);
+  // An event for the invited is an invitation: from the day it is entered,
+  // however far ahead (10 November 2026) — but not one already in the list.
+  const { digest: invited } = run({
+    me: 'p-x', group: null, items: [],
+    events: [
+      ...events,
+      ev('school-far', 'kingdom_ministry_school_elders', '2027-02-07'),
+      ev('school-near', 'kingdom_ministry_school_elders', '2026-10-01'),
+    ],
+  });
+  check('8а «Скоро»: школа через четыре месяца — да; в ближайших двух неделях — нет', invited.soon.map((e) => e.id), ['congress', 'school-far']);
 }
 
 // --- 9. Own group's cleaning after the meetings makes the meeting one's own --

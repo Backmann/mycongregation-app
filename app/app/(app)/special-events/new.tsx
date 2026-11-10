@@ -166,6 +166,10 @@ const CHOICES = [
   'memorial',
   'branch_representative_visit',
   'campaign',
+  // For the invited only (10 November 2026).
+  'kingdom_ministry_school_elders',
+  'kingdom_ministry_school_servants',
+  'pioneer_special_meeting',
   'other',
 ] as const;
 

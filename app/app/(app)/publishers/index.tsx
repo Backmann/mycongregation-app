@@ -13,6 +13,7 @@ import { nextLocalNeeds, shortDayLabel } from '../../../lib/local-needs';
 import { congregationLines, type DoorLine } from '../../../lib/congregation-lines';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
 import { PartlyShown } from '../../../components/ConnectionState';
+import { formatDayRange } from '../../../lib/date-range';
 
 /**
  * The congregation's contents — every door into the congregation's work.
@@ -123,7 +124,27 @@ export default function CongregationScreen() {
   };
 
   const editsProgramme = perms.canEditMidweekSchedule || perms.canEditWeekendSchedule;
-  const meetings: Door[] = [];
+  // THE EVENTS, first among the meetings (10 November 2026): until now only
+  // an icon in the Programme's header led to them. The next one the person
+  // may see is named under the door.
+  const todayHub = summaryQ.data?.today ?? null;
+  const nextEvent = todayHub
+    ? (eventsQ.data ?? [])
+        .filter((e) => !e.deletedAt && (e.endDate ?? e.date) >= todayHub)
+        .sort((a, b) => a.date.localeCompare(b.date))[0]
+    : undefined;
+  const meetings: Door[] = [
+    {
+      key: 'events',
+      title: t('specialEvents.title.list'),
+      subtitle: nextEvent
+        ? t('congregationHub.sub.eventsNext', {
+            date: formatDayRange(nextEvent.date, nextEvent.endDate, i18n.language, { year: 'never' }),
+          })
+        : t('congregationHub.sub.events'),
+      href: '/special-events',
+    },
+  ];
   // NARROWER THAN THE TABLE SAYS, on purpose: the screen is «self» there — it
   // forwards whoever is not let in — and this is the question it asks
   // (lib/permissions; scripts/check-programme-editor-door.mjs holds the two
