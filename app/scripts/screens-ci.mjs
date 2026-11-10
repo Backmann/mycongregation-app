@@ -39,7 +39,7 @@
 import { chromium } from 'playwright';
 import { execSync } from 'node:child_process';
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Buffer } from 'node:buffer';
@@ -109,7 +109,15 @@ function framesFor(role, lang) {
     for (const [name, path, only] of SCREENS) {
       if (only && only !== role) continue;
       if (lang === 'de' && !GERMAN.includes(name)) continue;
-      out.push({ id: `${role}-${lang}-${w}-${name}`, w, h, path });
+      out.push({
+        id: `${role}-${lang}-${w}-${name}`,
+        w,
+        h,
+        path,
+        // The programme opened by a link to a week, on the wide layout: where
+        // it lands must not depend on when the data comes (see landingHolds).
+        landing: w >= 1024 && (name === 'midweek' || name === 'weekend'),
+      });
     }
   }
   return out;
@@ -273,6 +281,7 @@ async function photograph(side) {
           const shot = await steady(page);
           writeFileSync(join(OUT, side, `${f.id}.png`), shot);
           results[f.id] = await defectsOf(page, events);
+          if (f.landing) results[f.id].push(...(await landingHolds(page, `${base}${f.path}`, shot)));
         } catch (e) {
           results[f.id] = [`кадр не снят: ${String(e.message).split('\n')[0]}`];
         }
@@ -283,6 +292,54 @@ async function photograph(side) {
     await browser.close();
   }
   return results;
+}
+
+/**
+ * WHERE THE FEED LANDS must not depend on WHEN its data comes (10 November
+ * 2026). The same frame again, with the field service meetings answering
+ * 2.5 s late and a click outside the list while they are on their way —
+ * a dialog closed over the feed. Before the fix the list then stood a card
+ * lower: the browser had moved the scroll to keep the row on screen while
+ * the feed believed itself in place, and any click anywhere had let go of
+ * the landing. Must give the very same picture as the frame taken normally.
+ */
+async function landingHolds(page, url, normal) {
+  const late = async (route) => {
+    await new Promise((ok) => setTimeout(ok, 2500));
+    await route.continue().catch(() => {});
+  };
+  await page.route(/\/field-service-meetings/, late);
+  try {
+    await page.goto(url);
+    await page.waitForTimeout(1200);
+    // An empty spot of the header, outside the list (the logo at the corner
+    // would navigate).
+    const vp = page.viewportSize();
+    await page.mouse.click(Math.round(vp.width * 0.6), 30);
+    await page.waitForTimeout(2600);
+    await dismissPrompts(page);
+    const again = await steady(page);
+    const a = decodeBuffer(normal), b = decodeBuffer(again);
+    if (a.width !== b.width || a.height !== b.height) return ['лента встала иначе, когда данные пришли позже (другой размер кадра)'];
+    let n = 0;
+    for (let i = 0; i < a.width * a.height; i++) {
+      const ia = i * a.bpp, ib = i * b.bpp;
+      if (Math.max(Math.abs(a.px[ia] - b.px[ib]), Math.abs(a.px[ia + 1] - b.px[ib + 1]), Math.abs(a.px[ia + 2] - b.px[ib + 2])) > NOISE) n++;
+    }
+    return n > TINY ? [`лента встала иначе, когда данные пришли позже (${n} пикс.)`] : [];
+  } finally {
+    await page.unroute(/\/field-service-meetings/, late);
+  }
+}
+
+function decodeBuffer(buf) {
+  const file = join(OUT, `.tmp-${process.pid}.png`);
+  writeFileSync(file, buf);
+  try {
+    return decode(file);
+  } finally {
+    rmSync(file, { force: true });
+  }
 }
 
 // ── comparison ─────────────────────────────────────────────────────────

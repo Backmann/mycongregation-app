@@ -274,6 +274,12 @@ type MemorialItem = {
 };
 type Item = MeetingItem | FieldItem | SpecialItem | MemorialItem;
 
+/** The DOM element a ScrollView scrolls on the web; null elsewhere. */
+function scrollNodeOf(view: unknown): unknown {
+  const v = view as { getScrollableNode?: () => unknown } | null;
+  return v?.getScrollableNode?.() ?? null;
+}
+
 export default function ProgrammeFeedScreen() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
@@ -862,18 +868,39 @@ export default function ProgrammeFeedScreen() {
   }, [targetWeek, targetKind, targetDay]);
   // On the web a wheel or a key moves the list without any drag, so listen for
   // the act itself. Native touch is onScrollBeginDrag below.
+  //
+  // Only an act ON THE LIST lets go (10 November 2026). Listening on the whole
+  // window, a press on «Позже» in a dialog over the feed let go as well — and
+  // the rows that arrived a moment later pushed the list a card down, a
+  // different place on each visit. The screen check caught it.
+  // Re-attached when the layout switches between one and two columns.
+  const listWide = useWindowDimensions().width >= 1024;
   useEffect(() => {
     if (Platform.OS !== "web") return;
-    const w = globalThis as unknown as {
+    const node = scrollNodeOf(scrollRef.current) as unknown as {
       addEventListener?: (type: string, fn: () => void, opts?: { passive?: boolean }) => void;
       removeEventListener?: (type: string, fn: () => void) => void;
+      contains?: (other: unknown) => boolean;
+    } | null;
+    if (!node?.addEventListener) return;
+    const acts = ["wheel", "touchstart", "mousedown"];
+    for (const a of acts) node.addEventListener(a, release, { passive: true });
+    // Keys scroll the list when the focus is in it, or nowhere in particular.
+    const w = globalThis as unknown as {
+      addEventListener?: (type: string, fn: (e: { target?: unknown }) => void) => void;
+      removeEventListener?: (type: string, fn: (e: { target?: unknown }) => void) => void;
+      document?: { body?: unknown };
     };
-    const acts = ["wheel", "touchstart", "keydown", "mousedown"];
-    for (const a of acts) w.addEventListener?.(a, release, { passive: true });
+    const onKey = (e: { target?: unknown }) => {
+      if (e.target === w.document?.body || node.contains?.(e.target)) release();
+    };
+    w.addEventListener?.("keydown", onKey);
     return () => {
-      for (const a of acts) w.removeEventListener?.(a, release);
+      for (const a of acts) node.removeEventListener?.(a, release);
+      w.removeEventListener?.("keydown", onKey);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listWide]);
 
   const monthOf = (ym: string) => {
     const name = atMidnight(`${ym}-01`).toLocaleDateString(lang, { month: "long" });
@@ -1144,7 +1171,14 @@ export default function ProgrammeFeedScreen() {
   const anchor = () => {
     if (released.current) return;
     const y = topOf(cutAt);
-    if (y === null || target.current === y) return;
+    if (y === null) return;
+    // Where the list REALLY stands, not where it was last sent: when rows
+    // arrive above, the browser moves the scroll itself to keep what was on
+    // screen in place (scroll anchoring). Sent to the same y as before, the
+    // feed took itself for in place and stayed a card low (10 November 2026).
+    const node = Platform.OS === "web" ? (scrollNodeOf(scrollRef.current) as { scrollTop?: number } | null) : null;
+    const at = typeof node?.scrollTop === "number" ? node.scrollTop : target.current;
+    if (target.current === y && at !== null && Math.abs(at - y) < 0.5) return;
     target.current = y;
     scrollRef.current?.scrollTo({ y, animated: false });
     scrollY.current = y;
