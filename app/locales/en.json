@@ -1479,7 +1479,9 @@
       "service_overseer_assistant": "Service overseer's assistant",
       "attendance_recorder": "Attendance recorder",
       "body_coordinator_assistant": "Assistant to the coordinator of the body of elders",
-      "attendance_recorder_assistant": "Assistant attendance recorder"
+      "attendance_recorder_assistant": "Assistant attendance recorder",
+      "territory_servant": "Territory servant",
+      "territory_servant_assistant": "Territory assistant"
     },
     "groups": {
       "meeting": "Meetings",
@@ -4160,7 +4162,10 @@
       "aux_application": "Auxiliary pioneer applications",
       "pioneer_meeting": "Meeting with the pioneers",
       "meeting_move": "Meeting moved",
-      "not_held_clearance": "Assignments on a meeting not held"
+      "not_held_clearance": "Assignments on a meeting not held",
+      "territory_import": "Territories: import",
+      "territory_boundary": "Territory boundary",
+      "territory_settings": "Territories: confirmed"
     },
     "actions": {
       "CREATE": "added",
@@ -6123,7 +6128,15 @@
       "PAIR_PREP_ONCE_A_DAY": "A new suggestion can be made tomorrow.",
       "PAIR_PREP_TOO_MANY": "Enough messages for today — arrange it in person.",
       "PAIR_PREP_OPTION_GONE": "That time no longer fits — choose another.",
-      "PAIR_PREP_NOTHING_TO_ANSWER": "No answer is expected right now — the list was refreshed."
+      "PAIR_PREP_NOTHING_TO_ANSWER": "No answer is expected right now — the list was refreshed.",
+      "TERRITORY_IMPORT_CLOSED": "The records are confirmed — the import is closed.",
+      "TERRITORY_GEOMETRY": "The outline of territory {{number}} could not be read.",
+      "TERRITORY_NUMBER_TWICE": "Number {{number}} appears twice.",
+      "TERRITORY_UNKNOWN": "Territory {{number}} is not among those brought over.",
+      "TERRITORY_DATES": "The dates of territory {{number}} do not add up.",
+      "TERRITORY_HOLDER_UNKNOWN": "Territory {{number}} names someone from another congregation.",
+      "TERRITORY_TWO_OPEN": "Territory {{number}} would be held by two at once.",
+      "TERRITORY_NONE": "Nothing to confirm: there are no territories yet."
     }
   },
   "stage": {
@@ -7190,6 +7203,86 @@
       "partner_duty": "your partner has a duty at this meeting",
       "cleaning": "cleaning after this meeting",
       "away": "one of you is away"
+    }
+  },
+  "territories": {
+    "kicker": "Ministry · territories",
+    "title": "Territories",
+    "verifiedSince": "Records confirmed {{date}}",
+    "notVerified": "Bringing the records over: for now only you see this section",
+    "nextStage": "Giving out, the map and the S-13 printout come next.",
+    "tiles": {
+      "total": "territories",
+      "held": "held",
+      "overdue": "longer than 4 months",
+      "idle": "free for over a year"
+    },
+    "row": {
+      "held": "{{name}} · since {{date}}",
+      "free": "Free · worked {{date}}",
+      "freeNever": "Free",
+      "due": "until {{date}}"
+    },
+    "door": {
+      "count": "Territories: {{count}}",
+      "import": "Bringing the records over"
+    },
+    "import": {
+      "computerOnly": "The records are brought over on a computer: open this section in a browser.",
+      "step1": "1 · Files",
+      "step2": "2 · Matching",
+      "step3": "3 · Bring over",
+      "step4": "4 · Checks",
+      "filesLead": "Choose the files. They are read here, on this computer; only what you confirm below goes to the server.",
+      "mapFile": "Territory map export",
+      "mapFileHint": "GeoJSON from the previous territory tool",
+      "mapRead": "{{name}} · territories: {{count}}, assignments: {{lines}}",
+      "sheetFile": "Territory assignment record (S-13)",
+      "sheetFileHint": "Your Excel file (.xlsx) with the names",
+      "sheetRead": "{{name}} · lines: {{count}}",
+      "boundaryFile": "Congregation territory boundary",
+      "boundaryFileHint": "KML file",
+      "boundaryRead": "{{name}} · dated {{date}}",
+      "choose": "Choose",
+      "fileUnreadable": "The file could not be read: {{reason}}",
+      "privacy": "The files contain names and addresses. They are kept neither here nor on the server — only the lines brought over.",
+      "tileTerritories": "territories",
+      "tileLines": "assignments since {{from}}",
+      "tileOpen": "held now",
+      "numbersTitle": "Numbers written differently — matched",
+      "unpaired": "Not found among the maps: {{list}}",
+      "disagreeTitle": "Dates disagree: {{count}}",
+      "disagreeHint": "The map export’s date is used — it is the fresher one.",
+      "peopleTitle": "People: {{count}}",
+      "peopleHint": "Where the card is unambiguous it was found automatically. Check and correct; «no card» keeps the name as written.",
+      "personLines": "assignments: {{count}}",
+      "noCard": "no card",
+      "findCard": "Find a card",
+      "keepNameOnly": "No card — keep the name as written",
+      "unnamedTitle": "Assignments without a name: {{count}}",
+      "unnamedPlaceholder": "Who held the territory",
+      "commentsTitle": "Territory notes: {{count}}",
+      "commentsHint": "Tick only «do not call» and keep the address — no names, no reasons (a surname only if the flat cannot be found without it).",
+      "addressPlaceholder": "«Do not call» address",
+      "sendLead": "Anything brought over earlier is replaced by this. Only you see the section still.",
+      "namesMissing": "Holder not given: {{count}}",
+      "send": "Bring over into the app",
+      "sendingReset": "Starting over…",
+      "sendingBoundary": "Boundary…",
+      "sendingTerritories": "Territories: {{done}} of {{total}}…",
+      "sendingAssignments": "Assignments: {{done}} of {{total}}…",
+      "sendingNoCalls": "«Do not call»…",
+      "sendingChecks": "Checking…",
+      "noBoundary": "No congregation boundary loaded — territories crossing it were not checked.",
+      "outsideTitle": "Reaching past the boundary: {{count}}",
+      "outsideItem": "{{number}} ({{share}}%)",
+      "overlapTitle": "Overlapping: {{count}}",
+      "checksHint": "This does not stop you confirming; the outlines can be corrected later.",
+      "freshLead": "Assignments made after the last export are entered after confirming — giving out comes in the next stage.",
+      "verify": "Records checked",
+      "verifyTitle": "Records checked?",
+      "verifyBody": "The section opens to the service committee and the import closes. This cannot be undone.",
+      "verifyConfirm": "Yes, checked"
     }
   }
 }

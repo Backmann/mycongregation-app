@@ -1407,7 +1407,9 @@ export type ResponsibilityType =
   | "cleaning_coordinator"
   | "duties_coordinator"
   | "attendance_recorder"
-  | "attendance_recorder_assistant";
+  | "attendance_recorder_assistant"
+  | "territory_servant"
+  | "territory_servant_assistant";
 
 export interface Responsibility {
   id: string;
@@ -7873,4 +7875,97 @@ export const cardMergeApi = {
     }>(`/card-merge/${mergeId}/undo`);
     return data;
   },
+};
+
+// ---- Territories (11 November 2026) ----
+
+export interface TerritoryGeometry {
+  type: "Polygon" | "MultiPolygon";
+  coordinates: unknown;
+}
+
+export interface TerritoryAccess {
+  seesAll: boolean;
+  keeps: boolean;
+  verified: boolean;
+  verifiedAt: string | null;
+  territories: number;
+}
+
+export interface TerritoryRow {
+  id: string;
+  number: string;
+  locality: string | null;
+  kind: "city" | "suburb" | "village" | null;
+  geometry: TerritoryGeometry;
+  lastCompletedOn: string | null;
+  holder: {
+    assignmentId: string;
+    publisherId: string | null;
+    name: string;
+    forGroupName: string | null;
+    assignedOn: string;
+    dueOn: string | null;
+  } | null;
+}
+
+export interface TerritoryChecks {
+  hasBoundary: boolean;
+  outsideBoundary: { number: string; share: number }[];
+  overlapping: [string, string][];
+  assignmentsWithoutCard: number;
+}
+
+export interface TerritoryImportAssignment {
+  number: string;
+  publisherId?: string;
+  holderName: string;
+  forGroupId?: string;
+  assignedOn: string;
+  completedOn?: string;
+  returnedOn?: string;
+  method?: "door_to_door" | "letters" | "campaign" | "other";
+}
+
+export const territoriesApi = {
+  access: async (): Promise<TerritoryAccess> =>
+    (await api.get<TerritoryAccess>("/territories/access")).data,
+  list: async (): Promise<TerritoryRow[]> =>
+    (await api.get<TerritoryRow[]>("/territories")).data,
+  checks: async (): Promise<TerritoryChecks> =>
+    (await api.get<TerritoryChecks>("/territories/checks")).data,
+  importBoundary: async (body: {
+    geometry: TerritoryGeometry;
+    description?: { north?: string; east?: string; south?: string; west?: string };
+    validFrom?: string;
+  }) => (await api.post<{ id: string }>("/territories/import/boundary", body)).data,
+  importTerritories: async (
+    items: {
+      number: string;
+      locality?: string;
+      geometry: TerritoryGeometry;
+      lastCompletedOn?: string;
+    }[],
+  ) =>
+    (
+      await api.post<{ created: number; updated: number }>(
+        "/territories/import/territories",
+        { items },
+      )
+    ).data,
+  importAssignments: async (items: TerritoryImportAssignment[]) =>
+    (
+      await api.post<{ saved: number; skipped: number }>(
+        "/territories/import/assignments",
+        { items },
+      )
+    ).data,
+  importNoCalls: async (
+    items: { number: string; address: string; surname?: string; notedOn: string }[],
+  ) =>
+    (await api.post<{ saved: number }>("/territories/import/no-calls", { items }))
+      .data,
+  reset: async () => (await api.post("/territories/import/reset")).data,
+  verify: async () =>
+    (await api.post<{ verifiedAt: string }>("/territories/verify")).data,
 };

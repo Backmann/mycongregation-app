@@ -52,6 +52,10 @@ export default function CartLayout() {
         options={{ title: t('service.locations') }}
       />
       <Stack.Screen
+        name="territories"
+        options={{ title: t('territories.title') }}
+      />
+      <Stack.Screen
         name="co-schedule"
         options={{ title: t('coVisit.title') }}
       />

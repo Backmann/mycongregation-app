@@ -12,6 +12,7 @@ import {
   serviceOverseerApi,
   serviceReportsApi,
   specialEventsApi,
+  territoriesApi,
 } from '../../../lib/api';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { serviceLines, type ServiceLine } from '../../../lib/service-lines';
@@ -125,6 +126,14 @@ export default function ServiceHubScreen() {
     staleTime: 60 * 1000,
   });
   const servingCount = servingQ.data ? servingQ.data.people.length : null;
+  // The territories: the server says who is let in (the committee only once
+  // the records are confirmed), so the door is drawn from its answer.
+  const territoriesQ = useQuery({
+    queryKey: ['territories', 'access'],
+    queryFn: () => territoriesApi.access(),
+    enabled: perms.loaded,
+    staleTime: 60 * 1000,
+  });
 
   // Back from a screen where something was just changed, the lines say so:
   // every answer is marked stale whenever the tab comes to the front, and
@@ -143,6 +152,7 @@ export default function ServiceHubScreen() {
         ['special-events', 'home'],
         ['aux-pioneers', 'month', month],
         ['aux-pioneers', 'serving-now'],
+        ['territories', 'access'],
       ]) {
         void qc.invalidateQueries({ queryKey });
       }
@@ -187,6 +197,19 @@ export default function ServiceHubScreen() {
     subtitle: t('fieldService.hubSubtitle'),
     href: '/cart/field-service',
   };
+  const ta = territoriesQ.data;
+  const territories: Door[] = ta?.seesAll
+    ? [
+        {
+          key: 'territories',
+          title: t('territories.title'),
+          subtitle: ta.verified
+            ? t('territories.door.count', { count: ta.territories })
+            : t('territories.door.import'),
+          href: '/cart/territories',
+        },
+      ]
+    : [];
   const cart: Door = {
     key: 'cart',
     title: t('service.publicWitnessing'),
@@ -301,7 +324,7 @@ export default function ServiceHubScreen() {
   const sections: DoorSection[] =
     perms.isElder || perms.isAdmin
       ? [
-          { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart] },
+          { key: 'preaching', label: t('serviceHub.sections.preaching'), doors: [fieldService, cart, ...territories] },
           { key: 'reports', label: t('serviceHub.sections.reports'), doors: [reports, ...summary, ...attendance] },
           { key: 'visits', label: t('serviceHub.sections.visits'), doors: [serviceOverseer, ...coSchedule] },
           { key: 'pioneers', label: t('serviceHub.sections.pioneers'), doors: [...myHours, ...auxPioneers, ...myAux, pioneerMeeting] },
@@ -312,13 +335,13 @@ export default function ServiceHubScreen() {
             label: null,
             // His own report first; then where he goes; then what a
             // responsibility of his adds, if he holds one.
-            doors: [reports, ...myHours, fieldService, cart, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers, ...myAux],
+            doors: [reports, ...myHours, fieldService, cart, ...territories, serviceOverseer, ...attendance, ...summary, ...coSchedule, ...auxPioneers, ...myAux],
           },
         ];
 
   // Every request a line here is read from: when one did not come, the
   // screen says that it is not showing everything (9 October 2026).
-  const asked = [standingQ, collectionQ, attendanceQ, fieldQ, ...cartQs, visitsQ, eventsQ, auxQ, servingQ, logQ];
+  const asked = [standingQ, collectionQ, attendanceQ, fieldQ, ...cartQs, visitsQ, eventsQ, auxQ, servingQ, logQ, territoriesQ];
   const retryFailed = () => {
     for (const q of asked) if (q.isError) void q.refetch();
   };

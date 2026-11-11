@@ -50,7 +50,10 @@ export const RESPONSIBILITY_GROUPS: {
       "attendance_recorder_assistant",
     ],
   },
-  { key: "service", types: ["public_witnessing"] },
+  {
+    key: "service",
+    types: ["public_witnessing", "territory_servant", "territory_servant_assistant"],
+  },
   {
     key: "house",
     types: ["accounts_servant", "cleaning_coordinator", "duties_coordinator"],
@@ -80,6 +83,8 @@ const GROUP_OF: Record<ResponsibilityType, string> = {
   attendance_recorder: "meeting",
   attendance_recorder_assistant: "meeting",
   public_witnessing: "service",
+  territory_servant: "service",
+  territory_servant_assistant: "service",
   accounts_servant: "house",
   cleaning_coordinator: "house",
   duties_coordinator: "house",
@@ -125,6 +130,7 @@ export const ASSISTANT_OF: readonly (readonly [ResponsibilityType, Responsibilit
   ["service_overseer", "service_overseer_assistant"],
   ["attendance_recorder", "attendance_recorder_assistant"],
   ["wt_study_conductor", "wt_study_conductor_backup"],
+  ["territory_servant", "territory_servant_assistant"],
 ];
 
 /** The other half of `type`'s pair, if it has one. */
