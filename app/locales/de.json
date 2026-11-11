@@ -4165,7 +4165,8 @@
       "not_held_clearance": "Aufgaben bei einer ausfallenden Zusammenkunft",
       "territory_import": "Gebiete: Übernahme",
       "territory_boundary": "Gebietsgrenze",
-      "territory_settings": "Gebiete: bestätigt"
+      "territory_settings": "Gebiete: bestätigt",
+      "territory_assignment": "Gebiete: Ausgaben"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -6136,7 +6137,12 @@
       "TERRITORY_DATES": "Die Daten von Gebiet {{number}} passen nicht zusammen.",
       "TERRITORY_HOLDER_UNKNOWN": "Bei Gebiet {{number}} steht jemand aus einer anderen Versammlung.",
       "TERRITORY_TWO_OPEN": "Gebiet {{number}} wäre gleichzeitig bei zweien.",
-      "TERRITORY_NONE": "Nichts zu bestätigen: noch keine Gebiete."
+      "TERRITORY_NONE": "Nichts zu bestätigen: noch keine Gebiete.",
+      "TERRITORY_NOT_OPEN": "Der Bereich ist noch nicht offen: die Daten sind nicht bestätigt.",
+      "TERRITORY_HELD": "Dieses Gebiet ist bereits ausgegeben.",
+      "TERRITORY_ENDED": "Das Gebiet ist bereits zurück.",
+      "TERRITORY_EXTENDED": "Bereits einmal verlängert — bitte an den Gebietsdiener wenden.",
+      "TERRITORY_PAST_YEAR": "Korrigiert werden kann nur das laufende Dienstjahr."
     }
   },
   "stage": {
@@ -7210,7 +7216,6 @@
     "title": "Gebiete",
     "verifiedSince": "Daten bestätigt am {{date}}",
     "notVerified": "Datenübernahme: diesen Bereich sehen vorerst nur Sie",
-    "nextStage": "Ausgabe, Karte und Druck der S-13 folgen im nächsten Schritt.",
     "tiles": {
       "total": "Gebiete",
       "held": "ausgegeben",
@@ -7225,7 +7230,9 @@
     },
     "door": {
       "count": "Gebiete: {{count}}",
-      "import": "Datenübernahme und Abgleich"
+      "import": "Datenübernahme und Abgleich",
+      "mine": "Ihre Gebiete und die Ihrer Gruppe",
+      "due": "{{number}} · zurück bis {{date}}"
     },
     "import": {
       "computerOnly": "Die Daten werden am Computer übernommen: öffnen Sie diesen Bereich im Browser.",
@@ -7283,6 +7290,122 @@
       "verifyTitle": "Daten geprüft?",
       "verifyBody": "Der Bereich öffnet sich dem Dienstkomitee, und die Übernahme wird geschlossen. Das lässt sich nicht rückgängig machen.",
       "verifyConfirm": "Ja, geprüft"
+    },
+    "route": "Route",
+    "map": {
+      "failed": "Die Karte wurde nicht geladen. Die Liste unten funktioniert.",
+      "noStreets": "Die Straßenkarte ist noch nicht geladen — nur die Gebietsumrisse sind zu sehen."
+    },
+    "tone": {
+      "held": "Ausgegeben",
+      "overdue": "Über 4 Monate",
+      "idle": "Über ein Jahr frei",
+      "free": "Frei"
+    },
+    "filter": {
+      "attention": "Braucht Aufmerksamkeit",
+      "held": "Ausgegeben",
+      "free": "Frei",
+      "all": "Alle"
+    },
+    "overview": {
+      "mine": "Ihre Gebiete: {{list}}",
+      "search": "Nummer, Ort oder Nachname",
+      "nothingDue": "Gerade braucht nichts Aufmerksamkeit",
+      "none": "Nichts gefunden",
+      "give": "Ausgeben",
+      "mapOnWeb": "Die Gebietskarte ist auf der Website; die App bekommt sie mit der nächsten Version."
+    },
+    "detail": {
+      "since": "seit {{date}}",
+      "due": "zurück bis {{date}}",
+      "extended": "verlängert",
+      "noCalls": "Nicht besuchen · {{count}}",
+      "noCallsNone": "Keine Nicht-besuchen-Adressen",
+      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Nach 2 Jahren prüfen die Ältesten.",
+      "history": "Ausgaben im vorigen und laufenden Dienstjahr",
+      "historyNone": "Keine Ausgaben",
+      "historyKept": "Frühere Jahre werden nicht aufbewahrt — nur das Datum der letzten Bearbeitung.",
+      "returned": "unbearbeitet zurück {{date}}",
+      "stillHeld": "ausgegeben"
+    },
+    "method": {
+      "door_to_door": "von Haus zu Haus",
+      "letters": "Briefe",
+      "campaign": "Aktion",
+      "other": "anders"
+    },
+    "action": {
+      "complete": {
+        "title": "Gebiet bearbeitet",
+        "confirm": "Als bearbeitet markieren"
+      },
+      "return": {
+        "title": "Unbearbeitet zurückgeben",
+        "confirm": "Zurückgeben",
+        "hint": "Im S-13 bleibt das Bearbeitungsdatum leer."
+      },
+      "extend": {
+        "title": "Mehr Zeit nötig",
+        "short": "Verlängern",
+        "confirm": "Verlängern",
+        "once": "Die Frist verlängert sich um einen Monat. Selbst geht das einmal — danach über den Gebietsdiener.",
+        "already": "Bereits verlängert. Wenn mehr Zeit nötig ist, sagen Sie es dem Gebietsdiener."
+      },
+      "edit": {
+        "title": "Ausgabe korrigieren",
+        "confirm": "Speichern",
+        "remove": "Diese Zeile löschen",
+        "removeSure": "Zum Löschen noch einmal tippen",
+        "assigned": "Ausgegeben",
+        "open": "Ausgegeben",
+        "completed": "Bearbeitet",
+        "returned": "Zurückgegeben"
+      },
+      "completedOn": "Bearbeitet am",
+      "returnedOn": "Zurückgegeben am",
+      "dueOn": "Zurück bis",
+      "method": "Wie bearbeitet"
+    },
+    "assign": {
+      "title": "Gebiet ausgeben",
+      "giveTo": "Ausgeben an {{name}}",
+      "choose": "Wem ausgeben?",
+      "toPerson": "An einen Verkündiger",
+      "toGroup": "Gruppengebiet",
+      "groupHint": "Das Gebiet wird auf eine Person eingetragen; seine Gruppe sieht es, solange es ausgegeben ist.",
+      "search": "Nach Namen suchen",
+      "holdsNone": "Hat: 0",
+      "hadOn": "dieses Gebiet: {{date}}",
+      "hadNever": "dieses Gebiet: noch nie",
+      "pioneer": "PIONIER",
+      "nobody": "Niemand gefunden",
+      "whichGroup": "Für welche Gruppe",
+      "dueOn": "Zurück bis",
+      "holds_one": "Hat: {{count}} ({{list}})",
+      "holds_other": "Hat: {{count}} ({{list}})",
+      "overdue_one": "{{count}} überfällig",
+      "overdue_other": "{{count}} überfällig",
+      "months_one": "{{count}} Monat",
+      "months_other": "{{count}} Monate"
+    },
+    "my": {
+      "title": "Mein Gebiet",
+      "none": "Sie und Ihre Gruppe haben gerade kein Gebiet.",
+      "openMap": "Karte öffnen",
+      "openMapHint": "Öffnet sich auf der Website; dort mit demselben Login anmelden.",
+      "since": "ausgegeben {{date}}",
+      "forGroup": "Gruppengebiet · {{group}}",
+      "ofGroup": "Gruppengebiet · {{group}} · bei {{name}}",
+      "due": "Zurück bis {{date}}",
+      "left_one": "noch {{count}} Tag",
+      "left_other": "noch {{count}} Tage",
+      "late_one": "{{count}} Tag überfällig",
+      "late_other": "{{count}} Tage überfällig",
+      "noCalls_one": "Nicht besuchen: {{count}} Adresse",
+      "noCalls_other": "Nicht besuchen: {{count}} Adressen",
+      "noCallsNone": "Keine Nicht-besuchen-Adressen",
+      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Sichtbar für den Inhaber, seine Gruppe und die Verantwortlichen."
     }
   }
 }

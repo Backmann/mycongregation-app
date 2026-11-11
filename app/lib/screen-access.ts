@@ -180,6 +180,10 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/cart/locations': 'all',
   // The server decides: the committee sees it only once the records are confirmed.
   '/cart/territories': 'self',
+  // The server decides (11 November 2026): the whole section for one,
+  // a holder's and his group's territories for the other.
+  '/cart/territory/[id]': 'self',
+  '/cart/my-territories': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.
   '/cart/service-overseer': 'all',
