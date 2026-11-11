@@ -7957,7 +7957,31 @@ export interface MyTerritory {
     extended: boolean;
     mine: boolean;
   };
+  /** A meeting for field service going out to it, the day before and on the day. */
+  meeting: { id: string; date: string; startTime: string; address: string } | null;
   noCalls: TerritoryNoCallRow[];
+}
+
+export interface TerritorySummary {
+  month: string;
+  given: number;
+  worked: number;
+  returned: number;
+  total: number;
+  held: number;
+  overdue: number;
+  idle: number;
+}
+
+/** A meeting for field service the user conducts, with what it may go to. */
+export interface MyServiceMeeting {
+  id: string;
+  date: string;
+  startTime: string;
+  address: string;
+  serviceGroupId: string | null;
+  territoryId: string | null;
+  options: { territoryId: string; number: string; locality: string | null }[];
 }
 
 export interface TerritoryCandidates {
@@ -7995,6 +8019,8 @@ export interface TerritoryRow {
     forGroupName: string | null;
     assignedOn: string;
     dueOn: string | null;
+    /** A group's territory whose holder no longer oversees the group. */
+    handOnTo: { publisherId: string; name: string } | null;
   } | null;
 }
 
@@ -8128,6 +8154,35 @@ export const territoriesApi = {
     ).data,
   revokeShareLink: async (assignmentId: string) =>
     (await api.delete(`/territories/assignments/${assignmentId}/share-link`)).data,
+  summary: async (month?: string): Promise<TerritorySummary> =>
+    (
+      await api.get<TerritorySummary>("/territories/summary", {
+        params: month ? { month } : {},
+      })
+    ).data,
+  campaign: async (territoryIds: string[], workedOn?: string) =>
+    (
+      await api.post<{ saved: number }>("/territories/campaign", {
+        territoryIds,
+        ...(workedOn ? { workedOn } : {}),
+      })
+    ).data,
+  transfer: async (assignmentId: string, body: { toPublisherId?: string; on?: string } = {}) =>
+    (
+      await api.post<TerritoryAssignmentRow>(
+        `/territories/assignments/${assignmentId}/transfer`,
+        body,
+      )
+    ).data,
+  myMeetings: async (): Promise<MyServiceMeeting[]> =>
+    (await api.get<MyServiceMeeting[]>("/territories/my-meetings")).data,
+  setMeetingTerritory: async (meetingId: string, territoryId: string | null) =>
+    (
+      await api.put<{ id: string; territoryId: string | null }>(
+        `/territories/meetings/${meetingId}`,
+        { territoryId },
+      )
+    ).data,
   /** The page behind a link; no login. */
   shared: async (token: string): Promise<SharedTerritory> =>
     (await api.get<SharedTerritory>(`/territory-links/${encodeURIComponent(token)}`))

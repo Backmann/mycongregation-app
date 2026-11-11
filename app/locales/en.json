@@ -6145,7 +6145,8 @@
       "TERRITORY_HELD": "This territory is already checked out.",
       "TERRITORY_ENDED": "The territory has already come back.",
       "TERRITORY_EXTENDED": "Already extended once — ask the territory servant.",
-      "TERRITORY_PAST_YEAR": "Only the current service year can be corrected."
+      "TERRITORY_PAST_YEAR": "Only the current service year can be corrected.",
+      "TERRITORY_NOT_FOR_MEETING": "A meeting may only go to its conductor’s own territory or its group’s."
     }
   },
   "stage": {
@@ -7408,7 +7409,8 @@
       "noCalls_one": "Do not call: {{count}} address",
       "noCalls_other": "Do not call: {{count}} addresses",
       "noCallsNone": "No do-not-call addresses",
-      "noCallsRule": "Address only, no names or reasons. Seen by the holder, his group and those responsible."
+      "noCallsRule": "Address only, no names or reasons. Seen by the holder, his group and those responsible.",
+      "meeting": "Meeting for field service: {{when}} · {{where}}"
     },
     "link": {
       "gone": "This link no longer works",
@@ -7422,6 +7424,30 @@
       "copied": "Copied",
       "send": "Send",
       "revoke": "Switch off"
+    },
+    "summary": {
+      "line": "{{month}}: assigned {{given}} · worked {{worked}} · returned unworked {{returned}}"
+    },
+    "campaign": {
+      "title": "Worked in a campaign",
+      "lead": "Tick the free territories worked during a campaign. The S-13 records them in your name, marked \"(campaign)\". A territory that is checked out is marked by its holder.",
+      "day": "Date worked",
+      "noneFree": "No free territories.",
+      "confirm_one": "Mark {{count}} territory",
+      "confirm_other": "Mark {{count}} territories"
+    },
+    "handOn": {
+      "title": "Hand on territory {{number}}",
+      "confirm": "Hand on",
+      "body": "{{from}} no longer oversees this group. The territory comes back from him today and goes to {{to}} at once; the return date stays.",
+      "note": "New group overseer: {{name}}",
+      "button": "Hand on"
+    },
+    "meetings": {
+      "title": "Meetings for field service you conduct",
+      "hint": "Choose a territory — those who come see it with its do-not-call addresses the day before and on the day.",
+      "none": "No territory",
+      "noOptions": "Neither you nor this group holds a territory."
     }
   }
 }

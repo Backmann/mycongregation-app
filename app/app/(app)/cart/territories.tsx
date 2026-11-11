@@ -11,16 +11,18 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
-import { territoriesApi, type TerritoryRow } from '../../../lib/api';
+import { extractErrorMessage, territoriesApi, type TerritoryRow } from '../../../lib/api';
 import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { NoAccess } from '../../../components/NoAccess';
 import { TerritoryImport } from '../../../components/territories/TerritoryImport';
 import { TerritoryMap, type MapShape } from '../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../components/territories/AssignSheet';
+import { CampaignSheet } from '../../../components/territories/CampaignSheet';
+import { Dialog } from '../../../components/Dialog';
 import { SegmentedControl } from '../../../components/SegmentedControl';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../components/reports/ReportBits';
 import { formatDateISO } from '../../../lib/dates';
@@ -69,6 +71,23 @@ export default function TerritoriesScreen() {
   const [filter, setFilter] = useState<Filter>('attention');
   const [query, setQuery] = useState('');
   const [giving, setGiving] = useState<string | null>(null);
+  const [campaign, setCampaign] = useState(false);
+  const [handing, setHanding] = useState<TerritoryRow | null>(null);
+  const [handError, setHandError] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const summaryQ = useQuery({
+    queryKey: ['territories', 'summary'],
+    queryFn: () => territoriesApi.summary(),
+    enabled: open,
+  });
+  const handOn = useMutation({
+    mutationFn: (row: TerritoryRow) => territoriesApi.transfer(row.holder!.assignmentId),
+    onSuccess: () => {
+      setHanding(null);
+      void qc.invalidateQueries({ queryKey: ['territories'] });
+    },
+    onError: (e) => setHandError(extractErrorMessage(e)),
+  });
 
   const rows = useMemo(
     () =>
@@ -100,13 +119,17 @@ export default function TerritoriesScreen() {
     if (filter === 'held') return list.filter((r) => r.tone === 'held' || r.tone === 'overdue');
     if (filter === 'free') return list.filter((r) => r.tone === 'idle' || r.tone === 'free');
     if (filter === 'attention') {
+      // A group's territory whose holder no longer oversees the group first:
+      // one tap hands it on.
+      const handOnRows = list.filter((r) => r.row.holder?.handOnTo);
       const overdue = list
+        .filter((r) => !r.row.holder?.handOnTo)
         .filter((r) => r.tone === 'overdue')
         .sort((x, y) => x.row.holder!.assignedOn.localeCompare(y.row.holder!.assignedOn));
       const idle = list
         .filter((r) => r.tone === 'idle')
         .sort((x, y) => (x.row.lastCompletedOn ?? '').localeCompare(y.row.lastCompletedOn ?? ''));
-      return [...overdue, ...idle];
+      return [...handOnRows, ...overdue, ...idle];
     }
     return list;
   }, [rows, filter, query]);
@@ -188,6 +211,26 @@ export default function TerritoriesScreen() {
             <Tile value={counts.idle} label={t('territories.tiles.idle')} tone={TONE_COLOR.idle} />
           </View>
 
+          {summaryQ.data ? (
+            <View style={s.summary}>
+              <Text style={s.summaryText}>
+                {t('territories.summary.line', {
+                  month: monthName(summaryQ.data.month, i18n.language),
+                  given: summaryQ.data.given,
+                  worked: summaryQ.data.worked,
+                  returned: summaryQ.data.returned,
+                })}
+              </Text>
+            </View>
+          ) : null}
+
+          {a.keeps ? (
+            <Pressable onPress={() => setCampaign(true)} style={s.campaignBtn} accessibilityRole="button">
+              <Ionicons name="megaphone-outline" size={17} color={BRAND} />
+              <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
+            </Pressable>
+          ) : null}
+
           <SegmentedControl<Filter>
             segments={[
               { key: 'attention', label: t('territories.filter.attention') },
@@ -218,6 +261,14 @@ export default function TerritoriesScreen() {
                 today={today}
                 lang={i18n.language}
                 onGive={a.keeps && !row.holder ? () => setGiving(row.id) : undefined}
+                onHandOn={
+                  a.keeps && row.holder?.handOnTo
+                    ? () => {
+                        setHandError(null);
+                        setHanding(row);
+                      }
+                    : undefined
+                }
               />
             ))}
             {shown.length === 0 ? (
@@ -230,6 +281,25 @@ export default function TerritoriesScreen() {
         </>
       )}
       {giving ? <AssignSheet territoryId={giving} visible onClose={() => setGiving(null)} /> : null}
+      {campaign ? (
+        <CampaignSheet rows={listQ.data ?? []} visible onClose={() => setCampaign(false)} />
+      ) : null}
+      <Dialog
+        visible={!!handing}
+        title={t('territories.handOn.title', { number: handing?.number ?? '' })}
+        confirmLabel={t('territories.handOn.confirm')}
+        onConfirm={() => handing && handOn.mutate(handing)}
+        onCancel={() => setHanding(null)}
+        pending={handOn.isPending}
+      >
+        <Text style={s.dialogText}>
+          {t('territories.handOn.body', {
+            from: handing?.holder?.name ?? '',
+            to: handing?.holder?.handOnTo?.name ?? '',
+          })}
+        </Text>
+        {handError ? <Text style={s.dialogError}>{handError}</Text> : null}
+      </Dialog>
     </KeyboardScroll>
   );
 }
@@ -249,12 +319,14 @@ function Row({
   today,
   lang,
   onGive,
+  onHandOn,
 }: {
   row: TerritoryRow;
   tone: TerritoryTone;
   today: string;
   lang: string;
   onGive?: () => void;
+  onHandOn?: () => void;
 }) {
   const { t } = useTranslation();
   const h = row.holder;
@@ -280,8 +352,17 @@ function Row({
               ? t('territories.row.free', { date: formatDayShort(row.lastCompletedOn, lang) })
               : t('territories.row.freeNever')}
         </Text>
+        {h?.handOnTo ? (
+          <Text style={s.handOnNote}>
+            {t('territories.handOn.note', { name: h.handOnTo.name })}
+          </Text>
+        ) : null}
       </View>
-      {h?.dueOn ? (
+      {onHandOn ? (
+        <Pressable onPress={onHandOn} style={s.give} accessibilityRole="button" hitSlop={6}>
+          <Text style={s.giveText}>{t('territories.handOn.button')}</Text>
+        </Pressable>
+      ) : h?.dueOn ? (
         <Text style={[s.due, h.dueOn < today && { color: TONE_COLOR.overdue }]}>
           {t('territories.row.due', { date: formatDayShort(h.dueOn, lang) })}
         </Text>
@@ -294,7 +375,37 @@ function Row({
   );
 }
 
+/** «октябрь» for '2026-10'. */
+function monthName(month: string, lang: string): string {
+  try {
+    return new Date(`${month}-15T12:00:00Z`).toLocaleDateString(lang, {
+      month: 'long',
+      timeZone: 'UTC',
+    });
+  } catch {
+    return month;
+  }
+}
+
 const s = StyleSheet.create({
+  summary: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: LINE, paddingHorizontal: 14, paddingVertical: 10 },
+  summaryText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
+  campaignBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: BRAND,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    backgroundColor: '#fff',
+  },
+  campaignText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
+  handOnNote: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: '#c2410c', marginTop: 2 },
+  dialogText: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK, lineHeight: 20 },
+  dialogError: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 8 },
   screen: { flex: 1, backgroundColor: '#f3f5f7' },
   content: { padding: 16, paddingBottom: 40, maxWidth: 960, width: '100%', alignSelf: 'center', gap: 12 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
