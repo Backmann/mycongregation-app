@@ -22,6 +22,10 @@ import { TerritoryImport } from '../../../components/territories/TerritoryImport
 import { TerritoryMap, type MapShape } from '../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../components/territories/AssignSheet';
 import { CampaignSheet } from '../../../components/territories/CampaignSheet';
+import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
+import { buildS13Html } from '../../../lib/s13Pdf';
+import { serviceYearOf } from '../../../lib/service-year';
+import { reportError } from '../../../lib/error-bus';
 import { Dialog } from '../../../components/Dialog';
 import { SegmentedControl } from '../../../components/SegmentedControl';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../components/reports/ReportBits';
@@ -80,6 +84,25 @@ export default function TerritoriesScreen() {
     queryFn: () => territoriesApi.summary(),
     enabled: open,
   });
+  // The S-13 of the current or the previous service year (the two kept).
+  const [printing, setPrinting] = useState<number | null>(null);
+  const printS13 = (year: number) => {
+    const preopened = openPrintWindow();
+    setPrinting(year);
+    void territoriesApi
+      .s13(year)
+      .then((data) =>
+        exportHtmlAsPdf(buildS13Html(data, t), {
+          fileName: `S-13 ${year - 1}-${year}`,
+          preopenedWindow: preopened,
+        }),
+      )
+      .catch((e) => {
+        preopened?.close();
+        reportError(extractErrorMessage(e));
+      })
+      .finally(() => setPrinting(null));
+  };
   const handOn = useMutation({
     mutationFn: (row: TerritoryRow) => territoriesApi.transfer(row.holder!.assignmentId),
     onSuccess: () => {
@@ -224,12 +247,32 @@ export default function TerritoriesScreen() {
             </View>
           ) : null}
 
-          {a.keeps ? (
-            <Pressable onPress={() => setCampaign(true)} style={s.campaignBtn} accessibilityRole="button">
-              <Ionicons name="megaphone-outline" size={17} color={BRAND} />
-              <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
-            </Pressable>
-          ) : null}
+          <View style={s.tools}>
+            {a.keeps ? (
+              <Pressable onPress={() => setCampaign(true)} style={s.campaignBtn} accessibilityRole="button">
+                <Ionicons name="megaphone-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
+              </Pressable>
+            ) : null}
+            {[serviceYearOf(today), serviceYearOf(today) - 1].map((y) => (
+              <Pressable
+                key={y}
+                onPress={() => printS13(y)}
+                disabled={printing !== null}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                {printing === y ? (
+                  <ActivityIndicator color={BRAND} />
+                ) : (
+                  <Ionicons name="print-outline" size={17} color={BRAND} />
+                )}
+                <Text style={s.campaignText}>
+                  {t('territories.s13.print', { year: `${y - 1}/${String(y).slice(2)}` })}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
           <SegmentedControl<Filter>
             segments={[
@@ -390,6 +433,7 @@ function monthName(month: string, lang: string): string {
 const s = StyleSheet.create({
   summary: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: LINE, paddingHorizontal: 14, paddingVertical: 10 },
   summaryText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
+  tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   campaignBtn: {
     flexDirection: 'row',
     alignItems: 'center',

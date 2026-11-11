@@ -7448,6 +7448,19 @@
       "hint": "Choose a territory — those who come see it with its do-not-call addresses the day before and on the day.",
       "none": "No territory",
       "noOptions": "Neither you nor this group holds a territory."
+    },
+    "s13": {
+      "print": "S-13 · {{year}}",
+      "title": "TERRITORY ASSIGNMENT RECORD",
+      "serviceYear": "Service year:",
+      "number": "Terr. no.",
+      "last": "Last date completed*",
+      "name": "Name of publisher",
+      "received": "Date assigned",
+      "worked": "Date completed",
+      "note": "*When beginning a new sheet, use this column to record the date on which each territory was last completed.",
+      "groupShort": "Gr.",
+      "campaign": "campaign"
     }
   }
 }
