@@ -1479,7 +1479,9 @@
       "service_overseer_assistant": "Gehilfe des Dienstaufsehers",
       "attendance_recorder": "Anwesenheitszählung",
       "body_coordinator_assistant": "Assistent des Koordinators der Ältestenschaft",
-      "attendance_recorder_assistant": "Helfer für die Anwesenheitszählung"
+      "attendance_recorder_assistant": "Helfer für die Anwesenheitszählung",
+      "territory_servant": "Gebietsdiener",
+      "territory_servant_assistant": "Gehilfe für die Gebiete"
     },
     "groups": {
       "meeting": "Zusammenkünfte",
@@ -4160,7 +4162,10 @@
       "aux_application": "Bewerbungen als Hilfspionier",
       "pioneer_meeting": "Treffen mit den Pionieren",
       "meeting_move": "Zusammenkunft verlegt",
-      "not_held_clearance": "Aufgaben bei einer ausfallenden Zusammenkunft"
+      "not_held_clearance": "Aufgaben bei einer ausfallenden Zusammenkunft",
+      "territory_import": "Gebiete: Übernahme",
+      "territory_boundary": "Gebietsgrenze",
+      "territory_settings": "Gebiete: bestätigt"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -6123,7 +6128,15 @@
       "PAIR_PREP_ONCE_A_DAY": "Ein neuer Vorschlag ist morgen wieder möglich.",
       "PAIR_PREP_TOO_MANY": "Genug Nachrichten für heute — bitte persönlich absprechen.",
       "PAIR_PREP_OPTION_GONE": "Diese Zeit passt nicht mehr — bitte eine andere wählen.",
-      "PAIR_PREP_NOTHING_TO_ANSWER": "Gerade wird keine Antwort erwartet — die Liste wurde aktualisiert."
+      "PAIR_PREP_NOTHING_TO_ANSWER": "Gerade wird keine Antwort erwartet — die Liste wurde aktualisiert.",
+      "TERRITORY_IMPORT_CLOSED": "Die Daten sind bestätigt — die Übernahme ist geschlossen.",
+      "TERRITORY_GEOMETRY": "Die Grenzen von Gebiet {{number}} konnten nicht gelesen werden.",
+      "TERRITORY_NUMBER_TWICE": "Nummer {{number}} kommt zweimal vor.",
+      "TERRITORY_UNKNOWN": "Gebiet {{number}} ist nicht unter den übernommenen.",
+      "TERRITORY_DATES": "Die Daten von Gebiet {{number}} passen nicht zusammen.",
+      "TERRITORY_HOLDER_UNKNOWN": "Bei Gebiet {{number}} steht jemand aus einer anderen Versammlung.",
+      "TERRITORY_TWO_OPEN": "Gebiet {{number}} wäre gleichzeitig bei zweien.",
+      "TERRITORY_NONE": "Nichts zu bestätigen: noch keine Gebiete."
     }
   },
   "stage": {
@@ -7190,6 +7203,86 @@
       "partner_duty": "die andere Person hat eine Aufgabe bei dieser Zusammenkunft",
       "cleaning": "Reinigung nach dieser Zusammenkunft",
       "away": "jemand von Ihnen ist abwesend"
+    }
+  },
+  "territories": {
+    "kicker": "Dienst · Gebiete",
+    "title": "Gebiete",
+    "verifiedSince": "Daten bestätigt am {{date}}",
+    "notVerified": "Datenübernahme: diesen Bereich sehen vorerst nur Sie",
+    "nextStage": "Ausgabe, Karte und Druck der S-13 folgen im nächsten Schritt.",
+    "tiles": {
+      "total": "Gebiete",
+      "held": "ausgegeben",
+      "overdue": "länger als 4 Monate",
+      "idle": "über ein Jahr frei"
+    },
+    "row": {
+      "held": "{{name}} · seit {{date}}",
+      "free": "Frei · bearbeitet {{date}}",
+      "freeNever": "Frei",
+      "due": "bis {{date}}"
+    },
+    "door": {
+      "count": "Gebiete: {{count}}",
+      "import": "Datenübernahme und Abgleich"
+    },
+    "import": {
+      "computerOnly": "Die Daten werden am Computer übernommen: öffnen Sie diesen Bereich im Browser.",
+      "step1": "1 · Dateien",
+      "step2": "2 · Abgleich",
+      "step3": "3 · Übernahme",
+      "step4": "4 · Prüfung",
+      "filesLead": "Wählen Sie die Dateien. Sie werden hier, auf diesem Computer, gelesen; zum Server geht nur, was Sie unten bestätigen.",
+      "mapFile": "Export der Gebietskarten",
+      "mapFileHint": "GeoJSON aus dem bisherigen Gebietsprogramm",
+      "mapRead": "{{name}} · Gebiete: {{count}}, Ausgaben: {{lines}}",
+      "sheetFile": "Gebietszuteilungskarte (S-13)",
+      "sheetFileHint": "Ihre Excel-Datei (.xlsx) mit den Namen",
+      "sheetRead": "{{name}} · Zeilen: {{count}}",
+      "boundaryFile": "Grenze des Versammlungsgebiets",
+      "boundaryFileHint": "KML-Datei",
+      "boundaryRead": "{{name}} · vom {{date}}",
+      "choose": "Auswählen",
+      "fileUnreadable": "Die Datei wurde nicht gelesen: {{reason}}",
+      "privacy": "Die Dateien enthalten Namen und Adressen. Sie werden weder hier noch auf dem Server gespeichert — nur die übernommenen Zeilen.",
+      "tileTerritories": "Gebiete",
+      "tileLines": "Ausgaben seit {{from}}",
+      "tileOpen": "jetzt ausgegeben",
+      "numbersTitle": "Unterschiedlich geschriebene Nummern — zugeordnet",
+      "unpaired": "Nicht unter den Karten gefunden: {{list}}",
+      "disagreeTitle": "Abweichende Daten: {{count}}",
+      "disagreeHint": "Es gilt das Datum aus dem Kartenexport — es ist aktueller.",
+      "peopleTitle": "Personen: {{count}}",
+      "peopleHint": "Wo die Karte eindeutig ist, wurde sie selbst gefunden. Prüfen und korrigieren; «ohne Karte» behält den Namen wie geschrieben.",
+      "personLines": "Ausgaben: {{count}}",
+      "noCard": "ohne Karte",
+      "findCard": "Karte suchen",
+      "keepNameOnly": "Ohne Karte — Namen wie geschrieben behalten",
+      "unnamedTitle": "Ausgaben ohne Namen: {{count}}",
+      "unnamedPlaceholder": "Wer hatte das Gebiet",
+      "commentsTitle": "Notizen zu Gebieten: {{count}}",
+      "commentsHint": "Nur «Nicht besuchen» ankreuzen und die Adresse lassen — ohne Namen und Gründe (Nachname nur, wenn die Wohnung sonst nicht zu finden ist).",
+      "addressPlaceholder": "Adresse «nicht besuchen»",
+      "sendLead": "Alles früher Übernommene wird hierdurch ersetzt. Den Bereich sehen weiterhin nur Sie.",
+      "namesMissing": "Ohne Angabe, wer das Gebiet hatte: {{count}}",
+      "send": "In die App übernehmen",
+      "sendingReset": "Neu beginnen…",
+      "sendingBoundary": "Grenze…",
+      "sendingTerritories": "Gebiete: {{done}} von {{total}}…",
+      "sendingAssignments": "Ausgaben: {{done}} von {{total}}…",
+      "sendingNoCalls": "«Nicht besuchen»…",
+      "sendingChecks": "Prüfe…",
+      "noBoundary": "Keine Versammlungsgrenze geladen — Überschreitungen wurden nicht geprüft.",
+      "outsideTitle": "Über die Versammlungsgrenze hinaus: {{count}}",
+      "outsideItem": "{{number}} ({{share}} %)",
+      "overlapTitle": "Überlappend: {{count}}",
+      "checksHint": "Das hindert nicht am Bestätigen; die Grenzen lassen sich später korrigieren.",
+      "freshLead": "Ausgaben nach dem letzten Export tragen Sie nach dem Bestätigen ein — die Ausgabe folgt im nächsten Schritt.",
+      "verify": "Daten geprüft",
+      "verifyTitle": "Daten geprüft?",
+      "verifyBody": "Der Bereich öffnet sich dem Dienstkomitee, und die Übernahme wird geschlossen. Das lässt sich nicht rückgängig machen.",
+      "verifyConfirm": "Ja, geprüft"
     }
   }
 }
