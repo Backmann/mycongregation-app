@@ -8154,6 +8154,13 @@ export const territoriesApi = {
     ).data,
   revokeShareLink: async (assignmentId: string) =>
     (await api.delete(`/territories/assignments/${assignmentId}/share-link`)).data,
+  /** The S-13 of a kept service year, for printing. */
+  s13: async (serviceYear?: number): Promise<import("./s13").S13Data & { from: string; to: string }> =>
+    (
+      await api.get("/territories/s13", {
+        params: serviceYear ? { serviceYear } : {},
+      })
+    ).data,
   summary: async (month?: string): Promise<TerritorySummary> =>
     (
       await api.get<TerritorySummary>("/territories/summary", {

@@ -7448,6 +7448,19 @@
       "hint": "Wählen Sie ein Gebiet — wer kommt, sieht es mit den Nicht-besuchen-Adressen am Vortag und am Tag.",
       "none": "Ohne Gebiet",
       "noOptions": "Weder Sie noch diese Gruppe haben ein Gebiet."
+    },
+    "s13": {
+      "print": "S-13 · {{year}}",
+      "title": "GEBIETSZUTEILUNGEN",
+      "serviceYear": "Dienstjahr:",
+      "number": "Gebiet Nr.",
+      "last": "Zuletzt bearbeitet*",
+      "name": "Name des Verkündigers",
+      "received": "Erhalten am",
+      "worked": "Bearbeitet am",
+      "note": "*Beim Anlegen eines neuen Blattes in dieser Spalte das Datum eintragen, an dem jedes Gebiet zuletzt bearbeitet wurde.",
+      "groupShort": "Gr.",
+      "campaign": "Aktion"
     }
   }
 }
