@@ -97,6 +97,10 @@ const SCREENS = [
   ['congregation', '/publishers'],
   ['profile', '/profile'],
   ['crashes', '/publishers/crashes', 'admin'],
+  // The territory section (11 November 2026): the whole of it for the
+  // keeper, a holder's own and his group's for the publisher.
+  ['territories', '/cart/territories', 'admin'],
+  ['my-territories', '/cart/my-territories', 'publisher'],
 ];
 // Phone, tablet portrait, the narrowest wide layout, wide screen.
 // 1024 is where the wide layout begins and is at its tightest: a tab label

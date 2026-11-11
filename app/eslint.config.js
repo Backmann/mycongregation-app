@@ -7,8 +7,9 @@ module.exports = defineConfig([
   {
     // `.expo` holds generated route declarations — written by
     // scripts/gen-route-types.mjs before the type check, gitignored, and not
-    // ours to lint.
-    ignores: ['dist/*', '.expo/*'],
+    // ours to lint. `public/map` holds the map libraries as published,
+    // minified (see public/map/THIRD-PARTY.txt) — not ours either.
+    ignores: ['dist/*', '.expo/*', 'public/map/**'],
   },
   {
     rules: {

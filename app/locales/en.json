@@ -4165,7 +4165,8 @@
       "not_held_clearance": "Assignments on a meeting not held",
       "territory_import": "Territories: import",
       "territory_boundary": "Territory boundary",
-      "territory_settings": "Territories: confirmed"
+      "territory_settings": "Territories: confirmed",
+      "territory_assignment": "Territories: assignments"
     },
     "actions": {
       "CREATE": "added",
@@ -6136,7 +6137,12 @@
       "TERRITORY_DATES": "The dates of territory {{number}} do not add up.",
       "TERRITORY_HOLDER_UNKNOWN": "Territory {{number}} names someone from another congregation.",
       "TERRITORY_TWO_OPEN": "Territory {{number}} would be held by two at once.",
-      "TERRITORY_NONE": "Nothing to confirm: there are no territories yet."
+      "TERRITORY_NONE": "Nothing to confirm: there are no territories yet.",
+      "TERRITORY_NOT_OPEN": "The section is not open yet: the records are not confirmed.",
+      "TERRITORY_HELD": "This territory is already checked out.",
+      "TERRITORY_ENDED": "The territory has already come back.",
+      "TERRITORY_EXTENDED": "Already extended once — ask the territory servant.",
+      "TERRITORY_PAST_YEAR": "Only the current service year can be corrected."
     }
   },
   "stage": {
@@ -7210,7 +7216,6 @@
     "title": "Territories",
     "verifiedSince": "Records confirmed {{date}}",
     "notVerified": "Bringing the records over: for now only you see this section",
-    "nextStage": "Giving out, the map and the S-13 printout come next.",
     "tiles": {
       "total": "territories",
       "held": "held",
@@ -7225,7 +7230,9 @@
     },
     "door": {
       "count": "Territories: {{count}}",
-      "import": "Bringing the records over"
+      "import": "Bringing the records over",
+      "mine": "Your territories and your group’s",
+      "due": "{{number}} · return by {{date}}"
     },
     "import": {
       "computerOnly": "The records are brought over on a computer: open this section in a browser.",
@@ -7283,6 +7290,122 @@
       "verifyTitle": "Records checked?",
       "verifyBody": "The section opens to the service committee and the import closes. This cannot be undone.",
       "verifyConfirm": "Yes, checked"
+    },
+    "route": "Route",
+    "map": {
+      "failed": "The map did not load. The list below works.",
+      "noStreets": "The street map is not loaded yet — only the territory outlines are shown."
+    },
+    "tone": {
+      "held": "Checked out",
+      "overdue": "Over 4 months",
+      "idle": "Free over a year",
+      "free": "Free"
+    },
+    "filter": {
+      "attention": "Needs attention",
+      "held": "Checked out",
+      "free": "Free",
+      "all": "All"
+    },
+    "overview": {
+      "mine": "Your territories: {{list}}",
+      "search": "Number, place or surname",
+      "nothingDue": "Nothing needs attention right now",
+      "none": "Nothing found",
+      "give": "Assign",
+      "mapOnWeb": "The territory map is on the website; the app gets it with its next version."
+    },
+    "detail": {
+      "since": "since {{date}}",
+      "due": "return by {{date}}",
+      "extended": "extended",
+      "noCalls": "Do not call · {{count}}",
+      "noCallsNone": "No do-not-call addresses",
+      "noCallsRule": "Address only, no names or reasons. Reviewed by the elders after 2 years.",
+      "history": "Assignments in the previous and current service year",
+      "historyNone": "No assignments",
+      "historyKept": "Earlier years are not kept — only the date last worked.",
+      "returned": "returned unworked {{date}}",
+      "stillHeld": "checked out"
+    },
+    "method": {
+      "door_to_door": "door to door",
+      "letters": "letters",
+      "campaign": "campaign",
+      "other": "other"
+    },
+    "action": {
+      "complete": {
+        "title": "Territory worked",
+        "confirm": "Mark as worked"
+      },
+      "return": {
+        "title": "Return unworked",
+        "confirm": "Return",
+        "hint": "The S-13 keeps the worked date empty."
+      },
+      "extend": {
+        "title": "Need more time",
+        "short": "Extend",
+        "confirm": "Extend",
+        "once": "The term is extended by a month. You can do this yourself once — after that, through the territory servant.",
+        "already": "Already extended. If you need more, tell the territory servant."
+      },
+      "edit": {
+        "title": "Correct assignment",
+        "confirm": "Save",
+        "remove": "Delete this line",
+        "removeSure": "Tap again to delete",
+        "assigned": "Assigned",
+        "open": "Checked out",
+        "completed": "Worked",
+        "returned": "Returned"
+      },
+      "completedOn": "Date worked",
+      "returnedOn": "Date returned",
+      "dueOn": "Return by",
+      "method": "How it was worked"
+    },
+    "assign": {
+      "title": "Assign territory",
+      "giveTo": "Assign to {{name}}",
+      "choose": "Choose whom",
+      "toPerson": "To a publisher",
+      "toGroup": "Group territory",
+      "groupHint": "The territory is recorded on a person; his group sees it while it is out.",
+      "search": "Search by name",
+      "holdsNone": "Holds: 0",
+      "hadOn": "this one: {{date}}",
+      "hadNever": "this one: never yet",
+      "pioneer": "PIONEER",
+      "nobody": "Nobody found",
+      "whichGroup": "For which group",
+      "dueOn": "Return by",
+      "holds_one": "Holds: {{count}} ({{list}})",
+      "holds_other": "Holds: {{count}} ({{list}})",
+      "overdue_one": "{{count}} overdue",
+      "overdue_other": "{{count}} overdue",
+      "months_one": "{{count}} month",
+      "months_other": "{{count}} months"
+    },
+    "my": {
+      "title": "My territory",
+      "none": "You and your group hold no territory right now.",
+      "openMap": "Open the map",
+      "openMapHint": "Opens on the website; sign in there with the same login.",
+      "since": "assigned {{date}}",
+      "forGroup": "Group territory · {{group}}",
+      "ofGroup": "Group territory · {{group}} · held by {{name}}",
+      "due": "Return by {{date}}",
+      "left_one": "{{count}} day left",
+      "left_other": "{{count}} days left",
+      "late_one": "{{count}} day overdue",
+      "late_other": "{{count}} days overdue",
+      "noCalls_one": "Do not call: {{count}} address",
+      "noCalls_other": "Do not call: {{count}} addresses",
+      "noCallsNone": "No do-not-call addresses",
+      "noCallsRule": "Address only, no names or reasons. Seen by the holder, his group and those responsible."
     }
   }
 }

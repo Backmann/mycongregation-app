@@ -7890,6 +7890,94 @@ export interface TerritoryAccess {
   verified: boolean;
   verifiedAt: string | null;
   territories: number;
+  /** The congregation's map file is in place (the server's map job ran). */
+  mapReady: boolean;
+  /** The territories the user has a part in: his own, his group's. */
+  mine: {
+    id: string;
+    number: string;
+    dueOn: string | null;
+    mine: boolean;
+    forGroupName: string | null;
+  }[];
+}
+
+export type TerritoryMethod = "door_to_door" | "letters" | "campaign" | "other";
+
+export interface TerritoryAssignmentRow {
+  id: string;
+  territoryId: string;
+  publisherId: string | null;
+  holderName: string;
+  forGroupId: string | null;
+  forGroupName: string | null;
+  assignedOn: string;
+  dueOn: string | null;
+  completedOn: string | null;
+  returnedOn: string | null;
+  method: TerritoryMethod | null;
+  extended: boolean;
+  imported: boolean;
+}
+
+export interface TerritoryNoCallRow {
+  id: string;
+  address: string;
+  surname: string | null;
+  notedOn: string;
+  reviewOn?: string;
+}
+
+export interface TerritoryDetail {
+  id: string;
+  number: string;
+  locality: string | null;
+  kind: "city" | "suburb" | "village" | null;
+  geometry: TerritoryGeometry;
+  note: string | null;
+  lastCompletedOn: string | null;
+  assignments: TerritoryAssignmentRow[];
+  noCalls: TerritoryNoCallRow[];
+}
+
+/** A territory as its holder or his group sees it. */
+export interface MyTerritory {
+  id: string;
+  number: string;
+  locality: string | null;
+  geometry: TerritoryGeometry;
+  assignment: {
+    id: string;
+    holderName: string;
+    forGroupId: string | null;
+    forGroupName: string | null;
+    assignedOn: string;
+    dueOn: string | null;
+    extended: boolean;
+    mine: boolean;
+  };
+  noCalls: TerritoryNoCallRow[];
+}
+
+export interface TerritoryCandidates {
+  territory: { id: string; number: string; locality: string | null };
+  groups: { id: string; name: string; overseerPublisherId: string | null }[];
+  people: {
+    publisherId: string;
+    name: string;
+    pioneer: boolean;
+    serviceGroupId: string | null;
+    holds: string[];
+    overdue: number;
+    hadThisOn: string | null;
+  }[];
+}
+
+export interface TerritoryBoundary {
+  id: string;
+  geometry: TerritoryGeometry;
+  description: { north?: string; east?: string; south?: string; west?: string } | null;
+  validFrom: string | null;
 }
 
 export interface TerritoryRow {
@@ -7968,4 +8056,59 @@ export const territoriesApi = {
   reset: async () => (await api.post("/territories/import/reset")).data,
   verify: async () =>
     (await api.post<{ verifiedAt: string }>("/territories/verify")).data,
+  boundary: async (): Promise<TerritoryBoundary | null> =>
+    (await api.get<TerritoryBoundary | null>("/territories/boundary")).data || null,
+  detail: async (id: string): Promise<TerritoryDetail> =>
+    (await api.get<TerritoryDetail>(`/territories/${id}`)).data,
+  mine: async (): Promise<MyTerritory[]> =>
+    (await api.get<MyTerritory[]>("/territories/mine")).data,
+  candidates: async (id: string): Promise<TerritoryCandidates> =>
+    (await api.get<TerritoryCandidates>(`/territories/${id}/candidates`)).data,
+  assign: async (
+    id: string,
+    body: { publisherId: string; forGroupId?: string; assignedOn?: string; dueOn?: string },
+  ) => (await api.post<TerritoryAssignmentRow>(`/territories/${id}/assign`, body)).data,
+  complete: async (
+    assignmentId: string,
+    body: { completedOn?: string; method?: TerritoryMethod } = {},
+  ) =>
+    (
+      await api.post<TerritoryAssignmentRow>(
+        `/territories/assignments/${assignmentId}/complete`,
+        body,
+      )
+    ).data,
+  giveBack: async (assignmentId: string, body: { returnedOn?: string } = {}) =>
+    (
+      await api.post<TerritoryAssignmentRow>(
+        `/territories/assignments/${assignmentId}/return`,
+        body,
+      )
+    ).data,
+  extend: async (assignmentId: string, body: { dueOn?: string } = {}) =>
+    (
+      await api.post<TerritoryAssignmentRow>(
+        `/territories/assignments/${assignmentId}/extend`,
+        body,
+      )
+    ).data,
+  editAssignment: async (
+    assignmentId: string,
+    body: {
+      assignedOn?: string;
+      dueOn?: string;
+      completedOn?: string;
+      returnedOn?: string;
+      method?: TerritoryMethod;
+      reopen?: boolean;
+    },
+  ) =>
+    (
+      await api.patch<TerritoryAssignmentRow>(
+        `/territories/assignments/${assignmentId}`,
+        body,
+      )
+    ).data,
+  removeAssignment: async (assignmentId: string) =>
+    (await api.delete(`/territories/assignments/${assignmentId}`)).data,
 };

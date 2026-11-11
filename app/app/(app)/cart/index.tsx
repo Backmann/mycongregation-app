@@ -16,6 +16,7 @@ import {
 } from '../../../lib/api';
 import { addDays, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
 import { serviceLines, type ServiceLine } from '../../../lib/service-lines';
+import { daysBetween, DUE_SOON_DAYS, formatDayShort } from '../../../lib/territory-view';
 import { useReportCollectionAsked } from '../../../components/ReportCollectionCard';
 import { PartlyShown } from '../../../components/ConnectionState';
 import { DoorList, type Door, type DoorSection } from '../../../components/DoorList';
@@ -198,6 +199,9 @@ export default function ServiceHubScreen() {
     href: '/cart/field-service',
   };
   const ta = territoriesQ.data;
+  // The whole section for those who keep or oversee it; for a holder or a
+  // member of a group holding one, his own territories (11 November 2026).
+  const myTerritories = ta?.mine ?? [];
   const territories: Door[] = ta?.seesAll
     ? [
         {
@@ -209,7 +213,16 @@ export default function ServiceHubScreen() {
           href: '/cart/territories',
         },
       ]
-    : [];
+    : myTerritories.length > 0
+      ? [
+          {
+            key: 'territories',
+            title: t('territories.title'),
+            subtitle: t('territories.door.mine'),
+            href: '/cart/my-territories',
+          },
+        ]
+      : [];
   const cart: Door = {
     key: 'cart',
     title: t('service.publicWitnessing'),
@@ -320,6 +333,20 @@ export default function ServiceHubScreen() {
         },
       ]
     : [];
+
+  // The nearest of his own territories: «Ahlen07 · вернуть до 1 января»,
+  // amber in the last two weeks and after.
+  const nearest = myTerritories.filter((m) => m.mine && m.dueOn).sort((x, y) => x.dueOn!.localeCompare(y.dueOn!))[0];
+  if (nearest && !ta?.seesAll) {
+    const soon = daysBetween(today, nearest.dueOn!) <= DUE_SOON_DAYS;
+    lines.territories = {
+      text: t('territories.door.due', {
+        number: nearest.number,
+        date: formatDayShort(nearest.dueOn!, i18n.language),
+      }),
+      due: soon,
+    };
+  }
 
   const sections: DoorSection[] =
     perms.isElder || perms.isAdmin
