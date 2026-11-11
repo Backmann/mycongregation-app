@@ -11,6 +11,7 @@ import { LoadFailure } from '../../../../components/LoadFailure';
 import { NoAccess } from '../../../../components/NoAccess';
 import { TerritoryMap } from '../../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../../components/territories/AssignSheet';
+import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -93,6 +94,8 @@ export default function TerritoryScreen() {
           focus={d.id}
           height={280}
         />
+      ) : current ? (
+        <OpenMapButton assignmentId={current.id} />
       ) : null}
 
       <View style={s.titleRow}>
@@ -142,6 +145,7 @@ export default function TerritoryScreen() {
                 />
               </View>
             ) : null}
+            {a.keeps ? <ShareLink assignmentId={current.id} /> : null}
           </>
         ) : (
           <>

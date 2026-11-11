@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
@@ -9,6 +8,7 @@ import { territoriesApi, type MyTerritory } from '../../../lib/api';
 import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { TerritoryMap } from '../../../components/territories/TerritoryMap';
+import { OpenMapButton, ShareLink } from '../../../components/territories/MapLinks';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -22,9 +22,6 @@ import {
   routeLink,
   TONE_COLOR,
 } from '../../../lib/territory-view';
-
-/** The same page on the site, for the phone app until it has a map. */
-const SITE_PAGE = 'https://mycongregation.org/cart/my-territories';
 
 /**
  * «Мой участок» (11 November 2026; mockup «Мой участок»).
@@ -111,18 +108,7 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
           height={300}
         />
       ) : (
-        <Pressable
-          onPress={() => void WebBrowser.openBrowserAsync(SITE_PAGE)}
-          style={s.mapLink}
-          accessibilityRole="link"
-        >
-          <Ionicons name="map-outline" size={20} color={BRAND} />
-          <View style={{ flex: 1 }}>
-            <Text style={s.mapLinkTitle}>{t('territories.my.openMap')}</Text>
-            <Text style={s.mapLinkHint}>{t('territories.my.openMapHint')}</Text>
-          </View>
-          <Ionicons name="open-outline" size={16} color={MUTED} />
-        </Pressable>
+        <OpenMapButton assignmentId={a.id} />
       )}
 
       <View style={[cardStyles.card, s.card]}>
@@ -205,6 +191,7 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
           </View>
         ) : null}
         {a.mine && a.extended ? <Text style={s.small}>{t('territories.action.extend.already')}</Text> : null}
+        {a.mine ? <ShareLink assignmentId={a.id} /> : null}
       </View>
     </View>
   );
@@ -217,18 +204,6 @@ const s = StyleSheet.create({
   emptyCard: { alignItems: 'center', gap: 10, paddingVertical: 28 },
   emptyText: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: MUTED, textAlign: 'center' },
   item: { gap: 10 },
-  mapLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#ecfeff',
-    borderColor: '#a5f3fc',
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-  },
-  mapLinkTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: INK },
-  mapLinkHint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 2 },
   card: { marginBottom: 0 },
   kicker: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, letterSpacing: 0.6, color: MUTED, textTransform: 'uppercase' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },

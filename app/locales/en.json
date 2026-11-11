@@ -2975,7 +2975,9 @@
       "taskDue": "{{title}} · due {{date}}",
       "taskOverdue": "{{title}} · overdue since {{date}}",
       "more": "{{count}} more in my tasks",
-      "auxApplication": "Auxiliary pioneer application: {{name}}"
+      "auxApplication": "Auxiliary pioneer application: {{name}}",
+      "territory": "Territory {{number}} · return by {{date}}",
+      "territoryNoDate": "Territory {{number}}"
     },
     "weekOf": "Week of {{date}}",
     "kinds": {
@@ -4817,7 +4819,8 @@
       "talk": "Talk in another congregation",
       "groupOverseer": "Group overseer «{{name}}»",
       "groupAssistant": "Group assistant «{{name}}»",
-      "hint": "The task closes by itself once none of these is left or he hands in a report that he shared again."
+      "hint": "The task closes by itself once none of these is left or he hands in a report that he shared again.",
+      "territory": "Territory {{number}}"
     },
     "adminNotElder": {
       "hint": "The administrator role opens all of the congregation’s data, so only an elder may hold it. Give the role to an elder or take it away — the task closes by itself."
@@ -7393,7 +7396,7 @@
       "title": "My territory",
       "none": "You and your group hold no territory right now.",
       "openMap": "Open the map",
-      "openMapHint": "Opens on the website; sign in there with the same login.",
+      "openMapHint": "Opens on the website, without signing in again.",
       "since": "assigned {{date}}",
       "forGroup": "Group territory · {{group}}",
       "ofGroup": "Group territory · {{group}} · held by {{name}}",
@@ -7406,6 +7409,19 @@
       "noCalls_other": "Do not call: {{count}} addresses",
       "noCallsNone": "No do-not-call addresses",
       "noCallsRule": "Address only, no names or reasons. Seen by the holder, his group and those responsible."
+    },
+    "link": {
+      "gone": "This link no longer works",
+      "goneHint": "The territory is past its day, has come back, or a new link was made. Ask the territory servant for a new one.",
+      "due": "Return by {{date}}",
+      "make": "Link without login",
+      "makeHint": "The map only, no addresses or names. Works until the territory is due; a new link replaces the old one.",
+      "until": "Works until {{date}} and stops as soon as the territory comes back.",
+      "untilBack": "Stops as soon as the territory comes back.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "send": "Send",
+      "revoke": "Switch off"
     }
   }
 }

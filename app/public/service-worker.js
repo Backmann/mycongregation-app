@@ -216,6 +216,12 @@ function routeForNotification(data) {
     // The two people of a part arranging its preparation: the part's card.
     case 'pair_prep':
       return { path: '/home/my-assignments', params: {} };
+    // A territory given to him or due in two weeks: his territories; for the
+    // territory servant, one to take back: the section.
+    case 'territory':
+      return { path: '/cart/my-territories', params: {} };
+    case 'territory_keeper':
+      return { path: '/cart/territories', params: {} };
     // What a meeting still lacks, for whoever assembles it.
     case 'meeting_gaps':
       return {

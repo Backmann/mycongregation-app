@@ -25,6 +25,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUTSIDE = new Map([
   ['/', 'the address of the site itself'],
   ['/reset-password', 'the link in the password email and its QR code (server users.service)'],
+  ['/t/[token]', 'a territory link without login, sent on by hand; the app opens it in the browser (server territory-links.service)'],
 ]);
 
 const walk = (dir) =>
