@@ -9,6 +9,7 @@ import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { TerritoryMap } from '../../../components/territories/TerritoryMap';
 import { OpenMapButton, ShareLink } from '../../../components/territories/MapLinks';
+import { meetingDay, MyMeetings } from '../../../components/territories/MyMeetings';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -57,6 +58,7 @@ export default function MyTerritoriesScreen() {
 
   return (
     <KeyboardScroll style={s.screen} contentContainerStyle={s.content}>
+      <MyMeetings />
       {items.length === 0 ? (
         <View style={[cardStyles.card, s.emptyCard]}>
           <Ionicons name="map-outline" size={28} color="#94a3b8" />
@@ -126,6 +128,17 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
             </Pressable>
           ) : null}
         </View>
+        {item.meeting ? (
+          <View style={s.meeting}>
+            <Ionicons name="people-outline" size={15} color={BRAND} />
+            <Text style={s.meetingText}>
+              {t('territories.my.meeting', {
+                when: `${meetingDay(item.meeting.date, lang)} · ${item.meeting.startTime}`,
+                where: item.meeting.address,
+              })}
+            </Text>
+          </View>
+        ) : null}
         {a.forGroupName ? (
           <Text style={s.group}>
             {a.mine
@@ -219,6 +232,18 @@ const s = StyleSheet.create({
     paddingVertical: 7,
   },
   routeText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: BRAND },
+  meeting: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+    backgroundColor: '#ecfeff',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    alignSelf: 'flex-start',
+  },
+  meetingText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   group: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK, marginTop: 4 },
   due: { marginTop: 10, alignSelf: 'flex-start', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: '#f1f5f9' },
   dueSoon: { backgroundColor: '#fff7ed' },

@@ -6145,7 +6145,8 @@
       "TERRITORY_HELD": "Dieses Gebiet ist bereits ausgegeben.",
       "TERRITORY_ENDED": "Das Gebiet ist bereits zurück.",
       "TERRITORY_EXTENDED": "Bereits einmal verlängert — bitte an den Gebietsdiener wenden.",
-      "TERRITORY_PAST_YEAR": "Korrigiert werden kann nur das laufende Dienstjahr."
+      "TERRITORY_PAST_YEAR": "Korrigiert werden kann nur das laufende Dienstjahr.",
+      "TERRITORY_NOT_FOR_MEETING": "Ein Treffpunkt kann nur das eigene Gebiet des Leiters oder das seiner Gruppe nehmen."
     }
   },
   "stage": {
@@ -7408,7 +7409,8 @@
       "noCalls_one": "Nicht besuchen: {{count}} Adresse",
       "noCalls_other": "Nicht besuchen: {{count}} Adressen",
       "noCallsNone": "Keine Nicht-besuchen-Adressen",
-      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Sichtbar für den Inhaber, seine Gruppe und die Verantwortlichen."
+      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Sichtbar für den Inhaber, seine Gruppe und die Verantwortlichen.",
+      "meeting": "Treffpunkt: {{when}} · {{where}}"
     },
     "link": {
       "gone": "Dieser Link funktioniert nicht mehr",
@@ -7422,6 +7424,30 @@
       "copied": "Kopiert",
       "send": "Senden",
       "revoke": "Abschalten"
+    },
+    "summary": {
+      "line": "{{month}}: ausgegeben {{given}} · bearbeitet {{worked}} · unbearbeitet zurück {{returned}}"
+    },
+    "campaign": {
+      "title": "In einer Aktion bearbeitet",
+      "lead": "Markieren Sie die freien Gebiete, die während einer Aktion bearbeitet wurden. Im S-13 stehen sie auf Ihren Namen mit dem Vermerk „(Aktion)“. Ein ausgegebenes Gebiet markiert sein Inhaber selbst.",
+      "day": "Bearbeitet am",
+      "noneFree": "Keine freien Gebiete.",
+      "confirm_one": "{{count}} Gebiet markieren",
+      "confirm_other": "{{count}} Gebiete markieren"
+    },
+    "handOn": {
+      "title": "Gebiet {{number}} weitergeben",
+      "confirm": "Weitergeben",
+      "body": "{{from}} ist nicht mehr Aufseher dieser Gruppe. Das Gebiet kommt heute von ihm zurück und geht sofort an {{to}}; die Rückgabefrist bleibt.",
+      "note": "Neuer Gruppenaufseher: {{name}}",
+      "button": "Weitergeben"
+    },
+    "meetings": {
+      "title": "Treffpunkte für den Predigtdienst, die Sie leiten",
+      "hint": "Wählen Sie ein Gebiet — wer kommt, sieht es mit den Nicht-besuchen-Adressen am Vortag und am Tag.",
+      "none": "Ohne Gebiet",
+      "noOptions": "Weder Sie noch diese Gruppe haben ein Gebiet."
     }
   }
 }
