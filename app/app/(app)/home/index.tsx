@@ -59,6 +59,7 @@ import {
 } from "../../../lib/api";
 import { useRestrictedScheduled } from "../../../components/RestrictedScheduledCard";
 import { addDays, formatDateISO, startOfWeekMonday } from "../../../lib/dates";
+import { addDaysISO, DUE_SOON_DAYS } from "../../../lib/territory-view";
 import { useAuth } from "../../../lib/auth";
 import { WelcomeCard } from "../../../components/WelcomeCard";
 import { useMyPublisher } from "../../../lib/useMyPublisher";
@@ -386,9 +387,11 @@ function Strip({
   text: string;
   sub?: string | null;
   onPress: () => void;
-  tone?: "due" | "done";
+  /** «plain»: something held, not yet pressing — a territory far from its day. */
+  tone?: "due" | "done" | "plain";
 }) {
   const due = tone === "due";
+  const plain = tone === "plain";
   return (
     <Pressable
       style={({ pressed }) => [
@@ -398,14 +401,23 @@ function Strip({
       onPress={onPress}
       accessibilityRole="button"
     >
-      <View style={[s.stripIcon, due ? s.stripIconDue : s.stripIconDone]}>
-        <Ionicons name={icon} size={19} color={due ? "#b45309" : "#16794f"} />
+      <View
+        style={[
+          s.stripIcon,
+          due ? s.stripIconDue : plain ? s.stripIconPlain : s.stripIconDone,
+        ]}
+      >
+        <Ionicons
+          name={icon}
+          size={19}
+          color={due ? "#b45309" : plain ? "#0e7490" : "#16794f"}
+        />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={s.stripText}>{text}</Text>
         {sub ? <Text style={s.stripSub}>{sub}</Text> : null}
       </View>
-      {due ? (
+      {due || plain ? (
         <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
       ) : null}
     </Pressable>
@@ -673,6 +685,30 @@ function TodoSection() {
         />
       ) : null}
       {pending?.items.map((item) => {
+        // A territory he holds (11 November 2026): one line the whole time,
+        // amber in the last two weeks and after its day.
+        if (item.kind === "territory") {
+          const soon =
+            item.overdue ||
+            (!!item.dueOn &&
+              item.dueOn <= addDaysISO(formatDateISO(new Date()), DUE_SOON_DAYS));
+          return (
+            <Strip
+              key={`territory-${item.id}`}
+              icon="map-outline"
+              tone={soon ? "due" : "plain"}
+              text={
+                item.dueOn
+                  ? t("home.pending.territory", {
+                      number: item.title ?? "",
+                      date: dayMonth(item.dueOn),
+                    })
+                  : t("home.pending.territoryNoDate", { number: item.title ?? "" })
+              }
+              onPress={() => router.push("/cart/my-territories" as never)}
+            />
+          );
+        }
         // An application waiting for this brother's answer (29 October 2026).
         if (item.kind === "aux_application") {
           return (
@@ -3110,6 +3146,7 @@ const s = StyleSheet.create({
   },
   stripIconDue: { backgroundColor: "#fef3c7" },
   stripIconDone: { backgroundColor: "#dcfce7" },
+  stripIconPlain: { backgroundColor: "#ecfeff" },
   todoCard: {
     backgroundColor: "#fff",
     borderRadius: 18,

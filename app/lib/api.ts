@@ -4416,7 +4416,7 @@ export type NotificationCategory = keyof NotificationPreferences;
  */
 export interface MePendingItem {
   /** 'aux_application': an application waiting for this brother's answer (29 October 2026); `title` is the applicant's name. */
-  kind: "contacts" | "task" | "aux_application";
+  kind: "contacts" | "task" | "aux_application" | "territory";
   id?: string;
   title?: string;
   dueOn: string | null;
@@ -7468,7 +7468,8 @@ export interface InactiveHold {
     | "field_service"
     | "talk"
     | "group"
-    | "responsibility";
+    | "responsibility"
+    | "territory";
   date: string | null;
   /** `date` is the Monday of the week, not the day itself. */
   week: boolean;
@@ -8111,4 +8112,34 @@ export const territoriesApi = {
     ).data,
   removeAssignment: async (assignmentId: string) =>
     (await api.delete(`/territories/assignments/${assignmentId}`)).data,
+  /** A two-hour link to open the map in the phone's browser. */
+  viewLink: async (assignmentId: string) =>
+    (
+      await api.post<{ path: string }>(
+        `/territories/assignments/${assignmentId}/view-link`,
+      )
+    ).data,
+  /** A link without login until the day it is due; replaces the last one. */
+  shareLink: async (assignmentId: string) =>
+    (
+      await api.post<{ path: string; dueOn: string | null }>(
+        `/territories/assignments/${assignmentId}/share-link`,
+      )
+    ).data,
+  revokeShareLink: async (assignmentId: string) =>
+    (await api.delete(`/territories/assignments/${assignmentId}/share-link`)).data,
+  /** The page behind a link; no login. */
+  shared: async (token: string): Promise<SharedTerritory> =>
+    (await api.get<SharedTerritory>(`/territory-links/${encodeURIComponent(token)}`))
+      .data,
 };
+
+/** What a page without login shows: one territory's outline and map. */
+export interface SharedTerritory {
+  number: string;
+  locality: string | null;
+  geometry: TerritoryGeometry;
+  dueOn: string | null;
+  congregationId: string;
+  mapReady: boolean;
+}

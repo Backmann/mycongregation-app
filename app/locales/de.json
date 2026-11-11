@@ -2975,7 +2975,9 @@
       "taskDue": "{{title}} · bis {{date}}",
       "taskOverdue": "{{title}} · überfällig seit {{date}}",
       "more": "{{count}} weitere in meinen Aufgaben",
-      "auxApplication": "Bewerbung als Hilfspionier: {{name}}"
+      "auxApplication": "Bewerbung als Hilfspionier: {{name}}",
+      "territory": "Gebiet {{number}} · zurück bis {{date}}",
+      "territoryNoDate": "Gebiet {{number}}"
     },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
@@ -4817,7 +4819,8 @@
       "talk": "Vortrag in einer anderen Versammlung",
       "groupOverseer": "Gruppenaufseher „{{name}}“",
       "groupAssistant": "Gehilfe in der Gruppe „{{name}}“",
-      "hint": "Die Aufgabe schließt sich von selbst, wenn nichts mehr davon übrig ist oder er wieder einen Bericht „gepredigt“ abgibt."
+      "hint": "Die Aufgabe schließt sich von selbst, wenn nichts mehr davon übrig ist oder er wieder einen Bericht „gepredigt“ abgibt.",
+      "territory": "Gebiet {{number}}"
     },
     "adminNotElder": {
       "hint": "Die Administratorrolle öffnet alle Daten der Versammlung, daher darf sie nur ein Ältester haben. Geben Sie die Rolle einem Ältesten oder nehmen Sie sie weg – die Aufgabe schließt sich von selbst."
@@ -7393,7 +7396,7 @@
       "title": "Mein Gebiet",
       "none": "Sie und Ihre Gruppe haben gerade kein Gebiet.",
       "openMap": "Karte öffnen",
-      "openMapHint": "Öffnet sich auf der Website; dort mit demselben Login anmelden.",
+      "openMapHint": "Öffnet sich auf der Website, ohne erneute Anmeldung.",
       "since": "ausgegeben {{date}}",
       "forGroup": "Gruppengebiet · {{group}}",
       "ofGroup": "Gruppengebiet · {{group}} · bei {{name}}",
@@ -7406,6 +7409,19 @@
       "noCalls_other": "Nicht besuchen: {{count}} Adressen",
       "noCallsNone": "Keine Nicht-besuchen-Adressen",
       "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Sichtbar für den Inhaber, seine Gruppe und die Verantwortlichen."
+    },
+    "link": {
+      "gone": "Dieser Link funktioniert nicht mehr",
+      "goneHint": "Die Frist ist vorbei, das Gebiet ist zurück, oder es gibt einen neuen Link. Bitten Sie den Gebietsdiener um einen neuen.",
+      "due": "Zurück bis {{date}}",
+      "make": "Link ohne Anmeldung",
+      "makeHint": "Nur die Karte, ohne Adressen und Namen. Gilt bis zur Rückgabefrist; ein neuer Link ersetzt den alten.",
+      "until": "Gilt bis {{date}} und endet, sobald das Gebiet zurück ist.",
+      "untilBack": "Endet, sobald das Gebiet zurück ist.",
+      "copy": "Kopieren",
+      "copied": "Kopiert",
+      "send": "Senden",
+      "revoke": "Abschalten"
     }
   }
 }

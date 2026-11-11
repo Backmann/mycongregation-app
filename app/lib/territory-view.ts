@@ -113,3 +113,14 @@ export function routeLink(g: TerritoryGeometry): string | null {
   const at = `${m.lat.toFixed(5)},${m.lng.toFixed(5)}`;
   return `https://www.google.com/maps/dir/?api=1&destination=${at}`;
 }
+
+/**
+ * Where the site is: the page itself on the web, the live site from the
+ * phone app (which opens the territory map there until it has its own).
+ */
+export function siteOrigin(): string {
+  if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+    return window.location.origin;
+  }
+  return 'https://mycongregation.org';
+}

@@ -49,6 +49,8 @@ export function InactiveHoldsLines({ taskId }: { taskId: string }) {
         );
       case 'responsibility':
         return t(`responsibilities.types.${h.code}`, { defaultValue: h.code ?? '' });
+      case 'territory':
+        return t('tasks.inactiveHolds.territory', { number: h.label ?? '' });
     }
   };
   return (

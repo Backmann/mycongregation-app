@@ -36,6 +36,7 @@ export function TerritoryMap({
   focus,
   onSelect,
   height,
+  file,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -43,6 +44,12 @@ export function TerritoryMap({
   focus?: string | null;
   onSelect?: (id: string) => void;
   height: number;
+  /**
+   * Whose map file, and whether it is there — given by a page without login
+   * (a shared link), which has no account to ask. Left out, the signed-in
+   * user's congregation and the server's answer are used.
+   */
+  file?: { congregationId: string; ready: boolean };
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -52,6 +59,7 @@ export function TerritoryMap({
       focus={focus ?? null}
       onSelect={onSelect}
       height={height}
+      file={file}
     />
   );
 }
@@ -81,12 +89,14 @@ function WebMap({
   focus,
   onSelect,
   height,
+  file,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
   focus: string | null;
   onSelect?: (id: string) => void;
   height: number;
+  file?: { congregationId: string; ready: boolean };
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -103,8 +113,9 @@ function WebMap({
     queryKey: ['territories', 'access'],
     queryFn: () => territoriesApi.access(),
     staleTime: 60 * 1000,
+    enabled: !file && !!user,
   });
-  const streets = accessQ.data?.mapReady;
+  const streets = file ? file.ready : accessQ.data?.mapReady;
 
   const box = useMemo(() => {
     const target = focus ? shapes.filter((s) => s.id === focus) : shapes;
@@ -116,7 +127,7 @@ function WebMap({
   // The map itself, once.
   useEffect(() => {
     let gone = false;
-    const congregationId = user?.congregationId;
+    const congregationId = file?.congregationId ?? user?.congregationId;
     const el = host.current as unknown as HTMLElement | null;
     if (!el || !congregationId || streets === undefined) return;
     void (async () => {
@@ -224,7 +235,7 @@ function WebMap({
     };
     // The map is made once per screen; data and view follow below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.congregationId, streets]);
+  }, [file?.congregationId, user?.congregationId, streets]);
 
   // Data that changes after the first drawing.
   useEffect(() => {
