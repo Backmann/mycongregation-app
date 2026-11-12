@@ -81,6 +81,15 @@ try {
   });
   check('scale bar: kilometres', S.scaleBar(30, 220 / 25.4, 130)?.label, '5 km');
   check('scale bar: no measure, no bar', S.scaleBar(0, 8, 130), null);
+  // An L-shaped territory: the middle of its box lies in the missing corner.
+  const ell = {
+    type: 'Polygon',
+    coordinates: [[[0, 0], [10, 0], [10, 2], [2, 2], [2, 10], [0, 10], [0, 0]]],
+  };
+  const ip = S.insidePoint(ell, [[0, 0], [10, 10]]);
+  check('route point: inside a bent territory', S.pointInShape(ip.lng, ip.lat, ell), true);
+  check('route point: the middle when it is inside', S.insidePoint({ type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] }, [[0, 0], [10, 10]]), { lng: 5, lat: 5 });
+  check('route point: not in a hole', S.pointInShape(S.insidePoint(square, [[0, 0], [10, 10]]).lng, S.insidePoint(square, [[0, 0], [10, 10]]).lat, square), true);
 } finally {
   rmSync(out, { recursive: true, force: true });
 }

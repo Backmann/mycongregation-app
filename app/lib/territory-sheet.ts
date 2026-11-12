@@ -120,3 +120,32 @@ export function scaleBar(
   const label = pick >= 1000 ? `${pick / 1000} km` : `${pick} m`;
   return { metres: pick, mm, label };
 }
+
+/**
+ * Where the route to a territory leads: the middle of its box — or, when a
+ * bent territory's middle lies outside it (12 November 2026: two of the
+ * congregation's 111), the point inside nearest to that middle.
+ */
+export function insidePoint(
+  shape: { type: string; coordinates: unknown },
+  box: [[number, number], [number, number]],
+  steps = 40,
+): { lng: number; lat: number } {
+  const mid = { lng: (box[0][0] + box[1][0]) / 2, lat: (box[0][1] + box[1][1]) / 2 };
+  if (pointInShape(mid.lng, mid.lat, shape)) return mid;
+  let best = mid;
+  let bestD = Infinity;
+  for (let i = 0; i < steps; i++) {
+    const lng = box[0][0] + ((i + 0.5) * (box[1][0] - box[0][0])) / steps;
+    for (let j = 0; j < steps; j++) {
+      const lat = box[0][1] + ((j + 0.5) * (box[1][1] - box[0][1])) / steps;
+      if (!pointInShape(lng, lat, shape)) continue;
+      const d = (lng - mid.lng) ** 2 + (lat - mid.lat) ** 2;
+      if (d < bestD) {
+        bestD = d;
+        best = { lng, lat };
+      }
+    }
+  }
+  return best;
+}
