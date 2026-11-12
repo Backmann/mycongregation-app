@@ -7989,6 +7989,11 @@ export interface MyServiceMeeting {
   address: string;
   serviceGroupId: string | null;
   territoryId: string | null;
+  /**
+   * The territory it had been sent to that is no longer the conductor's or
+   * his group's (12 November 2026): taken off, a new one to choose.
+   */
+  dropped?: { number: string } | null;
   options: { territoryId: string; number: string; locality: string | null }[];
 }
 
