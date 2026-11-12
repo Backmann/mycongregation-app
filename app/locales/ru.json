@@ -4627,7 +4627,50 @@
         "duty": "обязанности"
       }
     },
-    "weekOf": "неделя с {{date}}"
+    "weekOf": "неделя с {{date}}",
+    "territory": {
+      "territory": "Участок",
+      "changed": "Изменено",
+      "movedTo": "Перенесён в участок",
+      "none": "—",
+      "noCallField": {
+        "address": "адрес",
+        "surname": "фамилия",
+        "notedOn": "дата",
+        "territory": "участок"
+      },
+      "card": {
+        "number": "Номер",
+        "locality": "Район",
+        "kind": "Местность",
+        "note": "Заметка"
+      },
+      "changedWord": "изменена",
+      "outline": "Граница",
+      "outlineEdit": "изменена",
+      "outlineUndo": "возвращена прежняя",
+      "with": "Вместе с соседями",
+      "ground": "По земле",
+      "groundShares": "уходит {{leaving}}%, добавляется {{gaining}}%",
+      "split": "Разделён",
+      "splitNew": "новый участок {{number}}",
+      "splitFrom": "Выделен из участка",
+      "merged": "Присоединён участок",
+      "mergedInto": "Объединён с участком",
+      "lastWorked": "«Последний раз пройден»",
+      "never": "ни разу",
+      "noCallsMoved": "Перенесено адресов «не посещать»",
+      "archive": "Архив",
+      "archivedOut": "убран в архив",
+      "archivedBack": "возвращён в работу",
+      "undone": "Отменено",
+      "undoneWhat": {
+        "split": "разделение",
+        "merge": "объединение",
+        "new": "создание участка"
+      },
+      "category": "Вид"
+    }
   },
   "attendance": {
     "cardTitle": "Посещаемость встречи",
@@ -7819,8 +7862,12 @@
       "restore": "Вернуть в работу"
     },
     "category": {
-      "residential": "Жилые",
-      "business": "Деловые"
+      "residential": "Участки",
+      "business": "Деловая территория",
+      "one": {
+        "residential": "Участок",
+        "business": "Деловая территория"
+      }
     },
     "archived": {
       "link": "В архиве: {{count}}",

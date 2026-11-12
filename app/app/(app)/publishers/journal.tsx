@@ -17,6 +17,7 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
+import { territoryJournalLines } from '../../../lib/territory-journal';
 import { formatDayRange } from '../../../lib/date-range';
 import { readerTitle } from '../../../lib/reader-titles';
 // Locales are opt-in per file in dayjs: without these the dates come out in
@@ -704,7 +705,17 @@ function Row({
     // DOES carry the facts recorded at the time: which talk, for which date,
     // which speaker. They were being stored and never shown, so "deleted ·
     // Public talks" said nothing about what was deleted.
-    if (entry.changedFields.length === 0 && entry.detail) {
+    // The territory section says its facts in its own words (12 November 2026):
+    // «outline», «leaving» and the card's before/after objects read as nothing.
+    const territoryLines =
+      entry.changedFields.length === 0
+        ? territoryJournalLines(entry.entityType, entry.detail, t, (iso) =>
+            dayjs(iso).locale(language).format('D MMMM YYYY'),
+          )
+        : null;
+    if (territoryLines) {
+      for (const l of territoryLines) changes.push({ ...l, valuesKept: true });
+    } else if (entry.changedFields.length === 0 && entry.detail) {
       for (const [key, value] of Object.entries(entry.detail)) {
         // These are already spoken in the tail above; saying them twice reads
         // as a stutter.

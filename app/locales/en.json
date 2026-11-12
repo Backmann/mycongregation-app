@@ -4471,7 +4471,50 @@
         "duty": "duties"
       }
     },
-    "weekOf": "week of {{date}}"
+    "weekOf": "week of {{date}}",
+    "territory": {
+      "territory": "Territory",
+      "changed": "Changed",
+      "movedTo": "Moved to territory",
+      "none": "—",
+      "noCallField": {
+        "address": "address",
+        "surname": "surname",
+        "notedOn": "date",
+        "territory": "territory"
+      },
+      "card": {
+        "number": "Number",
+        "locality": "Locality",
+        "kind": "Area type",
+        "note": "Note"
+      },
+      "changedWord": "changed",
+      "outline": "Boundary",
+      "outlineEdit": "changed",
+      "outlineUndo": "earlier one restored",
+      "with": "Together with neighbours",
+      "ground": "Ground",
+      "groundShares": "leaving {{leaving}}%, added {{gaining}}%",
+      "split": "Split",
+      "splitNew": "new territory {{number}}",
+      "splitFrom": "Split off from",
+      "merged": "Joined territory",
+      "mergedInto": "Joined into",
+      "lastWorked": "“Last worked”",
+      "never": "never",
+      "noCallsMoved": "“Do not call” addresses moved",
+      "archive": "Archive",
+      "archivedOut": "archived",
+      "archivedBack": "back in use",
+      "undone": "Undone",
+      "undoneWhat": {
+        "split": "split",
+        "merge": "join",
+        "new": "new territory"
+      },
+      "category": "Kind"
+    }
   },
   "attendance": {
     "cardTitle": "Meeting attendance",
@@ -7571,8 +7614,12 @@
       "restore": "Bring back into use"
     },
     "category": {
-      "residential": "Residential",
-      "business": "Business"
+      "residential": "Territories",
+      "business": "Business territory",
+      "one": {
+        "residential": "Territory",
+        "business": "Business territory"
+      }
     },
     "archived": {
       "link": "Archived: {{count}}",
