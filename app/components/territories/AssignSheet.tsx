@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -34,10 +35,13 @@ export function AssignSheet({
   territoryId,
   visible,
   onClose,
+  onPrint,
 }: {
   territoryId: string;
   visible: boolean;
   onClose: () => void;
+  /** Offered on the web: once given out, print the holder's map. */
+  onPrint?: (territoryId: string) => void;
 }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
@@ -49,6 +53,7 @@ export function AssignSheet({
   const [groupId, setGroupId] = useState<string | null>(null);
   const [dueOn, setDueOn] = useState(addDaysISO(today, TERM_DAYS));
   const [error, setError] = useState<string | null>(null);
+  const [printAfter, setPrintAfter] = useState(false);
 
   const q = useQuery({
     queryKey: ['territories', 'candidates', territoryId],
@@ -64,6 +69,7 @@ export function AssignSheet({
     setGroupId(null);
     setDueOn(addDaysISO(today, TERM_DAYS));
     setError(null);
+    setPrintAfter(false);
   }, [visible, today]);
 
   const people = useMemo(() => {
@@ -89,9 +95,11 @@ export function AssignSheet({
         dueOn,
         ...(whom === 'group' && groupId ? { forGroupId: groupId } : {}),
       }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['territories'] });
+    onSuccess: async () => {
+      // The list must know the new holder before a map is printed for him.
+      await qc.invalidateQueries({ queryKey: ['territories'] });
       onClose();
+      if (printAfter && onPrint) onPrint(territoryId);
     },
     onError: (e) => setError(extractErrorMessage(e)),
   });
@@ -217,6 +225,22 @@ export function AssignSheet({
         </View>
       ) : null}
 
+      {onPrint && Platform.OS === 'web' ? (
+        <Pressable
+          onPress={() => setPrintAfter((v) => !v)}
+          style={s.printAfter}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: printAfter }}
+        >
+          <Ionicons
+            name={printAfter ? 'checkbox' : 'square-outline'}
+            size={20}
+            color={printAfter ? BRAND : '#94a3b8'}
+          />
+          <Text style={s.printAfterText}>{t('territories.sheet.afterGive')}</Text>
+        </Pressable>
+      ) : null}
+
       <View style={s.due}>
         <DateField label={t('territories.assign.dueOn')} value={dueOn} onChange={setDueOn} />
         {months > 0 ? (
@@ -265,6 +289,8 @@ const s = StyleSheet.create({
   chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   chipTextOn: { color: '#fff' },
   due: { marginTop: 16, gap: 4 },
+  printAfter: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14 },
+  printAfterText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
   foot: { gap: 8 },
   error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c' },
   go: { backgroundColor: BRAND, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },

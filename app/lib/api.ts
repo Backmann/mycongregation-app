@@ -8154,6 +8154,20 @@ export const territoriesApi = {
     ).data,
   revokeShareLink: async (assignmentId: string) =>
     (await api.delete(`/territories/assignments/${assignmentId}/share-link`)).data,
+  /** Fresh links (and, if asked, addresses) for printed territory maps. */
+  printLinks: async (assignmentIds: string[], withNoCalls: boolean) =>
+    (
+      await api.post<
+        {
+          assignmentId: string;
+          territoryId: string;
+          path: string;
+          dueOn: string | null;
+          replacedLinkOf: string | null;
+          noCalls: { address: string; surname: string | null }[];
+        }[]
+      >("/territories/print-links", { assignmentIds, withNoCalls })
+    ).data,
   /** The S-13 of a kept service year, for printing. */
   s13: async (serviceYear?: number): Promise<import("./s13").S13Data & { from: string; to: string }> =>
     (
