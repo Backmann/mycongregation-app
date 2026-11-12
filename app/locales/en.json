@@ -4169,7 +4169,9 @@
       "territory_import": "Territories: import",
       "territory_boundary": "Territory boundary",
       "territory_settings": "Territories: confirmed",
-      "territory_assignment": "Territories: assignments"
+      "territory_assignment": "Territories: assignments",
+      "territory": "Territories: card",
+      "territory_no_call": "Territories: do not call"
     },
     "actions": {
       "CREATE": "added",
@@ -7324,7 +7326,15 @@
       "nothingDue": "Nothing needs attention right now",
       "none": "Nothing found",
       "give": "Assign",
-      "mapOnWeb": "The territory map is on the website; the app gets it with its next version."
+      "mapOnWeb": "The territory map is on the website; the app gets it with its next version.",
+      "sortBy": "First:",
+      "sort": {
+        "age": "waiting longest",
+        "number": "by number"
+      },
+      "selected": "Selected: {{count}}",
+      "printSelected": "Maps to print",
+      "clearSelection": "Clear selection"
     },
     "detail": {
       "since": "since {{date}}",
@@ -7527,6 +7537,37 @@
       "reviewLead": "Noted two years ago. Decide whether to keep them.",
       "keep": "Keep for 2 years",
       "reviewRule": "Without a decision the address stays, and so does this card. Every decision is written to the log."
+    },
+    "card": {
+      "title": "Territory card",
+      "edit": "Edit",
+      "number": "Number",
+      "numberHint": "A new number shows at once on every line of this year's S-13; the old one stays in the journal.",
+      "locality": "Area",
+      "kind": "Kind of area (as on the S-12)",
+      "kinds": {
+        "city": "City",
+        "suburb": "Suburb",
+        "village": "Rural"
+      },
+      "note": "Note for the territory servants",
+      "noteHint": "Stored encrypted. Seen only by the territory servants and the service committee.",
+      "archive": "Archive",
+      "archiveTitle": "Archive {{number}}?",
+      "archiveBody": "The territory leaves the list and the map. Its S-13 history stays and its number becomes free. It can be brought back from the archive.",
+      "archiveHeld": "A territory can be archived once nobody holds it.",
+      "archivedSince": "Archived since {{date}} — its S-13 history is kept.",
+      "restore": "Bring back into use"
+    },
+    "category": {
+      "residential": "Residential",
+      "business": "Business"
+    },
+    "archived": {
+      "link": "Archived: {{count}}",
+      "title": "Archived territories",
+      "since": "archived since {{date}}",
+      "hint": "Open a territory to bring it back into use."
     }
   }
 }

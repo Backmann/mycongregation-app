@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../components/KeyboardScroll';
 import {
+  extractErrorMessage,
   territoriesApi,
   type TerritoryAssignmentRow,
   type TerritoryNoCallRow,
@@ -17,6 +18,7 @@ import { TerritoryMap } from '../../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../../components/territories/AssignSheet';
 import { PrintMapSheet } from '../../../../components/territories/PrintMapSheet';
 import { NoCallSheet } from '../../../../components/territories/NoCallSheet';
+import { TerritoryCardSheet } from '../../../../components/territories/TerritoryCardSheet';
 import { streetsOfTerritory } from '../../../../lib/map-snapshot';
 import { useAuth } from '../../../../lib/auth';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
@@ -60,6 +62,12 @@ export default function TerritoryScreen() {
   });
   const today = formatDateISO(new Date());
   const [giving, setGiving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const qc = useQueryClient();
+  const restore = useMutation({
+    mutationFn: () => territoriesApi.restore(id!),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['territories'] }),
+  });
   const [printing, setPrinting] = useState(false);
   const [noCall, setNoCall] = useState<{ row: TerritoryNoCallRow | null } | null>(null);
   // The territory's streets from the map, offered when an address is typed:
@@ -140,13 +148,51 @@ export default function TerritoryScreen() {
             <Text style={s.routeText}>{t('territories.route')}</Text>
           </Pressable>
         ) : null}
-        {a.keeps && Platform.OS === 'web' ? (
+        {a.keeps && Platform.OS === 'web' && !d.archivedAt ? (
           <Pressable onPress={() => setPrinting(true)} style={s.route} accessibilityRole="button">
             <Ionicons name="print-outline" size={16} color={BRAND} />
             <Text style={s.routeText}>{t('territories.sheet.printOne')}</Text>
           </Pressable>
         ) : null}
+        {a.keeps && !d.archivedAt ? (
+          <Pressable onPress={() => setEditing(true)} style={s.route} accessibilityRole="button">
+            <Ionicons name="create-outline" size={16} color={BRAND} />
+            <Text style={s.routeText}>{t('territories.card.edit')}</Text>
+          </Pressable>
+        ) : null}
       </View>
+
+      {d.archivedAt ? (
+        <View style={[cardStyles.card, s.archived]}>
+          <Text style={s.archivedText}>
+            {t('territories.card.archivedSince', { date: formatDayShort(d.archivedAt.slice(0, 10), lang) })}
+          </Text>
+          {a.keeps ? (
+            <>
+              <Pressable
+                onPress={() => restore.mutate()}
+                disabled={restore.isPending}
+                style={s.restore}
+                accessibilityRole="button"
+              >
+                {restore.isPending ? (
+                  <ActivityIndicator color={BRAND} />
+                ) : (
+                  <Text style={s.routeText}>{t('territories.card.restore')}</Text>
+                )}
+              </Pressable>
+              {restore.error ? <Text style={s.restoreError}>{extractErrorMessage(restore.error)}</Text> : null}
+            </>
+          ) : null}
+        </View>
+      ) : null}
+
+      {d.note ? (
+        <View style={s.noteBox}>
+          <Ionicons name="document-text-outline" size={15} color={MUTED} style={{ marginTop: 1 }} />
+          <Text style={s.noteText}>{d.note}</Text>
+        </View>
+      ) : null}
 
       <View style={[cardStyles.card, s.card, { borderLeftColor: TONE_COLOR[tone] }]}>
         {current ? (
@@ -190,7 +236,7 @@ export default function TerritoryScreen() {
                 ? t('territories.row.free', { date: formatDayShort(lastDone, lang) })
                 : t('territories.row.freeNever')}
             </Text>
-            {a.keeps ? (
+            {a.keeps && !d.archivedAt ? (
               <View style={s.actions}>
                 <Action label={t('territories.overview.give')} onPress={() => setGiving(true)} primary />
               </View>
@@ -234,7 +280,7 @@ export default function TerritoryScreen() {
             );
           })
         )}
-        {a.keeps ? (
+        {a.keeps && !d.archivedAt ? (
           <Pressable onPress={() => setNoCall({ row: null })} style={s.addNc} accessibilityRole="button">
             <Ionicons name="add" size={18} color={BRAND} />
             <Text style={s.addNcText}>{t('territories.noCall.add')}</Text>
@@ -277,6 +323,9 @@ export default function TerritoryScreen() {
         <Text style={s.small}>{t('territories.detail.historyKept')}</Text>
       </View>
 
+      {editing ? (
+        <TerritoryCardSheet territory={d} held={!!current} visible onClose={() => setEditing(false)} />
+      ) : null}
       {giving ? (
         <AssignSheet
           territoryId={d.id}
@@ -326,6 +375,12 @@ function Action({ label, onPress, primary }: { label: string; onPress: () => voi
 }
 
 const s = StyleSheet.create({
+  archived: { borderLeftWidth: 4, borderLeftColor: '#94a3b8', gap: 8 },
+  archivedText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK, lineHeight: 19 },
+  restore: { alignSelf: 'flex-start', borderWidth: 1, borderColor: BRAND, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
+  restoreError: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c' },
+  noteBox: { flexDirection: 'row', gap: 8, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: LINE, borderRadius: 12, padding: 10 },
+  noteText: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 13, color: INK, lineHeight: 18 },
   screen: { flex: 1, backgroundColor: '#f3f5f7' },
   content: { padding: 16, paddingBottom: 40, maxWidth: 760, width: '100%', alignSelf: 'center', gap: 12 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },

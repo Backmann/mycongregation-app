@@ -7942,9 +7942,13 @@ export interface TerritoryDetail {
   number: string;
   locality: string | null;
   kind: "city" | "suburb" | "village" | null;
+  /** Residential or business (12 November 2026); never mixed. */
+  category?: TerritoryCategory;
   geometry: TerritoryGeometry;
   note: string | null;
   lastCompletedOn: string | null;
+  /** Out of use since; null while in use. */
+  archivedAt?: string | null;
   assignments: TerritoryAssignmentRow[];
   noCalls: TerritoryNoCallRow[];
 }
@@ -8018,11 +8022,14 @@ export interface TerritoryBoundary {
   validFrom: string | null;
 }
 
+export type TerritoryCategory = "residential" | "business";
+
 export interface TerritoryRow {
   id: string;
   number: string;
   locality: string | null;
   kind: "city" | "suburb" | "village" | null;
+  category?: TerritoryCategory;
   geometry: TerritoryGeometry;
   lastCompletedOn: string | null;
   holder: {
@@ -8100,6 +8107,21 @@ export const territoriesApi = {
     (await api.get<TerritoryBoundary | null>("/territories/boundary")).data || null,
   detail: async (id: string): Promise<TerritoryDetail> =>
     (await api.get<TerritoryDetail>(`/territories/${id}`)).data,
+  /** The card by hand (12 November 2026): number, place, kind of area, note. */
+  editCard: async (
+    id: string,
+    body: {
+      number?: string;
+      locality?: string | null;
+      kind?: "city" | "suburb" | "village" | null;
+      note?: string | null;
+    },
+  ) => (await api.patch(`/territories/${id}`, body)).data,
+  archive: async (id: string) => (await api.post(`/territories/${id}/archive`)).data,
+  restore: async (id: string) => (await api.post(`/territories/${id}/restore`)).data,
+  archived: async (): Promise<
+    { id: string; number: string; locality: string | null; category: TerritoryCategory; archivedAt: string }[]
+  > => (await api.get("/territories/archived")).data,
   mine: async (): Promise<MyTerritory[]> =>
     (await api.get<MyTerritory[]>("/territories/mine")).data,
   candidates: async (id: string): Promise<TerritoryCandidates> =>
@@ -8198,10 +8220,13 @@ export const territoriesApi = {
       >("/territories/print-links", { assignmentIds, withNoCalls })
     ).data,
   /** The S-13 of a kept service year, for printing. */
-  s13: async (serviceYear?: number): Promise<import("./s13").S13Data & { from: string; to: string }> =>
+  s13: async (
+    serviceYear?: number,
+    category: TerritoryCategory = "residential",
+  ): Promise<import("./s13").S13Data & { from: string; to: string }> =>
     (
       await api.get("/territories/s13", {
-        params: serviceYear ? { serviceYear } : {},
+        params: { ...(serviceYear ? { serviceYear } : {}), category },
       })
     ).data,
   summary: async (month?: string): Promise<TerritorySummary> =>

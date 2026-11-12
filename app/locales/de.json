@@ -4169,7 +4169,9 @@
       "territory_import": "Gebiete: Übernahme",
       "territory_boundary": "Gebietsgrenze",
       "territory_settings": "Gebiete: bestätigt",
-      "territory_assignment": "Gebiete: Ausgaben"
+      "territory_assignment": "Gebiete: Ausgaben",
+      "territory": "Gebiete: Karte",
+      "territory_no_call": "Gebiete: Nicht besuchen"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -7324,7 +7326,15 @@
       "nothingDue": "Gerade braucht nichts Aufmerksamkeit",
       "none": "Nichts gefunden",
       "give": "Ausgeben",
-      "mapOnWeb": "Die Gebietskarte ist auf der Website; die App bekommt sie mit der nächsten Version."
+      "mapOnWeb": "Die Gebietskarte ist auf der Website; die App bekommt sie mit der nächsten Version.",
+      "sortBy": "Zuerst:",
+      "sort": {
+        "age": "am längsten nicht bearbeitet",
+        "number": "nach Nummer"
+      },
+      "selected": "Ausgewählt: {{count}}",
+      "printSelected": "Karten drucken",
+      "clearSelection": "Auswahl aufheben"
     },
     "detail": {
       "since": "seit {{date}}",
@@ -7527,6 +7537,37 @@
       "reviewLead": "Vor zwei Jahren vermerkt. Entscheidet, ob sie bleiben.",
       "keep": "2 Jahre behalten",
       "reviewRule": "Ohne Entscheidung bleibt die Adresse — und diese Karte. Jede Entscheidung wird protokolliert."
+    },
+    "card": {
+      "title": "Gebietskarte",
+      "edit": "Bearbeiten",
+      "number": "Nummer",
+      "numberHint": "Eine neue Nummer erscheint sofort in allen Zeilen des S-13 dieses Jahres; die alte bleibt im Protokoll.",
+      "locality": "Ort",
+      "kind": "Gegend (wie auf der S-12)",
+      "kinds": {
+        "city": "Stadt",
+        "suburb": "Vorort",
+        "village": "Ländlich"
+      },
+      "note": "Notiz für die Gebietsdiener",
+      "noteHint": "Verschlüsselt gespeichert. Nur für die Gebietsdiener und das Dienstkomitee sichtbar.",
+      "archive": "Archivieren",
+      "archiveTitle": "{{number}} archivieren?",
+      "archiveBody": "Das Gebiet verschwindet aus der Liste und von der Karte. Der S-13-Verlauf bleibt, die Nummer wird frei. Es kann aus dem Archiv zurückgeholt werden.",
+      "archiveHeld": "Archivieren geht, sobald niemand das Gebiet hat.",
+      "archivedSince": "Archiviert seit {{date}} — der S-13-Verlauf bleibt erhalten.",
+      "restore": "Wieder verwenden"
+    },
+    "category": {
+      "residential": "Wohngebiete",
+      "business": "Geschäftsgebiete"
+    },
+    "archived": {
+      "link": "Im Archiv: {{count}}",
+      "title": "Archivierte Gebiete",
+      "since": "archiviert seit {{date}}",
+      "hint": "Gebiet öffnen, um es wieder zu verwenden."
     }
   }
 }
