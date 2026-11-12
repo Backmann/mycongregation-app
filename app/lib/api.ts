@@ -8055,6 +8055,13 @@ export interface TerritoryOutlineReport {
     /** Percent of its ground going elsewhere / new to it. */
     leaving: number;
     gaining: number;
+    /**
+     * Houses of the server's register (12 November 2026): in it before,
+     * leaving, coming. Null until the register is built from the map.
+     */
+    houses?: { before: number; leaving: number; coming: number } | null;
+    /** The share the 10% rule looks at: of its houses, else of its ground. */
+    heldShare?: number;
     /** Held, and more than a tenth would go elsewhere: refused. */
     tooMuch: boolean;
     outsideBoundary: number;

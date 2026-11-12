@@ -7607,7 +7607,8 @@
       "multi": "This territory has several parts or a hole — its boundary cannot be changed here yet.",
       "area": "Area: {{change}}%",
       "houses_zoom": "Zoom in on the changed part to count the houses.",
-      "houses_view": "Bring the whole changed part into view to count the houses."
+      "houses_view": "Bring the whole changed part into view to count the houses.",
+      "housesExact": "Houses: leaving {{leaving}} of {{before}}, coming {{coming}}"
     }
   }
 }
