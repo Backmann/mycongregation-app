@@ -66,7 +66,11 @@ export function AssignmentSheet({
         ? (assignment.completedOn ?? assignment.returnedOn ?? today)
         : today,
     );
-    setDue(assignment.dueOn ? addDaysISO(assignment.dueOn, 30) : addDaysISO(today, 30));
+    // Correcting keeps the day it is due; extending offers a month on from
+    // that day — or from today when it has passed (12 November 2026: the
+    // correction used to move the day by itself).
+    const base = assignment.dueOn && assignment.dueOn > today ? assignment.dueOn : today;
+    setDue(action === 'edit' ? (assignment.dueOn ?? '') : addDaysISO(base, 30));
     setMethod(assignment.method ?? 'door_to_door');
     setAssigned(assignment.assignedOn);
     setEnd(assignment.completedOn ? 'completed' : assignment.returnedOn ? 'returned' : 'open');

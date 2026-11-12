@@ -325,6 +325,31 @@ export function reconcile(
   });
 }
 
+/**
+ * The territory's «last worked» day to bring over (12 November 2026): the
+ * last day worked BEFORE the kept years — the S-13 of the earlier kept year
+ * needs it, and the lines that carry it are not brought over. The later days
+ * come with the lines themselves. The old tool's own «last worked» stands in
+ * only when no kept line accounts for it.
+ */
+export function lastWorkedToBring(
+  number: string,
+  lines: SourceLine[],
+  toolLast: string | null,
+  keptFrom: string,
+): string | null {
+  const mine = lines.filter((l) => numberKey(l.number) === numberKey(number));
+  const before = mine
+    .map((l) => l.endedOn)
+    .filter((d): d is string => !!d && d < keptFrom)
+    .sort()
+    .pop();
+  if (toolLast && toolLast >= keptFrom && !mine.some((l) => l.endedOn === toolLast)) {
+    return toolLast;
+  }
+  return before ?? (toolLast && toolLast < keptFrom ? toolLast : null);
+}
+
 // ---------------------------------------------------------- names to cards --
 
 const LATIN: Record<string, string> = {

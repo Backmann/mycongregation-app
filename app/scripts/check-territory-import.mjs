@@ -143,6 +143,15 @@ try {
   check('cards: order of words does not matter', T.guessCard('Keller Tamara', cards)?.id, 'b');
   check('cards: a surname alone matching two cards is not guessed', T.guessCard('Keller', cards), null);
   check('cards: nobody', T.guessCard('Pavel Müller', cards), null);
+
+  // «Last worked» brought over (12 November 2026): the day before the kept
+  // years, for the earlier S-13; later days come with the lines themselves.
+  const L = (number, assignedOn, endedOn) => ({ number, assignedOn, endedOn, holder: '#1' });
+  const hist = [L('A1', '2024-01-10', '2024-05-02'), L('A1', '2024-09-01', '2025-03-01'), L('A1', '2025-10-01', '2026-02-01')];
+  check('last worked: the last day before the kept years', T.lastWorkedToBring('A1', hist, '2026-02-01', '2025-09-01'), '2025-03-01');
+  check('last worked: other numbers do not count', T.lastWorkedToBring('A2', hist, null, '2025-09-01'), null);
+  check('last worked: the tool\'s day, when no kept line has it', T.lastWorkedToBring('A1', hist, '2026-04-04', '2025-09-01'), '2026-04-04');
+  check('last worked: only the tool\'s old day', T.lastWorkedToBring('B1', [], '2024-06-01', '2025-09-01'), '2024-06-01');
 } finally {
   rmSync(out, { recursive: true, force: true });
 }
