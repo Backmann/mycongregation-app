@@ -7461,6 +7461,37 @@
       "note": "*When beginning a new sheet, use this column to record the date on which each territory was last completed.",
       "groupShort": "Gr.",
       "campaign": "campaign"
+    },
+    "sheet": {
+      "printTitle": "Territory map to print",
+      "printOne": "Print",
+      "printShown_one": "Maps to print · {{count}}",
+      "printShown_other": "Maps to print · {{count}}",
+      "many_one": "{{count}} territory",
+      "many_other": "{{count}} territories",
+      "format": "Size",
+      "formats": {
+        "s12": "As S-12 (15×10 cm)",
+        "a5": "A5",
+        "a4": "A4"
+      },
+      "noCalls": "Do-not-call addresses on the back",
+      "noCallsHint": "For a brother without a phone. Address only, no names or reasons.",
+      "replaces": "Each sheet carries a new link in its QR code. A sheet printed earlier for the same assignment stops opening.",
+      "freeNoQr": "Territories not checked out print without a QR code, marked \"not assigned\".",
+      "noStreets": "The street map is not loaded yet — the sheet shows only the outlines.",
+      "print": "Print",
+      "preparing": "Preparing maps: {{done}} of {{of}}",
+      "afterGive": "Print the holder’s map right away",
+      "fileTitle": "Territory map {{list}}",
+      "title": "Territory map",
+      "streets": "Streets:",
+      "due": "Return by {{date}} · the current date is behind the QR code",
+      "notOut": "Not assigned",
+      "qr": "Open on a phone",
+      "note": "Do not mark it; keep it in its sleeve. When worked, mark it in the app or tell the territory servant. The link works while the territory is out.",
+      "backTitle": "Territory {{number}} · do not call",
+      "backNote": "Only these addresses. When you return the territory, hand this sheet to the territory servant."
     }
   }
 }

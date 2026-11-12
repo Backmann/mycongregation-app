@@ -22,6 +22,7 @@ import { TerritoryImport } from '../../../components/territories/TerritoryImport
 import { TerritoryMap, type MapShape } from '../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../components/territories/AssignSheet';
 import { CampaignSheet } from '../../../components/territories/CampaignSheet';
+import { PrintMapSheet } from '../../../components/territories/PrintMapSheet';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildS13Html } from '../../../lib/s13Pdf';
 import { serviceYearOf } from '../../../lib/service-year';
@@ -76,6 +77,9 @@ export default function TerritoriesScreen() {
   const [query, setQuery] = useState('');
   const [giving, setGiving] = useState<string | null>(null);
   const [campaign, setCampaign] = useState(false);
+  // Printed maps: the territories shown in the list (filter and search
+  // pick them), or the one just given out.
+  const [printIds, setPrintIds] = useState<string[] | null>(null);
   const [handing, setHanding] = useState<TerritoryRow | null>(null);
   const [handError, setHandError] = useState<string | null>(null);
   const qc = useQueryClient();
@@ -254,6 +258,18 @@ export default function TerritoriesScreen() {
                 <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
               </Pressable>
             ) : null}
+            {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (
+              <Pressable
+                onPress={() => setPrintIds(shown.map((x) => x.row.id))}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                <Ionicons name="map-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>
+                  {t('territories.sheet.printShown', { count: shown.length })}
+                </Text>
+              </Pressable>
+            ) : null}
             {[serviceYearOf(today), serviceYearOf(today) - 1].map((y) => (
               <Pressable
                 key={y}
@@ -323,7 +339,22 @@ export default function TerritoriesScreen() {
           {Platform.OS !== 'web' ? <Text style={s.next}>{t('territories.overview.mapOnWeb')}</Text> : null}
         </>
       )}
-      {giving ? <AssignSheet territoryId={giving} visible onClose={() => setGiving(null)} /> : null}
+      {giving ? (
+        <AssignSheet
+          territoryId={giving}
+          visible
+          onClose={() => setGiving(null)}
+          onPrint={(id) => setPrintIds([id])}
+        />
+      ) : null}
+      {printIds ? (
+        <PrintMapSheet
+          targets={(listQ.data ?? []).filter((r) => printIds.includes(r.id))}
+          all={listQ.data ?? []}
+          visible
+          onClose={() => setPrintIds(null)}
+        />
+      ) : null}
       {campaign ? (
         <CampaignSheet rows={listQ.data ?? []} visible onClose={() => setCampaign(false)} />
       ) : null}
@@ -421,10 +452,12 @@ function Row({
 /** «октябрь» for '2026-10'. */
 function monthName(month: string, lang: string): string {
   try {
-    return new Date(`${month}-15T12:00:00Z`).toLocaleDateString(lang, {
+    const name = new Date(`${month}-15T12:00:00Z`).toLocaleDateString(lang, {
       month: 'long',
       timeZone: 'UTC',
     });
+    // It opens the line: «Октябрь: выдано…».
+    return name.charAt(0).toUpperCase() + name.slice(1);
   } catch {
     return month;
   }

@@ -48,6 +48,7 @@ export interface MapLibreMap {
   ) => void;
   addControl: (control: unknown, position?: string) => void;
   getCanvas: () => HTMLCanvasElement;
+  unproject: (point: [number, number]) => { lng: number; lat: number };
   resize: () => void;
   remove: () => void;
   loaded: () => boolean;

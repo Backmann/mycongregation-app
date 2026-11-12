@@ -11,6 +11,7 @@ import { LoadFailure } from '../../../../components/LoadFailure';
 import { NoAccess } from '../../../../components/NoAccess';
 import { TerritoryMap } from '../../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../../components/territories/AssignSheet';
+import { PrintMapSheet } from '../../../../components/territories/PrintMapSheet';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
 import {
   AssignmentSheet,
@@ -50,6 +51,13 @@ export default function TerritoryScreen() {
   });
   const today = formatDateISO(new Date());
   const [giving, setGiving] = useState(false);
+  const [printing, setPrinting] = useState(false);
+  // The neighbours and the holder for a printed map come from the list.
+  const listQ = useQuery({
+    queryKey: ['territories', 'list'],
+    queryFn: () => territoriesApi.list(),
+    enabled: open && Platform.OS === 'web',
+  });
   const [acting, setActing] = useState<{
     action: AssignmentAction;
     row: TerritoryAssignmentRow;
@@ -109,6 +117,12 @@ export default function TerritoryScreen() {
           >
             <Ionicons name="navigate-outline" size={16} color={BRAND} />
             <Text style={s.routeText}>{t('territories.route')}</Text>
+          </Pressable>
+        ) : null}
+        {a.keeps && Platform.OS === 'web' ? (
+          <Pressable onPress={() => setPrinting(true)} style={s.route} accessibilityRole="button">
+            <Ionicons name="print-outline" size={16} color={BRAND} />
+            <Text style={s.routeText}>{t('territories.sheet.printOne')}</Text>
           </Pressable>
         ) : null}
       </View>
@@ -217,7 +231,22 @@ export default function TerritoryScreen() {
         <Text style={s.small}>{t('territories.detail.historyKept')}</Text>
       </View>
 
-      {giving ? <AssignSheet territoryId={d.id} visible onClose={() => setGiving(false)} /> : null}
+      {giving ? (
+        <AssignSheet
+          territoryId={d.id}
+          visible
+          onClose={() => setGiving(false)}
+          onPrint={() => setPrinting(true)}
+        />
+      ) : null}
+      {printing ? (
+        <PrintMapSheet
+          targets={(listQ.data ?? []).filter((r) => r.id === d.id)}
+          all={listQ.data ?? []}
+          visible
+          onClose={() => setPrinting(false)}
+        />
+      ) : null}
       <AssignmentSheet
         action={acting?.action ?? null}
         assignment={acting?.row ?? null}

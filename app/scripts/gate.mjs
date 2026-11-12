@@ -82,6 +82,7 @@ const STEPS = [
   ['Главная: ближайшее и лента', 'node', ['scripts/check-home-digest.mjs']],
   ['Участки: перенос данных', 'node', ['scripts/check-territory-import.mjs']],
   ['Участки: S-13 по бланку', 'node', ['scripts/check-s13.mjs']],
+  ['Участки: карта для печати', 'node', ['scripts/check-territory-sheet.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
   ['Главная: «изменено»', 'node', ['scripts/check-home-changes.mjs']],
   // The lines under the «Собрание» doors: which are amber, whose absences
