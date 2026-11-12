@@ -292,6 +292,22 @@ export default function TerritoriesScreen() {
               </Pressable>
             ))}
           </View>
+          {a.keeps ? (
+            // 12 November 2026: names on the S-13 are kept for this and the
+            // last service year; the last year's go on the first day of the
+            // next one. Said ahead, so a paper copy can still be printed.
+            <Text style={s.retention}>
+              {t('territories.s13.namesUntil', {
+                year: `${serviceYearOf(today) - 2}/${String(serviceYearOf(today) - 1).slice(2)}`,
+                date: new Date(`${serviceYearOf(today)}-09-01T12:00:00Z`).toLocaleDateString(i18n.language, {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                  timeZone: 'UTC',
+                }),
+              })}
+            </Text>
+          ) : null}
 
           <SegmentedControl<Filter>
             segments={[
@@ -483,6 +499,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
   },
   campaignText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
+  retention: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED, lineHeight: 16 },
   handOnNote: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: '#c2410c', marginTop: 2 },
   dialogText: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK, lineHeight: 20 },
   dialogError: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 8 },

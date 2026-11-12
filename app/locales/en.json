@@ -7467,7 +7467,8 @@
       "worked": "Date completed",
       "note": "*When beginning a new sheet, use this column to record the date on which each territory was last completed.",
       "groupShort": "Gr.",
-      "campaign": "campaign"
+      "campaign": "campaign",
+      "namesUntil": "Names on the S-13 for {{year}} will be replaced by «—» on {{date}}: the form keeps names for the current and the previous service year. Need a paper copy? Print it before then."
     },
     "sheet": {
       "printTitle": "Territory map to print",
