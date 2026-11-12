@@ -6150,7 +6150,12 @@
       "TERRITORY_EXTENDED": "Bereits einmal verlängert — bitte an den Gebietsdiener wenden.",
       "TERRITORY_PAST_YEAR": "Korrigiert werden kann nur das laufende Dienstjahr.",
       "TERRITORY_NOT_FOR_MEETING": "Ein Treffpunkt kann nur das eigene Gebiet des Leiters oder das seiner Gruppe nehmen.",
-      "TERRITORY_NO_CALL_TWICE": "Diese Adresse ist im Gebiet schon vermerkt."
+      "TERRITORY_NO_CALL_TWICE": "Diese Adresse ist im Gebiet schon vermerkt.",
+      "TERRITORY_CHANGED": "Gebiet {{number}} wurde inzwischen geändert. Bitte die Bearbeitung neu öffnen.",
+      "TERRITORY_HELD_SHAPE": "Gebiet {{number}} ist ausgegeben, und {{share}} % gehen weg — bitte zuerst zurücknehmen.",
+      "TERRITORY_OVERLAP": "Gebiet {{number}} überlappt {{other}}.",
+      "TERRITORY_NOT_NEIGHBOUR": "Eine gemeinsame Grenze gibt es nur bei Gebieten derselben Art.",
+      "TERRITORY_NOTHING_TO_UNDO": "Nichts wiederherzustellen: Die Grenze dieses Gebiets wurde nicht von Hand geändert."
     }
   },
   "stage": {
@@ -7568,6 +7573,39 @@
       "title": "Archivierte Gebiete",
       "since": "archiviert seit {{date}}",
       "hint": "Gebiet öffnen, um es wieder zu verwenden."
+    },
+    "outline": {
+      "open": "Grenze",
+      "title": "Grenze von Gebiet {{number}}",
+      "help": "Ziehen Sie die Punkte der Grenze. Ziehen an der Mitte einer Seite fügt einen Punkt hinzu; Rechtsklick auf einen Punkt entfernt ihn. Punkte nahe am Nachbarn oder an einer Straße rasten dort ein.",
+      "shared": "Gemeinsame Grenze bei beiden Nachbarn verschieben",
+      "snap": "An Straßen einrasten",
+      "stepBack": "Schritt zurück",
+      "reset": "Alles zurücksetzen",
+      "changes": "Was sich ändert",
+      "nothing": "Noch nichts geändert.",
+      "share": "Anteil: geht weg ≈{{leaving}} %, kommt hinzu ≈{{gaining}} %",
+      "houses": "Häuser laut Karte: gehen weg ≈{{leaving}}, kommen hinzu ≈{{coming}}",
+      "held": "ausgegeben",
+      "heldHint": "Das Gebiet ist ausgegeben: eine kleine Korrektur ist möglich, der Verkündiger sieht dann die neue Grenze.",
+      "tooMuch": "Von {{number}} gehen mehr als 10 % weg, und es ist ausgegeben — nehmen Sie das Gebiet zuerst zurück.",
+      "outside": "{{share}} % des Gebiets liegen außerhalb der Versammlungsgrenze.",
+      "overlap": "{{a}} überlappt {{b}} — bitte die Grenze korrigieren.",
+      "noCalls": "„Nicht besuchen“ in diesem Gebiet",
+      "noCallsHint": "Liegt eine Adresse jetzt beim Nachbarn, verschieben Sie sie dorthin.",
+      "moveTo": "→ {{number}}",
+      "moved": "Adresse nach {{number}} verschoben.",
+      "save": "Grenze speichern",
+      "saved": "Gespeicherte Gebiete: {{n}}.",
+      "undo": "Grenze vor dem letzten Speichern wiederherstellen",
+      "undoTitle": "Frühere Grenze wiederherstellen?",
+      "undoBody": "Die Grenze dieses Gebiets und der mit ihm geänderten Nachbarn wird wieder so wie vor dem letzten Speichern. Frühere Grenzen bleiben im Verlauf.",
+      "undone": "Frühere Grenze wiederhergestellt.",
+      "back": "Zurück zum Gebiet",
+      "failed": "Die Karte zum Bearbeiten konnte nicht geöffnet werden. Bitte laden Sie die Seite neu.",
+      "webOnly": "Die Grenze eines Gebiets lässt sich am Computer auf der Website ändern.",
+      "multi": "Das Gebiet besteht aus mehreren Teilen oder hat eine Aussparung — seine Grenze lässt sich hier noch nicht ändern.",
+      "area": "Fläche: {{change}} %"
     }
   }
 }
