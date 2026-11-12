@@ -27,6 +27,8 @@ import { keptFrom } from '../../lib/service-year';
 import { formatDateISO } from '../../lib/dates';
 import { formatDayShort } from '../../lib/territory-view';
 import { confirm } from '../ConfirmHost';
+import { DateField } from '../DateField';
+import { dateForAddress } from '../../lib/no-call';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../reports/ReportBits';
 
 /**
@@ -42,6 +44,8 @@ type Picked<T> = { name: string; data: T } | null;
 type Card = { id: string; name: string };
 
 const NO_CARD = '';
+
+type NoCallDraft = { address: string; surname: string; notedOn: string };
 
 async function pickFile(types: string[]): Promise<{ name: string; blob: Blob } | null> {
   const result = await DocumentPicker.getDocumentAsync({ type: types, multiple: false, copyToCacheDirectory: true });
@@ -66,8 +70,12 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
   const [cardOf, setCardOf] = useState<Record<string, string>>({});
   /** Names typed for lines no source names. */
   const [typed, setTyped] = useState<Record<string, string>>({});
-  /** Comments taken over as «не беспокоить», with the address as edited. */
-  const [noCalls, setNoCalls] = useState<Record<string, string>>({});
+  /**
+   * Comments taken over as «не посещать»: per territory, one or more
+   * addresses as edited, the surname on the door where it is needed, and the
+   * day noted — the date the note itself carries, or today (12 November 2026).
+   */
+  const [noCalls, setNoCalls] = useState<Record<string, NoCallDraft[]>>({});
   const [sending, setSending] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [checks, setChecks] = useState<TerritoryChecks | null>(null);
@@ -200,9 +208,16 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
         setSending(t('territories.import.sendingAssignments', { done: i, total: items.length }));
         await territoriesApi.importAssignments(items.slice(i, i + 200));
       }
-      const calls = Object.entries(noCalls)
-        .filter(([, address]) => address.trim())
-        .map(([number, address]) => ({ number, address: address.trim(), notedOn: today }));
+      const calls = Object.entries(noCalls).flatMap(([number, rows]) =>
+        rows
+          .filter((r) => r.address.trim())
+          .map((r) => ({
+            number,
+            address: r.address.trim(),
+            ...(r.surname.trim() ? { surname: r.surname.trim() } : {}),
+            notedOn: r.notedOn <= today ? r.notedOn : today,
+          })),
+      );
       if (calls.length) {
         setSending(t('territories.import.sendingNoCalls'));
         await territoriesApi.importNoCalls(calls);
@@ -354,6 +369,13 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
               <Text style={s.hint}>{t('territories.import.commentsHint')}</Text>
               {comments.map((c) => {
                 const on = c.number in noCalls;
+                const rows = noCalls[c.number] ?? [];
+                const setRow = (i: number, patch: Partial<NoCallDraft>) =>
+                  setNoCalls((x) => ({
+                    ...x,
+                    [c.number]: (x[c.number] ?? []).map((r, j) => (j === i ? { ...r, ...patch } : r)),
+                  }));
+                const fresh = (): NoCallDraft => ({ address: '', surname: '', notedOn: today });
                 return (
                   <View key={c.number} style={s.comment}>
                     <Pressable
@@ -361,7 +383,7 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
                         setNoCalls((x) => {
                           const next = { ...x };
                           if (on) delete next[c.number];
-                          else next[c.number] = '';
+                          else next[c.number] = [fresh()];
                           return next;
                         })
                       }
@@ -373,14 +395,62 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
                       <Text style={s.rowLabel}>{c.number}</Text>
                     </Pressable>
                     <Text style={s.commentText}>{c.comment}</Text>
+                    {rows.map((r, i) => (
+                      <View key={i} style={s.ncRow}>
+                        <TextInput
+                          style={s.input}
+                          value={r.address}
+                          onChangeText={(v) =>
+                            // The date follows the line of the note naming
+                            // this street; an undated line means today.
+                            setRow(i, {
+                              address: v,
+                              notedOn: dateForAddress(c.comment ?? '', v) ?? today,
+                            })
+                          }
+                          placeholder={t('territories.import.addressPlaceholder')}
+                          accessibilityLabel={t('territories.import.addressPlaceholder')}
+                        />
+                        <View style={s.ncPair}>
+                          <TextInput
+                            style={s.input}
+                            value={r.surname}
+                            onChangeText={(v) => setRow(i, { surname: v })}
+                            placeholder={t('territories.import.surnamePlaceholder')}
+                            accessibilityLabel={t('territories.import.surnamePlaceholder')}
+                          />
+                          <View style={s.ncDate}>
+                            <DateField
+                              label={t('territories.import.notedOn')}
+                              value={r.notedOn}
+                              onChange={(v) => setRow(i, { notedOn: v })}
+                            />
+                          </View>
+                        </View>
+                        {rows.length > 1 ? (
+                          <Pressable
+                            onPress={() =>
+                              setNoCalls((x) => ({
+                                ...x,
+                                [c.number]: (x[c.number] ?? []).filter((_, j) => j !== i),
+                              }))
+                            }
+                            accessibilityRole="button"
+                          >
+                            <Text style={s.ncRemove}>{t('territories.import.removeAddress')}</Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ))}
                     {on ? (
-                      <TextInput
-                        style={s.input}
-                        value={noCalls[c.number]}
-                        onChangeText={(v) => setNoCalls((x) => ({ ...x, [c.number]: v }))}
-                        placeholder={t('territories.import.addressPlaceholder')}
-                        accessibilityLabel={t('territories.import.addressPlaceholder')}
-                      />
+                      <Pressable
+                        onPress={() =>
+                          setNoCalls((x) => ({ ...x, [c.number]: [...(x[c.number] ?? []), fresh()] }))
+                        }
+                        accessibilityRole="button"
+                      >
+                        <Text style={s.ncMore}>{t('territories.import.moreAddress')}</Text>
+                      </Pressable>
                     ) : null}
                   </View>
                 );
@@ -560,6 +630,12 @@ const s = StyleSheet.create({
   inputRow: { marginTop: 8 },
   input: { borderWidth: 1.5, borderColor: '#cbd5e1', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8, marginTop: 6, fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK },
   comment: { marginTop: 10 },
+  ncRow: { marginLeft: 28, marginTop: 4 },
+  // Surname, then the date under it: a date field needs its room.
+  ncPair: { gap: 4 },
+  ncDate: { maxWidth: 260 },
+  ncRemove: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#b91c1c', marginTop: 4 },
+  ncMore: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13.5, color: BRAND, marginLeft: 28, marginTop: 8 },
   commentText: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: MUTED, marginTop: 2, marginLeft: 28 },
   check: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 32 },
   person: { borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },

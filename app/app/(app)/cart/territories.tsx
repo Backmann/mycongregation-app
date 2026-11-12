@@ -19,6 +19,7 @@ import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { NoAccess } from '../../../components/NoAccess';
 import { TerritoryImport } from '../../../components/territories/TerritoryImport';
+import { NoCallReview } from '../../../components/territories/NoCallReview';
 import { TerritoryMap, type MapShape } from '../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../components/territories/AssignSheet';
 import { CampaignSheet } from '../../../components/territories/CampaignSheet';
@@ -211,6 +212,8 @@ export default function TerritoriesScreen() {
               <Ionicons name="chevron-forward" size={16} color={MUTED} />
             </Pressable>
           ) : null}
+
+          <NoCallReview />
 
           {Platform.OS === 'web' ? (
             <>

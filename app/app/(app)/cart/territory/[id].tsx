@@ -5,13 +5,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../components/KeyboardScroll';
-import { territoriesApi, type TerritoryAssignmentRow } from '../../../../lib/api';
+import {
+  territoriesApi,
+  type TerritoryAssignmentRow,
+  type TerritoryNoCallRow,
+} from '../../../../lib/api';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { LoadFailure } from '../../../../components/LoadFailure';
 import { NoAccess } from '../../../../components/NoAccess';
 import { TerritoryMap } from '../../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../../components/territories/AssignSheet';
 import { PrintMapSheet } from '../../../../components/territories/PrintMapSheet';
+import { NoCallSheet } from '../../../../components/territories/NoCallSheet';
+import { streetsOfTerritory } from '../../../../lib/map-snapshot';
+import { useAuth } from '../../../../lib/auth';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
 import {
   AssignmentSheet,
@@ -20,7 +27,9 @@ import {
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../components/reports/ReportBits';
 import { formatDateISO } from '../../../../lib/dates';
 import {
+  addDaysISO,
   formatDayShort,
+  formatMonthYear,
   routeLink,
   TONE_COLOR,
   toneOf,
@@ -52,6 +61,18 @@ export default function TerritoryScreen() {
   const today = formatDateISO(new Date());
   const [giving, setGiving] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const [noCall, setNoCall] = useState<{ row: TerritoryNoCallRow | null } | null>(null);
+  // The territory's streets from the map, offered when an address is typed:
+  // read once the sheet opens, on the web, when the map file is there.
+  const { user } = useAuth();
+  const streetsQ = useQuery({
+    queryKey: ['territories', 'streets', id],
+    queryFn: () =>
+      streetsOfTerritory({ congregationId: user!.congregationId, geometry: q.data!.geometry }),
+    enabled: !!noCall && Platform.OS === 'web' && !!a?.mapReady && !!q.data && !!user,
+    staleTime: Infinity,
+    retry: false,
+  });
   // The neighbours and the holder for a printed map come from the list.
   const listQ = useQuery({
     queryKey: ['territories', 'list'],
@@ -183,17 +204,42 @@ export default function TerritoryScreen() {
         {d.noCalls.length === 0 ? (
           <Text style={s.empty}>{t('territories.detail.noCallsNone')}</Text>
         ) : (
-          d.noCalls.map((n) => (
-            <View key={n.id} style={s.line}>
-              <Ionicons name="hand-left-outline" size={15} color="#c2410c" />
-              <Text style={s.lineText}>
-                {n.address}
-                {n.surname ? ` · ${n.surname}` : ''}
-              </Text>
-              <Text style={s.lineMeta}>{formatDayShort(n.notedOn, lang)}</Text>
-            </View>
-          ))
+          d.noCalls.map((n) => {
+            const up = !!n.reviewOn && n.reviewOn <= addDaysISO(today, 30);
+            return (
+              <Pressable
+                key={n.id}
+                disabled={!a.keeps}
+                onPress={() => setNoCall({ row: n })}
+                style={({ pressed }) => [s.ncLine, pressed && { opacity: 0.6 }]}
+                accessibilityRole={a.keeps ? 'button' : undefined}
+              >
+                <Ionicons name="hand-left-outline" size={15} color="#c2410c" style={{ marginTop: 2 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.lineText}>
+                    {n.address}
+                    {n.surname ? ` · ${t('territories.noCall.onDoor', { surname: n.surname })}` : ''}
+                  </Text>
+                  <Text style={[s.lineMeta, up && s.reviewDue]}>
+                    {t('territories.noCall.noted', { date: formatDayShort(n.notedOn, lang) })}
+                    {n.reviewOn
+                      ? ` · ${t(up ? 'territories.noCall.reviewNow' : 'territories.noCall.reviewOn', {
+                          date: formatMonthYear(n.reviewOn, lang),
+                        })}`
+                      : ''}
+                  </Text>
+                </View>
+                {a.keeps ? <Ionicons name="create-outline" size={16} color={MUTED} /> : null}
+              </Pressable>
+            );
+          })
         )}
+        {a.keeps ? (
+          <Pressable onPress={() => setNoCall({ row: null })} style={s.addNc} accessibilityRole="button">
+            <Ionicons name="add" size={18} color={BRAND} />
+            <Text style={s.addNcText}>{t('territories.noCall.add')}</Text>
+          </Pressable>
+        ) : null}
         <Text style={s.small}>{t('territories.detail.noCallsRule')}</Text>
       </View>
 
@@ -237,6 +283,16 @@ export default function TerritoryScreen() {
           visible
           onClose={() => setGiving(false)}
           onPrint={() => setPrinting(true)}
+        />
+      ) : null}
+      {noCall ? (
+        <NoCallSheet
+          territoryId={d.id}
+          number={d.number}
+          row={noCall.row}
+          streets={streetsQ.data ?? []}
+          visible
+          onClose={() => setNoCall(null)}
         />
       ) : null}
       {printing ? (
@@ -298,6 +354,10 @@ const s = StyleSheet.create({
   section: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12, letterSpacing: 0.6, color: MUTED, textTransform: 'uppercase', marginTop: 6 },
   list: { paddingVertical: 8, marginBottom: 0 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },
+  ncLine: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 8 },
+  reviewDue: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
+  addNc: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#f1f5f9', marginTop: 4 },
+  addNcText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: BRAND },
   lineText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: INK },
   lineMeta: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED },
   hist: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },

@@ -4416,7 +4416,8 @@ export type NotificationCategory = keyof NotificationPreferences;
  */
 export interface MePendingItem {
   /** 'aux_application': an application waiting for this brother's answer (29 October 2026); `title` is the applicant's name. */
-  kind: "contacts" | "task" | "aux_application" | "territory";
+  /** 'territory_review': «не посещать» addresses up for review (12 November 2026); `title` is how many. */
+  kind: "contacts" | "task" | "aux_application" | "territory" | "territory_review";
   id?: string;
   title?: string;
   dueOn: string | null;
@@ -7929,6 +7930,13 @@ export interface TerritoryNoCallRow {
   reviewOn?: string;
 }
 
+/** A «не посещать» address up for review, with its territory. */
+export interface TerritoryNoCallReview extends TerritoryNoCallRow {
+  territoryId: string;
+  number: string;
+  reviewOn: string;
+}
+
 export interface TerritoryDetail {
   id: string;
   number: string;
@@ -8155,6 +8163,22 @@ export const territoriesApi = {
   revokeShareLink: async (assignmentId: string) =>
     (await api.delete(`/territories/assignments/${assignmentId}/share-link`)).data,
   /** Fresh links (and, if asked, addresses) for printed territory maps. */
+  addNoCall: async (
+    territoryId: string,
+    body: { address: string; surname?: string; notedOn?: string },
+  ) =>
+    (await api.post<TerritoryNoCallRow>(`/territories/${territoryId}/no-calls`, body))
+      .data,
+  editNoCall: async (
+    id: string,
+    body: { address?: string; surname?: string; notedOn?: string },
+  ) => (await api.patch<TerritoryNoCallRow>(`/territories/no-calls/${id}`, body)).data,
+  removeNoCall: async (id: string) =>
+    (await api.delete(`/territories/no-calls/${id}`)).data,
+  keepNoCall: async (id: string) =>
+    (await api.post<TerritoryNoCallRow>(`/territories/no-calls/${id}/keep`)).data,
+  noCallsReview: async (): Promise<TerritoryNoCallReview[]> =>
+    (await api.get<TerritoryNoCallReview[]>("/territories/no-calls/review")).data,
   printLinks: async (assignmentIds: string[], withNoCalls: boolean) =>
     (
       await api.post<

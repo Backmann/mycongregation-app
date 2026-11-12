@@ -709,6 +709,18 @@ function TodoSection() {
             />
           );
         }
+        // «Не посещать» addresses up for review (12 November 2026).
+        if (item.kind === "territory_review") {
+          return (
+            <Strip
+              key="territory-review"
+              icon="hand-left-outline"
+              tone={item.overdue ? "due" : "plain"}
+              text={t("home.pending.territoryReview", { count: Number(item.title ?? 0) })}
+              onPress={() => router.push("/cart/territories" as never)}
+            />
+          );
+        }
         // An application waiting for this brother's answer (29 October 2026).
         if (item.kind === "aux_application") {
           return (

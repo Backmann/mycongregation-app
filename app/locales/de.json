@@ -2977,7 +2977,8 @@
       "more": "{{count}} weitere in meinen Aufgaben",
       "auxApplication": "Bewerbung als Hilfspionier: {{name}}",
       "territory": "Gebiet {{number}} · zurück bis {{date}}",
-      "territoryNoDate": "Gebiet {{number}}"
+      "territoryNoDate": "Gebiet {{number}}",
+      "territoryReview": "«Nicht besuchen»-Adressen zur Prüfung: {{count}}"
     },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
@@ -6146,7 +6147,8 @@
       "TERRITORY_ENDED": "Das Gebiet ist bereits zurück.",
       "TERRITORY_EXTENDED": "Bereits einmal verlängert — bitte an den Gebietsdiener wenden.",
       "TERRITORY_PAST_YEAR": "Korrigiert werden kann nur das laufende Dienstjahr.",
-      "TERRITORY_NOT_FOR_MEETING": "Ein Treffpunkt kann nur das eigene Gebiet des Leiters oder das seiner Gruppe nehmen."
+      "TERRITORY_NOT_FOR_MEETING": "Ein Treffpunkt kann nur das eigene Gebiet des Leiters oder das seiner Gruppe nehmen.",
+      "TERRITORY_NO_CALL_TWICE": "Diese Adresse ist im Gebiet schon vermerkt."
     }
   },
   "stage": {
@@ -7293,7 +7295,11 @@
       "verify": "Daten geprüft",
       "verifyTitle": "Daten geprüft?",
       "verifyBody": "Der Bereich öffnet sich dem Dienstkomitee, und die Übernahme wird geschlossen. Das lässt sich nicht rückgängig machen.",
-      "verifyConfirm": "Ja, geprüft"
+      "verifyConfirm": "Ja, geprüft",
+      "surnamePlaceholder": "Name an der Klingel — falls nötig",
+      "notedOn": "Vermerkt",
+      "removeAddress": "Diese Adresse entfernen",
+      "moreAddress": "＋ Weitere Adresse"
     },
     "route": "Route",
     "map": {
@@ -7326,7 +7332,7 @@
       "extended": "verlängert",
       "noCalls": "Nicht besuchen · {{count}}",
       "noCallsNone": "Keine Nicht-besuchen-Adressen",
-      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Nach 2 Jahren prüfen die Ältesten.",
+      "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Zum Korrigieren auf die Adresse tippen. Nach 2 Jahren zur Prüfung beim Gebietsdiener und Dienstkomitee.",
       "history": "Ausgaben im vorigen und laufenden Dienstjahr",
       "historyNone": "Keine Ausgaben",
       "historyKept": "Frühere Jahre werden nicht aufbewahrt — nur das Datum der letzten Bearbeitung.",
@@ -7492,6 +7498,32 @@
       "note": "Keine Notizen darauf, in der Hülle aufbewahren. Bearbeitet — in der App markieren oder dem Gebietsdiener sagen. Der Link gilt, solange das Gebiet ausgegeben ist.",
       "backTitle": "Gebiet {{number}} · nicht besuchen",
       "backNote": "Nur diese Adressen. Bei Rückgabe des Gebiets das Blatt dem Gebietsdiener geben."
+    },
+    "noCall": {
+      "title": "Nicht besuchen",
+      "subtitle": "Gebiet {{number}}",
+      "address": "Adresse",
+      "addressPlaceholder": "Straße und Hausnummer",
+      "surname": "Name an der Klingel — optional",
+      "surnameHint": "Nur wenn die Wohnung sonst nicht zu finden ist, in einem Haus mit mehreren Parteien. Keine Namen, keine Gründe.",
+      "notedOn": "Vermerkt am",
+      "reviewHint": "Nach 2 Jahren kommt die Adresse beim Gebietsdiener und dem Dienstkomitee zur Prüfung.",
+      "notInside": "Auf der Karte von Gebiet {{number}} gibt es diese Straße nicht. Adresse oder Gebiet prüfen.",
+      "add": "Adresse hinzufügen",
+      "remove": "Entfernen",
+      "removeTitle": "Adresse «nicht besuchen» entfernen?",
+      "removeBody": "{{address}} wird wieder besucht. Das lässt sich nicht rückgängig machen.",
+      "onDoor": "Klingel: {{surname}}",
+      "noted": "vermerkt {{date}}",
+      "reviewOn": "Prüfung {{date}}",
+      "reviewNow": "zur Prüfung fällig ({{date}})",
+      "reviewBy": "fällig {{date}}",
+      "reviewKicker": "Gebiete · Prüfung",
+      "reviewTitle_one": "«Nicht besuchen»-Adresse zur Prüfung: {{count}}",
+      "reviewTitle_other": "«Nicht besuchen»-Adressen zur Prüfung: {{count}}",
+      "reviewLead": "Vor zwei Jahren vermerkt. Entscheidet, ob sie bleiben.",
+      "keep": "2 Jahre behalten",
+      "reviewRule": "Ohne Entscheidung bleibt die Adresse — und diese Karte. Jede Entscheidung wird protokolliert."
     }
   }
 }

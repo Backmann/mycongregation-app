@@ -2977,7 +2977,8 @@
       "more": "{{count}} more in my tasks",
       "auxApplication": "Auxiliary pioneer application: {{name}}",
       "territory": "Territory {{number}} · return by {{date}}",
-      "territoryNoDate": "Territory {{number}}"
+      "territoryNoDate": "Territory {{number}}",
+      "territoryReview": "«Do not call» addresses to review: {{count}}"
     },
     "weekOf": "Week of {{date}}",
     "kinds": {
@@ -6146,7 +6147,8 @@
       "TERRITORY_ENDED": "The territory has already come back.",
       "TERRITORY_EXTENDED": "Already extended once — ask the territory servant.",
       "TERRITORY_PAST_YEAR": "Only the current service year can be corrected.",
-      "TERRITORY_NOT_FOR_MEETING": "A meeting may only go to its conductor’s own territory or its group’s."
+      "TERRITORY_NOT_FOR_MEETING": "A meeting may only go to its conductor’s own territory or its group’s.",
+      "TERRITORY_NO_CALL_TWICE": "This address is already noted on the territory."
     }
   },
   "stage": {
@@ -7293,7 +7295,11 @@
       "verify": "Records checked",
       "verifyTitle": "Records checked?",
       "verifyBody": "The section opens to the service committee and the import closes. This cannot be undone.",
-      "verifyConfirm": "Yes, checked"
+      "verifyConfirm": "Yes, checked",
+      "surnamePlaceholder": "Surname on the door — if needed",
+      "notedOn": "Noted",
+      "removeAddress": "Remove this address",
+      "moreAddress": "＋ Another address"
     },
     "route": "Route",
     "map": {
@@ -7326,7 +7332,7 @@
       "extended": "extended",
       "noCalls": "Do not call · {{count}}",
       "noCallsNone": "No do-not-call addresses",
-      "noCallsRule": "Address only, no names or reasons. Reviewed by the elders after 2 years.",
+      "noCallsRule": "The address only, no names, no reasons. Tap an address to correct it. After 2 years it comes up for review by the territory servant and the service committee.",
       "history": "Assignments in the previous and current service year",
       "historyNone": "No assignments",
       "historyKept": "Earlier years are not kept — only the date last worked.",
@@ -7492,6 +7498,32 @@
       "note": "Do not mark it; keep it in its sleeve. When worked, mark it in the app or tell the territory servant. The link works while the territory is out.",
       "backTitle": "Territory {{number}} · do not call",
       "backNote": "Only these addresses. When you return the territory, hand this sheet to the territory servant."
+    },
+    "noCall": {
+      "title": "Do not call",
+      "subtitle": "Territory {{number}}",
+      "address": "Address",
+      "addressPlaceholder": "Street and house number",
+      "surname": "Surname on the door — optional",
+      "surnameHint": "Only if the flat cannot be found without it, in a house of several households. No names, no reasons.",
+      "notedOn": "Noted on",
+      "reviewHint": "After 2 years the address comes up for review by the territory servant and the service committee.",
+      "notInside": "The map of territory {{number}} has no such street. Check the address or the territory.",
+      "add": "Add address",
+      "remove": "Remove",
+      "removeTitle": "Remove this «do not call» address?",
+      "removeBody": "{{address}} will be called on again. This cannot be undone.",
+      "onDoor": "on the door: {{surname}}",
+      "noted": "noted {{date}}",
+      "reviewOn": "review {{date}}",
+      "reviewNow": "due for review ({{date}})",
+      "reviewBy": "due {{date}}",
+      "reviewKicker": "Territories · review",
+      "reviewTitle_one": "«Do not call» address to review: {{count}}",
+      "reviewTitle_other": "«Do not call» addresses to review: {{count}}",
+      "reviewLead": "Noted two years ago. Decide whether to keep them.",
+      "keep": "Keep for 2 years",
+      "reviewRule": "Without a decision the address stays, and so does this card. Every decision is written to the log."
     }
   }
 }
