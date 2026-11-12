@@ -8031,6 +8031,8 @@ export interface TerritoryRow {
   kind: "city" | "suburb" | "village" | null;
   category?: TerritoryCategory;
   geometry: TerritoryGeometry;
+  /** Sent back with a boundary drawn again: a change in between is refused. */
+  updatedAt?: string;
   lastCompletedOn: string | null;
   holder: {
     assignmentId: string;
@@ -8042,6 +8044,29 @@ export interface TerritoryRow {
     /** A group's territory whose holder no longer oversees the group. */
     handOnTo: { publisherId: string; name: string } | null;
   } | null;
+}
+
+/** What a boundary drawn again does (12 November 2026), per territory. */
+export interface TerritoryOutlineReport {
+  territories: {
+    id: string;
+    number: string;
+    held: boolean;
+    /** Percent of its ground going elsewhere / new to it. */
+    leaving: number;
+    gaining: number;
+    /** Held, and more than a tenth would go elsewhere: refused. */
+    tooMuch: boolean;
+    outsideBoundary: number;
+  }[];
+  /** New overlaps with territories of the same kind: refused. */
+  overlaps: [string, string][];
+}
+
+export interface TerritoryOutlineBody {
+  geometry: TerritoryGeometry;
+  updatedAt: string;
+  neighbours?: { id: string; geometry: TerritoryGeometry; updatedAt: string }[];
 }
 
 export interface TerritoryChecks {
@@ -8118,6 +8143,13 @@ export const territoriesApi = {
     },
   ) => (await api.patch(`/territories/${id}`, body)).data,
   archive: async (id: string) => (await api.post(`/territories/${id}/archive`)).data,
+  /** A boundary drawn again (12 November 2026): what it does, saving, undo. */
+  checkOutline: async (id: string, body: TerritoryOutlineBody): Promise<TerritoryOutlineReport> =>
+    (await api.post<TerritoryOutlineReport>(`/territories/${id}/outline/check`, body)).data,
+  saveOutline: async (id: string, body: TerritoryOutlineBody) =>
+    (await api.put<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline`, body)).data,
+  undoOutline: async (id: string) =>
+    (await api.post<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline/undo`)).data,
   restore: async (id: string) => (await api.post(`/territories/${id}/restore`)).data,
   archived: async (): Promise<
     { id: string; number: string; locality: string | null; category: TerritoryCategory; archivedAt: string }[]
@@ -8198,7 +8230,8 @@ export const territoriesApi = {
       .data,
   editNoCall: async (
     id: string,
-    body: { address?: string; surname?: string; notedOn?: string },
+    /** territoryId: moved to a neighbour (a boundary drawn again). */
+    body: { address?: string; surname?: string; notedOn?: string; territoryId?: string },
   ) => (await api.patch<TerritoryNoCallRow>(`/territories/no-calls/${id}`, body)).data,
   removeNoCall: async (id: string) =>
     (await api.delete(`/territories/no-calls/${id}`)).data,

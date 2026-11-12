@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -152,6 +152,16 @@ export default function TerritoryScreen() {
           <Pressable onPress={() => setPrinting(true)} style={s.route} accessibilityRole="button">
             <Ionicons name="print-outline" size={16} color={BRAND} />
             <Text style={s.routeText}>{t('territories.sheet.printOne')}</Text>
+          </Pressable>
+        ) : null}
+        {a.keeps && Platform.OS === 'web' && !d.archivedAt ? (
+          <Pressable
+            onPress={() => router.push(`/cart/territory/outline/${d.id}` as never)}
+            style={s.route}
+            accessibilityRole="button"
+          >
+            <Ionicons name="shapes-outline" size={16} color={BRAND} />
+            <Text style={s.routeText}>{t('territories.outline.open')}</Text>
           </Pressable>
         ) : null}
         {a.keeps && !d.archivedAt ? (

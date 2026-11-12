@@ -183,6 +183,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // The server decides (11 November 2026): the whole section for one,
   // a holder's and his group's territories for the other.
   '/cart/territory/[id]': 'self',
+  '/cart/territory/outline/[id]': 'self',
   '/cart/my-territories': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.

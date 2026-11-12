@@ -60,6 +60,11 @@ const OVERVIEW = new Set<string>([
   '/service-reports/publisher-history',
   // What is now beside the history by service years (29 October 2026).
   '/cart/auxiliary-pioneers',
+  // The list beside the map (12 November 2026): in 760 the two columns were
+  // squeezed to 360 each.
+  '/cart/territories',
+  // The map where a boundary is drawn again, the changes beside it.
+  '/cart/territory/outline/[id]',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

@@ -6150,7 +6150,12 @@
       "TERRITORY_EXTENDED": "Already extended once — ask the territory servant.",
       "TERRITORY_PAST_YEAR": "Only the current service year can be corrected.",
       "TERRITORY_NOT_FOR_MEETING": "A meeting may only go to its conductor’s own territory or its group’s.",
-      "TERRITORY_NO_CALL_TWICE": "This address is already noted on the territory."
+      "TERRITORY_NO_CALL_TWICE": "This address is already noted on the territory.",
+      "TERRITORY_CHANGED": "Territory {{number}} was changed meanwhile. Please open the editor again.",
+      "TERRITORY_HELD_SHAPE": "Territory {{number}} is checked out and {{share}}% would leave — take it back first.",
+      "TERRITORY_OVERLAP": "Territory {{number}} overlaps {{other}}.",
+      "TERRITORY_NOT_NEIGHBOUR": "Only territories of the same kind share a border.",
+      "TERRITORY_NOTHING_TO_UNDO": "Nothing to restore: this boundary was not changed by hand."
     }
   },
   "stage": {
@@ -7568,6 +7573,39 @@
       "title": "Archived territories",
       "since": "archived since {{date}}",
       "hint": "Open a territory to bring it back into use."
+    },
+    "outline": {
+      "open": "Boundary",
+      "title": "Boundary of territory {{number}}",
+      "help": "Drag the points of the boundary. Dragging the middle of a side adds a point; right-click a point to remove it. Points close to a neighbour or a street snap to it.",
+      "shared": "Move a shared border in both neighbours",
+      "snap": "Snap to streets",
+      "stepBack": "Step back",
+      "reset": "Reset all",
+      "changes": "What changes",
+      "nothing": "Nothing changed yet.",
+      "share": "Ground: leaving ≈{{leaving}}%, added ≈{{gaining}}%",
+      "houses": "Houses on the map: leaving ≈{{leaving}}, coming ≈{{coming}}",
+      "held": "checked out",
+      "heldHint": "The territory is checked out: a small correction is fine, the publisher will see the new boundary.",
+      "tooMuch": "More than 10% of {{number}} would leave while it is checked out — take the territory back first.",
+      "outside": "{{share}}% of the territory lies outside the congregation boundary.",
+      "overlap": "{{a}} overlaps {{b}} — please correct the boundary.",
+      "noCalls": "“Do not call” in this territory",
+      "noCallsHint": "If an address now lies in the neighbour, move it there.",
+      "moveTo": "→ {{number}}",
+      "moved": "Address moved to {{number}}.",
+      "save": "Save boundary",
+      "saved": "Territories saved: {{n}}.",
+      "undo": "Restore the boundary from before the last save",
+      "undoTitle": "Restore the earlier boundary?",
+      "undoBody": "The boundary of this territory and of the neighbours changed with it goes back to how it was before the last save. Earlier boundaries are kept in the history.",
+      "undone": "Earlier boundary restored.",
+      "back": "Back to the territory",
+      "failed": "The map for editing could not be opened. Please reload the page.",
+      "webOnly": "A territory boundary can be changed on a computer, on the website.",
+      "multi": "This territory has several parts or a hole — its boundary cannot be changed here yet.",
+      "area": "Area: {{change}}%"
     }
   }
 }

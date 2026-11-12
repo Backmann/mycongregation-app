@@ -17,6 +17,9 @@ export const MAP_FILES = {
   maplibreCss: '/map/maplibre-gl-5.24.0.css',
   pmtiles: '/map/pmtiles-4.5.0.js',
   basemaps: '/map/basemaps-5.7.2.js',
+  /** Drawing a boundary again (12 November 2026): only the editor loads them. */
+  terraDraw: '/map/terra-draw-1.38.0.js',
+  terraDrawAdapter: '/map/terra-draw-maplibre-gl-adapter-1.5.0.js',
   glyphs: '/map/fonts/{fontstack}/{range}.pbf',
   sprite: '/map/sprites/v4/light',
   /** A font stack the fonts folder holds (glyph ranges for Latin and Cyrillic). */
@@ -49,6 +52,7 @@ export interface MapLibreMap {
   addControl: (control: unknown, position?: string) => void;
   getCanvas: () => HTMLCanvasElement;
   unproject: (point: [number, number]) => { lng: number; lat: number };
+  project: (lngLat: [number, number]) => { x: number; y: number };
   resize: () => void;
   remove: () => void;
   loaded: () => boolean;
@@ -119,4 +123,59 @@ export function loadMapLibs(): Promise<MapLibs> {
     loading = null;
   });
   return loading;
+}
+
+/* terra-draw's globals, typed only as far as the editor uses them. */
+export interface DrawFeature {
+  id: string | number;
+  type: 'Feature';
+  geometry: { type: string; coordinates: number[][][] };
+  properties: Record<string, unknown>;
+}
+
+export interface TerraDrawInstance {
+  start: () => void;
+  stop: () => void;
+  setMode: (mode: string) => void;
+  addFeatures: (features: unknown[]) => { id: string | number; valid: boolean; reason?: string }[];
+  getSnapshot: () => DrawFeature[];
+  getSnapshotFeature: (id: string | number) => DrawFeature | undefined;
+  updateFeatureGeometry: (id: string | number, geometry: unknown) => void;
+  selectFeature: (id: string | number) => void;
+  on: (event: string, cb: (...args: unknown[]) => void) => void;
+}
+
+export interface DrawLibs {
+  TerraDraw: new (options: Record<string, unknown>) => TerraDrawInstance;
+  TerraDrawPolygonMode: new (options?: Record<string, unknown>) => unknown;
+  TerraDrawSelectMode: new (options?: Record<string, unknown>) => unknown;
+  ValidateNotSelfIntersecting: (feature: unknown) => { valid: boolean; reason?: string };
+  Adapter: new (options: Record<string, unknown>) => unknown;
+}
+
+let drawLoading: Promise<DrawLibs> | null = null;
+
+/** The drawing library, after the map's own (the adapter needs both). */
+export function loadDrawLibs(): Promise<DrawLibs> {
+  if (drawLoading) return drawLoading;
+  drawLoading = (async () => {
+    await loadMapLibs();
+    await addScript(MAP_FILES.terraDraw);
+    await addScript(MAP_FILES.terraDrawAdapter);
+    const w = window as unknown as {
+      terraDraw: Omit<DrawLibs, 'Adapter'>;
+      terraDrawMaplibreGlAdapter: { TerraDrawMapLibreGLAdapter: DrawLibs['Adapter'] };
+    };
+    return {
+      TerraDraw: w.terraDraw.TerraDraw,
+      TerraDrawPolygonMode: w.terraDraw.TerraDrawPolygonMode,
+      TerraDrawSelectMode: w.terraDraw.TerraDrawSelectMode,
+      ValidateNotSelfIntersecting: w.terraDraw.ValidateNotSelfIntersecting,
+      Adapter: w.terraDrawMaplibreGlAdapter.TerraDrawMapLibreGLAdapter,
+    };
+  })();
+  drawLoading.catch(() => {
+    drawLoading = null;
+  });
+  return drawLoading;
 }
