@@ -7453,7 +7453,8 @@
       "title": "Meetings for field service you conduct",
       "hint": "Choose a territory — those who come see it with its do-not-call addresses the day before and on the day.",
       "none": "No territory",
-      "noOptions": "Neither you nor this group holds a territory."
+      "noOptions": "Neither you nor this group holds a territory.",
+      "dropped": "Territory {{number}} was taken off: it is no longer yours or your group's. Choose another."
     },
     "s13": {
       "print": "S-13 · {{year}}",

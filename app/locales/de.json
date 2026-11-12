@@ -7453,7 +7453,8 @@
       "title": "Treffpunkte für den Predigtdienst, die Sie leiten",
       "hint": "Wählen Sie ein Gebiet — wer kommt, sieht es mit den Nicht-besuchen-Adressen am Vortag und am Tag.",
       "none": "Ohne Gebiet",
-      "noOptions": "Weder Sie noch diese Gruppe haben ein Gebiet."
+      "noOptions": "Weder Sie noch diese Gruppe haben ein Gebiet.",
+      "dropped": "Gebiet {{number}} wurde entfernt: Es ist nicht mehr Ihres oder das Ihrer Gruppe. Wählen Sie ein anderes."
     },
     "s13": {
       "print": "S-13 · {{year}}",

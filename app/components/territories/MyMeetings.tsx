@@ -79,6 +79,12 @@ function Meeting({ m, lang }: { m: MyServiceMeeting; lang: string }) {
           />
         ))}
       </View>
+      {m.dropped ? (
+        <View style={s.dropped}>
+          <Ionicons name="alert-circle-outline" size={16} color="#b45309" />
+          <Text style={s.droppedText}>{t('territories.meetings.dropped', { number: m.dropped.number })}</Text>
+        </View>
+      ) : null}
       {m.options.length === 0 ? <Text style={s.hint}>{t('territories.meetings.noOptions')}</Text> : null}
       {error ? <Text style={s.error}>{error}</Text> : null}
     </View>
@@ -111,5 +117,7 @@ const s = StyleSheet.create({
   chipOn: { backgroundColor: BRAND, borderColor: BRAND },
   chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   chipTextOn: { color: '#fff' },
+  dropped: { flexDirection: 'row', gap: 6, alignItems: 'flex-start', backgroundColor: '#fffbeb', borderRadius: 10, padding: 8, marginTop: 8 },
+  droppedText: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#92400e', lineHeight: 17 },
   error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 4 },
 });
