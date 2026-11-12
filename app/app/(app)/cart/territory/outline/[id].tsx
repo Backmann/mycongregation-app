@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Switch,
   Text,
@@ -14,6 +13,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { KeyboardScroll } from '../../../../../components/KeyboardScroll';
 import {
   extractErrorMessage,
   territoriesApi,
@@ -29,9 +29,12 @@ import { confirm } from '../../../../../components/ConfirmHost';
 import {
   OutlineEditor,
   type EditedShape,
+  type EditorTool,
   type OutlineEditorHandle,
+  type PreviewShape,
 } from '../../../../../components/territories/OutlineEditor';
-import { areaChange, roundGeometry } from '../../../../../lib/outline-edit';
+import { CutPanel, JoinPanel, UndoReshape } from '../../../../../components/territories/ReshapePanels';
+import { areaChange, roundGeometry, type Pt } from '../../../../../lib/outline-edit';
 import { boxOf } from '../../../../../lib/territory-view';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../../components/reports/ReportBits';
 
@@ -87,6 +90,12 @@ export default function OutlineScreen() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
   const [moved, setMoved] = useState<Record<string, string>>({});
+  // Step 3 (12 November 2026): cut along a line, join with a neighbour.
+  const [tool, setTool] = useState<EditorTool>('points');
+  const [line, setLine] = useState<Pt[] | null>(null);
+  const [pick, setPick] = useState<string | null>(null);
+  const [preview, setPreview] = useState<PreviewShape[]>([]);
+  const [reshaped, setReshaped] = useState<string | null>(null);
 
   const rows = listQ.data;
   const main = rows?.find((r) => r.id === id) ?? null;
@@ -254,9 +263,8 @@ export default function OutlineScreen() {
     : [];
   const noCalls = (detailQ.data?.noCalls ?? []).filter((n) => !moved[n.id]);
 
-  const panel = (
-    <View style={s.panel}>
-      <Text style={s.title}>{t('territories.outline.title', { number: main.number })}</Text>
+  const pointsPanel = (
+    <>
       <Text style={s.help}>{t('territories.outline.help')}</Text>
 
       <View style={[cardStyles.card, s.box]}>
@@ -372,6 +380,77 @@ export default function OutlineScreen() {
       <Pressable onPress={() => void undoSaved()} disabled={busy} style={s.undo} accessibilityRole="button">
         <Text style={s.undoText}>{t('territories.outline.undo')}</Text>
       </Pressable>
+    </>
+  );
+
+  const tools: { key: EditorTool; label: string }[] = [
+    { key: 'points', label: t('territories.reshape.toolPoints') },
+    { key: 'cut', label: t('territories.reshape.toolCut') },
+    { key: 'join', label: t('territories.reshape.toolJoin') },
+  ];
+  const panel = (
+    <View style={s.panel}>
+      <Text style={s.title}>{t('territories.outline.title', { number: main.number })}</Text>
+      <View style={s.tools} accessibilityRole="radiogroup">
+        {tools.map((x) => {
+          // Cutting or joining with corners moved but not saved would mix two changes.
+          const locked = x.key !== 'points' && edited.length > 0;
+          return (
+            <Pressable
+              key={x.key}
+              onPress={() => {
+                setTool(x.key);
+                setLine(null);
+                setPick(null);
+                setPreview([]);
+              }}
+              disabled={locked}
+              style={[s.tool, tool === x.key && s.toolOn, locked && s.goOff]}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: tool === x.key, disabled: locked }}
+            >
+              <Text style={[s.toolText, tool === x.key && s.toolTextOn]}>{x.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      {edited.length > 0 && tool === 'points' ? (
+        <Text style={s.hint}>{t('territories.reshape.saveFirst')}</Text>
+      ) : null}
+      {reshaped ? <Text style={s.okText}>{reshaped}</Text> : null}
+      {tool === 'points' ? (
+        pointsPanel
+      ) : tool === 'cut' ? (
+        <>
+          <CutPanel
+            territory={main}
+            line={line}
+            noCalls={detailQ.data?.noCalls ?? []}
+            onPreview={setPreview}
+            onDone={(text) => {
+              setReshaped(text);
+              setLine(null);
+              setTool('points');
+            }}
+          />
+          <UndoReshape territory={main} onDone={(text) => setReshaped(text)} />
+        </>
+      ) : (
+        <>
+          <JoinPanel
+            territory={main}
+            otherId={pick}
+            onPreview={setPreview}
+            onDone={(text, keptId) => {
+              setReshaped(text);
+              setPick(null);
+              setTool('points');
+              if (keptId !== main.id) router.replace(`/cart/territory/outline/${keptId}` as never);
+            }}
+          />
+          <UndoReshape territory={main} onDone={(text) => setReshaped(text)} />
+        </>
+      )}
       <Pressable onPress={() => router.back()} style={s.undo} accessibilityRole="button">
         <Text style={s.undoText}>{t('territories.outline.back')}</Text>
       </Pressable>
@@ -379,7 +458,7 @@ export default function OutlineScreen() {
   );
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={[s.content, wide && s.contentWide]}>
+    <KeyboardScroll style={s.screen} contentContainerStyle={[s.content, wide && s.contentWide]}>
       <Stack.Screen options={{ title: t('territories.outline.title', { number: main.number }) }} />
       <View style={wide ? s.mapWide : undefined}>
         {editable ? (
@@ -395,6 +474,10 @@ export default function OutlineScreen() {
             snapStreets={snap}
             height={mapHeight}
             onChange={setEdited}
+            tool={tool}
+            onLine={setLine}
+            onPick={setPick}
+            preview={preview}
           />
         ) : (
           <View style={[cardStyles.card, s.box]}>
@@ -403,7 +486,7 @@ export default function OutlineScreen() {
         )}
       </View>
       {panel}
-    </ScrollView>
+    </KeyboardScroll>
   );
 }
 
@@ -494,5 +577,10 @@ const s = StyleSheet.create({
   goOff: { opacity: 0.45 },
   goText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#fff' },
   undo: { paddingVertical: 8, alignItems: 'center' },
+  tools: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tool: { borderWidth: 1, borderColor: LINE, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7, backgroundColor: '#fff' },
+  toolOn: { backgroundColor: BRAND, borderColor: BRAND },
+  toolText: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: BRAND },
+  toolTextOn: { color: '#fff' },
   undoText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
 });

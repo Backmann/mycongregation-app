@@ -7947,6 +7947,11 @@ export interface TerritoryDetail {
   geometry: TerritoryGeometry;
   note: string | null;
   lastCompletedOn: string | null;
+  /**
+   * Last worked as the server counts it (12 November 2026): for a joined
+   * territory only what was worked after the join.
+   */
+  lastWorkedOn?: string | null;
   /** Out of use since; null while in use. */
   archivedAt?: string | null;
   assignments: TerritoryAssignmentRow[];
@@ -8076,6 +8081,41 @@ export interface TerritoryOutlineBody {
   neighbours?: { id: string; geometry: TerritoryGeometry; updatedAt: string }[];
 }
 
+/** A cut, a join, a new territory (12 November 2026, the editor's step 3). */
+export interface TerritorySplitCheck {
+  parts: { geometry: TerritoryGeometry; areaM2: number; houses: number | null }[];
+  /** The part offered to keep the number: more houses, else larger. */
+  keep: 0 | 1;
+  newNumber: string;
+  lastWorkedOn: string | null;
+}
+
+export interface TerritoryMergeCheck {
+  geometry: TerritoryGeometry;
+  houses: number | null;
+  territories: {
+    id: string;
+    number: string;
+    updatedAt: string;
+    lastWorkedOn: string | null;
+    houses: number | null;
+    noCalls: number;
+    held: boolean;
+  }[];
+  /** The older of the two dates; null when one was never worked. */
+  lastWorkedOn: string | null;
+}
+
+export interface TerritoryNewCheck {
+  geometry: TerritoryGeometry;
+  areaM2: number;
+  houses: number | null;
+  /** Houses inside that no territory of this kind holds yet. */
+  freeHouses: number | null;
+  overlaps: string[];
+  outsideBoundary: number;
+}
+
 export interface TerritoryChecks {
   hasBoundary: boolean;
   outsideBoundary: { number: string; share: number }[];
@@ -8155,6 +8195,49 @@ export const territoriesApi = {
     (await api.post<TerritoryOutlineReport>(`/territories/${id}/outline/check`, body)).data,
   saveOutline: async (id: string, body: TerritoryOutlineBody) =>
     (await api.put<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline`, body)).data,
+  splitCheck: async (id: string, line: number[][]): Promise<TerritorySplitCheck> =>
+    (await api.post<TerritorySplitCheck>(`/territories/${id}/split/check`, { line })).data,
+  split: async (
+    id: string,
+    body: {
+      line: number[][];
+      keep: 0 | 1;
+      newNumber: string;
+      updatedAt: string;
+      noCalls?: { id: string; part: 0 | 1 }[];
+    },
+  ) =>
+    (
+      await api.post<{ kept: { id: string; number: string }; made: { id: string; number: string } }>(
+        `/territories/${id}/split`,
+        body,
+      )
+    ).data,
+  mergeCheck: async (id: string, otherId: string): Promise<TerritoryMergeCheck> =>
+    (await api.post<TerritoryMergeCheck>(`/territories/${id}/merge/check`, { otherId })).data,
+  merge: async (
+    id: string,
+    body: { otherId: string; keepId: string; updatedAt: string; otherUpdatedAt: string },
+  ) =>
+    (
+      await api.post<{ kept: { id: string; number: string }; archived: { id: string; number: string } }>(
+        `/territories/${id}/merge`,
+        body,
+      )
+    ).data,
+  newCheck: async (geometry: TerritoryGeometry, category: TerritoryCategory): Promise<TerritoryNewCheck> =>
+    (await api.post<TerritoryNewCheck>("/territories/new/check", { geometry, category })).data,
+  create: async (body: {
+    number: string;
+    locality?: string | null;
+    kind?: "city" | "suburb" | "village" | null;
+    category: TerritoryCategory;
+    geometry: TerritoryGeometry;
+  }) => (await api.post<{ id: string; number: string }>("/territories", body)).data,
+  nextNumber: async (like: string) =>
+    (await api.get<{ number: string }>("/territories/next-number", { params: { like } })).data,
+  undoReshape: async (id: string) =>
+    (await api.post<{ reason: string; number: string }>(`/territories/${id}/reshape/undo`)).data,
   undoOutline: async (id: string) =>
     (await api.post<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline/undo`)).data,
   restore: async (id: string) => (await api.post(`/territories/${id}/restore`)).data,

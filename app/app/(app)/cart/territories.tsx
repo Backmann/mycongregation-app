@@ -406,6 +406,16 @@ export default function TerritoriesScreen() {
                 <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
               </Pressable>
             ) : null}
+            {a.keeps && Platform.OS === 'web' ? (
+              <Pressable
+                onPress={() => router.push('/cart/territory/new' as never)}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                <Ionicons name="add-circle-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.create.title')}</Text>
+              </Pressable>
+            ) : null}
             {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (
               <Pressable
                 onPress={() => setPrintIds(shown.map((x) => x.row.id))}
@@ -502,6 +512,16 @@ export default function TerritoriesScreen() {
               <Pressable onPress={() => setCampaign(true)} style={s.campaignBtn} accessibilityRole="button">
                 <Ionicons name="megaphone-outline" size={17} color={BRAND} />
                 <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
+              </Pressable>
+            ) : null}
+            {a.keeps && Platform.OS === 'web' ? (
+              <Pressable
+                onPress={() => router.push('/cart/territory/new' as never)}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                <Ionicons name="add-circle-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.create.title')}</Text>
               </Pressable>
             ) : null}
             {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (

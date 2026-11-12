@@ -96,6 +96,8 @@ export default function TerritoryScreen() {
   const current = d?.assignments.find((x) => !x.completedOn && !x.returnedOn) ?? null;
   const lastDone = useMemo(() => {
     if (!d) return null;
+    // The server's count first: a joined territory counts only from the join.
+    if (d.lastWorkedOn !== undefined) return d.lastWorkedOn;
     return [d.lastCompletedOn, ...d.assignments.map((x) => x.completedOn)]
       .filter((x): x is string => !!x)
       .sort()
@@ -162,6 +164,16 @@ export default function TerritoryScreen() {
           >
             <Ionicons name="shapes-outline" size={16} color={BRAND} />
             <Text style={s.routeText}>{t('territories.outline.open')}</Text>
+          </Pressable>
+        ) : null}
+        {a.keeps && Platform.OS === 'web' && !d.archivedAt ? (
+          <Pressable
+            onPress={() => router.push(`/cart/territory/new?near=${d.id}` as never)}
+            style={s.route}
+            accessibilityRole="button"
+          >
+            <Ionicons name="add-circle-outline" size={16} color={BRAND} />
+            <Text style={s.routeText}>{t('territories.create.near')}</Text>
           </Pressable>
         ) : null}
         {a.keeps && !d.archivedAt ? (

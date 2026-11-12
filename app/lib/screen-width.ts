@@ -65,6 +65,7 @@ const OVERVIEW = new Set<string>([
   '/cart/territories',
   // The map where a boundary is drawn again, the changes beside it.
   '/cart/territory/outline/[id]',
+  '/cart/territory/new',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

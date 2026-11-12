@@ -6155,7 +6155,13 @@
       "TERRITORY_HELD_SHAPE": "Territory {{number}} is checked out and {{share}}% would leave — take it back first.",
       "TERRITORY_OVERLAP": "Territory {{number}} overlaps {{other}}.",
       "TERRITORY_NOT_NEIGHBOUR": "Only territories of the same kind share a border.",
-      "TERRITORY_NOTHING_TO_UNDO": "Nothing to restore: this boundary was not changed by hand."
+      "TERRITORY_NOTHING_TO_UNDO": "Nothing to restore: this boundary was not changed by hand.",
+      "TERRITORY_LINE_BAD": "The line cannot be read: please draw it again, without loops.",
+      "TERRITORY_LINE_NOT_THROUGH": "The line must cross the territory from edge to edge.",
+      "TERRITORY_LINE_MANY": "The line crosses the territory more than once — there would be more than two parts.",
+      "TERRITORY_NOT_TOUCHING": "These territories do not touch.",
+      "TERRITORY_JOIN_HOLE": "Together they would leave a hole inside.",
+      "TERRITORY_UNDO_GIVEN": "The territory has been checked out since — it cannot be undone."
     }
   },
   "stage": {
@@ -7609,6 +7615,50 @@
       "houses_zoom": "Zoom in on the changed part to count the houses.",
       "houses_view": "Bring the whole changed part into view to count the houses.",
       "housesExact": "Houses: leaving {{leaving}} of {{before}}, coming {{coming}}"
+    },
+    "reshape": {
+      "toolPoints": "Edit points",
+      "toolCut": "Draw a border",
+      "toolJoin": "Remove a border",
+      "saveFirst": "To split or join, first save or reset the point changes.",
+      "cutHelp": "Draw a line across the territory from edge to edge: click points, double-click to finish. Points snap to streets.",
+      "part": "Part {{n}}",
+      "partHouses": "Part {{n}} — houses: {{houses}}",
+      "keeps": "keeps the number {{number}} and the S-13 history",
+      "newNumber": "New number",
+      "lastWorked": "“Last worked” — {{date}}, as for {{number}}.",
+      "neverWorked": "The territory has never been worked.",
+      "noCalls": "“Do not call” addresses — which part",
+      "cut": "Split",
+      "cutDone": "Split: {{kept}} and new {{made}}.",
+      "held": "Territory {{number}} is checked out — split or join when it is free.",
+      "joinHelp": "Click a neighbouring territory of the same kind to join it with this one.",
+      "whichStays": "Which number stays",
+      "houses": "houses: {{houses}}",
+      "worked": "worked: {{date}}",
+      "never": "never",
+      "together": "Houses together: {{houses}}",
+      "olderDate": "“Last worked”: {{date}} — the older date counts.",
+      "archived": "{{number}} goes to the archive; its S-13 lines are kept.",
+      "noCallsMove": "“Do not call” addresses ({{n}}) move to the territory that stays.",
+      "join": "Join",
+      "joinDone": "Joined: {{kept}} stays, {{gone}} archived.",
+      "undo": "Undo the last split or join",
+      "undoTitle": "Undo?",
+      "undoBody": "The last split, join or new territory is undone if the territories have not been checked out or had their border changed since.",
+      "undone": "Undone."
+    },
+    "create": {
+      "title": "New territory",
+      "near": "New territory next to it",
+      "help": "Click points around the block; they snap to neighbours and streets. Double-click closes it; then the points can be corrected.",
+      "category": "Kind",
+      "notYet": "Draw the territory on the map.",
+      "houses": "Houses inside: {{houses}}, in no territory: {{free}}",
+      "overlaps": "Overlaps {{numbers}} — please correct the border.",
+      "noOverlap": "Does not overlap neighbours.",
+      "go": "Create territory",
+      "again": "Start again"
     }
   }
 }
