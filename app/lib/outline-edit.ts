@@ -254,3 +254,41 @@ export function areaChange(before: TerritoryGeometry, after: TerritoryGeometry):
   const a = areaOf(before);
   return a === 0 ? 0 : ((areaOf(after) - a) / a) * 100;
 }
+
+/**
+ * The box round the part of an outline that changed: the corners that are
+ * new or gone, with their neighbours on the ring (the ground between them
+ * is what changed hands). Null when nothing changed.
+ */
+export function changedBox(before: Ring, after: Ring): [Pt, Pt] | null {
+  const key = (p: Pt) => `${Math.round(p[0] * 1e6)}:${Math.round(p[1] * 1e6)}`;
+  const pts: Pt[] = [];
+  const collect = (ring: Ring, other: Ring) => {
+    const there = new Set(other.map(key));
+    const n = ring.length - 1; // the closing corner repeats the first
+    for (let i = 0; i < n; i++) {
+      if (there.has(key(ring[i]))) continue;
+      pts.push(ring[i], ring[(i - 1 + n) % n], ring[(i + 1) % n]);
+    }
+  };
+  collect(after, before);
+  collect(before, after);
+  if (pts.length === 0) return null;
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const [x, y] of pts) {
+    x0 = Math.min(x0, x);
+    y0 = Math.min(y0, y);
+    x1 = Math.max(x1, x);
+    y1 = Math.max(y1, y);
+  }
+  return [
+    [x0, y0],
+    [x1, y1],
+  ];
+}
+
+/** The map's own tiles carry every building only from this zoom on. */
+export const HOUSES_FROM_ZOOM = 15;

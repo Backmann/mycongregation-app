@@ -290,7 +290,9 @@ export default function OutlineScreen() {
                       {t('territories.outline.share', { leaving: r.leaving, gaining: r.gaining })}
                     </Text>
                   ) : null}
-                  {h ? (
+                  {h === 'zoom' || h === 'view' ? (
+                    <Text style={s.hint}>{t(`territories.outline.houses_${h}`)}</Text>
+                  ) : h ? (
                     <Text style={s.changeText}>
                       {t('territories.outline.houses', { leaving: h.leaving, coming: h.coming })}
                     </Text>
@@ -455,6 +457,7 @@ const s = StyleSheet.create({
     textTransform: 'uppercase',
     marginTop: 4,
   },
+  hint: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED, lineHeight: 16 },
   muted: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: MUTED, lineHeight: 18 },
   change: { gap: 2, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   changeHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },

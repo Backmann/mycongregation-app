@@ -7605,7 +7605,9 @@
       "failed": "Die Karte zum Bearbeiten konnte nicht geöffnet werden. Bitte laden Sie die Seite neu.",
       "webOnly": "Die Grenze eines Gebiets lässt sich am Computer auf der Website ändern.",
       "multi": "Das Gebiet besteht aus mehreren Teilen oder hat eine Aussparung — seine Grenze lässt sich hier noch nicht ändern.",
-      "area": "Fläche: {{change}} %"
+      "area": "Fläche: {{change}} %",
+      "houses_zoom": "Um die Häuser zu zählen, zoomen Sie an die geänderte Stelle heran.",
+      "houses_view": "Um die Häuser zu zählen, zeigen Sie die geänderte Stelle ganz."
     }
   }
 }
