@@ -33,6 +33,32 @@ export interface Snapshot {
   metresPerPx: number;
 }
 
+type RoadsMap = MapLibreMap & {
+  querySourceFeatures: (
+    source: string,
+    opts: { sourceLayer: string },
+  ) => { properties?: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }[];
+};
+
+/**
+ * The street names inside a territory, from the road tiles the map has
+ * loaded — so the territory must be in view. Also offered when a
+ * «не посещать» address is typed (12 November 2026).
+ */
+export function streetNamesIn(map: MapLibreMap, geometry: TerritoryGeometry): string[] {
+  const roads = (map as RoadsMap)
+    .querySourceFeatures('protomaps', { sourceLayer: 'roads' })
+    .map((f) => ({
+      name: (f.properties?.['name:de'] ?? f.properties?.name) as string | undefined,
+      lines: (f.geometry.type === 'MultiLineString'
+        ? f.geometry.coordinates
+        : f.geometry.type === 'LineString'
+          ? [f.geometry.coordinates]
+          : []) as [number, number][][],
+    }));
+  return streetsInside(roads, geometry);
+}
+
 /** A rectangle round the world with the territory cut out: the veil. */
 function veilOf(g: TerritoryGeometry) {
   const outer: [number, number][] = [
@@ -86,12 +112,7 @@ export async function snapshotTerritory(input: SnapshotInput): Promise<Snapshot>
     fadeDuration: 0,
     bounds: box,
     fitBoundsOptions: { padding: 24 },
-  }) as MapLibreMap & {
-    querySourceFeatures: (
-      source: string,
-      opts: { sourceLayer: string },
-    ) => { properties?: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }[];
-  };
+  }) as RoadsMap;
 
   try {
     await new Promise<void>((resolve, reject) => {
@@ -156,18 +177,7 @@ export async function snapshotTerritory(input: SnapshotInput): Promise<Snapshot>
     const a = map.unproject([0, midY]);
     const b = map.unproject([cssW, midY]);
     const metresPerPx = metresBetween(a, b) / canvas.width;
-    let streets: string[] = [];
-    if (input.mapReady) {
-      const roads = map.querySourceFeatures('protomaps', { sourceLayer: 'roads' }).map((f) => ({
-        name: (f.properties?.['name:de'] ?? f.properties?.name) as string | undefined,
-        lines: (f.geometry.type === 'MultiLineString'
-          ? f.geometry.coordinates
-          : f.geometry.type === 'LineString'
-            ? [f.geometry.coordinates]
-            : []) as [number, number][][],
-      }));
-      streets = streetsInside(roads, input.geometry);
-    }
+    const streets = input.mapReady ? streetNamesIn(map, input.geometry) : [];
     return { png, streets, metresPerPx };
   } finally {
     map.remove();
@@ -183,3 +193,57 @@ function metresBetween(a: { lng: number; lat: number }, b: { lng: number; lat: n
     Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
   return 2 * 6_371_000 * Math.asin(Math.sqrt(h));
 }
+
+/**
+ * The street names inside a territory, for the «не посещать» address field
+ * (12 November 2026). The map on the territory's screen is too small: at its
+ * zoom the tiles carry few names. So, as for the printed sheet, an off-screen
+ * map is drawn close enough for every street, read, and thrown away.
+ */
+export async function streetsOfTerritory(input: {
+  congregationId: string;
+  geometry: TerritoryGeometry;
+}): Promise<string[]> {
+  const { maplibregl, basemaps } = await loadMapLibs();
+  const origin = window.location.origin;
+  const box = boxOf([input.geometry]);
+  if (!box) return [];
+  const host = document.createElement('div');
+  host.style.cssText = 'position:fixed;left:-20000px;top:0;width:1400px;height:1400px;';
+  document.body.appendChild(host);
+  const map = new maplibregl.Map({
+    container: host,
+    style: {
+      version: 8,
+      glyphs: origin + MAP_FILES.glyphs,
+      sprite: origin + MAP_FILES.sprite,
+      sources: {
+        protomaps: { type: 'vector', url: `pmtiles://${mapFileUrl(origin, input.congregationId)}` },
+      },
+      layers: basemaps.layers('protomaps', basemaps.namedFlavor('light'), { lang: 'de' }),
+    },
+    interactive: false,
+    pixelRatio: 1,
+    attributionControl: false,
+    fadeDuration: 0,
+    bounds: box,
+    fitBoundsOptions: { padding: 20 },
+  }) as MapLibreMap;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('map did not finish loading')), WAIT_MS);
+      map.on('error', () => {
+        /* a missing tile still leaves the others */
+      });
+      map.once('idle', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+    });
+    return streetNamesIn(map, input.geometry);
+  } finally {
+    map.remove();
+    host.remove();
+  }
+}
+

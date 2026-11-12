@@ -334,6 +334,8 @@ export function routeForNotification(
     case 'territory':
       return { path: '/cart/my-territories', params: {} };
     case 'territory_keeper':
+    // «Не посещать» addresses up for review: the card on the section.
+    case 'territory_review':
       return { path: '/cart/territories', params: {} };
     // What a meeting still lacks, for whoever assembles it.
     case 'meeting_gaps':

@@ -14,6 +14,15 @@ export function formatDayShort(date: string, lang: string): string {
   });
 }
 
+/** '2028-11-12' as «нояб. 2028»: when a «не посещать» address is reviewed. */
+export function formatMonthYear(date: string, lang: string): string {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString(lang, {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
+
 /** 'YYYY-MM-DD' plus whole days. */
 export function addDaysISO(date: string, days: number): string {
   const d = new Date(`${date}T00:00:00Z`);
