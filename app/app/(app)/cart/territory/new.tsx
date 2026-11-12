@@ -211,7 +211,7 @@ export default function NewTerritoryScreen() {
                 accessibilityRole="radio"
                 accessibilityState={{ selected: category === c }}
               >
-                <Text style={[s.chipText, category === c && s.chipTextOn]}>{t(`territories.category.${c}`)}</Text>
+                <Text style={[s.chipText, category === c && s.chipTextOn]}>{t(`territories.category.one.${c}`)}</Text>
               </Pressable>
             ))}
           </View>

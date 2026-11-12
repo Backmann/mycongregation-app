@@ -4471,7 +4471,50 @@
         "duty": "Dienste"
       }
     },
-    "weekOf": "Woche ab {{date}}"
+    "weekOf": "Woche ab {{date}}",
+    "territory": {
+      "territory": "Gebiet",
+      "changed": "Geändert",
+      "movedTo": "Verschoben nach Gebiet",
+      "none": "—",
+      "noCallField": {
+        "address": "Adresse",
+        "surname": "Nachname",
+        "notedOn": "Datum",
+        "territory": "Gebiet"
+      },
+      "card": {
+        "number": "Nummer",
+        "locality": "Ort",
+        "kind": "Gegend",
+        "note": "Notiz"
+      },
+      "changedWord": "geändert",
+      "outline": "Grenze",
+      "outlineEdit": "geändert",
+      "outlineUndo": "frühere wiederhergestellt",
+      "with": "Zusammen mit Nachbarn",
+      "ground": "Fläche",
+      "groundShares": "geht weg {{leaving}} %, kommt hinzu {{gaining}} %",
+      "split": "Geteilt",
+      "splitNew": "neues Gebiet {{number}}",
+      "splitFrom": "Abgeteilt von Gebiet",
+      "merged": "Hinzugefügtes Gebiet",
+      "mergedInto": "Zusammengelegt mit Gebiet",
+      "lastWorked": "„Zuletzt bearbeitet“",
+      "never": "nie",
+      "noCallsMoved": "Verschobene „Nicht besuchen“-Adressen",
+      "archive": "Archiv",
+      "archivedOut": "ins Archiv",
+      "archivedBack": "wieder in Gebrauch",
+      "undone": "Rückgängig",
+      "undoneWhat": {
+        "split": "Teilung",
+        "merge": "Zusammenlegung",
+        "new": "neues Gebiet"
+      },
+      "category": "Art"
+    }
   },
   "attendance": {
     "cardTitle": "Zusammenkunftsbesuch",
@@ -7571,8 +7614,12 @@
       "restore": "Wieder verwenden"
     },
     "category": {
-      "residential": "Wohngebiete",
-      "business": "Geschäftsgebiete"
+      "residential": "Gebiete",
+      "business": "Geschäftsgebiet",
+      "one": {
+        "residential": "Gebiet",
+        "business": "Geschäftsgebiet"
+      }
     },
     "archived": {
       "link": "Im Archiv: {{count}}",
