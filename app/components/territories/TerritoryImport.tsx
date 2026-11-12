@@ -13,6 +13,7 @@ import {
 } from '../../lib/api';
 import {
   guessCard,
+  lastWorkedToBring,
   numberKey,
   pairNumbers,
   readBoundaryKml,
@@ -188,7 +189,8 @@ export function TerritoryImport({ onDone }: { onDone: () => void }) {
             number: x.number,
             locality: x.locality ?? undefined,
             geometry: x.geometry,
-            lastCompletedOn: x.lastCompletedOn ?? undefined,
+            lastCompletedOn:
+              lastWorkedToBring(x.number, map.data.lines, x.lastCompletedOn, from) ?? undefined,
           })),
         );
       }
