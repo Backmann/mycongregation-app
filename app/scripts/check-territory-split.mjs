@@ -48,6 +48,16 @@ try {
     S.streetsWithHouses([A, { ...A, lines: [[[7.003, 51.0], [7.006, 51.0]]] }], [[7.005, 51.0001]]).map((s) => [s.name, s.houses]),
     [['Ahornweg', 1]]);
 
+  // A road running 1.2 km east with 40 houses along it is walked in three
+  // pieces, west first; a short street stays whole.
+  const long = { name: 'Landstraße', lines: [[[7.0, 51.0], [7.018, 51.0]]] };
+  const along = Array.from({ length: 40 }, (_, i) => [7.0 + (i * 0.0171) / 39, 51.0002]);
+  const pieces = S.streetsWithHouses([long], along);
+  check('a long street in pieces of about equal houses, west first',
+    pieces.map((p) => [p.label, p.houses]), [['Landstraße (1/3)', 13], ['Landstraße (2/3)', 14], ['Landstraße (3/3)', 13]]);
+  check('each piece knows its own houses', pieces[0].homes.slice(0, 3), [0, 1, 2]);
+  check('a short street stays whole', S.streetsWithHouses([A], houses).map((p) => p.label), ['Ahornweg']);
+
   // A 10 m × 10 m square: 100 m².
   const sq = [[7, 51], [7 + 10 / (111320 * Math.cos((51 * Math.PI) / 180)), 51], [7 + 10 / (111320 * Math.cos((51 * Math.PI) / 180)), 51 + 10 / 110540], [7, 51 + 10 / 110540], [7, 51]];
   check('area of a 10 m square', Math.round(S.areaM2(sq)), 100);
