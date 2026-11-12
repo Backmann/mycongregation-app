@@ -14,7 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
-import { extractErrorMessage, territoriesApi, type TerritoryRow } from '../../../lib/api';
+import {
+  extractErrorMessage,
+  territoriesApi,
+  type TerritoryCategory,
+  type TerritoryRow,
+} from '../../../lib/api';
+import { Sheet } from '../../../components/Sheet';
 import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { NoAccess } from '../../../components/NoAccess';
@@ -40,6 +46,7 @@ import {
 } from '../../../lib/territory-view';
 
 type Filter = 'attention' | 'held' | 'free' | 'all';
+type Sort = 'age' | 'number';
 
 /**
  * «Участки» (11 November 2026; mockup «Все участки»).
@@ -55,6 +62,9 @@ export default function TerritoriesScreen() {
   const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
+  // 12 November 2026 (mockup «Обзор»): on a wide screen the list and the
+  // map side by side, the list with what to do first.
+  const twoCols = width >= 1100 && Platform.OS === 'web';
   const accessQ = useQuery({
     queryKey: ['territories', 'access'],
     queryFn: () => territoriesApi.access(),
@@ -75,6 +85,16 @@ export default function TerritoriesScreen() {
   });
   const today = formatDateISO(new Date());
   const [filter, setFilter] = useState<Filter>('attention');
+  const [sort, setSort] = useState<Sort>('age');
+  const [cat, setCat] = useState<TerritoryCategory>('residential');
+  // Several at once (keepers, web): printed maps for the chosen ones.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showArchived, setShowArchived] = useState(false);
+  const archivedQ = useQuery({
+    queryKey: ['territories', 'archived'],
+    queryFn: () => territoriesApi.archived(),
+    enabled: open && !!a?.keeps,
+  });
   const [query, setQuery] = useState('');
   const [giving, setGiving] = useState<string | null>(null);
   const [campaign, setCampaign] = useState(false);
@@ -95,10 +115,10 @@ export default function TerritoriesScreen() {
     const preopened = openPrintWindow();
     setPrinting(year);
     void territoriesApi
-      .s13(year)
+      .s13(year, cat)
       .then((data) =>
         exportHtmlAsPdf(buildS13Html(data, t), {
-          fileName: `S-13 ${year - 1}-${year}`,
+          fileName: `S-13 ${year - 1}-${year}${cat === 'business' ? ` ${t('territories.category.business')}` : ''}`,
           preopenedWindow: preopened,
         }),
       )
@@ -117,10 +137,15 @@ export default function TerritoriesScreen() {
     onError: (e) => setHandError(extractErrorMessage(e)),
   });
 
+  // Residential and business never mix (12 November 2026): the switch shows
+  // once there is a business territory at all.
+  const hasBusiness = (listQ.data ?? []).some((r) => r.category === 'business');
   const rows = useMemo(
     () =>
-      (listQ.data ?? []).map((r) => ({ row: r, tone: toneOf(r, today) as TerritoryTone })),
-    [listQ.data, today],
+      (listQ.data ?? [])
+        .filter((r) => (r.category ?? 'residential') === cat)
+        .map((r) => ({ row: r, tone: toneOf(r, today) as TerritoryTone })),
+    [listQ.data, today, cat],
   );
   const counts = useMemo(() => {
     const n = (tone: TerritoryTone) => rows.filter((r) => r.tone === tone).length;
@@ -144,8 +169,18 @@ export default function TerritoriesScreen() {
       (r.locality ?? '').toLowerCase().includes(needle) ||
       (r.holder?.name ?? '').toLowerCase().includes(needle);
     const list = rows.filter(({ row }) => match(row));
-    if (filter === 'held') return list.filter((r) => r.tone === 'held' || r.tone === 'overdue');
-    if (filter === 'free') return list.filter((r) => r.tone === 'idle' || r.tone === 'free');
+    // Longest waiting first: held the longest, or free the longest since it
+    // was last worked (never worked before everything).
+    const age = (r: TerritoryRow) => r.holder?.assignedOn ?? r.lastCompletedOn ?? '';
+    const ordered = (l: typeof list) =>
+      [...l].sort((x, y) =>
+        sort === 'age'
+          ? age(x.row).localeCompare(age(y.row)) ||
+            x.row.number.localeCompare(y.row.number, undefined, { numeric: true })
+          : x.row.number.localeCompare(y.row.number, undefined, { numeric: true }),
+      );
+    if (filter === 'held') return ordered(list.filter((r) => r.tone === 'held' || r.tone === 'overdue'));
+    if (filter === 'free') return ordered(list.filter((r) => r.tone === 'idle' || r.tone === 'free'));
     if (filter === 'attention') {
       // A group's territory whose holder no longer oversees the group first:
       // one tap hands it on.
@@ -159,8 +194,16 @@ export default function TerritoriesScreen() {
         .sort((x, y) => (x.row.lastCompletedOn ?? '').localeCompare(y.row.lastCompletedOn ?? ''));
       return [...handOnRows, ...overdue, ...idle];
     }
-    return list;
-  }, [rows, filter, query]);
+    return ordered(list);
+  }, [rows, filter, query, sort]);
+  const selecting = !!a?.keeps && Platform.OS === 'web';
+  const toggle = (id: string) =>
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   if (accessQ.isLoading) {
     return (
@@ -175,7 +218,7 @@ export default function TerritoriesScreen() {
   const mine = a.mine.filter((m) => m.mine);
 
   return (
-    <KeyboardScroll style={s.screen} contentContainerStyle={s.content}>
+    <KeyboardScroll style={s.screen} contentContainerStyle={[s.content, twoCols && s.contentWide]}>
       <View style={s.head}>
         <Text style={s.kicker}>{t('territories.kicker')}</Text>
         <Text style={s.sub}>
@@ -215,13 +258,213 @@ export default function TerritoriesScreen() {
 
           <NoCallReview />
 
+          {hasBusiness ? (
+            <SegmentedControl<TerritoryCategory>
+              segments={[
+                { key: 'residential', label: t('territories.category.residential') },
+                { key: 'business', label: t('territories.category.business') },
+              ]}
+              value={cat}
+              onChange={(c) => {
+                setCat(c);
+                setSelected(new Set());
+              }}
+            />
+          ) : null}
+          {twoCols ? (
+            <View style={s.cols}>
+              <View style={s.colList}>
+          <View style={s.tiles}>
+            <Tile value={counts.total} label={t('territories.tiles.total')} />
+            <Tile value={counts.held} label={t('territories.tiles.held')} tone={TONE_COLOR.held} />
+            <Tile value={counts.overdue} label={t('territories.tiles.overdue')} tone={TONE_COLOR.overdue} />
+            <Tile value={counts.idle} label={t('territories.tiles.idle')} tone={TONE_COLOR.idle} />
+          </View>
+
+          {summaryQ.data ? (
+            <View style={s.summary}>
+              <Text style={s.summaryText}>
+                {t('territories.summary.line', {
+                  month: monthName(summaryQ.data.month, i18n.language),
+                  given: summaryQ.data.given,
+                  worked: summaryQ.data.worked,
+                  returned: summaryQ.data.returned,
+                })}
+              </Text>
+            </View>
+          ) : null}
+
+          <SegmentedControl<Filter>
+            segments={[
+              { key: 'attention', label: t('territories.filter.attention') },
+              { key: 'held', label: t('territories.filter.held') },
+              { key: 'free', label: t('territories.filter.free') },
+              { key: 'all', label: t('territories.filter.all') },
+            ]}
+            value={filter}
+            onChange={setFilter}
+          />
+          <View style={s.search}>
+            <Ionicons name="search" size={16} color={MUTED} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder={t('territories.overview.search')}
+              placeholderTextColor="#94a3b8"
+              style={s.searchInput}
+            />
+          </View>
+
+          {filter !== 'attention' ? (
+            <View style={s.sortRow}>
+              <Text style={s.sortLabel}>{t('territories.overview.sortBy')}</Text>
+              {(['age', 'number'] as Sort[]).map((k) => (
+                <Pressable
+                  key={k}
+                  onPress={() => setSort(k)}
+                  style={[s.sortChip, sort === k && s.sortChipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: sort === k }}
+                >
+                  <Text style={[s.sortText, sort === k && s.sortTextOn]}>{t(`territories.overview.sort.${k}`)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+          {selected.size > 0 ? (
+            <View style={s.bulk}>
+              <Text style={s.bulkText}>{t('territories.overview.selected', { count: selected.size })}</Text>
+              <Pressable onPress={() => setPrintIds([...selected])} style={s.bulkBtn} accessibilityRole="button">
+                <Ionicons name="map-outline" size={15} color="#fff" />
+                <Text style={s.bulkBtnText}>{t('territories.overview.printSelected')}</Text>
+              </Pressable>
+              <Pressable onPress={() => setSelected(new Set())} style={s.bulkClear} accessibilityRole="button">
+                <Text style={s.bulkClearText}>{t('territories.overview.clearSelection')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
+          <View style={[cardStyles.card, s.listCard]}>
+            {shown.map(({ row, tone }) => (
+              <Row
+                key={row.id}
+                row={row}
+                tone={tone}
+                today={today}
+                lang={i18n.language}
+                selected={selecting ? selected.has(row.id) : undefined}
+                onToggle={selecting ? () => toggle(row.id) : undefined}
+                onGive={a.keeps && !row.holder ? () => setGiving(row.id) : undefined}
+                onHandOn={
+                  a.keeps && row.holder?.handOnTo
+                    ? () => {
+                        setHandError(null);
+                        setHanding(row);
+                      }
+                    : undefined
+                }
+              />
+            ))}
+            {shown.length === 0 ? (
+              <Text style={s.empty}>
+                {filter === 'attention' ? t('territories.overview.nothingDue') : t('territories.overview.none')}
+              </Text>
+            ) : null}
+          </View>
+          {a.keeps && (archivedQ.data?.length ?? 0) > 0 ? (
+            <Pressable onPress={() => setShowArchived(true)} style={s.archivedLink} accessibilityRole="button">
+              <Ionicons name="archive-outline" size={15} color={MUTED} />
+              <Text style={s.archivedLinkText}>
+                {t('territories.archived.link', { count: archivedQ.data?.length ?? 0 })}
+              </Text>
+            </Pressable>
+          ) : null}
+              </View>
+              <View style={s.colMap}>
           {Platform.OS === 'web' ? (
             <>
               <TerritoryMap
                 shapes={shapes}
                 boundary={boundaryQ.data?.geometry ?? null}
                 onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
-                height={wide ? 440 : 300}
+                height={twoCols ? 560 : wide ? 440 : 300}
+              />
+              <View style={s.legend}>
+                {(['held', 'overdue', 'idle', 'free'] as TerritoryTone[]).map((tone) => (
+                  <View key={tone} style={s.legendItem}>
+                    <View style={[s.legendDot, { backgroundColor: TONE_COLOR[tone] }]} />
+                    <Text style={s.legendText}>{t(`territories.tone.${tone}`)}</Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          ) : null}
+
+          <View style={s.tools}>
+            {a.keeps ? (
+              <Pressable onPress={() => setCampaign(true)} style={s.campaignBtn} accessibilityRole="button">
+                <Ionicons name="megaphone-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.campaign.title')}</Text>
+              </Pressable>
+            ) : null}
+            {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (
+              <Pressable
+                onPress={() => setPrintIds(shown.map((x) => x.row.id))}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                <Ionicons name="map-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>
+                  {t('territories.sheet.printShown', { count: shown.length })}
+                </Text>
+              </Pressable>
+            ) : null}
+            {[serviceYearOf(today), serviceYearOf(today) - 1].map((y) => (
+              <Pressable
+                key={y}
+                onPress={() => printS13(y)}
+                disabled={printing !== null}
+                style={s.campaignBtn}
+                accessibilityRole="button"
+              >
+                {printing === y ? (
+                  <ActivityIndicator color={BRAND} />
+                ) : (
+                  <Ionicons name="print-outline" size={17} color={BRAND} />
+                )}
+                <Text style={s.campaignText}>
+                  {t('territories.s13.print', { year: `${y - 1}/${String(y).slice(2)}` })}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          {a.keeps ? (
+            // 12 November 2026: names on the S-13 are kept for this and the
+            // last service year; the last year's go on the first day of the
+            // next one. Said ahead, so a paper copy can still be printed.
+            <Text style={s.retention}>
+              {t('territories.s13.namesUntil', {
+                year: `${serviceYearOf(today) - 2}/${String(serviceYearOf(today) - 1).slice(2)}`,
+                date: new Date(`${serviceYearOf(today)}-09-01T12:00:00Z`).toLocaleDateString(i18n.language, {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
+                  timeZone: 'UTC',
+                }),
+              })}
+            </Text>
+          ) : null}
+
+              </View>
+            </View>
+          ) : (
+            <>
+          {Platform.OS === 'web' ? (
+            <>
+              <TerritoryMap
+                shapes={shapes}
+                boundary={boundaryQ.data?.geometry ?? null}
+                onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
+                height={twoCols ? 560 : wide ? 440 : 300}
               />
               <View style={s.legend}>
                 {(['held', 'overdue', 'idle', 'free'] as TerritoryTone[]).map((tone) => (
@@ -330,6 +573,34 @@ export default function TerritoriesScreen() {
             />
           </View>
 
+          {filter !== 'attention' ? (
+            <View style={s.sortRow}>
+              <Text style={s.sortLabel}>{t('territories.overview.sortBy')}</Text>
+              {(['age', 'number'] as Sort[]).map((k) => (
+                <Pressable
+                  key={k}
+                  onPress={() => setSort(k)}
+                  style={[s.sortChip, sort === k && s.sortChipOn]}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: sort === k }}
+                >
+                  <Text style={[s.sortText, sort === k && s.sortTextOn]}>{t(`territories.overview.sort.${k}`)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          ) : null}
+          {selected.size > 0 ? (
+            <View style={s.bulk}>
+              <Text style={s.bulkText}>{t('territories.overview.selected', { count: selected.size })}</Text>
+              <Pressable onPress={() => setPrintIds([...selected])} style={s.bulkBtn} accessibilityRole="button">
+                <Ionicons name="map-outline" size={15} color="#fff" />
+                <Text style={s.bulkBtnText}>{t('territories.overview.printSelected')}</Text>
+              </Pressable>
+              <Pressable onPress={() => setSelected(new Set())} style={s.bulkClear} accessibilityRole="button">
+                <Text style={s.bulkClearText}>{t('territories.overview.clearSelection')}</Text>
+              </Pressable>
+            </View>
+          ) : null}
           <View style={[cardStyles.card, s.listCard]}>
             {shown.map(({ row, tone }) => (
               <Row
@@ -338,6 +609,8 @@ export default function TerritoriesScreen() {
                 tone={tone}
                 today={today}
                 lang={i18n.language}
+                selected={selecting ? selected.has(row.id) : undefined}
+                onToggle={selecting ? () => toggle(row.id) : undefined}
                 onGive={a.keeps && !row.holder ? () => setGiving(row.id) : undefined}
                 onHandOn={
                   a.keeps && row.holder?.handOnTo
@@ -355,6 +628,16 @@ export default function TerritoriesScreen() {
               </Text>
             ) : null}
           </View>
+          {a.keeps && (archivedQ.data?.length ?? 0) > 0 ? (
+            <Pressable onPress={() => setShowArchived(true)} style={s.archivedLink} accessibilityRole="button">
+              <Ionicons name="archive-outline" size={15} color={MUTED} />
+              <Text style={s.archivedLinkText}>
+                {t('territories.archived.link', { count: archivedQ.data?.length ?? 0 })}
+              </Text>
+            </Pressable>
+          ) : null}
+            </>
+          )}
           {Platform.OS !== 'web' ? <Text style={s.next}>{t('territories.overview.mapOnWeb')}</Text> : null}
         </>
       )}
@@ -393,6 +676,33 @@ export default function TerritoriesScreen() {
         </Text>
         {handError ? <Text style={s.dialogError}>{handError}</Text> : null}
       </Dialog>
+      <Sheet
+        visible={showArchived}
+        title={t('territories.archived.title')}
+        onClose={() => setShowArchived(false)}
+        variant={wide ? 'centered' : 'bottom'}
+      >
+        {(archivedQ.data ?? []).map((x) => (
+          <Pressable
+            key={x.id}
+            onPress={() => {
+              setShowArchived(false);
+              router.push(`/cart/territory/${x.id}` as never);
+            }}
+            style={s.archRow}
+            accessibilityRole="button"
+          >
+            <Text style={s.number}>
+              {x.number}
+              {x.locality ? <Text style={s.locality}> · {x.locality}</Text> : null}
+            </Text>
+            <Text style={s.meta}>
+              {t('territories.archived.since', { date: formatDayShort(x.archivedAt.slice(0, 10), i18n.language) })}
+            </Text>
+          </Pressable>
+        ))}
+        <Text style={s.retention}>{t('territories.archived.hint')}</Text>
+      </Sheet>
     </KeyboardScroll>
   );
 }
@@ -411,6 +721,8 @@ function Row({
   tone,
   today,
   lang,
+  selected,
+  onToggle,
   onGive,
   onHandOn,
 }: {
@@ -418,6 +730,9 @@ function Row({
   tone: TerritoryTone;
   today: string;
   lang: string;
+  /** Set when several may be chosen at once. */
+  selected?: boolean;
+  onToggle?: () => void;
   onGive?: () => void;
   onHandOn?: () => void;
 }) {
@@ -429,6 +744,18 @@ function Row({
       style={({ pressed }) => [s.row, pressed && s.pressed]}
       accessibilityRole="button"
     >
+      {onToggle ? (
+        <Pressable
+          onPress={onToggle}
+          hitSlop={8}
+          style={[s.check, selected && s.checkOn]}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: !!selected }}
+          accessibilityLabel={row.number}
+        >
+          {selected ? <Ionicons name="checkmark" size={13} color="#fff" /> : null}
+        </Pressable>
+      ) : null}
       <View style={[s.bar, { backgroundColor: TONE_COLOR[tone] }]} />
       <View style={{ flex: 1 }}>
         <Text style={s.number}>
@@ -505,6 +832,27 @@ const s = StyleSheet.create({
   dialogError: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 8 },
   screen: { flex: 1, backgroundColor: '#f3f5f7' },
   content: { padding: 16, paddingBottom: 40, maxWidth: 960, width: '100%', alignSelf: 'center', gap: 12 },
+  contentWide: { maxWidth: 1440 },
+  cols: { flexDirection: 'row', gap: 16, alignItems: 'flex-start' },
+  colList: { flex: 11, minWidth: 0, gap: 12 },
+  colMap: { flex: 10, minWidth: 0, gap: 12 },
+  sortRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' },
+  sortLabel: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: MUTED, marginRight: 2 },
+  sortChip: { paddingHorizontal: 11, paddingVertical: 5, borderRadius: 999, borderWidth: 1, borderColor: LINE, backgroundColor: '#fff' },
+  sortChipOn: { backgroundColor: INK, borderColor: INK },
+  sortText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: INK },
+  sortTextOn: { color: '#fff' },
+  bulk: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap', backgroundColor: INK, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10 },
+  bulkText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#fff' },
+  bulkBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+  bulkBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: '#fff' },
+  bulkClear: { paddingHorizontal: 6, paddingVertical: 6 },
+  bulkClearText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#cbd5e1' },
+  check: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#cbd5e1', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
+  checkOn: { backgroundColor: BRAND, borderColor: BRAND },
+  archivedLink: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 4 },
+  archivedLinkText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: MUTED },
+  archRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   head: {},
   kicker: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11.5, letterSpacing: 1, color: '#15803d', textTransform: 'uppercase' },
