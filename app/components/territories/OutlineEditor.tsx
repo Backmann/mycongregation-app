@@ -15,6 +15,7 @@ import {
   distinctHouses,
   followShared,
   changedBox,
+  inside,
   housesMoving,
   HOUSES_FROM_ZOOM,
   middleOfRing,
@@ -44,6 +45,15 @@ export interface EditedShape {
    * not all in view; null — no street map.
    */
   houses: { leaving: number; coming: number } | 'zoom' | 'view' | null;
+}
+
+/** What the editor's mouse does (12 November 2026, step 3). */
+export type EditorTool = 'points' | 'cut' | 'join' | 'draw';
+
+/** A shape laid over the map for a moment: the parts of a cut, a join. */
+export interface PreviewShape {
+  geometry: TerritoryGeometry;
+  color: string;
 }
 
 export interface OutlineEditorHandle {
@@ -89,8 +99,17 @@ export const OutlineEditor = forwardRef<
   {
     congregationId: string;
     streetsReady: boolean;
-    main: EditShape;
+    /** Null: a new territory is being drawn. */
+    main: EditShape | null;
     neighbours: EditShape[];
+    tool?: EditorTool;
+    /** A line drawn across the territory (tool «cut»). */
+    onLine?: (line: Pt[]) => void;
+    /** A neighbour clicked (tool «join»). */
+    onPick?: (id: string) => void;
+    /** The outline of a new territory as drawn and corrected (tool «draw»). */
+    onDrawn?: (geometry: TerritoryGeometry | null) => void;
+    preview?: PreviewShape[];
     boundary: TerritoryGeometry | null;
     sharedBorder: boolean;
     snapStreets: boolean;
@@ -111,7 +130,11 @@ export const OutlineEditor = forwardRef<
   const edits = useRef(0);
   const streets = useRef<Pt[][]>([]);
   const busy = useRef(false);
-  const selected = useRef<string>(props.main.id);
+  const selected = useRef<string>(props.main?.id ?? '');
+  const lineId = useRef<string | number | null>(null);
+  const drawnId = useRef<string | null>(null);
+  const mapRef = useRef<RoadsMap | null>(null);
+  const [loaded, setLoaded] = useState(false);
   const opts = useRef(props);
   opts.current = props;
 
@@ -184,6 +207,7 @@ export const OutlineEditor = forwardRef<
         if (gone) return;
         const origin = window.location.origin;
         const { congregationId, streetsReady, main, neighbours, boundary } = opts.current;
+        const focus = main ? [main.geometry] : neighbours.map((n) => n.geometry);
         const style = {
           version: 8,
           glyphs: origin + MAP_FILES.glyphs,
@@ -214,7 +238,7 @@ export const OutlineEditor = forwardRef<
         m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
         // For the walkthrough script: where a corner is on the screen.
         Object.defineProperty(el, 'outlineMap', { value: m, configurable: true });
-        const box = boxOf([main.geometry]);
+        const box = boxOf(focus);
         if (box) m.fitBounds(box, { padding: 60, animate: false, maxZoom: 18 });
 
         // Houses and streets of the tiles in view, read again as the view moves.
@@ -271,7 +295,24 @@ export const OutlineEditor = forwardRef<
             source: 'boundary',
             paint: { 'line-color': BOUNDARY, 'line-width': 2, 'line-dasharray': [3, 2] },
           });
-          const shapes = [main, ...neighbours];
+          const shapes = main ? [main, ...neighbours] : neighbours;
+          // What a cut or a join would make, laid over the map for a moment.
+          m.addSource('preview', {
+            type: 'geojson',
+            data: { type: 'FeatureCollection', features: [] },
+          });
+          m.addLayer({
+            id: 'preview-fill',
+            type: 'fill',
+            source: 'preview',
+            paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.35 },
+          });
+          m.addLayer({
+            id: 'preview-line',
+            type: 'line',
+            source: 'preview',
+            paint: { 'line-color': ['get', 'color'], 'line-width': 3 },
+          });
           m.addSource('labels', {
             type: 'geojson',
             data: {
@@ -320,11 +361,17 @@ export const OutlineEditor = forwardRef<
             return snapToLines(p, streets.current, STREET_PX * mpp) ?? undefined;
           };
 
-          const isMain = (f: { id?: unknown }) => f.id === main.id;
+          const isMain = (f: { id?: unknown }) =>
+            (!!main && f.id === main.id) || (!!drawnId.current && f.id === drawnId.current);
           const d = new libs.TerraDraw({
             adapter: new libs.Adapter({ map: m, coordinatePrecision: 7 }),
             modes: [
+              new libs.TerraDrawLineStringMode({
+                snapping: { toCustom },
+                styles: { lineStringColor: '#dc2626', lineStringWidth: 3 },
+              }),
               new libs.TerraDrawPolygonMode({
+                snapping: { toCustom },
                 styles: {
                   fillColor: (f: { id?: unknown }) => (isMain(f) ? MAIN : NEIGHBOUR),
                   fillOpacity: (f: { id?: unknown }) => (isMain(f) ? 0.22 : 0.1),
@@ -353,10 +400,12 @@ export const OutlineEditor = forwardRef<
                   selectedPolygonFillOpacity: 0.22,
                   selectionPointColor: '#ffffff',
                   selectionPointOutlineColor: MAIN,
-                  selectionPointWidth: 6,
+                  // Bigger than the library's own: on 12 November half the
+                  // drags at 6 px missed the corner and moved the map.
+                  selectionPointWidth: 8,
                   midPointColor: MAIN,
                   midPointOutlineColor: '#ffffff',
-                  midPointWidth: 4,
+                  midPointWidth: 5,
                 },
               }),
             ],
@@ -375,7 +424,7 @@ export const OutlineEditor = forwardRef<
               properties: { mode: 'polygon' },
             })),
           );
-          if (added.some((r) => !r.valid && r.id === main.id)) {
+          if (main && added.some((r) => !r.valid && r.id === main.id)) {
             setFailed(true);
             return;
           }
@@ -418,12 +467,52 @@ export const OutlineEditor = forwardRef<
               }
             }
           });
-          d.on('finish', () => {
+          d.on('finish', (id: unknown) => {
+            const f = d.getSnapshotFeature(id as string | number);
+            // A line drawn across (cut): only the newest one stays.
+            if (f?.geometry.type === 'LineString') {
+              if (lineId.current !== null && lineId.current !== id) {
+                d.removeFeatures([lineId.current]);
+              }
+              lineId.current = id as string | number;
+              opts.current.onLine?.(f.geometry.coordinates as unknown as Pt[]);
+              return;
+            }
+            // A new territory closed: from now on its corners are dragged.
+            if (f?.geometry.type === 'Polygon' && !current.current.has(String(id))) {
+              drawnId.current = String(id);
+              current.current.set(String(id), f.geometry.coordinates[0] as Ring);
+              d.setMode('select');
+              d.selectFeature(id as string | number);
+              selected.current = String(id);
+              opts.current.onDrawn?.(polygon(f.geometry.coordinates[0] as Ring));
+              return;
+            }
+            if (drawnId.current && current.current.has(drawnId.current)) {
+              opts.current.onDrawn?.(polygon(current.current.get(drawnId.current)!));
+            }
             history.current.push(new Map(current.current));
             report();
           });
-          d.selectFeature(main.id);
+          // «Join»: the neighbour clicked.
+          m.on('click', (e: unknown) => {
+            if (opts.current.tool !== 'join') return;
+            const { lng, lat } = (e as { lngLat: { lng: number; lat: number } }).lngLat;
+            for (const [id, ring] of current.current) {
+              if (main && id === main.id) continue;
+              if (inside([lng, lat], polygon(ring))) {
+                opts.current.onPick?.(id);
+                return;
+              }
+            }
+          });
+          if (main) d.selectFeature(main.id);
+          else d.setMode('polygon');
           draw.current = d;
+          mapRef.current = m;
+          // For the walkthrough script, beside the map: the drawing's own state.
+          Object.defineProperty(el, 'outlineDraw', { value: d, configurable: true });
+          setLoaded(true);
           readTiles();
         });
         m.on('idle', readTiles);
@@ -444,6 +533,41 @@ export const OutlineEditor = forwardRef<
     // Made once per set of shapes: the screen gives a new key after a save.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // The tool chosen beside the map.
+  useEffect(() => {
+    const d = draw.current;
+    if (!loaded || !d) return;
+    const tool = props.tool ?? 'points';
+    if (tool !== 'cut' && lineId.current !== null) {
+      d.removeFeatures([lineId.current]);
+      lineId.current = null;
+    }
+    if (tool === 'cut') d.setMode('linestring');
+    else if (tool === 'join') d.setMode('static');
+    else if (tool === 'draw' && !drawnId.current) d.setMode('polygon');
+    else {
+      d.setMode('select');
+      const id = props.main?.id ?? drawnId.current;
+      if (id) d.selectFeature(id);
+    }
+  }, [loaded, props.tool, props.main?.id]);
+
+  // The shapes laid over the map.
+  useEffect(() => {
+    const m = mapRef.current as unknown as {
+      getSource: (id: string) => { setData: (d: unknown) => void } | undefined;
+    } | null;
+    if (!loaded || !m) return;
+    m.getSource('preview')?.setData({
+      type: 'FeatureCollection',
+      features: (props.preview ?? []).map((p) => ({
+        type: 'Feature',
+        properties: { color: p.color },
+        geometry: p.geometry,
+      })),
+    });
+  }, [loaded, props.preview]);
 
   return (
     <View style={[s.frame, { height: props.height }]}>

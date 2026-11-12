@@ -142,6 +142,8 @@ export interface TerraDrawInstance {
   getSnapshotFeature: (id: string | number) => DrawFeature | undefined;
   updateFeatureGeometry: (id: string | number, geometry: unknown) => void;
   selectFeature: (id: string | number) => void;
+  deselectFeature?: (id: string | number) => void;
+  removeFeatures: (ids: (string | number)[]) => void;
   on: (event: string, cb: (...args: unknown[]) => void) => void;
 }
 
@@ -149,6 +151,7 @@ export interface DrawLibs {
   TerraDraw: new (options: Record<string, unknown>) => TerraDrawInstance;
   TerraDrawPolygonMode: new (options?: Record<string, unknown>) => unknown;
   TerraDrawSelectMode: new (options?: Record<string, unknown>) => unknown;
+  TerraDrawLineStringMode: new (options?: Record<string, unknown>) => unknown;
   ValidateNotSelfIntersecting: (feature: unknown) => { valid: boolean; reason?: string };
   Adapter: new (options: Record<string, unknown>) => unknown;
 }
@@ -170,6 +173,7 @@ export function loadDrawLibs(): Promise<DrawLibs> {
       TerraDraw: w.terraDraw.TerraDraw,
       TerraDrawPolygonMode: w.terraDraw.TerraDrawPolygonMode,
       TerraDrawSelectMode: w.terraDraw.TerraDrawSelectMode,
+      TerraDrawLineStringMode: w.terraDraw.TerraDrawLineStringMode,
       ValidateNotSelfIntersecting: w.terraDraw.ValidateNotSelfIntersecting,
       Adapter: w.terraDrawMaplibreGlAdapter.TerraDrawMapLibreGLAdapter,
     };

@@ -6155,7 +6155,13 @@
       "TERRITORY_HELD_SHAPE": "Gebiet {{number}} ist ausgegeben, und {{share}} % gehen weg — bitte zuerst zurücknehmen.",
       "TERRITORY_OVERLAP": "Gebiet {{number}} überlappt {{other}}.",
       "TERRITORY_NOT_NEIGHBOUR": "Eine gemeinsame Grenze gibt es nur bei Gebieten derselben Art.",
-      "TERRITORY_NOTHING_TO_UNDO": "Nichts wiederherzustellen: Die Grenze dieses Gebiets wurde nicht von Hand geändert."
+      "TERRITORY_NOTHING_TO_UNDO": "Nichts wiederherzustellen: Die Grenze dieses Gebiets wurde nicht von Hand geändert.",
+      "TERRITORY_LINE_BAD": "Die Linie ist nicht lesbar: bitte neu ziehen, ohne Schleifen.",
+      "TERRITORY_LINE_NOT_THROUGH": "Die Linie muss das Gebiet von Rand zu Rand kreuzen.",
+      "TERRITORY_LINE_MANY": "Die Linie kreuzt das Gebiet mehrmals — es würden mehr als zwei Teile.",
+      "TERRITORY_NOT_TOUCHING": "Diese Gebiete berühren sich nicht.",
+      "TERRITORY_JOIN_HOLE": "Zusammen ließen sie ein Loch in der Mitte.",
+      "TERRITORY_UNDO_GIVEN": "Das Gebiet wurde schon ausgegeben — rückgängig machen geht nicht mehr."
     }
   },
   "stage": {
@@ -7609,6 +7615,50 @@
       "houses_zoom": "Um die Häuser zu zählen, zoomen Sie an die geänderte Stelle heran.",
       "houses_view": "Um die Häuser zu zählen, zeigen Sie die geänderte Stelle ganz.",
       "housesExact": "Häuser: gehen weg {{leaving}} von {{before}}, kommen hinzu {{coming}}"
+    },
+    "reshape": {
+      "toolPoints": "Punkte bearbeiten",
+      "toolCut": "Grenze ziehen",
+      "toolJoin": "Grenze entfernen",
+      "saveFirst": "Zum Teilen oder Zusammenlegen zuerst die Punktänderung speichern oder zurücksetzen.",
+      "cutHelp": "Ziehen Sie eine Linie quer durch das Gebiet von Rand zu Rand: Punkte klicken, Doppelklick beendet. Punkte rasten an Straßen ein.",
+      "part": "Teil {{n}}",
+      "partHouses": "Teil {{n}} — Häuser: {{houses}}",
+      "keeps": "behält die Nummer {{number}} und die S-13-Geschichte",
+      "newNumber": "Neue Nummer",
+      "lastWorked": "„Zuletzt bearbeitet“ — {{date}}, wie bei {{number}}.",
+      "neverWorked": "Das Gebiet wurde noch nie bearbeitet.",
+      "noCalls": "„Nicht besuchen“-Adressen — zu welchem Teil",
+      "cut": "Teilen",
+      "cutDone": "Geteilt: {{kept}} und neu {{made}}.",
+      "held": "Gebiet {{number}} ist ausgegeben — teilen oder zusammenlegen geht, wenn es frei ist.",
+      "joinHelp": "Klicken Sie auf ein benachbartes Gebiet derselben Art — es wird mit diesem zusammengelegt.",
+      "whichStays": "Welche Nummer bleibt",
+      "houses": "Häuser: {{houses}}",
+      "worked": "bearbeitet: {{date}}",
+      "never": "nie",
+      "together": "Zusammen Häuser: {{houses}}",
+      "olderDate": "„Zuletzt bearbeitet“: {{date}} — das ältere Datum zählt.",
+      "archived": "{{number}} kommt ins Archiv; seine S-13-Zeilen bleiben.",
+      "noCallsMove": "„Nicht besuchen“-Adressen ({{n}}) gehen zum bleibenden Gebiet.",
+      "join": "Zusammenlegen",
+      "joinDone": "Zusammengelegt: {{kept}} bleibt, {{gone}} im Archiv.",
+      "undo": "Letzte Teilung oder Zusammenlegung rückgängig machen",
+      "undoTitle": "Rückgängig machen?",
+      "undoBody": "Die letzte Teilung, Zusammenlegung oder das neue Gebiet wird rückgängig gemacht, wenn die Gebiete seitdem nicht ausgegeben und ihre Grenze nicht geändert wurde.",
+      "undone": "Rückgängig gemacht."
+    },
+    "create": {
+      "title": "Neues Gebiet",
+      "near": "Neues Gebiet daneben",
+      "help": "Klicken Sie Punkte um den Block; sie rasten an Nachbarn und Straßen ein. Doppelklick schließt, danach lassen sich die Punkte korrigieren.",
+      "category": "Art",
+      "notYet": "Umranden Sie das Gebiet auf der Karte.",
+      "houses": "Häuser darin: {{houses}}, davon in keinem Gebiet: {{free}}",
+      "overlaps": "Überlappt {{numbers}} — bitte die Grenze korrigieren.",
+      "noOverlap": "Überlappt keine Nachbarn.",
+      "go": "Gebiet anlegen",
+      "again": "Neu beginnen"
     }
   }
 }

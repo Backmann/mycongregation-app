@@ -184,6 +184,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // a holder's and his group's territories for the other.
   '/cart/territory/[id]': 'self',
   '/cart/territory/outline/[id]': 'self',
+  '/cart/territory/new': 'self',
   '/cart/my-territories': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.
