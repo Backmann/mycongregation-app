@@ -290,7 +290,16 @@ export default function OutlineScreen() {
                       {t('territories.outline.share', { leaving: r.leaving, gaining: r.gaining })}
                     </Text>
                   ) : null}
-                  {h === 'zoom' || h === 'view' ? (
+                  {r.houses ? (
+                    // The server's register: every building, whatever the map shows.
+                    <Text style={s.changeText}>
+                      {t('territories.outline.housesExact', {
+                        leaving: r.houses.leaving,
+                        coming: r.houses.coming,
+                        before: r.houses.before,
+                      })}
+                    </Text>
+                  ) : h === 'zoom' || h === 'view' ? (
                     <Text style={s.hint}>{t(`territories.outline.houses_${h}`)}</Text>
                   ) : h ? (
                     <Text style={s.changeText}>
