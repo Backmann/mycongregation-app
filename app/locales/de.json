@@ -7467,7 +7467,8 @@
       "worked": "Bearbeitet am",
       "note": "*Beim Anlegen eines neuen Blattes in dieser Spalte das Datum eintragen, an dem jedes Gebiet zuletzt bearbeitet wurde.",
       "groupShort": "Gr.",
-      "campaign": "Aktion"
+      "campaign": "Aktion",
+      "namesUntil": "Die Namen im S-13 für {{year}} werden am {{date}} durch «—» ersetzt: Das Formular bewahrt Namen für das laufende und das vorige Dienstjahr auf. Papierkopie nötig? Vorher ausdrucken."
     },
     "sheet": {
       "printTitle": "Gebietskarte zum Drucken",
