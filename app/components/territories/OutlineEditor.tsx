@@ -14,7 +14,9 @@ import {
 import {
   distinctHouses,
   followShared,
+  changedBox,
   housesMoving,
+  HOUSES_FROM_ZOOM,
   middleOfRing,
   metres,
   sameGeometry,
@@ -36,7 +38,12 @@ export interface EditShape {
 export interface EditedShape {
   id: string;
   geometry: TerritoryGeometry;
-  houses: { leaving: number; coming: number } | null;
+  /**
+   * Houses changing hands, counted from the map's buildings; 'zoom' — the
+   * map is too far out to hold every building; 'view' — the changed part is
+   * not all in view; null — no street map.
+   */
+  houses: { leaving: number; coming: number } | 'zoom' | 'view' | null;
 }
 
 export interface OutlineEditorHandle {
@@ -99,11 +106,28 @@ export const OutlineEditor = forwardRef<
   const saved = useRef(new Map<string, Ring>());
   const current = useRef(new Map<string, Ring>());
   const houses = useRef<Pt[]>([]);
+  /** Where the map was when the buildings were last read. */
+  const view = useRef<{ zoom: number; box: [Pt, Pt] } | null>(null);
+  const edits = useRef(0);
   const streets = useRef<Pt[][]>([]);
   const busy = useRef(false);
   const selected = useRef<string>(props.main.id);
   const opts = useRef(props);
   opts.current = props;
+
+  const housesOf = (before: Ring, after: Ring): EditedShape['houses'] => {
+    const v = view.current;
+    if (!v) return null;
+    // On a far view the map's tiles leave most buildings out: counting
+    // them gave «≈0» where streets of houses changed hands (12 November 2026).
+    if (v.zoom < HOUSES_FROM_ZOOM) return 'zoom';
+    const box = changedBox(before, after);
+    if (!box) return { leaving: 0, coming: 0 };
+    const [[x0, y0], [x1, y1]] = box;
+    const [[vx0, vy0], [vx1, vy1]] = v.box;
+    if (x0 < vx0 || y0 < vy0 || x1 > vx1 || y1 > vy1) return 'view';
+    return housesMoving(polygon(before), polygon(after), houses.current);
+  };
 
   const report = () => {
     const out: EditedShape[] = [];
@@ -113,12 +137,9 @@ export const OutlineEditor = forwardRef<
       const g = polygon(ring);
       const was = polygon(before);
       if (sameGeometry(g, was)) continue;
-      out.push({
-        id,
-        geometry: g,
-        houses: houses.current.length ? housesMoving(was, g, houses.current) : null,
-      });
+      out.push({ id, geometry: g, houses: housesOf(before, ring) });
     }
+    edits.current = out.length;
     opts.current.onChange(out);
   };
 
@@ -212,6 +233,18 @@ export const OutlineEditor = forwardRef<
             if (mid) pts.push(mid);
           }
           houses.current = distinctHouses(pts);
+          const b = (m as unknown as {
+            getBounds: () => { getWest: () => number; getSouth: () => number; getEast: () => number; getNorth: () => number };
+            getZoom: () => number;
+          });
+          const bounds = b.getBounds();
+          view.current = {
+            zoom: b.getZoom(),
+            box: [
+              [bounds.getWest(), bounds.getSouth()],
+              [bounds.getEast(), bounds.getNorth()],
+            ],
+          };
           const lines: Pt[][] = [];
           for (const f of m.querySourceFeatures('protomaps', { sourceLayer: 'roads' })) {
             const g = f.geometry;
@@ -219,6 +252,8 @@ export const OutlineEditor = forwardRef<
             else if (g.type === 'MultiLineString') lines.push(...(g.coordinates as Pt[][]));
           }
           streets.current = lines;
+          // The count follows the view: zoomed in, it appears.
+          if (edits.current > 0) report();
         };
 
         m.on('load', () => {

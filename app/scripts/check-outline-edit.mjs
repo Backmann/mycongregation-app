@@ -102,6 +102,15 @@ try {
   check('one corner 0.002° out: a tenth more', Math.round(O.areaChange(sq, after) * 10) / 10, 10);
   check('a hole is not ground', Math.round(O.areaOf({ type: 'Polygon', coordinates: [A, [[7.002, 51.002], [7.004, 51.002], [7.004, 51.004], [7.002, 51.004], [7.002, 51.002]]] }) / a * 100), 96);
 
+  // The changed part: the moved corner with its two neighbours on the ring.
+  check('changed box of one dragged corner', O.changedBox(A, dragged), [[7, 51], [7.012, 51.01]]);
+  const nudged = A.map((p, i) => (i === 2 ? [7.0105, 51.0105] : p));
+  check('changed box is local', O.changedBox(A, nudged), [[7, 51], [7.0105, 51.0105]]);
+  const big = [[7, 51], [7.01, 51], [7.02, 51], [7.03, 51], [7.03, 51.01], [7, 51.01], [7, 51]];
+  const bigMoved = big.map((p, i) => (i === 2 ? [7.02, 50.999] : p));
+  check('changed box leaves the far corners out', O.changedBox(big, bigMoved), [[7.01, 50.999], [7.03, 51]]);
+  check('nothing changed, no box', O.changedBox(A, A), null);
+
   // What goes to the server: six decimals, unchanged when nothing moved.
   check(
     'six decimals',

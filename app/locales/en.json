@@ -7605,7 +7605,9 @@
       "failed": "The map for editing could not be opened. Please reload the page.",
       "webOnly": "A territory boundary can be changed on a computer, on the website.",
       "multi": "This territory has several parts or a hole — its boundary cannot be changed here yet.",
-      "area": "Area: {{change}}%"
+      "area": "Area: {{change}}%",
+      "houses_zoom": "Zoom in on the changed part to count the houses.",
+      "houses_view": "Bring the whole changed part into view to count the houses."
     }
   }
 }
