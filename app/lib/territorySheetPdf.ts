@@ -90,7 +90,10 @@ function sheet(p: SheetPage, t: TFunction, formatDay: (iso: string) => string): 
     <div class="words">
       ${due}
       ${streets}
-      <div class="note">${esc(t('territories.sheet.note'))}</div>
+      <div class="note">${esc(t('territories.sheet.note'))}${
+        // A free territory's sheet has no QR code, so no link to speak of.
+        p.url ? ` ${esc(t('territories.sheet.noteLink'))}` : ''
+      }</div>
     </div>
     ${qr}
   </footer>

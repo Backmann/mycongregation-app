@@ -7291,7 +7291,7 @@
       "outsideItem": "{{number}} ({{share}}%)",
       "overlapTitle": "Overlapping: {{count}}",
       "checksHint": "This does not stop you confirming; the outlines can be corrected later.",
-      "freshLead": "Assignments made after the last export are entered after confirming — giving out comes in the next stage.",
+      "freshLead": "Assignments and returns after the last export are entered in the section right after confirming.",
       "verify": "Records checked",
       "verifyTitle": "Records checked?",
       "verifyBody": "The section opens to the service committee and the import closes. This cannot be undone.",
@@ -7495,9 +7495,10 @@
       "due": "Return by {{date}} · the current date is behind the QR code",
       "notOut": "Not assigned",
       "qr": "Open on a phone",
-      "note": "Do not mark it; keep it in its sleeve. When worked, mark it in the app or tell the territory servant. The link works while the territory is out.",
+      "note": "Do not mark it; keep it in its sleeve. When worked, mark it in the app or tell the territory servant.",
       "backTitle": "Territory {{number}} · do not call",
-      "backNote": "Only these addresses. When you return the territory, hand this sheet to the territory servant."
+      "backNote": "Only these addresses. When you return the territory, hand this sheet to the territory servant.",
+      "noteLink": "The link works while the territory is out."
     },
     "noCall": {
       "title": "Do not call",

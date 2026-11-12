@@ -7291,7 +7291,7 @@
       "outsideItem": "{{number}} ({{share}} %)",
       "overlapTitle": "Überlappend: {{count}}",
       "checksHint": "Das hindert nicht am Bestätigen; die Grenzen lassen sich später korrigieren.",
-      "freshLead": "Ausgaben nach dem letzten Export tragen Sie nach dem Bestätigen ein — die Ausgabe folgt im nächsten Schritt.",
+      "freshLead": "Ausgaben und Rückgaben nach dem letzten Export tragen Sie gleich nach dem Bestätigen im Bereich ein.",
       "verify": "Daten geprüft",
       "verifyTitle": "Daten geprüft?",
       "verifyBody": "Der Bereich öffnet sich dem Dienstkomitee, und die Übernahme wird geschlossen. Das lässt sich nicht rückgängig machen.",
@@ -7495,9 +7495,10 @@
       "due": "Zurück bis {{date}} · aktuelle Frist über den QR-Code",
       "notOut": "Nicht ausgegeben",
       "qr": "Auf dem Telefon öffnen",
-      "note": "Keine Notizen darauf, in der Hülle aufbewahren. Bearbeitet — in der App markieren oder dem Gebietsdiener sagen. Der Link gilt, solange das Gebiet ausgegeben ist.",
+      "note": "Keine Notizen darauf, in der Hülle aufbewahren. Bearbeitet — in der App markieren oder dem Gebietsdiener sagen.",
       "backTitle": "Gebiet {{number}} · nicht besuchen",
-      "backNote": "Nur diese Adressen. Bei Rückgabe des Gebiets das Blatt dem Gebietsdiener geben."
+      "backNote": "Nur diese Adressen. Bei Rückgabe des Gebiets das Blatt dem Gebietsdiener geben.",
+      "noteLink": "Der Link gilt, solange das Gebiet ausgegeben ist."
     },
     "noCall": {
       "title": "Nicht besuchen",

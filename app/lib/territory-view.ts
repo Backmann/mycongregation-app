@@ -2,6 +2,7 @@
  * Small words and sums of the territory section (11 November 2026).
  */
 import type { TerritoryGeometry } from './api';
+import { insidePoint } from './territory-sheet';
 
 /** '2026-09-03' as «3 сент. 2026», the year left out when it is this year. */
 export function formatDayShort(date: string, lang: string): string {
@@ -109,7 +110,7 @@ export function boxOf(shapes: TerritoryGeometry[]): Box | null {
 export function middleOf(g: TerritoryGeometry): { lat: number; lng: number } | null {
   const b = boxOf([g]);
   if (!b) return null;
-  return { lng: (b[0][0] + b[1][0]) / 2, lat: (b[0][1] + b[1][1]) / 2 };
+  return insidePoint(g, b);
 }
 
 /**
