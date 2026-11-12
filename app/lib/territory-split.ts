@@ -45,6 +45,27 @@ function segDist2(p: Pt, a: Pt, b: Pt, k: [number, number]): number {
   return ex * ex + ey * ey;
 }
 
+/**
+ * A building smaller than this is a shed, a garage or a garden hut, not a
+ * house to call at (12 November 2026: in Hamm44 more than half of the 2002
+ * buildings on the map were under 40 m², most of them in allotment gardens).
+ */
+export const HOUSE_MIN_M2 = 40;
+
+/** The ground a building's outline covers, in square metres. */
+export function areaM2(ring: Pt[]): number {
+  if (ring.length < 3) return 0;
+  const k = scale(ring[0][1]);
+  let a = 0;
+  for (let i = 1; i < ring.length; i++) {
+    a += ring[i - 1][0] * k[0] * (ring[i][1] * k[1]) - ring[i][0] * k[0] * (ring[i - 1][1] * k[1]);
+  }
+  return Math.abs(a) / 2;
+}
+
+/** Road kinds that are not streets one walks to call: railways, ferries, runways. */
+export const NOT_STREETS = ['rail', 'ferry', 'aeroway'];
+
 /** A house further than this from every named street is left out (a barn in a field). */
 const FAR_M = 150;
 
@@ -92,9 +113,17 @@ export function streetsWithHouses(streets: StreetInput[], houses: Pt[]): Street[
   });
 }
 
+function dist(a: Pt, b: Pt): number {
+  const k = scale((a[1] + b[1]) / 2);
+  return Math.hypot((a[0] - b[0]) * k[0], (a[1] - b[1]) * k[1]);
+}
+
 /**
- * The streets in `parts` parts of about equal houses: cut the set across its
- * longer side where the houses balance, and again in each half.
+ * The streets in `parts` parts of about equal houses. First the territory is
+ * halved again and again along its longer side where the houses balance;
+ * then, while it makes the parts more even, a street at the edge of the
+ * heaviest part moves to the neighbouring part it lies next to — never one
+ * that would leave an island in another part's ground.
  */
 export function splitStreets(streets: Street[], parts: number): Part[] {
   const cut = (list: Street[], n: number): Street[][] => {
@@ -122,9 +151,56 @@ export function splitStreets(streets: Street[], parts: number): Part[] {
     }
     return [...cut(sorted.slice(0, at), left), ...cut(sorted.slice(at), n - left)];
   };
-  return cut(streets, Math.max(1, Math.floor(parts))).map((list) => ({
+  const groups = cut(streets, Math.max(1, Math.floor(parts)));
+
+  const sum = (g: Street[]) => g.reduce((a, s) => a + s.houses, 0);
+  const spread = () => {
+    const h = groups.map(sum);
+    return Math.max(...h) - Math.min(...h);
+  };
+  const nearest = (s: Street, g: Street[]) =>
+    g.reduce((m, o) => (o === s ? m : Math.min(m, dist(s.at, o.at))), Infinity);
+
+  // Even out: at most a few hundred small moves, each one an improvement.
+  for (let round = 0; round < 400 && groups.length > 1; round++) {
+    const before = spread();
+    const totals = groups.map(sum);
+    const heavy = totals.indexOf(Math.max(...totals));
+    const light = totals.indexOf(Math.min(...totals));
+    let moved = false;
+    const candidates: { s: Street; from: number; to: number; d: number }[] = [];
+    // A street may go from the heaviest part to a neighbour, or from a
+    // neighbour into the lightest — whichever evens the parts out.
+    groups.forEach((g, from) => {
+      if (g.length <= 1) return;
+      for (const s of g) {
+        const home = nearest(s, g);
+        groups.forEach((other, to) => {
+          if (to === from || other.length === 0) return;
+          if (from !== heavy && to !== light) return;
+          const d = nearest(s, other);
+          // Next to that part, at least about as near as to its own: no islands.
+          if (d <= home * 1.5) candidates.push({ s, from, to, d });
+        });
+      }
+    });
+    candidates.sort((a, b) => a.d - b.d);
+    for (const c of candidates) {
+      groups[c.from] = groups[c.from].filter((x) => x !== c.s);
+      groups[c.to] = [...groups[c.to], c.s];
+      if (spread() < before) {
+        moved = true;
+        break;
+      }
+      groups[c.to] = groups[c.to].filter((x) => x !== c.s);
+      groups[c.from] = [...groups[c.from], c.s];
+    }
+    if (!moved) break;
+  }
+
+  return groups.map((list) => ({
     streets: list.map((s) => s.name).sort((a, b) => a.localeCompare(b, 'de')),
-    houses: list.reduce((a, s) => a + s.houses, 0),
+    houses: sum(list),
   }));
 }
 
