@@ -52,7 +52,7 @@ programme parts, schedules); no names of organisations, no personal data.
 ## Checking screens
 - Every pull request that touches `app/` gets the CI job `screens`: main and
   the PR photographed on an invented congregation (server
-  `scripts/seed-screens.mjs`), 71 frames — phone 390, tablet 820, the
+  `scripts/seed-screens.mjs`), 75 frames — phone 390, tablet 820, the
   narrowest wide layout 1024 and wide 1280; admin and publisher; a few in
   German. Defects on the PR's frames fail it (text cut
   off or invisible, sideways scrolling, raw keys, failure screens, console

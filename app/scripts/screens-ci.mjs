@@ -101,6 +101,8 @@ const SCREENS = [
   // keeper, a holder's own and his group's for the publisher.
   ['territories', '/cart/territories', 'admin'],
   ['my-territories', '/cart/my-territories', 'publisher'],
+  // The desk (13 November 2026): on a phone the days beside a name cut it short.
+  ['desk', '/cart/desk', 'admin'],
 ];
 // Phone, tablet portrait, the narrowest wide layout, wide screen.
 // 1024 is where the wide layout begins and is at its tightest: a tab label
