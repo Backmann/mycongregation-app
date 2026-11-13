@@ -27,6 +27,7 @@ import { NoAccess } from '../../../../components/NoAccess';
 import { OutlineEditor } from '../../../../components/territories/OutlineEditor';
 import { roundGeometry } from '../../../../lib/outline-edit';
 import { boxOf } from '../../../../lib/territory-view';
+import { boxWith, placeOf } from '../../../../lib/territory-place';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../components/reports/ReportBits';
 
 type Kind = 'city' | 'suburb' | 'village';
@@ -42,7 +43,8 @@ const AROUND = 0.02;
  * Opened from a territory («рядом») or from the list.
  */
 export default function NewTerritoryScreen() {
-  const { near } = useLocalSearchParams<{ near?: string }>();
+  const { near, at } = useLocalSearchParams<{ near?: string; at?: string }>();
+  const place = placeOf(at);
   const { t } = useTranslation();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -82,8 +84,16 @@ export default function NewTerritoryScreen() {
   const shown = useMemo(() => {
     if (!rows) return [];
     const same = rows.filter((r) => (r.category ?? 'residential') === category);
-    if (!start) return same;
-    const b = boxOf([start.geometry]);
+    if (!start && !place) return same;
+    // Beside a territory, or at a place the checks found houses outside any.
+    // The view around a place is about 600 m across (OutlineEditor): the
+    // territories in it are shown too.
+    const b = place
+      ? boxWith(
+          boxWith(start ? boxOf([start.geometry]) : null, [place[0] - 0.009, place[1] - 0.0056]),
+          [place[0] + 0.009, place[1] + 0.0056],
+        )
+      : boxOf([start!.geometry]);
     if (!b) return same;
     const [[x1, y1], [x2, y2]] = b;
     return same.filter((r) => {
@@ -92,7 +102,7 @@ export default function NewTerritoryScreen() {
       const [[a1, b1], [a2, b2]] = o;
       return a1 <= x2 + AROUND * 1.6 && a2 >= x1 - AROUND * 1.6 && b1 <= y2 + AROUND && b2 >= y1 - AROUND;
     });
-  }, [rows, start, category]);
+  }, [rows, start, category, place?.[0], place?.[1]]);
 
   // The number and the place suggested from the territory it starts beside.
   useEffect(() => {
@@ -192,6 +202,7 @@ export default function NewTerritoryScreen() {
           tool="draw"
           onChange={() => undefined}
           onDrawn={setDrawn}
+          around={place}
         />
       </View>
       <View style={s.panel}>

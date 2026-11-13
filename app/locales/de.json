@@ -4162,6 +4162,7 @@
       "meeting_settings": "Zeit & Ort der Zusammenkünfte",
       "annual_report": "Jahresbericht (S-10)",
       "monthly_report": "Monatsübersicht (S-1)",
+      "territories": "Gebiete",
       "aux_application": "Bewerbungen als Hilfspionier",
       "pioneer_meeting": "Treffen mit den Pionieren",
       "meeting_move": "Zusammenkunft verlegt",
@@ -4170,7 +4171,7 @@
       "territory_boundary": "Gebietsgrenze",
       "territory_settings": "Gebiete: bestätigt",
       "territory_assignment": "Gebiete: Ausgaben",
-      "territory": "Gebiete: Karte",
+      "territory": "Gebiete",
       "territory_no_call": "Gebiete: Nicht besuchen"
     },
     "actions": {
@@ -7706,6 +7707,41 @@
       "noOverlap": "Überlappt keine Nachbarn.",
       "go": "Gebiet anlegen",
       "again": "Neu beginnen"
+    },
+    "checks": {
+      "overlaps_one": "{{count}} Überschneidung",
+      "overlaps_other": "{{count}} Überschneidungen",
+      "outside_one": "{{count}} Gebiet über die Grenze",
+      "outside_other": "{{count}} Gebiete über die Grenze",
+      "houses_one": "{{count}} Haus außerhalb der Gebiete",
+      "houses_other": "{{count}} Häuser außerhalb der Gebiete",
+      "line": "Prüfung: {{list}}",
+      "lineHint": "Außerhalb liegen meist Höfe — das kann gewollt sein.",
+      "title": "Gebiete prüfen",
+      "register": "Häuser aus dem Häuserverzeichnis, Stand {{date}}",
+      "computer": "Grenzen lassen sich am Computer auf der Website ändern.",
+      "overlapTitle": "Überschneidungen — {{count}}",
+      "overlapMeta": "Zwei Gebiete derselben Art teilen sich Fläche",
+      "outsideTitle": "Über die Versammlungsgrenze — {{count}}",
+      "outsideMeta": "{{share}} % des Gebiets liegen außerhalb",
+      "outline": "Grenze {{number}}",
+      "housesTitle": "Häuser außerhalb der Wohngebiete — {{count}}",
+      "inBusinessAll_one": "Davon {{count}} in Geschäftsgebieten",
+      "inBusinessAll_other": "Davon {{count}} in Geschäftsgebieten",
+      "spotHouses_one": "{{count}} Haus",
+      "spotHouses_other": "{{count}} Häuser",
+      "spotNear": "bei {{number}}, {{metres}} m bis zur Grenze",
+      "spotAlone": "kein Gebiet in der Nähe",
+      "spotBusiness_one": "{{count}} in einem Geschäftsgebiet",
+      "spotBusiness_other": "{{count}} in einem Geschäftsgebiet",
+      "onMap": "Auf der Karte",
+      "addTo": "Zu {{number}} hinzufügen",
+      "create": "Gebiet anlegen",
+      "more": "Die {{shown}} größten von {{total}} Stellen werden gezeigt.",
+      "scattered_one": "Noch {{count}} Haus steht einzeln oder zu zweit oder dritt (Höfe) — nicht als Stelle gezeigt.",
+      "scattered_other": "Noch {{count}} Häuser stehen einzeln oder zu zweit oder dritt (Höfe) — nicht als Stellen gezeigt.",
+      "registerNote": "Das Häuserverzeichnis nimmt Gebäude ab 35 m² von der Karte: Es unterscheidet kein Haus von einer Halle oder Schule. Eine Stelle im Gewerbegebiet ist ein Anlass zum Hinsehen, kein Fehler.",
+      "outsideSlack": "{{share}} % außerhalb — wohl Ungenauigkeit beim Zeichnen entlang der Grenze"
     }
   }
 }

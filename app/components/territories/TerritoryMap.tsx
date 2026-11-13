@@ -20,7 +20,15 @@ export interface MapShape {
   tone: TerritoryTone | 'mine';
 }
 
+/** Houses no territory holds, from the checks (13 November 2026). */
+export interface MapSpot {
+  lon: number;
+  lat: number;
+  houses: number;
+}
+
 const BOUNDARY = '#0e7490';
+const SPOT = '#d97706';
 
 /**
  * The territory map (11 November 2026): the congregation's own map file
@@ -37,6 +45,8 @@ export function TerritoryMap({
   onSelect,
   height,
   file,
+  spots,
+  place,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -50,6 +60,10 @@ export function TerritoryMap({
    * user's congregation and the server's answer are used.
    */
   file?: { congregationId: string; ready: boolean };
+  /** Places with houses no territory holds, drawn as amber circles. */
+  spots?: MapSpot[];
+  /** Look at this place closely instead (a spot chosen in the checks). */
+  place?: [number, number] | null;
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -60,6 +74,8 @@ export function TerritoryMap({
       onSelect={onSelect}
       height={height}
       file={file}
+      spots={spots ?? EMPTY_SPOTS}
+      place={place ?? null}
     />
   );
 }
@@ -72,6 +88,19 @@ function featuresOf(shapes: MapShape[]) {
       id: s.id,
       properties: { id: s.id, number: s.number, color: TONE_COLOR[s.tone] },
       geometry: s.geometry,
+    })),
+  };
+}
+
+const EMPTY_SPOTS: MapSpot[] = [];
+
+function spotsOf(spots: MapSpot[]) {
+  return {
+    type: 'FeatureCollection',
+    features: spots.map((p) => ({
+      type: 'Feature',
+      properties: { houses: p.houses },
+      geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
     })),
   };
 }
@@ -90,6 +119,8 @@ function WebMap({
   onSelect,
   height,
   file,
+  spots,
+  place,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -97,6 +128,8 @@ function WebMap({
   onSelect?: (id: string) => void;
   height: number;
   file?: { congregationId: string; ready: boolean };
+  spots: MapSpot[];
+  place: [number, number] | null;
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -203,6 +236,30 @@ function WebMap({
               'text-halo-width': 1.4,
             },
           });
+          m.addSource('spots', { type: 'geojson', data: spotsOf(spots) });
+          m.addLayer({
+            id: 'spots-circle',
+            type: 'circle',
+            source: 'spots',
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['get', 'houses'], 10, 9, 100, 20],
+              'circle-color': SPOT,
+              'circle-opacity': 0.35,
+              'circle-stroke-color': SPOT,
+              'circle-stroke-width': 1.5,
+            },
+          });
+          m.addLayer({
+            id: 'spots-label',
+            type: 'symbol',
+            source: 'spots',
+            layout: {
+              'text-field': ['to-string', ['get', 'houses']],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': 11,
+            },
+            paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
+          });
           m.on('click', 'terr-fill', (e: unknown) => {
             const f = (e as { features?: { properties?: { id?: string } }[] }).features?.[0];
             const id = f?.properties?.id;
@@ -242,15 +299,28 @@ function WebMap({
     if (!ready || !map.current) return;
     map.current.getSource('terr')?.setData(featuresOf(shapes));
     map.current.getSource('boundary')?.setData(boundaryOf(boundary));
-  }, [ready, shapes, boundary]);
+    map.current.getSource('spots')?.setData(spotsOf(spots));
+  }, [ready, shapes, boundary, spots]);
 
   // The view: the territory in focus, or everything.
   useEffect(() => {
     if (!ready || !map.current || !box) return;
+    if (place) {
+      // About 1.2 km across: the spot and the territories around it (a
+      // spot is listed up to a few hundred metres from the nearest border).
+      map.current.fitBounds(
+        [
+          [place[0] - 0.009, place[1] - 0.0056],
+          [place[0] + 0.009, place[1] + 0.0056],
+        ],
+        { padding: 28, animate: false, maxZoom: 17 },
+      );
+      return;
+    }
     // Room at the foot for the «no streets yet» note when it is shown.
     const padding = noStreets ? { top: 28, left: 28, right: 28, bottom: 64 } : 28;
     map.current.fitBounds(box, { padding, animate: false, maxZoom: 17 });
-  }, [ready, box, noStreets]);
+  }, [ready, box, noStreets, place?.[0], place?.[1]]);
 
   return (
     <View style={[s.frame, { height }]}>

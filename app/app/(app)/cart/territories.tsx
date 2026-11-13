@@ -30,6 +30,7 @@ import { TerritoryMap, type MapShape } from '../../../components/territories/Ter
 import { AssignSheet } from '../../../components/territories/AssignSheet';
 import { CampaignSheet } from '../../../components/territories/CampaignSheet';
 import { PrintMapSheet } from '../../../components/territories/PrintMapSheet';
+import { ChecksLine, ChecksSheet } from '../../../components/territories/TerritoryChecks';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildS13Html } from '../../../lib/s13Pdf';
 import { serviceYearOf } from '../../../lib/service-year';
@@ -95,6 +96,22 @@ export default function TerritoriesScreen() {
     queryFn: () => territoriesApi.archived(),
     enabled: open && !!a?.keeps,
   });
+  // What the checks found (13 November 2026; keepers): faults and houses
+  // no residential territory holds. The server keeps the houses' answer
+  // until an outline changes, so asking on each visit costs little.
+  const checksQ = useQuery({
+    queryKey: ['territories', 'checks'],
+    queryFn: () => territoriesApi.checks(),
+    enabled: open && !!a?.keeps,
+  });
+  const gapsQ = useQuery({
+    queryKey: ['territories', 'gaps'],
+    queryFn: () => territoriesApi.gaps(),
+    enabled: open && !!a?.keeps,
+  });
+  const [checksOpen, setChecksOpen] = useState(false);
+  const [spotsShown, setSpotsShown] = useState(false);
+  const [mapPlace, setMapPlace] = useState<[number, number] | null>(null);
   const [query, setQuery] = useState('');
   const [giving, setGiving] = useState<string | null>(null);
   const [campaign, setCampaign] = useState(false);
@@ -294,6 +311,10 @@ export default function TerritoriesScreen() {
             </View>
           ) : null}
 
+          {a.keeps ? (
+            <ChecksLine checks={checksQ.data} gaps={gapsQ.data} onOpen={() => setChecksOpen(true)} />
+          ) : null}
+
           <SegmentedControl<Filter>
             segments={[
               { key: 'attention', label: t('territories.filter.attention') },
@@ -382,12 +403,16 @@ export default function TerritoriesScreen() {
               <View style={s.colMap}>
           {Platform.OS === 'web' ? (
             <>
-              <TerritoryMap
-                shapes={shapes}
-                boundary={boundaryQ.data?.geometry ?? null}
-                onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
-                height={twoCols ? 560 : wide ? 440 : 300}
-              />
+              <View nativeID="territory-map">
+                <TerritoryMap
+                  shapes={shapes}
+                  boundary={boundaryQ.data?.geometry ?? null}
+                  onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
+                  height={twoCols ? 560 : wide ? 440 : 300}
+                  spots={spotsShown ? gapsQ.data?.spots : undefined}
+                  place={mapPlace}
+                />
+              </View>
               <View style={s.legend}>
                 {(['held', 'overdue', 'idle', 'free'] as TerritoryTone[]).map((tone) => (
                   <View key={tone} style={s.legendItem}>
@@ -470,12 +495,16 @@ export default function TerritoriesScreen() {
             <>
           {Platform.OS === 'web' ? (
             <>
-              <TerritoryMap
-                shapes={shapes}
-                boundary={boundaryQ.data?.geometry ?? null}
-                onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
-                height={twoCols ? 560 : wide ? 440 : 300}
-              />
+              <View nativeID="territory-map">
+                <TerritoryMap
+                  shapes={shapes}
+                  boundary={boundaryQ.data?.geometry ?? null}
+                  onSelect={(id) => router.push(`/cart/territory/${id}` as never)}
+                  height={twoCols ? 560 : wide ? 440 : 300}
+                  spots={spotsShown ? gapsQ.data?.spots : undefined}
+                  place={mapPlace}
+                />
+              </View>
               <View style={s.legend}>
                 {(['held', 'overdue', 'idle', 'free'] as TerritoryTone[]).map((tone) => (
                   <View key={tone} style={s.legendItem}>
@@ -505,6 +534,10 @@ export default function TerritoriesScreen() {
                 })}
               </Text>
             </View>
+          ) : null}
+
+          {a.keeps ? (
+            <ChecksLine checks={checksQ.data} gaps={gapsQ.data} onOpen={() => setChecksOpen(true)} />
           ) : null}
 
           <View style={s.tools}>
@@ -679,6 +712,23 @@ export default function TerritoriesScreen() {
       ) : null}
       {campaign ? (
         <CampaignSheet rows={listQ.data ?? []} visible onClose={() => setCampaign(false)} />
+      ) : null}
+      {checksOpen ? (
+        <ChecksSheet
+          visible
+          onClose={() => setChecksOpen(false)}
+          checks={checksQ.data}
+          gaps={gapsQ.data}
+          rows={listQ.data ?? []}
+          onShowOnMap={(spot) => {
+            setChecksOpen(false);
+            setSpotsShown(true);
+            setMapPlace([spot.lon, spot.lat]);
+            if (Platform.OS === 'web') {
+              document.getElementById('territory-map')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }}
+        />
       ) : null}
       <Dialog
         visible={!!handing}

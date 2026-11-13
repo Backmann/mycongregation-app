@@ -85,6 +85,7 @@ const STEPS = [
   ['Участки: карта для печати', 'node', ['scripts/check-territory-sheet.mjs']],
   ['Участки: правка границы', 'node', ['scripts/check-outline-edit.mjs']],
   ['Участки: журнал изменений', 'node', ['scripts/check-territory-journal.mjs']],
+  ['Участки: проверка и места', 'node', ['scripts/check-territory-place.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
   ['Главная: «изменено»', 'node', ['scripts/check-home-changes.mjs']],

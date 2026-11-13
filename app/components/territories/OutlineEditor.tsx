@@ -94,6 +94,12 @@ const seven = (ring: Ring): Ring =>
  * added on a shared side appears in both. A dragged corner is drawn to a
  * nearby corner of a neighbour, then to a nearby street (optional).
  */
+/** Half the view around a place opened from the checks: about 300 m. */
+const AROUND_X = 0.0045;
+const AROUND_Y = 0.0028;
+/** The colour of houses no territory holds (the checks use the same). */
+const SPOT = '#d97706';
+
 export const OutlineEditor = forwardRef<
   OutlineEditorHandle,
   {
@@ -115,6 +121,12 @@ export const OutlineEditor = forwardRef<
     snapStreets: boolean;
     height: number;
     onChange: (edited: EditedShape[]) => void;
+    /**
+     * A place to look at first and mark (13 November 2026): houses no
+     * territory holds, opened from the checks. With a territory the view
+     * holds both it and the place; without one, the place alone.
+     */
+    around?: Pt | null;
   }
 >(function OutlineEditor(props, ref) {
   const { t } = useTranslation();
@@ -206,7 +218,7 @@ export const OutlineEditor = forwardRef<
         const { maplibregl, basemaps } = await loadMapLibs();
         if (gone) return;
         const origin = window.location.origin;
-        const { congregationId, streetsReady, main, neighbours, boundary } = opts.current;
+        const { congregationId, streetsReady, main, neighbours, boundary, around } = opts.current;
         const focus = main ? [main.geometry] : neighbours.map((n) => n.geometry);
         const style = {
           version: 8,
@@ -238,7 +250,23 @@ export const OutlineEditor = forwardRef<
         m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
         // For the walkthrough script: where a corner is on the screen.
         Object.defineProperty(el, 'outlineMap', { value: m, configurable: true });
-        const box = boxOf(focus);
+        // Alone, the place needs room for the territories around it (a gap
+        // is listed up to a few hundred metres from the nearest border).
+        const k = main ? 1 : 2;
+        const near: [Pt, Pt] | null = around
+          ? [
+              [around[0] - AROUND_X * k, around[1] - AROUND_Y * k],
+              [around[0] + AROUND_X * k, around[1] + AROUND_Y * k],
+            ]
+          : null;
+        const own = around && !main ? null : boxOf(focus);
+        const box: [Pt, Pt] | null =
+          own && near
+            ? [
+                [Math.min(own[0][0], near[0][0]), Math.min(own[0][1], near[0][1])],
+                [Math.max(own[1][0], near[1][0]), Math.max(own[1][1], near[1][1])],
+              ]
+            : own ?? near;
         if (box) m.fitBounds(box, { padding: 60, animate: false, maxZoom: 18 });
 
         // Houses and streets of the tiles in view, read again as the view moves.
@@ -295,6 +323,24 @@ export const OutlineEditor = forwardRef<
             source: 'boundary',
             paint: { 'line-color': BOUNDARY, 'line-width': 2, 'line-dasharray': [3, 2] },
           });
+          if (around) {
+            m.addSource('around', {
+              type: 'geojson',
+              data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: around } },
+            });
+            m.addLayer({
+              id: 'around-spot',
+              type: 'circle',
+              source: 'around',
+              paint: {
+                'circle-radius': 22,
+                'circle-color': SPOT,
+                'circle-opacity': 0.18,
+                'circle-stroke-color': SPOT,
+                'circle-stroke-width': 2,
+              },
+            });
+          }
           const shapes = main ? [main, ...neighbours] : neighbours;
           // What a cut or a join would make, laid over the map for a moment.
           m.addSource('preview', {
