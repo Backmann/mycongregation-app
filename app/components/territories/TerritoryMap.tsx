@@ -28,6 +28,16 @@ export interface MapPoint {
   lat: number;
   /** Visited while the territory is out: green. */
   done: boolean;
+  /** A colour of its own (a part's number at its start), over the rule above. */
+  color?: string;
+}
+
+/** A street of a part of a division, in that part's colour (13 November 2026). */
+export interface MapRoute {
+  lines: [number, number][][];
+  color: string;
+  /** Walked: drawn thinner and lighter, so what is left stands out. */
+  walked?: boolean;
 }
 
 /** Houses no territory holds, from the checks (13 November 2026). */
@@ -41,6 +51,7 @@ const BOUNDARY = '#0e7490';
 const SPOT = '#d97706';
 const POINT = '#7c3aed';
 const POINT_DONE = '#15803d';
+const WALKED = '#16a34a';
 
 /**
  * The territory map (11 November 2026): the congregation's own map file
@@ -60,6 +71,7 @@ export function TerritoryMap({
   spots,
   place,
   points,
+  routes,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -79,6 +91,8 @@ export function TerritoryMap({
   place?: [number, number] | null;
   /** The businesses of a business territory, numbered in walking order. */
   points?: MapPoint[];
+  /** The streets of a division, each in its part's colour. */
+  routes?: MapRoute[];
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -92,6 +106,7 @@ export function TerritoryMap({
       spots={spots ?? EMPTY_SPOTS}
       place={place ?? null}
       points={points ?? EMPTY_POINTS}
+      routes={routes ?? EMPTY_ROUTES}
     />
   );
 }
@@ -110,13 +125,30 @@ function featuresOf(shapes: MapShape[]) {
 
 const EMPTY_SPOTS: MapSpot[] = [];
 const EMPTY_POINTS: MapPoint[] = [];
+const EMPTY_ROUTES: MapRoute[] = [];
+
+function routesOf(routes: MapRoute[]) {
+  return {
+    type: 'FeatureCollection',
+    features: routes.map((r) => ({
+      type: 'Feature',
+      properties: { color: r.color, walked: !!r.walked },
+      geometry: { type: 'MultiLineString', coordinates: r.lines },
+    })),
+  };
+}
 
 function pointsOf(points: MapPoint[]) {
   return {
     type: 'FeatureCollection',
     features: points.map((p) => ({
       type: 'Feature',
-      properties: { label: p.label, done: p.done, wide: p.label.length > 2 },
+      properties: {
+        label: p.label,
+        done: p.done,
+        wide: p.label.length > 2,
+        ...(p.color ? { color: p.color } : {}),
+      },
       geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
     })),
   };
@@ -150,6 +182,7 @@ function WebMap({
   spots,
   place,
   points,
+  routes,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -160,6 +193,7 @@ function WebMap({
   spots: MapSpot[];
   place: [number, number] | null;
   points: MapPoint[];
+  routes: MapRoute[];
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -290,6 +324,18 @@ function WebMap({
             },
             paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
           });
+          m.addSource('routes', { type: 'geojson', data: routesOf(routes) });
+          m.addLayer({
+            id: 'routes-line',
+            type: 'line',
+            source: 'routes',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
+              'line-width': ['case', ['get', 'walked'], 4, 6],
+              'line-opacity': ['case', ['get', 'walked'], 0.55, 0.9],
+            },
+          });
           m.addSource('points', { type: 'geojson', data: pointsOf(points) });
           m.addLayer({
             id: 'points-circle',
@@ -297,7 +343,14 @@ function WebMap({
             source: 'points',
             paint: {
               'circle-radius': ['case', ['get', 'wide'], 13, 9],
-              'circle-color': ['case', ['get', 'done'], POINT_DONE, POINT],
+              'circle-color': [
+                'case',
+                ['has', 'color'],
+                ['coalesce', ['get', 'color'], POINT],
+                ['get', 'done'],
+                POINT_DONE,
+                POINT,
+              ],
               'circle-stroke-color': '#ffffff',
               'circle-stroke-width': 1.5,
             },
@@ -355,7 +408,8 @@ function WebMap({
     map.current.getSource('boundary')?.setData(boundaryOf(boundary));
     map.current.getSource('spots')?.setData(spotsOf(spots));
     map.current.getSource('points')?.setData(pointsOf(points));
-  }, [ready, shapes, boundary, spots, points]);
+    map.current.getSource('routes')?.setData(routesOf(routes));
+  }, [ready, shapes, boundary, spots, points, routes]);
 
   // The view: the territory in focus, or everything.
   useEffect(() => {

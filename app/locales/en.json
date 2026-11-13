@@ -6210,7 +6210,12 @@
       "TERRITORY_LINE_MANY": "The line crosses the territory more than once — there would be more than two parts.",
       "TERRITORY_NOT_TOUCHING": "These territories do not touch.",
       "TERRITORY_JOIN_HOLE": "Together they would leave a hole inside.",
-      "TERRITORY_UNDO_GIVEN": "The territory has been checked out since — it cannot be undone."
+      "TERRITORY_UNDO_GIVEN": "The territory has been checked out since — it cannot be undone.",
+      "TERRITORY_SPLIT_EXISTS": "The territory has already been divided today — open the division again.",
+      "TERRITORY_SPLIT_NOT_YOURS": "Dividing again is for whoever divided it, the conductor, the holder or the territory servant.",
+      "TERRITORY_NO_STREETS": "The map has no streets here yet — dividing works after the next map update.",
+      "TERRITORY_ALL_WALKED": "Every street of the territory is already walked.",
+      "TERRITORY_SPLIT_BUSINESS": "A business territory is walked by its list and is not divided between groups."
     }
   },
   "stage": {
@@ -7945,6 +7950,64 @@
       "noCallsLink_other": "The territory has {{count}} do-not-call addresses — the link does not show them. Tell them when you hand it over.",
       "noCallsPaper_one": "The territory has {{count}} do-not-call address — it is on the printout.",
       "noCallsPaper_other": "The territory has {{count}} do-not-call addresses — they are on the printout."
+    },
+    "division": {
+      "entry": "Territory for groups",
+      "entryHint": "Each group its own streets, even by houses",
+      "title": "{{number}} · for groups",
+      "kicker": "Territory for groups",
+      "lastAt": "last ticked at {{time}}",
+      "how": "Into how many groups?",
+      "firstHolds": "The first division of the day holds for everyone who opens the territory today.",
+      "allWalked": "Every street is walked — the territory can be handed back.",
+      "againRest": "Divide the remaining streets again",
+      "again": "Divide again",
+      "againWho": "Dividing again is for whoever divided it, the conductor, the holder or the territory servant.",
+      "moveTitle": "Give the street to another group",
+      "part": "Group {{n}}",
+      "here": "it is here",
+      "partDone": "every street walked",
+      "link": "Link",
+      "qr": "QR code",
+      "route": "Route",
+      "linkMessage": "{{number}}, group {{n}}: {{url}}",
+      "linkReady": "The link is ready — it works today only.",
+      "qrHint": "Point a phone camera at it — group {{n}}'s streets open. Works today only, no sign-in.",
+      "noCallsByLink": "The do-not-call addresses do not show by link or QR code — tell the group.",
+      "piece": {
+        "between": "from {{from}} to {{to}}",
+        "upTo": "from the start to {{to}}",
+        "from": "from {{from}} to the end",
+        "nth": "part {{piece}} of {{pieces}}"
+      },
+      "walked_one": "{{walked}} of {{count}} house walked",
+      "walked_other": "{{walked}} of {{count}} houses walked",
+      "restHint_one": "{{count}} house left — only the streets not walked are divided.",
+      "restHint_other": "{{count}} houses left — only the streets not walked are divided.",
+      "divide_one": "Divide into {{count}} group",
+      "divide_other": "Divide into {{count}} groups",
+      "divideRest_one": "Divide the rest into {{count}} group",
+      "divideRest_other": "Divide the rest into {{count}} groups",
+      "leftOut_one": "{{count}} house is far from any named street — it is in no group.",
+      "leftOut_other": "{{count}} houses are far from any named street — they are in no group.",
+      "houses_one": "≈ {{count}} house",
+      "houses_other": "≈ {{count}} houses",
+      "streetsWalked_one": "{{walked}} of {{count}} street walked",
+      "streetsWalked_other": "{{walked}} of {{count}} streets walked",
+      "noCalls_one": "Do not call: {{count}} address",
+      "noCalls_other": "Do not call: {{count}} addresses"
+    },
+    "part": {
+      "gone": "This link no longer works",
+      "goneHint": "A link to part of a territory works only on the day it was divided, while the territory is out. Ask the conductor for a new one.",
+      "today": "Your part for today",
+      "streets": "Your streets",
+      "tapHint": "Tick a street once it is walked — every group sees it. Who ticked it is not kept.",
+      "route": "Route to your part",
+      "which_one": "group {{n}} of {{count}}",
+      "which_other": "group {{n}} of {{count}}",
+      "noCalls_one": "Your streets have {{count}} do-not-call address — the conductor will name it.",
+      "noCalls_other": "Your streets have {{count}} do-not-call addresses — the conductor will name them."
     }
   }
 }

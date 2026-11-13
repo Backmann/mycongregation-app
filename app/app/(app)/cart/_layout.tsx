@@ -58,6 +58,7 @@ export default function CartLayout() {
       <Stack.Screen name="territory/[id]" options={{ title: t('territories.title') }} />
       <Stack.Screen name="territory/outline/[id]" options={{ title: t('territories.title') }} />
       <Stack.Screen name="territory/new" options={{ title: t('territories.title') }} />
+      <Stack.Screen name="division/[id]" options={{ title: t('territories.division.entry') }} />
       <Stack.Screen name="desk" options={{ title: t('territories.desk.title') }} />
       <Stack.Screen name="my-territories" options={{ title: t('territories.my.title') }} />
       <Stack.Screen

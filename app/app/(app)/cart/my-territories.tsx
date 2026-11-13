@@ -24,6 +24,7 @@ import {
   TONE_COLOR,
 } from '../../../lib/territory-view';
 import { BusinessList, pointsOf, useBusinesses } from '../../../components/territories/BusinessList';
+import { DivisionButton } from '../../../components/territories/DivisionButton';
 
 /**
  * «Мой участок» (11 November 2026; mockup «Мой участок»).
@@ -161,6 +162,9 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
             </Text>
           </View>
         ) : null}
+
+        {/* Several groups on one territory today: each its own streets. */}
+        {!business ? <DivisionButton territoryId={item.id} /> : null}
 
         {business ? (
           <View style={{ marginTop: 10, gap: 6 }}>

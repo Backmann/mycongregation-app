@@ -26,6 +26,7 @@ const OUTSIDE = new Map([
   ['/', 'the address of the site itself'],
   ['/reset-password', 'the link in the password email and its QR code (server users.service)'],
   ['/t/[token]', 'a territory link without login, sent on by hand; the app opens it in the browser (server territory-links.service)'],
+  ['/p/[token]', 'one part of a territory divided between groups, without login, good on that day only; opened from a QR code or a message (server territory-splits.service)'],
 ]);
 
 const walk = (dir) =>
