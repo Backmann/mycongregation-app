@@ -7,6 +7,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -347,8 +348,18 @@ function Home({
   onOpen: (key: string) => void;
 }) {
   const { t } = useTranslation();
+  // On a phone the days go under the name: beside it they cut the name short.
+  const narrow = useWindowDimensions().width < 520;
   const found = searchDesk(entries, query);
   const { late, soon } = attentionOf(entries);
+  const pill = (e: DeskEntry, tone: 'late' | 'soon' | null) =>
+    tone === 'late' ? (
+      <Text style={[s.pill, s.pillLate]}>{t('territories.desk.lateDays', { count: e.late })}</Text>
+    ) : tone === 'soon' ? (
+      <Text style={[s.pill, s.pillSoon]}>{t('territories.desk.leftDays', { count: e.left ?? 0 })}</Text>
+    ) : !e.publisherId ? (
+      <Text style={[s.pill, s.pillMuted]}>{t('territories.desk.noCard')}</Text>
+    ) : null;
   const line = (e: DeskEntry, tone: 'late' | 'soon' | null) => (
     <Pressable
       key={e.key}
@@ -366,14 +377,9 @@ function Home({
             ? e.holds.map((h) => h.number).join(', ')
             : [groupOf(e.serviceGroupId), t('territories.desk.holdsNone')].filter(Boolean).join(' · ')}
         </Text>
+        {narrow && pill(e, tone) ? <View style={s.pills}>{pill(e, tone)}</View> : null}
       </View>
-      {tone === 'late' ? (
-        <Text style={[s.pill, s.pillLate]}>{t('territories.desk.lateDays', { count: e.late })}</Text>
-      ) : tone === 'soon' ? (
-        <Text style={[s.pill, s.pillSoon]}>{t('territories.desk.leftDays', { count: e.left ?? 0 })}</Text>
-      ) : !e.publisherId ? (
-        <Text style={[s.pill, s.pillMuted]}>{t('territories.desk.noCard')}</Text>
-      ) : null}
+      {narrow ? null : pill(e, tone)}
       <Ionicons name="chevron-forward" size={16} color={MUTED} />
     </Pressable>
   );
