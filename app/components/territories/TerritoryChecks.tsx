@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Sheet } from '../Sheet';
 import type { TerritoryChecks, TerritoryGaps, TerritoryRow } from '../../lib/api';
 import { formatDayShort } from '../../lib/territory-view';
+import { groupDigits } from '../../lib/territory-place';
 import { BRAND, INK, LINE, MUTED } from '../reports/ReportBits';
 
 /** A neighbour farther than this is not offered to take the houses in. */
@@ -38,7 +39,7 @@ export function ChecksLine({
   gaps: TerritoryGaps | undefined;
   onOpen: () => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const overlaps = checks?.overlapping.length ?? 0;
   const outside = checks?.outsideBoundary.length ?? 0;
   const houses = gaps?.houses ?? 0;
@@ -48,7 +49,9 @@ export function ChecksLine({
   const parts = [
     overlaps ? t('territories.checks.overlaps', { count: overlaps }) : null,
     outside ? t('territories.checks.outside', { count: outside }) : null,
-    houses ? t('territories.checks.houses', { count: houses }) : null,
+    houses
+      ? t('territories.checks.houses', { count: houses, n: groupDigits(houses, i18n.language) })
+      : null,
   ].filter(Boolean);
   return (
     <Pressable
@@ -170,9 +173,12 @@ export function ChecksSheet({
 
       {gaps && gaps.houses > 0 ? (
         <View style={s.section}>
-          <Text style={s.head}>{t('territories.checks.housesTitle', { count: gaps.houses })}</Text>
+          <Text style={s.head}>{t('territories.checks.housesTitle', { n: groupDigits(gaps.houses, i18n.language) })}</Text>
           {gaps.inBusiness > 0 ? (
-            <Text style={s.meta}>{t('territories.checks.inBusinessAll', { count: gaps.inBusiness })}</Text>
+            <Text style={s.meta}>{t('territories.checks.inBusinessAll', {
+                count: gaps.inBusiness,
+                n: groupDigits(gaps.inBusiness, i18n.language),
+              })}</Text>
           ) : null}
           {spots.map((p) => {
             const reach = !!p.nearId && p.nearMetres !== null && p.nearMetres <= NEIGHBOUR_REACH_M;
@@ -220,7 +226,10 @@ export function ChecksSheet({
           })}
           {more > 0 ? <Text style={s.note}>{t('territories.checks.more', { shown: spots.length, total: more + spots.length })}</Text> : null}
           {scattered > 0 ? (
-            <Text style={s.note}>{t('territories.checks.scattered', { count: scattered })}</Text>
+            <Text style={s.note}>{t('territories.checks.scattered', {
+                count: scattered,
+                n: groupDigits(scattered, i18n.language),
+              })}</Text>
           ) : null}
           <Text style={s.note}>{t('territories.checks.registerNote')}</Text>
         </View>
