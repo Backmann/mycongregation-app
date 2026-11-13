@@ -8532,7 +8532,94 @@ export const territoriesApi = {
   shared: async (token: string): Promise<SharedTerritory> =>
     (await api.get<SharedTerritory>(`/territory-links/${encodeURIComponent(token)}`))
       .data,
+  // ---- a territory divided between groups for a day (13 November 2026) ----
+  division: async (territoryId: string): Promise<TerritoryDivision> =>
+    (await api.get<TerritoryDivision>(`/territories/${territoryId}/division`)).data,
+  divide: async (territoryId: string, parts: number, again = false): Promise<TerritoryDivision> =>
+    (
+      await api.post<TerritoryDivision>(`/territories/${territoryId}/division`, {
+        parts,
+        ...(again ? { again } : {}),
+      })
+    ).data,
+  moveStreet: async (divisionId: string, key: string, to: number): Promise<TerritoryDivision> =>
+    (await api.put<TerritoryDivision>(`/territories/divisions/${divisionId}/move`, { key, to })).data,
+  markStreet: async (divisionId: string, key: string, walked: boolean): Promise<TerritoryDivision> =>
+    (await api.put<TerritoryDivision>(`/territories/divisions/${divisionId}/mark`, { key, walked })).data,
+  /** A link without login to one part, good today only. */
+  partLink: async (divisionId: string, n: number) =>
+    (
+      await api.post<{ path: string; day: string }>(
+        `/territories/divisions/${divisionId}/parts/${n}/link`,
+      )
+    ).data,
+  /** The page behind a part's link; no login. */
+  sharedPart: async (token: string): Promise<SharedPart> =>
+    (await api.get<SharedPart>(`/territory-parts/${encodeURIComponent(token)}`)).data,
+  markSharedPart: async (token: string, key: string, walked: boolean): Promise<SharedPart> =>
+    (
+      await api.put<SharedPart>(`/territory-parts/${encodeURIComponent(token)}/mark`, {
+        key,
+        walked,
+      })
+    ).data,
 };
+
+/** A street (or a piece of a long one) in a part of a division. */
+export interface DivisionStreet {
+  key: string;
+  name: string;
+  /** A piece of a long street: where it starts and ends, by crossing streets. */
+  from: string | null;
+  to: string | null;
+  piece: number;
+  pieces: number;
+  houses: number;
+  lines: [number, number][][];
+  walkedAt: string | null;
+}
+
+export interface DivisionPart {
+  n: number;
+  houses: number;
+  start: [number, number] | null;
+  streets: DivisionStreet[];
+  /** In the app only: the «не посещать» addresses on its streets. */
+  noCalls?: { id: string; address: string }[];
+}
+
+/** Today's division of a territory between groups. */
+export interface TerritoryDivision {
+  number: string;
+  locality: string | null;
+  geometry: TerritoryGeometry;
+  category?: string;
+  assignmentId: string;
+  day: string;
+  houses: number;
+  walked: number;
+  lastWalkedAt: string | null;
+  mayRedo: boolean;
+  split: null | {
+    id: string;
+    parts: DivisionPart[];
+    leftOut: number;
+    byMe: boolean;
+  };
+}
+
+/** One part behind a link without login: never an address or a name. */
+export interface SharedPart {
+  number: string;
+  locality: string | null;
+  geometry: TerritoryGeometry;
+  day: string;
+  parts: number;
+  part: DivisionPart;
+  noCalls: number;
+  congregationId: string;
+  mapReady: boolean;
+}
 
 /** What a page without login shows: one territory's outline and map. */
 export interface SharedTerritory {

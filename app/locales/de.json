@@ -6210,7 +6210,12 @@
       "TERRITORY_LINE_MANY": "Die Linie kreuzt das Gebiet mehrmals — es würden mehr als zwei Teile.",
       "TERRITORY_NOT_TOUCHING": "Diese Gebiete berühren sich nicht.",
       "TERRITORY_JOIN_HOLE": "Zusammen ließen sie ein Loch in der Mitte.",
-      "TERRITORY_UNDO_GIVEN": "Das Gebiet wurde schon ausgegeben — rückgängig machen geht nicht mehr."
+      "TERRITORY_UNDO_GIVEN": "Das Gebiet wurde schon ausgegeben — rückgängig machen geht nicht mehr.",
+      "TERRITORY_SPLIT_EXISTS": "Das Gebiet ist heute schon aufgeteilt — öffnen Sie die Aufteilung neu.",
+      "TERRITORY_SPLIT_NOT_YOURS": "Neu aufteilen kann, wer aufgeteilt hat, der Leiter des Treffpunkts, der Inhaber oder der Gebietsdiener.",
+      "TERRITORY_NO_STREETS": "Die Karte hat hier noch keine Straßen — die Aufteilung geht nach der nächsten Kartenaktualisierung.",
+      "TERRITORY_ALL_WALKED": "Alle Straßen des Gebiets sind schon bearbeitet.",
+      "TERRITORY_SPLIT_BUSINESS": "Ein Geschäftsgebiet wird nach seiner Liste bearbeitet und nicht auf Gruppen aufgeteilt."
     }
   },
   "stage": {
@@ -7945,6 +7950,64 @@
       "noCallsLink_other": "Im Gebiet sind {{count}} Adressen «nicht besuchen» — der Link zeigt sie nicht. Bitte bei der Ausgabe nennen.",
       "noCallsPaper_one": "Im Gebiet ist {{count}} Adresse «nicht besuchen» — sie steht auf dem Ausdruck.",
       "noCallsPaper_other": "Im Gebiet sind {{count}} Adressen «nicht besuchen» — sie stehen auf dem Ausdruck."
+    },
+    "division": {
+      "entry": "Gebiet auf Gruppen",
+      "entryHint": "Jede Gruppe eigene Straßen, gleich viele Häuser",
+      "title": "{{number}} · auf Gruppen",
+      "kicker": "Gebiet auf Gruppen",
+      "lastAt": "zuletzt vermerkt um {{time}}",
+      "how": "Auf wie viele Gruppen aufteilen?",
+      "firstHolds": "Die erste Aufteilung des Tages gilt für alle, die das Gebiet heute öffnen.",
+      "allWalked": "Alle Straßen sind bearbeitet — das Gebiet kann zurückgegeben werden.",
+      "againRest": "Die übrigen Straßen neu aufteilen",
+      "again": "Neu aufteilen",
+      "againWho": "Neu aufteilen kann, wer aufgeteilt hat, der Leiter des Treffpunkts, der Inhaber oder der Gebietsdiener.",
+      "moveTitle": "Straße einer anderen Gruppe geben",
+      "part": "Gruppe {{n}}",
+      "here": "ist hier",
+      "partDone": "alle Straßen bearbeitet",
+      "link": "Link",
+      "qr": "QR-Code",
+      "route": "Route",
+      "linkMessage": "{{number}}, Gruppe {{n}}: {{url}}",
+      "linkReady": "Der Link ist bereit — er gilt nur heute.",
+      "qrHint": "Mit der Handykamera scannen — die Straßen der Gruppe {{n}} öffnen sich. Gilt nur heute, ohne Anmeldung.",
+      "noCallsByLink": "Über Link und QR-Code sind die «Nicht besuchen»-Adressen nicht zu sehen — bitte der Gruppe nennen.",
+      "piece": {
+        "between": "von {{from}} bis {{to}}",
+        "upTo": "vom Anfang bis {{to}}",
+        "from": "von {{from}} bis zum Ende",
+        "nth": "Teil {{piece}} von {{pieces}}"
+      },
+      "walked_one": "{{walked}} von {{count}} Haus bearbeitet",
+      "walked_other": "{{walked}} von {{count}} Häusern bearbeitet",
+      "restHint_one": "Noch {{count}} Haus — nur die übrigen Straßen werden aufgeteilt.",
+      "restHint_other": "Noch {{count}} Häuser — nur die übrigen Straßen werden aufgeteilt.",
+      "divide_one": "Auf {{count}} Gruppe aufteilen",
+      "divide_other": "Auf {{count}} Gruppen aufteilen",
+      "divideRest_one": "Den Rest auf {{count}} Gruppe aufteilen",
+      "divideRest_other": "Den Rest auf {{count}} Gruppen aufteilen",
+      "leftOut_one": "{{count}} Haus liegt fern von benannten Straßen — es ist in keiner Gruppe.",
+      "leftOut_other": "{{count}} Häuser liegen fern von benannten Straßen — sie sind in keiner Gruppe.",
+      "houses_one": "≈ {{count}} Haus",
+      "houses_other": "≈ {{count}} Häuser",
+      "streetsWalked_one": "{{walked}} von {{count}} Straße bearbeitet",
+      "streetsWalked_other": "{{walked}} von {{count}} Straßen bearbeitet",
+      "noCalls_one": "Nicht besuchen: {{count}} Adresse",
+      "noCalls_other": "Nicht besuchen: {{count}} Adressen"
+    },
+    "part": {
+      "gone": "Der Link gilt nicht mehr",
+      "goneHint": "Der Link zu einem Teil des Gebiets gilt nur am Tag der Aufteilung, solange das Gebiet ausgegeben ist. Bitte den Leiter um einen neuen.",
+      "today": "Ihr Teil für heute",
+      "streets": "Ihre Straßen",
+      "tapHint": "Eine Straße abhaken, wenn sie bearbeitet ist — alle Gruppen sehen es. Wer abgehakt hat, wird nicht gespeichert.",
+      "route": "Route zu Ihrem Teil",
+      "which_one": "Gruppe {{n}} von {{count}}",
+      "which_other": "Gruppe {{n}} von {{count}}",
+      "noCalls_one": "In Ihren Straßen ist {{count}} Adresse «nicht besuchen» — der Leiter nennt sie.",
+      "noCalls_other": "In Ihren Straßen sind {{count}} Adressen «nicht besuchen» — der Leiter nennt sie."
     }
   }
 }

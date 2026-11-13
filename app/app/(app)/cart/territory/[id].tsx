@@ -23,6 +23,7 @@ import { TerritoryCardSheet } from '../../../../components/territories/Territory
 import { streetsOfTerritory } from '../../../../lib/map-snapshot';
 import { useAuth } from '../../../../lib/auth';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
+import { DivisionButton } from '../../../../components/territories/DivisionButton';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -254,6 +255,7 @@ export default function TerritoryScreen() {
               </View>
             ) : null}
             {a.keeps ? <ShareLink assignmentId={current.id} /> : null}
+            {!business ? <DivisionButton territoryId={d.id} /> : null}
           </>
         ) : (
           <>
