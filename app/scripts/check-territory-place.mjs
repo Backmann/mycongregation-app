@@ -31,7 +31,7 @@ try {
     ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } })
       .outputText,
   );
-  const { placeOf, boxWith } = await import(pathToFileURL(join(out, 'tp.mjs')));
+  const { placeOf, boxWith, groupDigits } = await import(pathToFileURL(join(out, 'tp.mjs')));
 
   check('a place', placeOf('7.81,51.68'), [7.81, 51.68]);
   check('spaces', placeOf(' 7.81 , 51.68 '), [7.81, 51.68]);
@@ -51,6 +51,15 @@ try {
   check('no box: the place', boxWith(null, [7, 51]), [[7, 51], [7, 51]]);
   check('inside: the same box', boxWith(box, [7.005, 51.005]), box);
   check('outside: widened', boxWith(box, [7.02, 50.99]), [[7, 50.99], [7.02, 51.01]]);
+
+  check('ru: five digits', groupDigits(12161, 'ru'), '12\u00a0161');
+  check('ru: four digits together', groupDigits(1161, 'ru'), '1161');
+  check('ru: seven digits', groupDigits(1234567, 'ru'), '1\u00a0234\u00a0567');
+  check('de', groupDigits(12161, 'de'), '12.161');
+  check('de: four digits together', groupDigits(1161, 'de-DE'), '1161');
+  check('en', groupDigits(1161, 'en'), '1,161');
+  check('small', groupDigits(942, 'ru'), '942');
+  check('zero', groupDigits(0, 'en'), '0');
 
   // Every key the checks window uses, in every language.
   const comp = readFileSync(join(ROOT, 'components', 'territories', 'TerritoryChecks.tsx'), 'utf8');
@@ -75,6 +84,18 @@ try {
       } else if (!counted && typeof checks[leaf] !== 'string') missing.push(leaf);
     }
     check(`${lang}: every key of the window`, missing, []);
+    // A text that shows {{n}} must be given n where it is called.
+    const unfed = [];
+    for (const [key] of keys) {
+      const leaf = key.split('.').pop();
+      const texts = Object.entries(checks)
+        .filter(([k]) => k === leaf || k.startsWith(`${leaf}_`))
+        .map(([, v]) => v);
+      if (!texts.some((v) => v.includes('{{n}}'))) continue;
+      const at = comp.indexOf(`'${key}'`);
+      if (!/\bn: /.test(comp.slice(at, at + 220))) unfed.push(leaf);
+    }
+    check(`${lang}: {{n}} is always given`, unfed, []);
   }
 } finally {
   rmSync(out, { recursive: true, force: true });

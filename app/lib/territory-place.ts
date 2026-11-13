@@ -31,3 +31,18 @@ export function boxWith(box: Box | null, place: [number, number] | null): Box | 
     [Math.max(box[1][0], place[0]), Math.max(box[1][1], place[1])],
   ];
 }
+
+/**
+ * A count with its thousands grouped the way each language writes them
+ * (13 November 2026; live: «12161 дом»): «12 161» (ru, a no-break space),
+ * «12.161» (de), «12,161» (en). Written out, not Intl, so it reads the same
+ * on the phone's engine.
+ */
+export function groupDigits(n: number, lang: string): string {
+  const sep = lang.startsWith('de') ? '.' : lang.startsWith('en') ? ',' : ' ';
+  const sign = n < 0 ? '-' : '';
+  const digits = String(Math.trunc(Math.abs(n)));
+  // Four digits stay together in Russian and German («1161»), as printed.
+  if (digits.length <= 4 && sep !== ',') return sign + digits;
+  return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
+}
