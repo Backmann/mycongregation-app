@@ -4514,7 +4514,9 @@
         "merge": "Zusammenlegung",
         "new": "neues Gebiet"
       },
-      "category": "Art"
+      "category": "Art",
+      "holderTold": "Inhaber",
+      "holderToldYes": "Mitteilung gesendet"
     }
   },
   "attendance": {
@@ -7641,14 +7643,12 @@
       "share": "Anteil: geht weg ≈{{leaving}} %, kommt hinzu ≈{{gaining}} %",
       "houses": "Häuser laut Karte: gehen weg ≈{{leaving}}, kommen hinzu ≈{{coming}}",
       "held": "ausgegeben",
-      "heldHint": "Das Gebiet ist ausgegeben: eine kleine Korrektur ist möglich, der Verkündiger sieht dann die neue Grenze.",
       "tooMuch": "Von {{number}} gehen mehr als 10 % weg, und es ist ausgegeben — nehmen Sie das Gebiet zuerst zurück.",
       "outside": "{{share}} % des Gebiets liegen außerhalb der Versammlungsgrenze.",
       "overlap": "{{a}} überlappt {{b}} — bitte die Grenze korrigieren.",
-      "noCalls": "„Nicht besuchen“ in diesem Gebiet",
-      "noCallsHint": "Liegt eine Adresse jetzt beim Nachbarn, verschieben Sie sie dorthin.",
+      "noCalls": "«Nicht besuchen» — wo liegen sie jetzt?",
+      "noCallsHint": "Adressen der Gebiete, die Fläche abgeben. Markieren Sie, wenn eine Adresse jetzt beim Nachbarn liegt — sie wird mit der Grenze gespeichert.",
       "moveTo": "→ {{number}}",
-      "moved": "Adresse nach {{number}} verschoben.",
       "save": "Grenze speichern",
       "saved": "Gespeicherte Gebiete: {{n}}.",
       "undo": "Grenze vor dem letzten Speichern wiederherstellen",
@@ -7662,7 +7662,17 @@
       "area": "Fläche: {{change}} %",
       "houses_zoom": "Um die Häuser zu zählen, zoomen Sie an die geänderte Stelle heran.",
       "houses_view": "Um die Häuser zu zählen, zeigen Sie die geänderte Stelle ganz.",
-      "housesExact": "Häuser: gehen weg {{leaving}} von {{before}}, kommen hinzu {{coming}}"
+      "housesExact": "Häuser: gehen weg {{leaving}} von {{before}}, kommen hinzu {{coming}}",
+      "noCallNow": "jetzt in {{number}}",
+      "stays": "Bleibt in {{number}}",
+      "heldTold": "Ausgegeben an {{name}}. Nach dem Speichern bekommt er eine Mitteilung, dass sich die Grenze geändert hat (wenn er die App hat).",
+      "heldGroup": "Das Gebiet hat die Gruppe {{group}} — niemand wird benachrichtigt, sagen Sie es selbst.",
+      "noCallsMoved_one": "{{count}} «Nicht besuchen»-Adresse verschoben.",
+      "noCallsMoved_other": "{{count}} «Nicht besuchen»-Adressen verschoben.",
+      "noCallsBack_one": "{{count}} «Nicht besuchen»-Adresse zurück.",
+      "noCallsBack_other": "{{count}} «Nicht besuchen»-Adressen zurück.",
+      "told": "Mitteilung an den Inhaber gesendet: {{list}}.",
+      "heldNoCard": "Ausgegeben an {{name}}, aber ohne verknüpfte Verkündigerkarte — niemand wird benachrichtigt, sagen Sie es selbst."
     },
     "reshape": {
       "toolPoints": "Punkte bearbeiten",

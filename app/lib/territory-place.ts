@@ -46,3 +46,20 @@ export function groupDigits(n: number, lang: string): string {
   if (digits.length <= 4 && sep !== ',') return sign + digits;
   return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, sep);
 }
+
+/**
+ * Whether the holder of a territory hears that its border moved — the
+ * server's rule (territory-outline.service, 13 November 2026), said in the
+ * editor before saving: a whole per cent of ground or a house changing
+ * hands. A few metres bother nobody.
+ */
+export function holderWillHear(r: {
+  held: boolean;
+  leaving: number;
+  gaining: number;
+  houses?: { leaving: number; coming: number } | null;
+}): boolean {
+  if (!r.held) return false;
+  if (r.leaving >= 1 || r.gaining >= 1) return true;
+  return !!r.houses && (r.houses.leaving > 0 || r.houses.coming > 0);
+}

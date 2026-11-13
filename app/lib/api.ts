@@ -8079,7 +8079,20 @@ export interface TerritoryOutlineBody {
   geometry: TerritoryGeometry;
   updatedAt: string;
   neighbours?: { id: string; geometry: TerritoryGeometry; updatedAt: string }[];
+  /**
+   * «Не посещать» addresses the new border puts in another of the changed
+   * territories: moved with the save (13 November 2026).
+   */
+  noCallMoves?: { id: string; to: string }[];
 }
+
+/** A border saved or taken back: how many addresses moved, who was told. */
+export type TerritoryOutlineSaved = TerritoryOutlineReport & {
+  saved: number;
+  noCallsMoved?: number;
+  /** Numbers of the territories whose holder got a notification. */
+  holdersTold?: string[];
+};
 
 /** A cut, a join, a new territory (12 November 2026, the editor's step 3). */
 export interface TerritorySplitCheck {
@@ -8216,7 +8229,7 @@ export const territoriesApi = {
   checkOutline: async (id: string, body: TerritoryOutlineBody): Promise<TerritoryOutlineReport> =>
     (await api.post<TerritoryOutlineReport>(`/territories/${id}/outline/check`, body)).data,
   saveOutline: async (id: string, body: TerritoryOutlineBody) =>
-    (await api.put<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline`, body)).data,
+    (await api.put<TerritoryOutlineSaved>(`/territories/${id}/outline`, body)).data,
   splitCheck: async (id: string, line: number[][]): Promise<TerritorySplitCheck> =>
     (await api.post<TerritorySplitCheck>(`/territories/${id}/split/check`, { line })).data,
   split: async (
@@ -8261,7 +8274,7 @@ export const territoriesApi = {
   undoReshape: async (id: string) =>
     (await api.post<{ reason: string; number: string }>(`/territories/${id}/reshape/undo`)).data,
   undoOutline: async (id: string) =>
-    (await api.post<TerritoryOutlineReport & { saved: number }>(`/territories/${id}/outline/undo`)).data,
+    (await api.post<TerritoryOutlineSaved>(`/territories/${id}/outline/undo`)).data,
   restore: async (id: string) => (await api.post(`/territories/${id}/restore`)).data,
   archived: async (): Promise<
     { id: string; number: string; locality: string | null; category: TerritoryCategory; archivedAt: string }[]
