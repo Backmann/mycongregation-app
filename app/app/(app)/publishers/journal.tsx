@@ -78,6 +78,7 @@ const SECTION_TONE: Record<string, string> = {
   meeting_move: '#c2410c',
   annual_report: '#0e7490',
   monthly_report: '#0e7490',
+  territories: '#15803d',
 };
 
 const SECTION_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -152,7 +153,24 @@ const FILTERS = [
   'elder_task',
   'annual_report',
   'monthly_report',
+  'territories',
 ] as const;
+
+/**
+ * A chip that stands for several sections (13 November 2026): the territory
+ * section writes under six names, and «Участки» means all of them. The
+ * server takes them joined with commas.
+ */
+const SECTION_TYPES: Record<string, string> = {
+  territories: [
+    'territory',
+    'territory_assignment',
+    'territory_no_call',
+    'territory_boundary',
+    'territory_import',
+    'territory_settings',
+  ].join(','),
+};
 
 export default function JournalScreen() {
   const { t, i18n } = useTranslation();
@@ -173,7 +191,7 @@ export default function JournalScreen() {
       journalApi.list({
         limit: 50,
         before: pageParam,
-        entityType: section ?? undefined,
+        entityType: section ? (SECTION_TYPES[section] ?? section) : undefined,
       }),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: user?.role === 'admin',

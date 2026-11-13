@@ -36,6 +36,7 @@ import {
 import { CutPanel, JoinPanel, UndoReshape } from '../../../../../components/territories/ReshapePanels';
 import { areaChange, roundGeometry, type Pt } from '../../../../../lib/outline-edit';
 import { boxOf } from '../../../../../lib/territory-view';
+import { boxWith, placeOf } from '../../../../../lib/territory-place';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../../components/reports/ReportBits';
 
 /** Neighbours are looked for this far round the territory (degrees, ~300 m). */
@@ -50,7 +51,8 @@ const AROUND = 0.004;
  * neighbour that took the ground.
  */
 export default function OutlineScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, at } = useLocalSearchParams<{ id: string; at?: string }>();
+  const place = placeOf(at);
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -101,7 +103,8 @@ export default function OutlineScreen() {
   const main = rows?.find((r) => r.id === id) ?? null;
   const neighbours = useMemo(() => {
     if (!rows || !main) return [];
-    const b = boxOf([main.geometry]);
+    // Opened from the checks at a gap: the neighbours around it count too.
+    const b = boxWith(boxOf([main.geometry]), place);
     if (!b) return [];
     const [[x1, y1], [x2, y2]] = b;
     return rows.filter((r) => {
@@ -111,7 +114,7 @@ export default function OutlineScreen() {
       const [[a1, b1], [a2, b2]] = o;
       return a1 <= x2 + AROUND * 1.6 && a2 >= x1 - AROUND * 1.6 && b1 <= y2 + AROUND && b2 >= y1 - AROUND;
     });
-  }, [rows, main]);
+  }, [rows, main, place?.[0], place?.[1]]);
   const byId = useMemo(() => new Map((rows ?? []).map((r) => [r.id, r])), [rows]);
   // A new map after each save: the outlines and their stamps are new.
   const version = useMemo(
@@ -478,6 +481,7 @@ export default function OutlineScreen() {
             onLine={setLine}
             onPick={setPick}
             preview={preview}
+            around={place}
           />
         ) : (
           <View style={[cardStyles.card, s.box]}>

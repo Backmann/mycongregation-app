@@ -4162,6 +4162,7 @@
       "meeting_settings": "Meeting time & place",
       "annual_report": "Annual report (S-10)",
       "monthly_report": "Monthly summary (S-1)",
+      "territories": "Territories",
       "aux_application": "Auxiliary pioneer applications",
       "pioneer_meeting": "Meeting with the pioneers",
       "meeting_move": "Meeting moved",
@@ -4170,7 +4171,7 @@
       "territory_boundary": "Territory boundary",
       "territory_settings": "Territories: confirmed",
       "territory_assignment": "Territories: assignments",
-      "territory": "Territories: card",
+      "territory": "Territories",
       "territory_no_call": "Territories: do not call"
     },
     "actions": {
@@ -7706,6 +7707,41 @@
       "noOverlap": "Does not overlap neighbours.",
       "go": "Create territory",
       "again": "Start again"
+    },
+    "checks": {
+      "overlaps_one": "{{count}} overlap",
+      "overlaps_other": "{{count}} overlaps",
+      "outside_one": "{{count}} territory past the boundary",
+      "outside_other": "{{count}} territories past the boundary",
+      "houses_one": "{{count}} house outside territories",
+      "houses_other": "{{count}} houses outside territories",
+      "line": "Checks: {{list}}",
+      "lineHint": "Outside is mostly farms — that may be on purpose.",
+      "title": "Territory checks",
+      "register": "Houses from the house register, built {{date}}",
+      "computer": "Boundaries can be changed on a computer, on the website.",
+      "overlapTitle": "Overlaps — {{count}}",
+      "overlapMeta": "Two territories of the same kind share ground",
+      "outsideTitle": "Past the congregation boundary — {{count}}",
+      "outsideMeta": "{{share}}% of the territory lies outside",
+      "outline": "Boundary {{number}}",
+      "housesTitle": "Houses outside residential territories — {{count}}",
+      "inBusinessAll_one": "Of these, {{count}} inside business territories",
+      "inBusinessAll_other": "Of these, {{count}} inside business territories",
+      "spotHouses_one": "{{count}} house",
+      "spotHouses_other": "{{count}} houses",
+      "spotNear": "by {{number}}, {{metres}} m from its boundary",
+      "spotAlone": "no territory nearby",
+      "spotBusiness_one": "{{count}} in a business territory",
+      "spotBusiness_other": "{{count}} in a business territory",
+      "onMap": "On the map",
+      "addTo": "Add to {{number}}",
+      "create": "New territory",
+      "more": "Showing the {{shown}} largest of {{total}} places.",
+      "scattered_one": "{{count}} more house stands alone or in twos and threes (farms) — not shown as a place.",
+      "scattered_other": "{{count}} more houses stand alone or in twos and threes (farms) — not shown as places.",
+      "registerNote": "The house register takes buildings of 35 m² and more from the map: it cannot tell a house from a warehouse or a school. A place in an industrial estate is a reason to look, not a fault.",
+      "outsideSlack": "{{share}}% outside — likely slack from drawing along the boundary"
     }
   }
 }

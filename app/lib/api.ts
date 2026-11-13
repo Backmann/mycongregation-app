@@ -8123,6 +8123,26 @@ export interface TerritoryChecks {
   assignmentsWithoutCard: number;
 }
 
+/** Houses no residential territory holds (13 November 2026). */
+export interface TerritoryGaps {
+  builtAt: string | null;
+  hasBoundary: boolean;
+  houses: number;
+  /** Of those, inside a business territory (an estate looks like houses). */
+  inBusiness: number;
+  /** Spots found; the largest 40 are listed. */
+  spotCount?: number;
+  spots: {
+    lon: number;
+    lat: number;
+    houses: number;
+    inBusiness: number;
+    near: string | null;
+    nearId: string | null;
+    nearMetres: number | null;
+  }[];
+}
+
 export interface TerritoryImportAssignment {
   number: string;
   publisherId?: string;
@@ -8141,6 +8161,8 @@ export const territoriesApi = {
     (await api.get<TerritoryRow[]>("/territories")).data,
   checks: async (): Promise<TerritoryChecks> =>
     (await api.get<TerritoryChecks>("/territories/checks")).data,
+  gaps: async (): Promise<TerritoryGaps> =>
+    (await api.get<TerritoryGaps>("/territories/gaps")).data,
   importBoundary: async (body: {
     geometry: TerritoryGeometry;
     description?: { north?: string; east?: string; south?: string; west?: string };
