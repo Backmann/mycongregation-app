@@ -66,6 +66,9 @@ export default function SharedTerritoryScreen() {
               {t('territories.link.due', { date: formatDayShort(d.dueOn, i18n.language) })}
             </Text>
           ) : null}
+          {d.noCalls ? (
+            <Text style={s.noCalls}>{t('territories.link.noCalls', { count: d.noCalls })}</Text>
+          ) : null}
         </View>
         {route ? (
           <Pressable onPress={() => void Linking.openURL(route)} style={s.route} accessibilityRole="link">
@@ -81,6 +84,7 @@ export default function SharedTerritoryScreen() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#eef2f3' },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8, backgroundColor: '#f3f5f7' },
+  noCalls: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#c2410c', marginTop: 2 },
   goneTitle: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: INK, textAlign: 'center' },
   goneText: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: MUTED, textAlign: 'center', maxWidth: 360 },
   card: {
