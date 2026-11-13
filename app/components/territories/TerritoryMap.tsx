@@ -20,6 +20,16 @@ export interface MapShape {
   tone: TerritoryTone | 'mine';
 }
 
+/** A business of a business territory's list, numbered (13 November 2026). */
+export interface MapPoint {
+  /** «7», or «10–13» for shops that stand together. */
+  label: string;
+  lon: number;
+  lat: number;
+  /** Visited while the territory is out: green. */
+  done: boolean;
+}
+
 /** Houses no territory holds, from the checks (13 November 2026). */
 export interface MapSpot {
   lon: number;
@@ -29,6 +39,8 @@ export interface MapSpot {
 
 const BOUNDARY = '#0e7490';
 const SPOT = '#d97706';
+const POINT = '#7c3aed';
+const POINT_DONE = '#15803d';
 
 /**
  * The territory map (11 November 2026): the congregation's own map file
@@ -47,6 +59,7 @@ export function TerritoryMap({
   file,
   spots,
   place,
+  points,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -64,6 +77,8 @@ export function TerritoryMap({
   spots?: MapSpot[];
   /** Look at this place closely instead (a spot chosen in the checks). */
   place?: [number, number] | null;
+  /** The businesses of a business territory, numbered in walking order. */
+  points?: MapPoint[];
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -76,6 +91,7 @@ export function TerritoryMap({
       file={file}
       spots={spots ?? EMPTY_SPOTS}
       place={place ?? null}
+      points={points ?? EMPTY_POINTS}
     />
   );
 }
@@ -93,6 +109,18 @@ function featuresOf(shapes: MapShape[]) {
 }
 
 const EMPTY_SPOTS: MapSpot[] = [];
+const EMPTY_POINTS: MapPoint[] = [];
+
+function pointsOf(points: MapPoint[]) {
+  return {
+    type: 'FeatureCollection',
+    features: points.map((p) => ({
+      type: 'Feature',
+      properties: { label: p.label, done: p.done, wide: p.label.length > 2 },
+      geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
+    })),
+  };
+}
 
 function spotsOf(spots: MapSpot[]) {
   return {
@@ -121,6 +149,7 @@ function WebMap({
   file,
   spots,
   place,
+  points,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -130,6 +159,7 @@ function WebMap({
   file?: { congregationId: string; ready: boolean };
   spots: MapSpot[];
   place: [number, number] | null;
+  points: MapPoint[];
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -260,6 +290,30 @@ function WebMap({
             },
             paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
           });
+          m.addSource('points', { type: 'geojson', data: pointsOf(points) });
+          m.addLayer({
+            id: 'points-circle',
+            type: 'circle',
+            source: 'points',
+            paint: {
+              'circle-radius': ['case', ['get', 'wide'], 13, 9],
+              'circle-color': ['case', ['get', 'done'], POINT_DONE, POINT],
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-width': 1.5,
+            },
+          });
+          m.addLayer({
+            id: 'points-label',
+            type: 'symbol',
+            source: 'points',
+            layout: {
+              'text-field': ['get', 'label'],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': 10,
+              'text-allow-overlap': true,
+            },
+            paint: { 'text-color': '#ffffff' },
+          });
           m.on('click', 'terr-fill', (e: unknown) => {
             const f = (e as { features?: { properties?: { id?: string } }[] }).features?.[0];
             const id = f?.properties?.id;
@@ -300,7 +354,8 @@ function WebMap({
     map.current.getSource('terr')?.setData(featuresOf(shapes));
     map.current.getSource('boundary')?.setData(boundaryOf(boundary));
     map.current.getSource('spots')?.setData(spotsOf(spots));
-  }, [ready, shapes, boundary, spots]);
+    map.current.getSource('points')?.setData(pointsOf(points));
+  }, [ready, shapes, boundary, spots, points]);
 
   // The view: the territory in focus, or everything.
   useEffect(() => {

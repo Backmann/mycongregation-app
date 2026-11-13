@@ -18,6 +18,7 @@ import { TerritoryMap } from '../../../../components/territories/TerritoryMap';
 import { AssignSheet } from '../../../../components/territories/AssignSheet';
 import { PrintMapSheet } from '../../../../components/territories/PrintMapSheet';
 import { NoCallSheet } from '../../../../components/territories/NoCallSheet';
+import { BusinessList, pointsOf, useBusinesses } from '../../../../components/territories/BusinessList';
 import { TerritoryCardSheet } from '../../../../components/territories/TerritoryCardSheet';
 import { streetsOfTerritory } from '../../../../lib/map-snapshot';
 import { useAuth } from '../../../../lib/auth';
@@ -94,6 +95,9 @@ export default function TerritoryScreen() {
 
   const d = q.data;
   const current = d?.assignments.find((x) => !x.completedOn && !x.returnedOn) ?? null;
+  // A business territory's list (13 November 2026): its dots on the map too.
+  const business = d?.category === 'business';
+  const businessesQ = useBusinesses(id, open && business);
   const lastDone = useMemo(() => {
     if (!d) return null;
     // The server's count first: a joined territory counts only from the join.
@@ -132,6 +136,7 @@ export default function TerritoryScreen() {
           shapes={[{ id: d.id, number: d.number, geometry: d.geometry, tone }]}
           focus={d.id}
           height={280}
+          points={business ? pointsOf(businessesQ.data) : undefined}
         />
       ) : current ? (
         <OpenMapButton assignmentId={current.id} />
@@ -266,6 +271,16 @@ export default function TerritoryScreen() {
           </>
         )}
       </View>
+
+      {business ? (
+        <>
+          <Text style={s.section}>
+            {t('territories.business.title')}
+            {businessesQ.data ? ` — ${businessesQ.data.items.length}` : ''}
+          </Text>
+          <BusinessList territoryId={d.id} keeps={a.keeps && !d.archivedAt} canMark={a.keeps} />
+        </>
+      ) : null}
 
       <Text style={s.section}>{t('territories.detail.noCalls', { count: d.noCalls.length })}</Text>
       <View style={[cardStyles.card, s.list]}>

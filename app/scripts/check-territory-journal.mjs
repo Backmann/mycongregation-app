@@ -55,6 +55,14 @@ try {
   }, t, date)), ['Номер: A01 → A10', 'Местность: Город → Пригород', 'Заметка: изменена']);
   check('outline', show(L('territory', { outline: 'edit', number: 'A01', with: ['A02'], leaving: 3, gaining: 0 }, t, date)),
     ['Участок: A01', 'Граница: изменена', 'Вместе с соседями: A02', 'По земле: уходит 3%, добавляется 0%']);
+  check('businesses added', show(L('territory', { number: 'G-1', businessesAdded: 12 }, t, date)),
+    ['Участок: G-1', 'Добавлено в список предприятий: 12']);
+  check('one business added', show(L('territory', { number: 'G-1', businessesAdded: 1, business: 'Kiosk' }, t, date)),
+    ['Участок: G-1', 'Добавлено в список предприятий: Kiosk']);
+  check('business renamed', show(L('territory', { number: 'G-1', businessEdited: 'Kiosk Eck', businessWas: 'Kiosk' }, t, date)),
+    ['Участок: G-1', 'Предприятие: Kiosk → Kiosk Eck']);
+  check('business removed', show(L('territory', { number: 'G-1', businessRemoved: 'Kiosk' }, t, date)),
+    ['Участок: G-1', 'Убрано из списка предприятий: Kiosk']);
   check('outline told', show(L('territory', { outline: 'edit', number: 'A02', with: ['A01'], leaving: 5, gaining: 0, noCallsMoved: 1, holderTold: true }, t, date)),
     ['Участок: A02', 'Граница: изменена', 'Вместе с соседями: A01', 'По земле: уходит 5%, добавляется 0%', 'Перенесено адресов «не посещать»: 1', 'Держателю: отправлено уведомление']);
   check('split', show(L('territory', { split: true, number: 'A01', made: 'A06', noCallsMoved: 2 }, t, date)),
