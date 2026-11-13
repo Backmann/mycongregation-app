@@ -140,6 +140,12 @@ export function PrintMapSheet({
         preopenedWindow: win,
         landscape: pages.every((p) => p.landscape),
       });
+      // Printed: out of the queue of paper maps (13 November 2026).
+      const queued = targets.filter((r) => r.holder?.paperWanted).map((r) => r.holder!.assignmentId);
+      if (queued.length) {
+        await Promise.all(queued.map((id) => territoriesApi.paper(id, false).catch(() => undefined)));
+        void qc.invalidateQueries({ queryKey: ['territories'] });
+      }
       onClose();
     } catch (e) {
       win?.close();

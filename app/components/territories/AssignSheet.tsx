@@ -19,6 +19,7 @@ import { extractErrorMessage, territoriesApi } from '../../lib/api';
 import { formatDateISO } from '../../lib/dates';
 import { addDaysISO, formatDayShort, TERM_DAYS } from '../../lib/territory-view';
 import { BRAND, INK, LINE, MUTED } from '../reports/ReportBits';
+import { HandOver } from './HandOver';
 
 type Whom = 'person' | 'group';
 
@@ -53,7 +54,15 @@ export function AssignSheet({
   const [groupId, setGroupId] = useState<string | null>(null);
   const [dueOn, setDueOn] = useState(addDaysISO(today, TERM_DAYS));
   const [error, setError] = useState<string | null>(null);
-  const [printAfter, setPrintAfter] = useState(false);
+  // Given out: how he gets the map (13 November 2026).
+  const [handing, setHanding] = useState<{
+    assignmentId: string;
+    dueOn: string | null;
+    name: string;
+    hasApp: boolean;
+    noCalls: number;
+    number: string;
+  } | null>(null);
 
   const q = useQuery({
     queryKey: ['territories', 'candidates', territoryId],
@@ -69,7 +78,7 @@ export function AssignSheet({
     setGroupId(null);
     setDueOn(addDaysISO(today, TERM_DAYS));
     setError(null);
-    setPrintAfter(false);
+    setHanding(null);
   }, [visible, today]);
 
   const people = useMemo(() => {
@@ -95,17 +104,57 @@ export function AssignSheet({
         dueOn,
         ...(whom === 'group' && groupId ? { forGroupId: groupId } : {}),
       }),
-    onSuccess: async () => {
+    onSuccess: async (r) => {
       // The list must know the new holder before a map is printed for him.
       await qc.invalidateQueries({ queryKey: ['territories'] });
-      onClose();
-      if (printAfter && onPrint) onPrint(territoryId);
+      const noCalls = await territoriesApi
+        .detail(territoryId)
+        .then((d) => d.noCalls.length)
+        .catch(() => 0);
+      setHanding({
+        assignmentId: r.id,
+        dueOn: r.dueOn,
+        name: person?.name ?? r.holderName,
+        hasApp: !!person?.hasApp,
+        noCalls,
+        number: q.data?.territory.number ?? '',
+      });
     },
     onError: (e) => setError(extractErrorMessage(e)),
   });
 
   const months = Math.round((Date.parse(dueOn) - Date.parse(today)) / (30.4 * 86_400_000));
   const ready = !!chosen && dueOn > today && (whom === 'person' || !!groupId);
+
+  if (handing) {
+    return (
+      <Sheet
+        visible={visible}
+        title={t('territories.handover.title')}
+        onClose={onClose}
+        hideClose
+        variant={width >= 900 ? 'centered' : 'bottom'}
+      >
+        <HandOver
+          assignmentId={handing.assignmentId}
+          number={handing.number}
+          holderName={handing.name}
+          dueOn={handing.dueOn}
+          hasApp={handing.hasApp}
+          noCalls={handing.noCalls}
+          onDone={onClose}
+          onPrintNow={
+            onPrint && Platform.OS === 'web'
+              ? () => {
+                  onClose();
+                  onPrint(territoryId);
+                }
+              : undefined
+          }
+        />
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet
@@ -225,21 +274,6 @@ export function AssignSheet({
         </View>
       ) : null}
 
-      {onPrint && Platform.OS === 'web' ? (
-        <Pressable
-          onPress={() => setPrintAfter((v) => !v)}
-          style={s.printAfter}
-          accessibilityRole="checkbox"
-          accessibilityState={{ checked: printAfter }}
-        >
-          <Ionicons
-            name={printAfter ? 'checkbox' : 'square-outline'}
-            size={20}
-            color={printAfter ? BRAND : '#94a3b8'}
-          />
-          <Text style={s.printAfterText}>{t('territories.sheet.afterGive')}</Text>
-        </Pressable>
-      ) : null}
 
       <View style={s.due}>
         <DateField label={t('territories.assign.dueOn')} value={dueOn} onChange={setDueOn} />
@@ -289,8 +323,6 @@ const s = StyleSheet.create({
   chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   chipTextOn: { color: '#fff' },
   due: { marginTop: 16, gap: 4 },
-  printAfter: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14 },
-  printAfterText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
   foot: { gap: 8 },
   error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c' },
   go: { backgroundColor: BRAND, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },

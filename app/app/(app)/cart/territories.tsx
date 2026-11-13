@@ -39,6 +39,7 @@ import { Dialog } from '../../../components/Dialog';
 import { SegmentedControl } from '../../../components/SegmentedControl';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../components/reports/ReportBits';
 import { formatDateISO } from '../../../lib/dates';
+import { SOON_DAYS, daysBetween } from '../../../lib/desk';
 import {
   formatDayShort,
   TONE_COLOR,
@@ -233,6 +234,18 @@ export default function TerritoriesScreen() {
   if (!a || !a.seesAll) return <NoAccess />;
 
   const mine = a.mine.filter((m) => m.mine);
+  // For the desk's banner and the queue of paper maps (13 November 2026).
+  const deskCounts = (listQ.data ?? []).reduce(
+    (c, r) => {
+      const due = r.holder?.dueOn;
+      if (!due) return c;
+      if (due < today) c.late += 1;
+      else if (daysBetween(today, due) <= SOON_DAYS) c.soon += 1;
+      return c;
+    },
+    { late: 0, soon: 0 },
+  );
+  const paperQueue = (listQ.data ?? []).filter((r) => r.holder?.paperWanted).map((r) => r.id);
 
   return (
     <KeyboardScroll style={s.screen} contentContainerStyle={[s.content, twoCols && s.contentWide]}>
@@ -274,6 +287,34 @@ export default function TerritoriesScreen() {
           ) : null}
 
           <NoCallReview />
+
+          {a.keeps ? (
+            // «Выдача и приём» (13 November 2026): from the person to the
+            // territories, with who is late or nearly due.
+            <Pressable
+              onPress={() => router.push('/cart/desk' as never)}
+              style={({ pressed }) => [s.deskBanner, pressed && { opacity: 0.85 }]}
+              accessibilityRole="button"
+            >
+              <View style={s.deskIcon}>
+                <Ionicons name="swap-horizontal" size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.deskTitle}>{t('territories.desk.title')}</Text>
+                <Text style={s.deskHint}>
+                  {deskCounts.late || deskCounts.soon
+                    ? [
+                        deskCounts.late ? t('territories.desk.bannerLate', { count: deskCounts.late }) : null,
+                        deskCounts.soon ? t('territories.desk.bannerSoon', { count: deskCounts.soon }) : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                    : t('territories.desk.bannerHint')}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={BRAND} />
+            </Pressable>
+          ) : null}
 
           {hasBusiness ? (
             <SegmentedControl<TerritoryCategory>
@@ -441,6 +482,18 @@ export default function TerritoriesScreen() {
                 <Text style={s.campaignText}>{t('territories.create.title')}</Text>
               </Pressable>
             ) : null}
+            {a.keeps && Platform.OS === 'web' && paperQueue.length > 0 ? (
+              <Pressable
+                onPress={() => setPrintIds(paperQueue)}
+                style={[s.campaignBtn, s.queueBtn]}
+                accessibilityRole="button"
+              >
+                <Ionicons name="print-outline" size={17} color="#b45309" />
+                <Text style={[s.campaignText, { color: '#b45309' }]}>
+                  {t('territories.desk.paperQueue', { count: paperQueue.length })}
+                </Text>
+              </Pressable>
+            ) : null}
             {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (
               <Pressable
                 onPress={() => setPrintIds(shown.map((x) => x.row.id))}
@@ -555,6 +608,18 @@ export default function TerritoriesScreen() {
               >
                 <Ionicons name="add-circle-outline" size={17} color={BRAND} />
                 <Text style={s.campaignText}>{t('territories.create.title')}</Text>
+              </Pressable>
+            ) : null}
+            {a.keeps && Platform.OS === 'web' && paperQueue.length > 0 ? (
+              <Pressable
+                onPress={() => setPrintIds(paperQueue)}
+                style={[s.campaignBtn, s.queueBtn]}
+                accessibilityRole="button"
+              >
+                <Ionicons name="print-outline" size={17} color="#b45309" />
+                <Text style={[s.campaignText, { color: '#b45309' }]}>
+                  {t('territories.desk.paperQueue', { count: paperQueue.length })}
+                </Text>
               </Pressable>
             ) : null}
             {a.keeps && Platform.OS === 'web' && shown.length > 0 ? (
@@ -938,6 +1003,20 @@ const s = StyleSheet.create({
     padding: 12,
   },
   mineText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
+  deskBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: LINE,
+  },
+  deskIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: BRAND, alignItems: 'center', justifyContent: 'center' },
+  deskTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: INK },
+  deskHint: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: MUTED, marginTop: 1 },
+  queueBtn: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, marginTop: -4 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 3 },

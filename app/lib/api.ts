@@ -8008,6 +8008,46 @@ export interface MyServiceMeeting {
   options: { territoryId: string; number: string; locality: string | null }[];
 }
 
+/** «Выдача и приём» (13 November 2026): everything the desk needs. */
+export interface TerritoryDesk {
+  today: string;
+  people: {
+    publisherId: string;
+    name: string;
+    pioneer: boolean;
+    serviceGroupId: string | null;
+    hasApp: boolean;
+  }[];
+  groups: { id: string; name: string; overseerPublisherId: string | null }[];
+  out: {
+    assignmentId: string;
+    territoryId: string;
+    number: string;
+    locality: string | null;
+    category: TerritoryCategory;
+    /** Null: a line brought over without a card. */
+    publisherId: string | null;
+    holderName: string;
+    forGroupId: string | null;
+    forGroupName: string | null;
+    assignedOn: string;
+    dueOn: string | null;
+    extended: boolean;
+    paperWanted: boolean;
+  }[];
+  history: {
+    publisherId: string;
+    territoryId: string;
+    assignedOn: string;
+    completedOn: string | null;
+    returnedOn: string | null;
+  }[];
+  /** Houses of the register in each territory; null before a register. */
+  houses: Record<string, number> | null;
+  /** «Не посещать» addresses per territory (only counts). */
+  noCalls: Record<string, number>;
+}
+
 export interface TerritoryCandidates {
   territory: { id: string; number: string; locality: string | null };
   groups: { id: string; name: string; overseerPublisherId: string | null }[];
@@ -8019,6 +8059,8 @@ export interface TerritoryCandidates {
     holds: string[];
     overdue: number;
     hadThisOn: string | null;
+    /** Sees his territories in the app; else a link or paper. */
+    hasApp?: boolean;
   }[];
 }
 
@@ -8050,6 +8092,8 @@ export interface TerritoryRow {
     dueOn: string | null;
     /** A group's territory whose holder no longer oversees the group. */
     handOnTo: { publisherId: string; name: string } | null;
+    /** Waiting for its paper map to be printed (13 November 2026). */
+    paperWanted?: boolean;
   } | null;
 }
 
@@ -8345,6 +8389,10 @@ export const territoriesApi = {
   > => (await api.get("/territories/archived")).data,
   mine: async (): Promise<MyTerritory[]> =>
     (await api.get<MyTerritory[]>("/territories/mine")).data,
+  desk: async (): Promise<TerritoryDesk> =>
+    (await api.get<TerritoryDesk>("/territories/desk")).data,
+  paper: async (assignmentId: string, wanted: boolean) =>
+    (await api.put<{ id: string; paperWanted: boolean }>(`/territories/assignments/${assignmentId}/paper`, { wanted })).data,
   candidates: async (id: string): Promise<TerritoryCandidates> =>
     (await api.get<TerritoryCandidates>(`/territories/${id}/candidates`)).data,
   assign: async (
@@ -8494,4 +8542,6 @@ export interface SharedTerritory {
   dueOn: string | null;
   congregationId: string;
   mapReady: boolean;
+  /** How many «не посещать» addresses lie inside; the addresses never travel by link. */
+  noCalls?: number;
 }

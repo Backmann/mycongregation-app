@@ -185,6 +185,8 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/cart/territory/[id]': 'self',
   '/cart/territory/outline/[id]': 'self',
   '/cart/territory/new': 'self',
+  // The server decides: the desk is for those who keep the territories.
+  '/cart/desk': 'self',
   '/cart/my-territories': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.
