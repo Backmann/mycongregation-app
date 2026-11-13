@@ -55,6 +55,8 @@ try {
   }, t, date)), ['Номер: A01 → A10', 'Местность: Город → Пригород', 'Заметка: изменена']);
   check('outline', show(L('territory', { outline: 'edit', number: 'A01', with: ['A02'], leaving: 3, gaining: 0 }, t, date)),
     ['Участок: A01', 'Граница: изменена', 'Вместе с соседями: A02', 'По земле: уходит 3%, добавляется 0%']);
+  check('outline told', show(L('territory', { outline: 'edit', number: 'A02', with: ['A01'], leaving: 5, gaining: 0, noCallsMoved: 1, holderTold: true }, t, date)),
+    ['Участок: A02', 'Граница: изменена', 'Вместе с соседями: A01', 'По земле: уходит 5%, добавляется 0%', 'Перенесено адресов «не посещать»: 1', 'Держателю: отправлено уведомление']);
   check('split', show(L('territory', { split: true, number: 'A01', made: 'A06', noCallsMoved: 2 }, t, date)),
     ['Участок: A01', 'Разделён: новый участок A06', 'Перенесено адресов «не посещать»: 2']);
   check('split off', show(L('territory', { splitFrom: 'A01', number: 'A06' }, t, date)),

@@ -94,6 +94,7 @@ export function territoryJournalLines(
   if (typeof detail.noCallsMoved === 'number' && detail.noCallsMoved > 0) {
     line(k('noCallsMoved'), String(detail.noCallsMoved));
   }
+  if (detail.holderTold === true) line(k('holderTold'), k('holderToldYes'));
   if (detail.archived === true) line(k('archive'), k('archivedOut'));
   if (detail.archived === false) line(k('archive'), k('archivedBack'));
   if (str(detail.undone)) line(k('undone'), k(`undoneWhat.${detail.undone}`));

@@ -4514,7 +4514,9 @@
         "merge": "join",
         "new": "new territory"
       },
-      "category": "Kind"
+      "category": "Kind",
+      "holderTold": "Holder",
+      "holderToldYes": "notified"
     }
   },
   "attendance": {
@@ -7641,14 +7643,12 @@
       "share": "Ground: leaving ≈{{leaving}}%, added ≈{{gaining}}%",
       "houses": "Houses on the map: leaving ≈{{leaving}}, coming ≈{{coming}}",
       "held": "checked out",
-      "heldHint": "The territory is checked out: a small correction is fine, the publisher will see the new boundary.",
       "tooMuch": "More than 10% of {{number}} would leave while it is checked out — take the territory back first.",
       "outside": "{{share}}% of the territory lies outside the congregation boundary.",
       "overlap": "{{a}} overlaps {{b}} — please correct the boundary.",
-      "noCalls": "“Do not call” in this territory",
-      "noCallsHint": "If an address now lies in the neighbour, move it there.",
+      "noCalls": "Do-not-call — where are they now?",
+      "noCallsHint": "Addresses of the territories that give ground. Mark one if it now lies in the neighbour — it moves when the border is saved.",
       "moveTo": "→ {{number}}",
-      "moved": "Address moved to {{number}}.",
       "save": "Save boundary",
       "saved": "Territories saved: {{n}}.",
       "undo": "Restore the boundary from before the last save",
@@ -7662,7 +7662,17 @@
       "area": "Area: {{change}}%",
       "houses_zoom": "Zoom in on the changed part to count the houses.",
       "houses_view": "Bring the whole changed part into view to count the houses.",
-      "housesExact": "Houses: leaving {{leaving}} of {{before}}, coming {{coming}}"
+      "housesExact": "Houses: leaving {{leaving}} of {{before}}, coming {{coming}}",
+      "noCallNow": "now in {{number}}",
+      "stays": "Stays in {{number}}",
+      "heldTold": "Held by {{name}}. After saving he gets a notification that the border changed (if he has the app).",
+      "heldGroup": "Held by the group {{group}} — nobody is notified, tell them yourself.",
+      "noCallsMoved_one": "{{count}} do-not-call address moved.",
+      "noCallsMoved_other": "{{count}} do-not-call addresses moved.",
+      "noCallsBack_one": "{{count}} do-not-call address back.",
+      "noCallsBack_other": "{{count}} do-not-call addresses back.",
+      "told": "Notification sent to the holder: {{list}}.",
+      "heldNoCard": "Held by {{name}}, who has no publisher card linked — nobody is notified, tell him yourself."
     },
     "reshape": {
       "toolPoints": "Edit points",

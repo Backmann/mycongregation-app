@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../../components/KeyboardScroll';
 import {
@@ -36,7 +36,7 @@ import {
 import { CutPanel, JoinPanel, UndoReshape } from '../../../../../components/territories/ReshapePanels';
 import { areaChange, roundGeometry, type Pt } from '../../../../../lib/outline-edit';
 import { boxOf } from '../../../../../lib/territory-view';
-import { boxWith, placeOf } from '../../../../../lib/territory-place';
+import { boxWith, holderWillHear, placeOf } from '../../../../../lib/territory-place';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../../components/reports/ReportBits';
 
 /** Neighbours are looked for this far round the territory (degrees, ~300 m). */
@@ -87,11 +87,37 @@ export default function OutlineScreen() {
   const [snap, setSnap] = useState(true);
   const [edited, setEdited] = useState<EditedShape[]>([]);
   const [report, setReport] = useState<TerritoryOutlineReport | null>(null);
+  // The territories this change takes ground from: their «не посещать» may
+  // now lie in a neighbour (13 November 2026).
+  // The server counts whole per cents; a small move gives less, so the exact
+  // change of area drawn here decides too.
+  const areaOf = (tid: string) => {
+    const e = edited.find((x) => x.id === tid);
+    const was = listQ.data?.find((r) => r.id === tid)?.geometry;
+    return e && was ? areaChange(was, e.geometry) : 0;
+  };
+  const giverIds = useMemo(
+    () =>
+      (report?.territories ?? [])
+        .filter((r) => r.leaving > 0 || areaOf(r.id) < -0.01)
+        .map((r) => r.id),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [report, edited],
+  );
+  const giverQs = useQueries({
+    queries: giverIds.map((gid) => ({
+      queryKey: ['territories', 'detail', gid],
+      queryFn: () => territoriesApi.detail(gid),
+      enabled: open,
+    })),
+  });
   const [checking, setChecking] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<string | null>(null);
-  const [moved, setMoved] = useState<Record<string, string>>({});
+  // «Не посещать» to move with the save (13 November 2026): address → the
+  // territory it now lies in. Nothing moves before the border is saved.
+  const [moves, setMoves] = useState<Record<string, string>>({});
   // Step 3 (12 November 2026): cut along a line, join with a neighbour.
   const [tool, setTool] = useState<EditorTool>('points');
   const [line, setLine] = useState<Pt[] | null>(null);
@@ -184,10 +210,15 @@ export default function OutlineScreen() {
     setBusy(true);
     setError(null);
     try {
-      const r = await territoriesApi.saveOutline(main.id, body);
-      setDone(t('territories.outline.saved', { n: r.saved }));
+      const ids = new Set(report?.territories.map((x) => x.id) ?? []);
+      const noCallMoves = Object.entries(moves)
+        .filter(([, to]) => ids.has(to))
+        .map(([nid, to]) => ({ id: nid, to }));
+      const r = await territoriesApi.saveOutline(main.id, { ...body, noCallMoves });
+      setDone(savedWords(r.saved, r.noCallsMoved ?? 0, r.holdersTold ?? []));
       setEdited([]);
       setReport(null);
+      setMoves({});
       await refresh();
     } catch (e) {
       setError(extractErrorMessage(e));
@@ -207,8 +238,16 @@ export default function OutlineScreen() {
     setBusy(true);
     setError(null);
     try {
-      await territoriesApi.undoOutline(main.id);
-      setDone(t('territories.outline.undone'));
+      const r = await territoriesApi.undoOutline(main.id);
+      setDone(
+        [
+          t('territories.outline.undone'),
+          r.noCallsMoved ? t('territories.outline.noCallsBack', { count: r.noCallsMoved }) : null,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      );
+      setMoves({});
       setEdited([]);
       setReport(null);
       await refresh();
@@ -219,16 +258,15 @@ export default function OutlineScreen() {
     }
   };
 
-  const moveNoCall = async (noCallId: string, to: TerritoryRow) => {
-    setError(null);
-    try {
-      await territoriesApi.editNoCall(noCallId, { territoryId: to.id });
-      setMoved((m) => ({ ...m, [noCallId]: to.number }));
-      await qc.invalidateQueries({ queryKey: ['territories', 'detail'] });
-    } catch (e) {
-      setError(extractErrorMessage(e));
-    }
-  };
+  /** What the save did, in one line. */
+  const savedWords = (saved: number, movedCount: number, told: string[]) =>
+    [
+      t('territories.outline.saved', { n: saved }),
+      movedCount ? t('territories.outline.noCallsMoved', { count: movedCount }) : null,
+      told.length ? t('territories.outline.told', { list: told.join(', ') }) : null,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
   if (Platform.OS !== 'web') {
     return (
@@ -261,10 +299,27 @@ export default function OutlineScreen() {
     const shown = Math.abs(v) < 0.05 ? '0' : `${v > 0 ? '+' : '−'}${Math.abs(v).toLocaleString(i18n.language, { maximumFractionDigits: 1 })}`;
     return t('territories.outline.area', { change: shown });
   };
-  const takers = report
-    ? report.territories.filter((r) => r.id !== main.id && r.gaining > 0).map((r) => byId.get(r.id)!)
-    : [];
-  const noCalls = (detailQ.data?.noCalls ?? []).filter((n) => !moved[n.id]);
+  // Each address of a territory that gives ground, with the territories
+  // that take ground it could now lie in.
+  const takersOf = (gid: string) =>
+    (report?.territories ?? [])
+      .filter((r) => r.id !== gid && (r.gaining > 0 || areaOf(r.id) > 0.01))
+      .map((r) => byId.get(r.id))
+      .filter((r): r is TerritoryRow => !!r);
+  const noCallRows = giverIds.flatMap((gid, i) => {
+    const takers = takersOf(gid);
+    if (takers.length === 0) return [];
+    return (giverQs[i]?.data?.noCalls ?? []).map((n) => ({ n, from: byId.get(gid)!, takers }));
+  });
+  const heldLine = (r: TerritoryOutlineReport['territories'][number]) => {
+    const holder = byId.get(r.id)?.holder;
+    if (!holder || !holderWillHear(r)) return null;
+    // A group's territory has no one person to tell; a holder brought over
+    // without a card (the import) has no app to tell him.
+    if (holder.forGroupName) return t('territories.outline.heldGroup', { group: holder.forGroupName });
+    if (!holder.publisherId) return t('territories.outline.heldNoCard', { name: holder.name });
+    return t('territories.outline.heldTold', { name: holder.name });
+  };
 
   const pointsPanel = (
     <>
@@ -319,8 +374,8 @@ export default function OutlineScreen() {
                   ) : null}
                   {r.tooMuch ? (
                     <Text style={s.bad}>{t('territories.outline.tooMuch', { number: r.number })}</Text>
-                  ) : r.held && r.leaving > 0 ? (
-                    <Text style={s.warn}>{t('territories.outline.heldHint')}</Text>
+                  ) : heldLine(r) ? (
+                    <Text style={s.warn}>{heldLine(r)}</Text>
                   ) : null}
                   {r.outsideBoundary > 0 ? (
                     <Text style={s.warn}>
@@ -339,37 +394,51 @@ export default function OutlineScreen() {
         )}
       </View>
 
-      {takers.length > 0 && noCalls.length > 0 ? (
+      {noCallRows.length > 0 ? (
         <>
           <Text style={s.section}>{t('territories.outline.noCalls')}</Text>
           <View style={[cardStyles.card, s.box]}>
             <Text style={s.help}>{t('territories.outline.noCallsHint')}</Text>
-            {noCalls.map((n) => (
-              <View key={n.id} style={s.nc}>
-                <Text style={s.ncText}>{n.address}</Text>
-                <View style={s.ncTo}>
-                  {takers.map((to) => (
-                    <Pressable
-                      key={to.id}
-                      onPress={() => void moveNoCall(n.id, to)}
-                      style={s.chip}
-                      accessibilityRole="button"
-                      accessibilityLabel={t('territories.outline.moveTo', { number: to.number })}
-                    >
-                      <Text style={s.chipText}>{t('territories.outline.moveTo', { number: to.number })}</Text>
-                    </Pressable>
-                  ))}
+            {noCallRows.map(({ n, from, takers }) => {
+              const to = moves[n.id] ?? from.id;
+              const pick = (tid: string) =>
+                setMoves((cur) => {
+                  const next = { ...cur };
+                  if (tid === from.id) delete next[n.id];
+                  else next[n.id] = tid;
+                  return next;
+                });
+              return (
+                <View key={n.id} style={s.nc}>
+                  <Text style={s.ncText}>{n.address}</Text>
+                  <Text style={s.muted}>{t('territories.outline.noCallNow', { number: from.number })}</Text>
+                  <View style={s.ncTo}>
+                    {[from, ...takers].map((x) => {
+                      const on = to === x.id;
+                      const label =
+                        x.id === from.id
+                          ? t('territories.outline.stays', { number: x.number })
+                          : t('territories.outline.moveTo', { number: x.number });
+                      return (
+                        <Pressable
+                          key={x.id}
+                          onPress={() => pick(x.id)}
+                          style={[s.chip, on && s.chipOn]}
+                          accessibilityRole="radio"
+                          accessibilityState={{ selected: on }}
+                          accessibilityLabel={label}
+                        >
+                          <Text style={[s.chipText, on && s.chipTextOn]}>{label}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </>
       ) : null}
-      {Object.entries(moved).map(([nid, number]) => (
-        <Text key={nid} style={s.okText}>
-          {t('territories.outline.moved', { number })}
-        </Text>
-      ))}
 
       {error ? <Text style={s.bad}>{error}</Text> : null}
       <Pressable
@@ -575,8 +644,10 @@ const s = StyleSheet.create({
   nc: { gap: 6, paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
   ncText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: INK },
   ncTo: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { borderWidth: 1, borderColor: BRAND, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
-  chipText: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: BRAND },
+  chip: { borderWidth: 1, borderColor: LINE, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
+  chipOn: { borderColor: BRAND, backgroundColor: '#ecfeff' },
+  chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: MUTED },
+  chipTextOn: { fontFamily: 'Manrope_700Bold', color: BRAND },
   go: { backgroundColor: BRAND, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
   goOff: { opacity: 0.45 },
   goText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#fff' },

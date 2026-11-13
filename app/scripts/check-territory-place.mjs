@@ -31,7 +31,7 @@ try {
     ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } })
       .outputText,
   );
-  const { placeOf, boxWith, groupDigits } = await import(pathToFileURL(join(out, 'tp.mjs')));
+  const { placeOf, boxWith, groupDigits, holderWillHear } = await import(pathToFileURL(join(out, 'tp.mjs')));
 
   check('a place', placeOf('7.81,51.68'), [7.81, 51.68]);
   check('spaces', placeOf(' 7.81 , 51.68 '), [7.81, 51.68]);
@@ -60,6 +60,16 @@ try {
   check('en', groupDigits(1161, 'en'), '1,161');
   check('small', groupDigits(942, 'ru'), '942');
   check('zero', groupDigits(0, 'en'), '0');
+
+  // The holder hears of a border he would notice (the server's rule).
+  const r = (o) => ({ held: true, leaving: 0, gaining: 0, houses: null, ...o });
+  check('not held', holderWillHear(r({ held: false, leaving: 30 })), false);
+  check('a few metres', holderWillHear(r({})), false);
+  check('a per cent leaves', holderWillHear(r({ leaving: 1 })), true);
+  check('a per cent comes', holderWillHear(r({ gaining: 1 })), true);
+  check('one house leaves', holderWillHear(r({ houses: { leaving: 1, coming: 0 } })), true);
+  check('one house comes', holderWillHear(r({ houses: { leaving: 0, coming: 1 } })), true);
+  check('houses counted, none moved', holderWillHear(r({ houses: { leaving: 0, coming: 0 } })), false);
 
   // Every key the checks window uses, in every language.
   const comp = readFileSync(join(ROOT, 'components', 'territories', 'TerritoryChecks.tsx'), 'utf8');
