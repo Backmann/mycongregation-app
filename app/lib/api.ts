@@ -12,6 +12,7 @@ import { refusalText } from "./refusal-text";
 import { bestOffset, LIVE_REQUEST_TIMEOUT_MS, offsetSample } from "./conduct-live";
 import type { LiveRoles } from "./conduct-live";
 import { deviceId } from "./device-id";
+import type { Side } from "./division";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -8535,13 +8536,39 @@ export const territoriesApi = {
   // ---- a territory divided between groups for a day (13 November 2026) ----
   division: async (territoryId: string): Promise<TerritoryDivision> =>
     (await api.get<TerritoryDivision>(`/territories/${territoryId}/division`)).data,
-  divide: async (territoryId: string, parts: number, again = false): Promise<TerritoryDivision> =>
+  divide: async (
+    territoryId: string,
+    parts: number,
+    again = false,
+    how: DivisionHow = {},
+  ): Promise<TerritoryDivision> =>
     (
       await api.post<TerritoryDivision>(`/territories/${territoryId}/division`, {
         parts,
         ...(again ? { again } : {}),
+        ...(how.mode ? { mode: how.mode } : {}),
+        ...(how.smaller?.length ? { smaller: how.smaller } : {}),
       })
     ).data,
+  /** A division as it would be, saved nowhere: to look before handing out. */
+  previewDivision: async (
+    territoryId: string,
+    parts: number,
+    how: DivisionHow = {},
+  ): Promise<DivisionPreview> =>
+    (
+      await api.post<DivisionPreview>(`/territories/${territoryId}/division/preview`, {
+        parts,
+        ...(how.mode ? { mode: how.mode } : {}),
+        ...(how.smaller?.length ? { smaller: how.smaller } : {}),
+      })
+    ).data,
+  /** Today's division taken away: its links stop; the ticks stay. */
+  removeDivision: async (divisionId: string): Promise<TerritoryDivision> =>
+    (await api.delete<TerritoryDivision>(`/territories/divisions/${divisionId}`)).data,
+  /** A pair done early takes a street of a pair that has not started. */
+  takeStreet: async (divisionId: string, key: string, to: number): Promise<TerritoryDivision> =>
+    (await api.put<TerritoryDivision>(`/territories/divisions/${divisionId}/take`, { key, to })).data,
   moveStreet: async (divisionId: string, key: string, to: number): Promise<TerritoryDivision> =>
     (await api.put<TerritoryDivision>(`/territories/divisions/${divisionId}/move`, { key, to })).data,
   markStreet: async (divisionId: string, key: string, walked: boolean): Promise<TerritoryDivision> =>
@@ -8563,7 +8590,30 @@ export const territoriesApi = {
         walked,
       })
     ).data,
+  takeSharedStreet: async (token: string, key: string): Promise<SharedPart> =>
+    (await api.put<SharedPart>(`/territory-parts/${encodeURIComponent(token)}/take`, { key })).data,
 };
+
+/** «Пары рядом» (the default): parts side by side from one start; «own»: apart. */
+export type DivisionMode = 'near' | 'own';
+
+export interface DivisionHow {
+  mode?: DivisionMode;
+  /** Parts (1-based) that asked to be smaller: about two thirds of a share. */
+  smaller?: number[];
+}
+
+/** What a division would be: nothing saved. */
+export interface DivisionPreview {
+  mode: DivisionMode;
+  start: [number, number] | null;
+  /** «meeting»: the start is the meeting place found on the map. */
+  startFrom: 'meeting' | 'middle';
+  leftOut: number;
+  houses: number;
+  numbered: number;
+  parts: DivisionPart[];
+}
 
 /** A street (or a piece of a long one) in a part of a division. */
 export interface DivisionStreet {
@@ -8574,18 +8624,32 @@ export interface DivisionStreet {
   to: string | null;
   piece: number;
   pieces: number;
+  /** A side of a main road; null: both sides. */
+  side: Side | null;
+  /** Its house numbers, lowest to highest; null when too few are known. */
+  range: { from: string; to: string } | null;
   houses: number;
+  /** Entrances: a house with three numbers is three. */
+  doors: number;
   lines: [number, number][][];
+  /** Its houses, to draw as dots (public map data). */
+  dots: [number, number][];
   walkedAt: string | null;
 }
 
 export interface DivisionPart {
   n: number;
   houses: number;
+  doors: number;
   start: [number, number] | null;
+  /** Asked to be smaller. */
+  smaller: boolean;
+  /** In walking order from the start. */
   streets: DivisionStreet[];
-  /** In the app only: the «не посещать» addresses on its streets. */
-  noCalls?: { id: string; address: string }[];
+  /** Nothing walked yet: another pair may still take one of its streets. */
+  untouched: boolean;
+  /** In the app only: the «не посещать» addresses on its streets, and where when known. */
+  noCalls?: { id: string; address: string; at: [number, number] | null }[];
 }
 
 /** Today's division of a territory between groups. */
@@ -8600,8 +8664,13 @@ export interface TerritoryDivision {
   walked: number;
   lastWalkedAt: string | null;
   mayRedo: boolean;
+  /** The holder and the keepers may mark the territory worked. */
+  mayComplete?: boolean;
   split: null | {
     id: string;
+    mode: DivisionMode;
+    /** Where everyone sets off («пары рядом»). */
+    start: [number, number] | null;
     parts: DivisionPart[];
     leftOut: number;
     byMe: boolean;
@@ -8615,7 +8684,15 @@ export interface SharedPart {
   geometry: TerritoryGeometry;
   day: string;
   parts: number;
+  mode: DivisionMode;
+  start: [number, number] | null;
   part: DivisionPart;
+  /** The other pairs: a pair done early may take a street of one not started. */
+  others: {
+    n: number;
+    untouched: boolean;
+    streets: Pick<DivisionStreet, 'key' | 'name' | 'range' | 'side' | 'houses'>[];
+  }[];
   noCalls: number;
   congregationId: string;
   mapReady: boolean;

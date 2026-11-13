@@ -13,6 +13,16 @@ export interface StreetLike {
   pieces: number;
   houses: number;
   walkedAt: string | null;
+  /** A side of a main road; null or absent: both sides. */
+  side?: Side | null;
+  /** Its house numbers, lowest to highest; null when too few are known. */
+  range?: { from: string; to: string } | null;
+}
+
+/** A side of a main road: by its numbers when they agree, else by the compass. */
+export interface Side {
+  parity: 'even' | 'odd' | null;
+  toward: 'n' | 's' | 'e' | 'w';
 }
 
 export interface PartLike {
@@ -65,6 +75,73 @@ export function pieceWords(s: StreetLike): PieceWords {
   return { key: 'nth', piece: s.piece, pieces: s.pieces };
 }
 
+/**
+ * Which word names a side (13 November 2026, «Пары на участке»): «чётная» /
+ * «нечётная» when the numbers agree, else where it lies — «северная» etc.
+ * Null: a quiet street, walked on both sides.
+ */
+export type SideWord = 'even' | 'odd' | 'n' | 's' | 'e' | 'w';
+
+export function sideWord(s: { side?: Side | null }): SideWord | null {
+  if (!s.side) return null;
+  return s.side.parity ?? s.side.toward;
+}
+
+/** «2–84»: the numbers of a street, or null; one number alone is no range. */
+export function rangeText(s: { range?: { from: string; to: string } | null }): string | null {
+  if (!s.range) return null;
+  return s.range.from === s.range.to ? s.range.from : `${s.range.from}–${s.range.to}`;
+}
+
+/**
+ * The pair across the road: another part walking the other side of the same
+ * main road. Said on the street («напротив идёт пара 1») so two pairs on one
+ * road know each other and do not ring the same doors.
+ */
+export function partAcross(parts: PartLike[], n: number, street: StreetLike): number | null {
+  if (!street.side) return null;
+  for (const p of parts) {
+    if (p.n === n) continue;
+    for (const x of p.streets) {
+      if (x.name !== street.name || !x.side) continue;
+      const other =
+        street.side.parity && x.side.parity
+          ? x.side.parity !== street.side.parity
+          : x.side.toward !== street.side.toward;
+      if (other) return p.n;
+    }
+  }
+  return null;
+}
+
+/** A tick made without a connection, waiting on the phone to be sent. */
+export interface PendingTick {
+  key: string;
+  walked: boolean;
+  /** When it was ticked, ISO. */
+  at: string;
+}
+
+/** A newer tick of the same street replaces the older; nothing else is lost. */
+export function addTick(queue: PendingTick[], tick: PendingTick): PendingTick[] {
+  return [...queue.filter((q) => q.key !== tick.key), tick];
+}
+
+/**
+ * The streets as the walker sees them: the server's answer with the ticks
+ * still waiting on the phone laid over it, marked `pending`.
+ */
+export function withTicks<T extends StreetLike>(
+  streets: T[],
+  queue: PendingTick[],
+): (T & { pending: boolean })[] {
+  return streets.map((s) => {
+    const q = queue.find((x) => x.key === s.key);
+    if (!q) return { ...s, pending: false };
+    return { ...s, walkedAt: q.walked ? q.at : null, pending: true };
+  });
+}
+
 /** Streets walked and houses on them, of a part or of all parts. */
 export function walkedOf(parts: PartLike[]): {
   streets: number;
@@ -94,9 +171,37 @@ export function partDone(p: PartLike): boolean {
   return p.streets.length > 0 && p.streets.every((s) => s.walkedAt);
 }
 
-/** The streets of a part, those still to walk first, then in the server's order. */
+/**
+ * The streets of a part, those still to walk first, then in the server's
+ * order. Kept for the old screens; the new ones keep the walking order and
+ * number it (see `walkingOrder`).
+ */
 export function streetsToWalk<T extends StreetLike>(streets: T[]): T[] {
   return [...streets].sort((a, b) => Number(!!a.walkedAt) - Number(!!b.walkedAt));
+}
+
+/** The streets of a part in walking order, numbered from 1, as on the map. */
+export function walkingOrder<T extends StreetLike>(streets: T[]): (T & { step: number })[] {
+  return streets.map((s, i) => ({ ...s, step: i + 1 }));
+}
+
+/**
+ * Whether the territory may be marked worked: every street of the division
+ * walked, and the one asking may end it (the holder, a keeper).
+ */
+export function offerComplete(parts: PartLike[], mayComplete: boolean): boolean {
+  if (!mayComplete || parts.length === 0) return false;
+  return parts.every((p) => partDone(p));
+}
+
+/** A street of another part that a pair done early may take: that part not started. */
+export function streetsToTake<P extends PartLike & { untouched?: boolean }>(
+  parts: P[],
+  n: number,
+): { from: number; street: P['streets'][number] }[] {
+  return parts
+    .filter((p) => p.n !== n && p.untouched !== false && !p.streets.some((x) => x.walkedAt))
+    .flatMap((p) => p.streets.map((street) => ({ from: p.n, street })));
 }
 
 /** The route to a point (lon, lat), in the phone's maps. */
