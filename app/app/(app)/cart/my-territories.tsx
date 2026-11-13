@@ -23,6 +23,7 @@ import {
   routeLink,
   TONE_COLOR,
 } from '../../../lib/territory-view';
+import { BusinessList, pointsOf, useBusinesses } from '../../../components/territories/BusinessList';
 
 /**
  * «Мой участок» (11 November 2026; mockup «Мой участок»).
@@ -100,6 +101,9 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
   const late = left !== null && left < 0;
   const soon = left !== null && left <= DUE_SOON_DAYS;
   const route = routeLink(item.geometry);
+  // A business territory: its list to walk and mark (13 November 2026).
+  const business = item.category === 'business';
+  const businessesQ = useBusinesses(item.id, business);
 
   return (
     <View style={s.item}>
@@ -108,6 +112,7 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
           shapes={[{ id: item.id, number: item.number, geometry: item.geometry, tone: 'mine' }]}
           focus={item.id}
           height={300}
+          points={business ? pointsOf(businessesQ.data) : undefined}
         />
       ) : (
         <OpenMapButton assignmentId={a.id} />
@@ -154,6 +159,13 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
                 ? ` · ${late ? t('territories.my.late', { count: -left }) : t('territories.my.left', { count: left })}`
                 : ''}
             </Text>
+          </View>
+        ) : null}
+
+        {business ? (
+          <View style={{ marginTop: 10, gap: 6 }}>
+            <Text style={s.noCallsTitle}>{t('territories.business.title')}</Text>
+            <BusinessList territoryId={item.id} keeps={false} canMark />
           </View>
         ) : null}
 

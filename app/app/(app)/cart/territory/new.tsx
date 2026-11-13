@@ -107,12 +107,18 @@ export default function NewTerritoryScreen() {
   // The number and the place suggested from the territory it starts beside.
   useEffect(() => {
     if (!open) return;
-    // Business territories are numbered «Д-1, Д-2…» (decision of 12 November 2026).
-    // cyrillic-ok: the owner's numbering of business territories
-    const like = start?.number ?? (category === 'business' ? 'Д-0' : rows?.[0]?.number ?? '');
-    if (!like) return;
+    // Like the territory it starts beside, if of the same kind. A business
+    // territory with nothing like it is numbered by the server in the
+    // congregation's language («Д-1» Russian, «G-1» German; 13 November 2026).
+    const sameKind = start && (start.category ?? 'residential') === category ? start : null;
+    const like =
+      sameKind?.number ??
+      (category === 'business'
+        ? rows?.find((r) => r.category === 'business')?.number ?? null
+        : rows?.[0]?.number ?? null);
+    if (!like && category !== 'business') return;
     territoriesApi
-      .nextNumber(like)
+      .nextNumber(like, category)
       .then((r) => setNumber(r.number))
       .catch(() => undefined);
     if (start) {

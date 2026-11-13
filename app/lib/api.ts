@@ -7963,6 +7963,8 @@ export interface MyTerritory {
   id: string;
   number: string;
   locality: string | null;
+  /** A business territory comes with its list (13 November 2026). */
+  category?: TerritoryCategory;
   geometry: TerritoryGeometry;
   assignment: {
     id: string;
@@ -8136,6 +8138,46 @@ export interface TerritoryChecks {
   assignmentsWithoutCard: number;
 }
 
+/** A business on a business territory's list (13 November 2026). */
+export type BusinessGroup = "shop" | "food" | "service" | "health" | "lodging" | "other";
+export type BusinessVisitState = "visited" | "later";
+
+export interface TerritoryBusinessRow {
+  id: string;
+  /** Its place in the walking order, from 1. */
+  n: number;
+  name: string;
+  kind: string;
+  group: BusinessGroup;
+  lon: number | null;
+  lat: number | null;
+  fromMap: boolean;
+  /** Taken from the map, and a newer map no longer has it (keepers). */
+  gone?: boolean;
+  visit: { state: BusinessVisitState; onDate: string } | null;
+}
+
+export interface TerritoryBusinessList {
+  territoryId: string;
+  number: string;
+  /** The open assignment the marks belong to; null when not given out. */
+  assignmentId: string | null;
+  items: TerritoryBusinessRow[];
+  visited: number;
+}
+
+export interface TerritoryBusinessSuggestion {
+  builtAt: string | null;
+  places: {
+    osmId: string;
+    name: string;
+    kind: string;
+    group: BusinessGroup;
+    lon: number;
+    lat: number;
+  }[];
+}
+
 /** Houses no residential territory holds (13 November 2026). */
 export interface TerritoryGaps {
   builtAt: string | null;
@@ -8176,6 +8218,20 @@ export const territoriesApi = {
     (await api.get<TerritoryChecks>("/territories/checks")).data,
   gaps: async (): Promise<TerritoryGaps> =>
     (await api.get<TerritoryGaps>("/territories/gaps")).data,
+  businesses: async (id: string): Promise<TerritoryBusinessList> =>
+    (await api.get<TerritoryBusinessList>(`/territories/${id}/businesses`)).data,
+  businessSuggest: async (id: string): Promise<TerritoryBusinessSuggestion> =>
+    (await api.get<TerritoryBusinessSuggestion>(`/territories/${id}/businesses/suggest`)).data,
+  addBusinesses: async (
+    id: string,
+    items: { osmId?: string; name?: string; kind?: string; lon?: number; lat?: number }[],
+  ) => (await api.post<{ added: number }>(`/territories/${id}/businesses`, { items })).data,
+  editBusiness: async (id: string, body: { name?: string; kind?: string }) =>
+    (await api.patch<{ id: string }>(`/territories/businesses/${id}`, body)).data,
+  removeBusiness: async (id: string) =>
+    (await api.delete<{ removed: boolean }>(`/territories/businesses/${id}`)).data,
+  markBusiness: async (id: string, state: BusinessVisitState | null) =>
+    (await api.put<{ state: BusinessVisitState | null; onDate?: string }>(`/territories/businesses/${id}/mark`, { state })).data,
   importBoundary: async (body: {
     geometry: TerritoryGeometry;
     description?: { north?: string; east?: string; south?: string; west?: string };
@@ -8269,8 +8325,16 @@ export const territoriesApi = {
     category: TerritoryCategory;
     geometry: TerritoryGeometry;
   }) => (await api.post<{ id: string; number: string }>("/territories", body)).data,
-  nextNumber: async (like: string) =>
-    (await api.get<{ number: string }>("/territories/next-number", { params: { like } })).data,
+  /**
+   * The next free number like the example; a business territory with no
+   * example gets the server's pattern for the congregation's language.
+   */
+  nextNumber: async (like: string | null, category: TerritoryCategory = "residential") =>
+    (
+      await api.get<{ number: string }>("/territories/next-number", {
+        params: { ...(like ? { like } : {}), category },
+      })
+    ).data,
   undoReshape: async (id: string) =>
     (await api.post<{ reason: string; number: string }>(`/territories/${id}/reshape/undo`)).data,
   undoOutline: async (id: string) =>

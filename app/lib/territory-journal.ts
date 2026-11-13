@@ -99,5 +99,13 @@ export function territoryJournalLines(
   if (detail.archived === false) line(k('archive'), k('archivedBack'));
   if (str(detail.undone)) line(k('undone'), k(`undoneWhat.${detail.undone}`));
   if (str(detail.category)) line(k('category'), t(`territories.category.one.${detail.category}`));
+  // The list of a business territory (13 November 2026).
+  if (typeof detail.businessesAdded === 'number') {
+    line(k('businessesAdded'), str(detail.business) ?? String(detail.businessesAdded));
+  }
+  if (str(detail.businessEdited)) {
+    line(k('businessEdited'), str(detail.businessEdited), str(detail.businessWas));
+  }
+  if (str(detail.businessRemoved)) line(k('businessRemoved'), str(detail.businessRemoved));
   return out;
 }
