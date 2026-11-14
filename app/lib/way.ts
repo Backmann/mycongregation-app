@@ -168,7 +168,8 @@ export function lineMetres(lines: LonLat[][]): number {
 /**
  * The walk of some streets in order (14 November 2026): the road to each
  * (its `link`) and the street itself, in metres — of the first `upto`, or
- * of those not yet walked among them.
+ * of those not yet walked among them. The road to the first street is the
+ * way there, not the walk (often by car), as on the server.
  */
 export function walkOf(
   streets: { lines: LonLat[][]; link?: LonLat[] | null; walkedAt?: string | null }[],
@@ -176,11 +177,29 @@ export function walkOf(
   open = false,
 ): number {
   let m = 0;
-  streets.slice(0, upto).forEach((s) => {
+  streets.slice(0, upto).forEach((s, i) => {
     if (open && s.walkedAt) return;
-    m += lineMetres(s.lines) + (s.link ? lineMetres([s.link]) : 0);
+    m += lineMetres(s.lines) + (i > 0 && s.link ? lineMetres([s.link]) : 0);
   });
   return m;
+}
+
+/**
+ * What the map shows of a part at first (14 November 2026): with a walk for
+ * today, today's streets and the roads between them — not the way there
+ * from the start, nor the streets for another time; else the start and the
+ * whole part.
+ */
+export function frameOf(
+  streets: { lines: LonLat[][]; link?: LonLat[] | null }[],
+  today: number | null,
+  start: LonLat | null,
+): LonLat[] {
+  if (today !== null && today > 0) {
+    return streets.slice(0, today).flatMap((s, i) => [...s.lines.flat(), ...(i > 0 && s.link ? s.link : [])]);
+  }
+  const own = streets.flatMap((s) => s.lines.flat());
+  return start ? [start, ...own] : own;
 }
 
 /** The box round some points, for the map to show them: [[w, s], [e, n]]. */

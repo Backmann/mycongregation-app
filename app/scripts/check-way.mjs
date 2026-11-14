@@ -68,6 +68,14 @@ try {
     [{ unit: 'm', n: 90 }, { unit: 'm', n: 10 }, { unit: 'm', n: 990 }]);
   check('kilometres in tenths', [W.roundDistance(1234), W.roundDistance(2000)], [{ unit: 'km', n: 1.2 }, { unit: 'km', n: 2 }]);
 
+  // What the map shows first (14 November 2026): today's streets and the roads
+  // between them, not the way there from the start.
+  const fs = (x, link) => ({ lines: [[[x, 51.7], [x, 51.701]]], link });
+  const four = [fs(7.9, [[7.8, 51.7], [7.9, 51.7]]), fs(7.901, [[7.9, 51.701], [7.901, 51.7]]), fs(7.95), fs(7.96)];
+  const f2 = W.frameOf(four, 2, [7.8, 51.7]);
+  check('framed today: no start, no first road, no later street', [f2.some((p) => p[0] < 7.9), f2.some((p) => p[0] > 7.901)], [false, false]);
+  check('… but the road between today\'s streets', f2.length, 6);
+  check('no today: the start and the whole part', W.frameOf(four, null, [7.8, 51.7]).length, 9);
   check('a box round points', W.boxAround([[7.8, 51.7], [7.9, 51.6], [7.85, 51.75]]), [[7.8, 51.6], [7.9, 51.75]]);
   check('no points, no box', W.boxAround([]), null);
 
@@ -81,9 +89,9 @@ try {
   // Today's walk (14 November 2026): the road to each street and the street.
   const st = (y, walkedAt = null) => ({ lines: [[[7.8, y], [7.8, y + 0.001]]], link: [[7.8, y - 0.001], [7.8, y]], walkedAt });
   const three = [st(51.7), st(51.71), st(51.72, 'x')];
-  check('the walk of the first two: two streets and their roads', Math.round(W.walkOf(three, 2) / 10) * 10, 440);
+  check('the walk of the first two: two streets and the road between, not the way there', Math.round(W.walkOf(three, 2) / 10) * 10, 330);
   check('a street without its road: only the street', Math.round(W.walkOf([{ lines: st(51.7).lines }], 1)), 111);
-  check('what is left of today: walked streets drop out', Math.round(W.walkOf(three, 3, true) / 10) * 10, 440);
+  check('what is left of today: walked streets drop out', Math.round(W.walkOf(three, 3, true) / 10) * 10, 330);
   check('lines measured', Math.round(W.lineMetres([[[7.8, 51.7], [7.8, 51.701]]])), 111);
 
   // On the road to a street: how far off, and how much is left along it.
