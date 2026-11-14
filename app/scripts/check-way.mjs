@@ -78,6 +78,30 @@ try {
   check('calmed the short way round', Math.round(W.easeAngle(350, 10, 0.5)), 0);
   check('the first reading as it is', W.easeAngle(null, 123), 123);
 
+  // Today's walk (14 November 2026): the road to each street and the street.
+  const st = (y, walkedAt = null) => ({ lines: [[[7.8, y], [7.8, y + 0.001]]], link: [[7.8, y - 0.001], [7.8, y]], walkedAt });
+  const three = [st(51.7), st(51.71), st(51.72, 'x')];
+  check('the walk of the first two: two streets and their roads', Math.round(W.walkOf(three, 2) / 10) * 10, 440);
+  check('a street without its road: only the street', Math.round(W.walkOf([{ lines: st(51.7).lines }], 1)), 111);
+  check('what is left of today: walked streets drop out', Math.round(W.walkOf(three, 3, true) / 10) * 10, 440);
+  check('lines measured', Math.round(W.lineMetres([[[7.8, 51.7], [7.8, 51.701]]])), 111);
+
+  // On the road to a street: how far off, and how much is left along it.
+  const road = [[7.8, 51.7], [7.8, 51.702], [7.803, 51.702]];
+  const on = W.alongLink([7.8, 51.701], road);
+  check('on the road, halfway up: about 110 m up, 210 m along', [Math.round(on.off), Math.round(on.left / 10) * 10], [0, 320]);
+  const beside = W.alongLink([7.8005, 51.7021], road);
+  check('beside the road round the corner: off by a little, the rest of the corner', [Math.round(beside.off), Math.round(beside.left / 10) * 10], [11, 170]);
+  check('no road: nothing', W.alongLink(P, [P]), null);
+  const target = { lines: [[[7.803, 51.702], [7.804, 51.702]]], link: road };
+  const g1 = W.goOn([7.8, 51.701], target);
+  check('on the road: follow it, no dashed line, the metres along it', [g1.via, g1.guide, Math.round(g1.m / 10) * 10, Math.round(g1.bearing)], ['road', null, 320, 0]);
+  const g2 = W.goOn([7.7985, 51.701], target);
+  check('off to the side: a dashed line to the road', [g2.via, Math.round(g2.bearing)], ['toRoad', 90]);
+  const g3 = W.goOn([7.8034, 51.7021], target);
+  check('at the street: no road, no line', [g3.via, g3.guide], ['street', null]);
+  check('a street without a road: straight to it', W.goOn([7.8, 51.701], { lines: target.lines }).via, 'street');
+
   const ring = W.circle(P, 20);
   check('a circle closes', ring[0], ring[ring.length - 1]);
   check('… at its radius', near(W.metres(P, ring[8]), 20, 0.5), true);

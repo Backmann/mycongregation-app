@@ -35,7 +35,8 @@ import {
   withTicks,
   type PartLike,
 } from '../../lib/division';
-import { metres, nearestOn, roundDistance, streetNow, wayTo, type LonLat } from '../../lib/way';
+import { goOn, metres, nearestOn, streetNow, walkOf, type LonLat } from '../../lib/way';
+import { useDistance } from '../../lib/useDistance';
 import { useStreetTicks } from '../../lib/useStreetTicks';
 import { useHere } from '../../lib/useHere';
 import { BRAND, INK, LINE, MUTED } from '../../components/reports/ReportBits';
@@ -117,16 +118,6 @@ export default function SharedPartScreen() {
 
 type Street = SharedPart['part']['streets'][number] & { pending: boolean };
 
-/** «90 м», «1,2 км» in the reader's language. */
-function useDistance() {
-  const { t, i18n } = useTranslation();
-  return (m: number) => {
-    const r = roundDistance(m);
-    const n = i18n.language.startsWith('en') ? String(r.n) : String(r.n).replace('.', ',');
-    return t(r.unit === 'km' ? 'territories.part.way.km' : 'territories.part.way.metres', { n });
-  };
-}
-
 function Part({
   d,
   streets,
@@ -157,7 +148,8 @@ function Part({
   const now = streetNow(ordered, at);
   const nowKey = now ? now.key : null;
   const nowStep = now ? now.step : 0;
-  const way = now && at ? wayTo(at, now.lines) : null;
+  // Along the road to it when one is on that road (14 November 2026).
+  const way = now && at ? goOn(at, now) : null;
   const fromStart = start && at ? metres(at, start) : null;
   const ownLines = streets.flatMap((x) => x.lines) as LonLat[][];
   const nearOwn = at ? (nearestOn(at, ownLines)?.m ?? Infinity) <= AT_STREETS_M : false;
@@ -194,6 +186,12 @@ function Part({
   }));
   const all: PartLike[] = [part, ...others];
   const toTake = partDone(part) ? streetsToTake(others, d.part.n) : [];
+  // Today's share (14 November 2026): about one outing from the start.
+  // Once today's streets are walked, the rest is no longer «for another time».
+  const todayRaw = typeof d.part.today === 'number' && d.part.today < streets.length ? d.part.today : null;
+  const today = todayRaw !== null && streets.slice(0, todayRaw).some((x) => !x.walkedAt) ? todayRaw : null;
+  const todayM = today !== null ? walkOf(streets as never, today) : null;
+  const leftTodayM = today !== null ? walkOf(streets as never, today, true) : null;
 
   // Kept the same between two readings of the compass: the map is not
   // handed thousands of houses again for a turn of the phone.
@@ -203,13 +201,20 @@ function Part({
         .filter((x) => x.lines && x.lines.length)
         .map((x) => ({ lines: x.lines ?? [], color: partColor(o.n), pale: true })),
     ),
-    ...streets.map((x) => ({
+    // The roads from street to street (14 November 2026): dashed, arrows on.
+    ...streets.flatMap((x, i) =>
+      x.link && x.link.length > 1
+        ? [{ lines: [x.link], color, link: true, walked: !!x.walkedAt, later: today !== null && i >= today }]
+        : [],
+    ),
+    ...streets.map((x, i) => ({
       lines: x.lines,
       color,
       walked: !!x.walkedAt,
       strong: x.key === nowKey && !first,
+      later: today !== null && i >= today,
     })),
-  ], [d.others, streets, color, nowKey, first]);
+  ], [d.others, streets, color, nowKey, first, today]);
   const dots: MapDot[] = useMemo(
     () =>
       streets.flatMap((x) => (x.dots ?? []).map(([lon, lat]) => ({ lon, lat, color, walked: !!x.walkedAt }))),
@@ -226,7 +231,7 @@ function Part({
     return out;
   }, [start, streets, color]);
   const mapHere: MapHere | null = at ? { at, accuracy: here.accuracy, heading: here.heading } : null;
-  const guide: LonLat[] | null = way && at && way.m > 15 && !first ? [at, way.to] : null;
+  const guide: LonLat[] | null = way && at && way.guide && !first ? [at, way.guide] : null;
 
   // What to frame. With «Вы здесь» on, the walker and his street — framed
   // again only when the street changes or he first appears, never on every
@@ -269,6 +274,13 @@ function Part({
             ? t('territories.division.partDone')
             : t('territories.division.streetsWalked', { walked: w.streetsWalked, count: w.streets })}
         </Text>
+        {today !== null && todayM !== null ? (
+          <Text style={[s.todayHead, { color }]}>
+            {today === 1
+              ? t('territories.part.way.todayOne', { dist: distanceText(todayM) })
+              : t('territories.part.way.today', { n: today, dist: distanceText(todayM) })}
+          </Text>
+        ) : null}
         {d.noCalls > 0 ? (
           <View style={s.nc}>
             <Ionicons name="hand-left-outline" size={15} color="#c2410c" />
@@ -358,6 +370,9 @@ function Part({
               {way ? (
                 <Text style={[s.nowSub, { color: HERE }]}>
                   {way.m <= 25 ? t('territories.part.way.onIt') : t('territories.part.way.away', { dist: distanceText(way.m) })}
+                  {leftTodayM !== null && leftTodayM > 0 && nowStep <= (today ?? 0)
+                    ? ` · ${t('territories.part.way.leftToday', { dist: distanceText(leftTodayM) })}`
+                    : ''}
                 </Text>
               ) : null}
             </View>
@@ -411,11 +426,19 @@ function Part({
 
       <View style={s.card}>
         <Text style={s.h}>{t('territories.part.streets')}</Text>
-        {ordered.map((x) => {
+        {ordered.map((x, i) => {
           const isNow = x.key === nowKey && !first;
           const shown = view === x.key;
           return (
-            <View key={x.key} style={[s.street, isNow && s.streetNow, shown && s.streetShown]}>
+            <View key={x.key}>
+            {today !== null && i === today ? (
+              <View style={s.laterRow}>
+                <View style={s.laterLine} />
+                <Text style={s.laterText}>{t('territories.part.way.later')}</Text>
+                <View style={s.laterLine} />
+              </View>
+            ) : null}
+            <View style={[s.street, isNow && s.streetNow, shown && s.streetShown, today !== null && i >= today && s.streetLater]}>
               <Text style={[s.step, { color: x.walkedAt ? MUTED : color }]}>{x.step}</Text>
               <Pressable
                 onPress={() => void ticks.tick(x.key, !x.walkedAt)}
@@ -439,6 +462,7 @@ function Part({
                 {isNow ? <Text style={[s.nextTag, { color }]}>{t('territories.part.way.next')}</Text> : null}
               </Pressable>
               {x.walkedAt && !x.pending ? <Text style={s.walkedAt}>{clockOf(x.walkedAt)}</Text> : null}
+            </View>
             </View>
           );
         })}
@@ -601,6 +625,11 @@ const s = StyleSheet.create({
     borderRadius: 10,
   },
   streetNow: { backgroundColor: '#f0fdfa' },
+  streetLater: { opacity: 0.6 },
+  todayHead: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13, marginTop: 6 },
+  laterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10, marginBottom: 2 },
+  laterLine: { flex: 1, height: 1, backgroundColor: LINE },
+  laterText: { fontFamily: 'Manrope_700Bold', fontSize: 11.5, color: MUTED, textTransform: 'uppercase', letterSpacing: 0.4 },
   streetShown: { backgroundColor: '#eff6ff' },
   nextTag: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.4 },
   box: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: LINE, alignItems: 'center', justifyContent: 'center' },

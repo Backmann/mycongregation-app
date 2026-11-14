@@ -57,6 +57,10 @@ export interface MapRoute {
   strong?: boolean;
   /** Another pair's street: drawn pale and thin. */
   pale?: boolean;
+  /** The road from one street to the next: dashed, with arrows the way to go. */
+  link?: boolean;
+  /** A street for another day (after today's share): drawn fainter. */
+  later?: boolean;
 }
 
 /**
@@ -202,7 +206,14 @@ function routesOf(routes: MapRoute[]) {
     type: 'FeatureCollection',
     features: routes.map((r) => ({
       type: 'Feature',
-      properties: { color: r.color, walked: !!r.walked, strong: !!r.strong, pale: !!r.pale },
+      properties: {
+        color: r.color,
+        walked: !!r.walked,
+        strong: !!r.strong,
+        pale: !!r.pale,
+        link: !!r.link,
+        later: !!r.later,
+      },
       geometry: { type: 'MultiLineString', coordinates: r.lines },
     })),
   };
@@ -443,6 +454,41 @@ function WebMap({
           });
           m.addSource('routes', { type: 'geojson', data: routesOf(routes) });
           // The street to walk now: a wide soft halo under it.
+          // The roads between streets: dashed, under the streets, arrows on them.
+          m.addLayer({
+            id: 'links-line',
+            type: 'line',
+            source: 'routes',
+            filter: ['==', ['get', 'link'], true],
+            layout: { 'line-cap': 'butt', 'line-join': 'round' },
+            paint: {
+              'line-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
+              'line-width': 3,
+              'line-opacity': ['case', ['any', ['get', 'walked'], ['get', 'later']], 0.35, 0.85],
+              'line-dasharray': [2, 1.5],
+            },
+          });
+          m.addLayer({
+            id: 'links-arrows',
+            type: 'symbol',
+            source: 'routes',
+            filter: ['all', ['==', ['get', 'link'], true], ['!', ['get', 'walked']]],
+            layout: {
+              'symbol-placement': 'line',
+              'symbol-spacing': 70,
+              'text-field': '›',
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': 20,
+              'text-keep-upright': false,
+              'text-allow-overlap': true,
+            },
+            paint: {
+              'text-color': ['get', 'color'],
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 1.5,
+              'text-opacity': ['case', ['get', 'later'], 0.4, 1],
+            },
+          });
           m.addLayer({
             id: 'routes-halo',
             type: 'line',
@@ -455,11 +501,12 @@ function WebMap({
             id: 'routes-line',
             type: 'line',
             source: 'routes',
+            filter: ['!=', ['get', 'link'], true],
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
               'line-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
               'line-width': ['case', ['get', 'pale'], 3, ['get', 'walked'], 4, ['get', 'strong'], 8, 6],
-              'line-opacity': ['case', ['get', 'pale'], 0.35, ['get', 'walked'], 0.55, 0.9],
+              'line-opacity': ['case', ['get', 'pale'], 0.35, ['get', 'walked'], 0.55, ['get', 'later'], 0.45, 0.9],
             },
           });
           m.addSource('guide', { type: 'geojson', data: guideOf(guide) });

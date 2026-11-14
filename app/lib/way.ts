@@ -94,6 +94,61 @@ export function wayTo(here: LonLat, lines: LonLat[][]): { to: LonLat; m: number;
 }
 
 /**
+ * Where one stands against the road to a street (14 November 2026): how
+ * far off it, the nearest point on it, and the metres still to go along it
+ * from there to the street.
+ */
+export function alongLink(
+  here: LonLat,
+  link: LonLat[],
+): { off: number; at: LonLat; left: number; next: LonLat } | null {
+  if (link.length < 2) return null;
+  const n = nearestOn(here, [link]);
+  if (!n) return null;
+  // The segment the nearest point lies on, then the rest of the line.
+  let seg = 0;
+  let best = Infinity;
+  for (let i = 0; i < link.length - 1; i++) {
+    const d = nearestOn(n.at, [[link[i], link[i + 1]]])?.m ?? Infinity;
+    if (d < best) {
+      best = d;
+      seg = i;
+    }
+  }
+  let left = metres(n.at, link[seg + 1]);
+  for (let i = seg + 1; i < link.length - 1; i++) left += metres(link[i], link[i + 1]);
+  return { off: n.m, at: n.at, left, next: link[seg + 1] };
+}
+
+/** Near enough to the road to a street to be on it. */
+export const ON_LINK_M = 40;
+
+/**
+ * How to go on to the street of now (14 November 2026): along its road
+ * when one is on that road, to the road when it is nearer than the street,
+ * else straight to the street. `guide`: where a dashed line should lead
+ * (null: none, the road itself shows the way); `m`: metres still to go;
+ * `bearing`: which way to turn.
+ */
+export function goOn(
+  here: LonLat,
+  street: { lines: LonLat[][]; link?: LonLat[] | null },
+): { m: number; bearing: number; guide: LonLat | null; via: 'street' | 'road' | 'toRoad' } | null {
+  const direct = wayTo(here, street.lines);
+  if (!direct) return null;
+  const road = street.link ? alongLink(here, street.link) : null;
+  if (direct.m > ON_STREET_M && road) {
+    if (road.off <= ON_LINK_M) {
+      const ahead = metres(here, road.next) > 5 ? road.next : road.at;
+      return { m: road.left + road.off, bearing: bearing(here, ahead), guide: null, via: 'road' };
+    }
+    if (road.off < direct.m)
+      return { m: road.off + road.left, bearing: bearing(here, road.at), guide: road.at, via: 'toRoad' };
+  }
+  return { m: direct.m, bearing: direct.bearing, guide: direct.m > 15 ? direct.to : null, via: 'street' };
+}
+
+/**
  * A distance rounded the way one says it: tens of metres below a
  * kilometre, tenths of a kilometre above («90 m», «1.2 km»); the words
  * are the screen's.
@@ -101,6 +156,31 @@ export function wayTo(here: LonLat, lines: LonLat[][]): { to: LonLat; m: number;
 export function roundDistance(m: number): { unit: 'm' | 'km'; n: number } {
   if (m < 1000) return { unit: 'm', n: Math.max(10, Math.round(m / 10) * 10) };
   return { unit: 'km', n: Math.round(m / 100) / 10 };
+}
+
+/** Metres along lines. */
+export function lineMetres(lines: LonLat[][]): number {
+  let m = 0;
+  for (const l of lines) for (let i = 1; i < l.length; i++) m += metres(l[i - 1], l[i]);
+  return m;
+}
+
+/**
+ * The walk of some streets in order (14 November 2026): the road to each
+ * (its `link`) and the street itself, in metres — of the first `upto`, or
+ * of those not yet walked among them.
+ */
+export function walkOf(
+  streets: { lines: LonLat[][]; link?: LonLat[] | null; walkedAt?: string | null }[],
+  upto: number,
+  open = false,
+): number {
+  let m = 0;
+  streets.slice(0, upto).forEach((s) => {
+    if (open && s.walkedAt) return;
+    m += lineMetres(s.lines) + (s.link ? lineMetres([s.link]) : 0);
+  });
+  return m;
 }
 
 /** The box round some points, for the map to show them: [[w, s], [e, n]]. */
