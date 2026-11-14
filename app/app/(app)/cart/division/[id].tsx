@@ -51,6 +51,7 @@ import {
   PARTS_MIN,
   routeTo,
   streetsToTake,
+  tooFine,
   walkedOf,
   walkingOrder,
   withTicks,
@@ -330,6 +331,10 @@ export default function DivisionScreen() {
               failed={preview.error ? extractErrorMessage(preview.error) : null}
               smaller={smaller}
               onSmaller={toggleSmaller}
+              onFewer={(n) => {
+                setCount(n);
+                setSmaller((was) => was.filter((x) => x <= n));
+              }}
             />
 
             {d.walked > 0 ? (
@@ -537,19 +542,34 @@ function PreviewParts({
   failed,
   smaller,
   onSmaller,
+  onFewer,
 }: {
   preview: DivisionPreview | null;
   loading: boolean;
   failed: string | null;
   smaller: number[];
   onSmaller: (n: number) => void;
+  onFewer: (n: number) => void;
 }) {
   const { t } = useTranslation();
   if (failed) return <Text style={s.error}>{failed}</Text>;
   if (!preview) return loading ? <ActivityIndicator color={BRAND} style={{ marginTop: 12 }} /> : null;
   const doors = preview.parts.map((p) => p.doors);
+  const fine = tooFine(preview.parts, smaller);
   return (
     <View style={s.preview}>
+      {fine ? (
+        <View style={s.fine}>
+          <Text style={s.fineText}>
+            {fine.why === 'small'
+              ? t('territories.division.tooSmall', { count: fine.least, pairs: preview.parts.length })
+              : t('territories.division.tooUneven', { count: preview.parts.length })}
+          </Text>
+          <Pressable onPress={() => onFewer(fine.fewer)} style={s.fineBtn} accessibilityRole="button">
+            <Text style={s.fineBtnText}>{t('territories.division.fewer', { count: fine.fewer })}</Text>
+          </Pressable>
+        </View>
+      ) : null}
       <Text style={s.previewHead}>
         {t('territories.division.previewDoors', { doors: doors.join(' · ') })}
         {preview.start
@@ -771,6 +791,10 @@ const s = StyleSheet.create({
   modeTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: INK },
   modeHint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 2, lineHeight: 17 },
   preview: { marginTop: 12, gap: 8 },
+  fine: { backgroundColor: '#fff7ed', borderRadius: 12, padding: 10, gap: 8 },
+  fineText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#9a3412', lineHeight: 17 },
+  fineBtn: { alignSelf: 'flex-start', borderRadius: 999, backgroundColor: '#9a3412', paddingHorizontal: 12, paddingVertical: 6 },
+  fineBtnText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12.5, color: '#fff' },
   previewHead: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: '#15803d' },
   previewPart: { borderLeftWidth: 4, borderRadius: 10, backgroundColor: '#f8fafc', padding: 10, gap: 4 },
   previewTop: { flexDirection: 'row', alignItems: 'center' },

@@ -8040,7 +8040,13 @@
         "button": "You are here",
         "private": "Your place shows on this phone only and is sent nowhere.",
         "failed": "The phone did not share the place — allow location for the site."
-      }
+      },
+      "tooUneven_one": "It does not divide evenly into {{count}} pair — too few streets.",
+      "tooUneven_other": "It does not divide evenly into {{count}} pairs — too few streets.",
+      "fewer_one": "Divide into {{count}} pair",
+      "fewer_other": "Divide into {{count}} pairs",
+      "tooSmall_one": "One pair would get only {{count}} door — the territory is small for {{pairs}} pairs.",
+      "tooSmall_other": "One pair would get only {{count}} doors — the territory is small for {{pairs}} pairs."
     },
     "part": {
       "gone": "This link no longer works",
