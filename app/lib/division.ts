@@ -139,6 +139,67 @@ export function rangeText(s: {
   return s.range ? fromTo(s.range) : null;
 }
 
+type Span = { from: string; to: string; lo: number; hi: number };
+const spanOf = (r: { from: string; to: string }): Span => ({
+  ...r,
+  lo: parseInt(r.from, 10),
+  hi: parseInt(r.to, 10),
+});
+
+/**
+ * A part's streets in one line (14 November 2026): the pieces of one street
+ * a part walks are said once — «Irisweg 3–9 · 2–46», not four places.
+ * Pieces next to each other join unless another part has numbers of that
+ * street and side between them; then they stay apart, «3–9, 21–31».
+ * The walking order and the ticks keep each piece on its own.
+ */
+export function partSummary(parts: PartLike[], n: number): string[] {
+  const own = parts.find((p) => p.n === n);
+  if (!own) return [];
+  type Kind = 'odd' | 'even' | 'all';
+  const spansOf = (s: StreetLike): [Kind, Span][] => {
+    if (s.ranges)
+      return (['odd', 'even'] as const).flatMap((k) => (s.ranges![k] ? [[k, spanOf(s.ranges![k]!)] as [Kind, Span]] : []));
+    return s.range ? [['all', spanOf(s.range)]] : [];
+  };
+  const others = parts
+    .filter((p) => p.n !== n)
+    .flatMap((p) => p.streets.flatMap((s) => spansOf(s).map(([k, x]) => ({ name: s.name, k, x }))));
+  const names: string[] = [];
+  const by = new Map<string, Record<Kind, Span[]>>();
+  for (const s of own.streets) {
+    if (!by.has(s.name)) {
+      names.push(s.name);
+      by.set(s.name, { odd: [], even: [], all: [] });
+    }
+    for (const [k, x] of spansOf(s)) by.get(s.name)![k].push(x);
+  }
+  const joined = (name: string, k: Kind, spans: Span[]): Span[] => {
+    const sorted = [...spans].sort((a, b) => a.lo - b.lo || a.hi - b.hi);
+    const out: Span[] = [];
+    for (const x of sorted) {
+      const last = out[out.length - 1];
+      const between =
+        last &&
+        !Number.isNaN(last.hi) &&
+        !Number.isNaN(x.lo) &&
+        !others.some((o) => o.name === name && o.k === k && o.x.hi > last.hi && o.x.lo < x.lo);
+      if (last && between) {
+        if (x.hi > last.hi || (x.hi === last.hi && x.to > last.to)) out[out.length - 1] = { ...last, to: x.to, hi: x.hi };
+      } else out.push(x);
+    }
+    return out;
+  };
+  return names.map((name) => {
+    const g = by.get(name)!;
+    const text = (['odd', 'even', 'all'] as const)
+      .map((k) => joined(name, k, g[k]).map(fromTo).join(', '))
+      .filter(Boolean)
+      .join(' · ');
+    return text ? `${name} ${text}` : name;
+  });
+}
+
 /**
  * The pair across the road: another part walking the other side of the same
  * main road. Said on the street («напротив идёт пара 1») so two pairs on one

@@ -68,6 +68,30 @@ try {
     D.rangeText(st({ ranges: { odd: null, even: { from: '80', to: '104a' } } })), '80–104a');
   check('a lone house a side', D.rangeText(st({ ranges: { odd: { from: '3', to: '3' }, even: null } })), '3');
   check('ranges known, none of them: no range, not the old one', D.rangeText(st({ range: { from: '2', to: '190a' }, ranges: { odd: null, even: null } })), null);
+
+  // A part's streets in one line (14 November 2026): its pieces of a street said once.
+  const r = (odd, even) => ({ odd: odd && { from: odd[0], to: odd[1] }, even: even && { from: even[0], to: even[1] } });
+  const pc = (name, ranges, o = {}) => st({ key: name + Math.random(), name, ranges, ...o });
+  const iris = [
+    part(3, [pc('Irisweg', r(['13', '21'], ['60', '66'])), pc('Irisweg', r(null, ['48', '58'])), pc('Asternstraße', r(null, ['2', '12']))]),
+    part(4, [pc('Irisweg', r(['3', '9'], ['38', '46'])), pc('Irisweg', r(null, ['20', '36'])), pc('Irisweg', r(null, ['2', '18'])), pc('Asternstraße', r(null, ['14', '22']))]),
+  ];
+  check('pieces next to each other: one street, one range a side', D.partSummary(iris, 4),
+    ['Irisweg 3–9 · 2–46', 'Asternstraße 14–22']);
+  check('numbers of another pair between: the pieces stay apart',
+    D.partSummary([part(1, [pc('Lang', r(['1', '9'], null)), pc('Lang', r(['21', '31'], null))]), part(2, [pc('Lang', r(['11', '19'], null))])], 1),
+    ['Lang 1–9, 21–31']);
+  check('the other side of the street is no obstacle',
+    D.partSummary([part(1, [pc('Lang', r(['1', '9'], null)), pc('Lang', r(['11', '19'], null))]), part(2, [pc('Lang', r(null, ['2', '20']))])], 1),
+    ['Lang 1–19']);
+  check('pieces that touch, «65a» and «65»: one range',
+    D.partSummary([part(1, [pc('Sandweg', r(['65a', '87'], null)), pc('Sandweg', r(['55', '65'], null))])], 1),
+    ['Sandweg 55–87']);
+  check('no numbers: the name once',
+    D.partSummary([part(1, [pc('Feldweg', undefined), pc('Feldweg', undefined)])], 1), ['Feldweg']);
+  check('an old division, one range a street',
+    D.partSummary([part(1, [pc('Alt', undefined, { range: { from: '2', to: '10' } }), pc('Alt', undefined, { range: { from: '12', to: '20' } })])], 1),
+    ['Alt 2–20']);
   const road = (key, parity, toward) => st({ key, name: 'Heessener Straße', side: { parity, toward } });
   const across = [part(1, [road('h@1', 'odd', 's')]), part(2, [road('h@2', 'even', 'n'), st({ key: 'd', name: 'Dillweg' })])];
   check('the pair across the road, by numbers', D.partAcross(across, 2, across[1].streets[0]), 1);
