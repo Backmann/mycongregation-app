@@ -61,6 +61,13 @@ try {
   check('a range of numbers', D.rangeText(st({ range: { from: '2', to: '84' } })), '2–84');
   check('one number is no range', D.rangeText(st({ range: { from: '7', to: '7' } })), '7');
   check('no numbers, no range', D.rangeText(st({ range: null })), null);
+  // Numbers as the doors say them (14 November 2026): odd and even each on its own.
+  const both = { odd: { from: '1', to: '35' }, even: { from: '2', to: '40' } };
+  check('odd and even each a range', D.rangeText(st({ range: { from: '1', to: '40' }, ranges: both })), '1–35 · 2–40');
+  check('one side of a main road: its row only',
+    D.rangeText(st({ ranges: { odd: null, even: { from: '80', to: '104a' } } })), '80–104a');
+  check('a lone house a side', D.rangeText(st({ ranges: { odd: { from: '3', to: '3' }, even: null } })), '3');
+  check('ranges known, none of them: no range, not the old one', D.rangeText(st({ range: { from: '2', to: '190a' }, ranges: { odd: null, even: null } })), null);
   const road = (key, parity, toward) => st({ key, name: 'Heessener Straße', side: { parity, toward } });
   const across = [part(1, [road('h@1', 'odd', 's')]), part(2, [road('h@2', 'even', 'n'), st({ key: 'd', name: 'Dillweg' })])];
   check('the pair across the road, by numbers', D.partAcross(across, 2, across[1].streets[0]), 1);
