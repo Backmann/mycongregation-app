@@ -12,6 +12,7 @@ import {
   type MapLibreMap,
 } from '../../lib/map-libs';
 import { boxOf, TONE_COLOR, type TerritoryTone } from '../../lib/territory-view';
+import { beam, boxAround, circle, type LonLat } from '../../lib/way';
 
 export interface MapShape {
   id: string;
@@ -52,6 +53,21 @@ export interface MapRoute {
   color: string;
   /** Walked: drawn thinner and lighter, so what is left stands out. */
   walked?: boolean;
+  /** The street to walk now: drawn with a halo. */
+  strong?: boolean;
+  /** Another pair's street: drawn pale and thin. */
+  pale?: boolean;
+}
+
+/**
+ * The walker on the map (14 November 2026): where he stands, how sure the
+ * phone is of it (metres), and where the phone points (0 = north). Drawn
+ * on his own screen only.
+ */
+export interface MapHere {
+  at: LonLat;
+  accuracy: number | null;
+  heading: number | null;
 }
 
 /** Houses no territory holds, from the checks (13 November 2026). */
@@ -88,6 +104,11 @@ export function TerritoryMap({
   points,
   routes,
   dots,
+  outline,
+  fit,
+  fitKey,
+  here,
+  guide,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -111,6 +132,19 @@ export function TerritoryMap({
   routes?: MapRoute[];
   /** The houses of a division, each in its part's colour. */
   dots?: MapDot[];
+  /** The territory as a line only, no tint over the streets. */
+  outline?: boolean;
+  /**
+   * Show these points rather than the territory (a pair's own streets, one
+   * street, the walker and his next street); framed again whenever
+   * `fitKey` changes. Null: the territory, as before.
+   */
+  fit?: LonLat[] | null;
+  fitKey?: string;
+  /** The walker: his place, its doubt and where the phone points. */
+  here?: MapHere | null;
+  /** The way to the next street: a dashed line. */
+  guide?: LonLat[] | null;
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -126,6 +160,11 @@ export function TerritoryMap({
       points={points ?? EMPTY_POINTS}
       routes={routes ?? EMPTY_ROUTES}
       dots={dots ?? EMPTY_DOTS}
+      outline={!!outline}
+      fit={fit ?? null}
+      fitKey={fitKey ?? ''}
+      here={here ?? null}
+      guide={guide ?? null}
     />
   );
 }
@@ -163,9 +202,43 @@ function routesOf(routes: MapRoute[]) {
     type: 'FeatureCollection',
     features: routes.map((r) => ({
       type: 'Feature',
-      properties: { color: r.color, walked: !!r.walked },
+      properties: { color: r.color, walked: !!r.walked, strong: !!r.strong, pale: !!r.pale },
       geometry: { type: 'MultiLineString', coordinates: r.lines },
     })),
+  };
+}
+
+const HERE_BLUE = '#2563eb';
+
+function hereOf(h: MapHere | null) {
+  if (!h) return { type: 'FeatureCollection', features: [] };
+  const features: unknown[] = [];
+  if (h.accuracy && h.accuracy > 5)
+    features.push({
+      type: 'Feature',
+      properties: { part: 'doubt' },
+      geometry: { type: 'Polygon', coordinates: [circle(h.at, Math.min(h.accuracy, 150))] },
+    });
+  if (h.heading !== null)
+    features.push({
+      type: 'Feature',
+      properties: { part: 'beam' },
+      geometry: { type: 'Polygon', coordinates: [beam(h.at, h.heading)] },
+    });
+  return { type: 'FeatureCollection', features };
+}
+
+function hereDotOf(h: MapHere | null) {
+  return {
+    type: 'FeatureCollection',
+    features: h ? [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: h.at } }] : [],
+  };
+}
+
+function guideOf(g: LonLat[] | null) {
+  return {
+    type: 'FeatureCollection',
+    features: g && g.length > 1 ? [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: g } }] : [],
   };
 }
 
@@ -216,6 +289,11 @@ function WebMap({
   points,
   routes,
   dots,
+  outline,
+  fit,
+  fitKey,
+  here,
+  guide,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -228,6 +306,11 @@ function WebMap({
   points: MapPoint[];
   routes: MapRoute[];
   dots: MapDot[];
+  outline: boolean;
+  fit: LonLat[] | null;
+  fitKey: string;
+  here: MapHere | null;
+  guide: LonLat[] | null;
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -311,7 +394,7 @@ function WebMap({
             id: 'terr-fill',
             type: 'fill',
             source: 'terr',
-            paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.28 },
+            paint: { 'fill-color': ['get', 'color'], 'fill-opacity': outline ? 0 : 0.28 },
           });
           m.addLayer({
             id: 'terr-line',
@@ -359,6 +442,15 @@ function WebMap({
             paint: { 'text-color': '#7c2d12', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
           });
           m.addSource('routes', { type: 'geojson', data: routesOf(routes) });
+          // The street to walk now: a wide soft halo under it.
+          m.addLayer({
+            id: 'routes-halo',
+            type: 'line',
+            source: 'routes',
+            filter: ['==', ['get', 'strong'], true],
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': ['get', 'color'], 'line-width': 18, 'line-opacity': 0.22 },
+          });
           m.addLayer({
             id: 'routes-line',
             type: 'line',
@@ -366,9 +458,17 @@ function WebMap({
             layout: { 'line-cap': 'round', 'line-join': 'round' },
             paint: {
               'line-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
-              'line-width': ['case', ['get', 'walked'], 4, 6],
-              'line-opacity': ['case', ['get', 'walked'], 0.55, 0.9],
+              'line-width': ['case', ['get', 'pale'], 3, ['get', 'walked'], 4, ['get', 'strong'], 8, 6],
+              'line-opacity': ['case', ['get', 'pale'], 0.35, ['get', 'walked'], 0.55, 0.9],
             },
+          });
+          m.addSource('guide', { type: 'geojson', data: guideOf(guide) });
+          m.addLayer({
+            id: 'guide-line',
+            type: 'line',
+            source: 'guide',
+            layout: { 'line-cap': 'round' },
+            paint: { 'line-color': HERE_BLUE, 'line-width': 3, 'line-dasharray': [1.5, 1.5] },
           });
           m.addSource('dots', { type: 'geojson', data: dotsOf(dots) });
           m.addLayer({
@@ -381,6 +481,16 @@ function WebMap({
               'circle-opacity': ['case', ['get', 'walked'], 0.45, 0.95],
               'circle-stroke-color': '#ffffff',
               'circle-stroke-width': 0.8,
+            },
+          });
+          m.addSource('here', { type: 'geojson', data: hereOf(here) });
+          m.addLayer({
+            id: 'here-fill',
+            type: 'fill',
+            source: 'here',
+            paint: {
+              'fill-color': HERE_BLUE,
+              'fill-opacity': ['match', ['get', 'part'], 'beam', 0.3, 0.1],
             },
           });
           m.addSource('points', { type: 'geojson', data: pointsOf(points) });
@@ -421,6 +531,18 @@ function WebMap({
               'text-allow-overlap': true,
             },
             paint: { 'text-color': '#ffffff' },
+          });
+          m.addSource('here-dot', { type: 'geojson', data: hereDotOf(here) });
+          m.addLayer({
+            id: 'here-dot',
+            type: 'circle',
+            source: 'here-dot',
+            paint: {
+              'circle-radius': 8,
+              'circle-color': HERE_BLUE,
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-width': 3,
+            },
           });
           m.on('click', 'terr-fill', (e: unknown) => {
             const f = (e as { features?: { properties?: { id?: string } }[] }).features?.[0];
@@ -465,11 +587,26 @@ function WebMap({
     map.current.getSource('points')?.setData(pointsOf(points));
     map.current.getSource('routes')?.setData(routesOf(routes));
     map.current.getSource('dots')?.setData(dotsOf(dots));
-  }, [ready, shapes, boundary, spots, points, routes, dots]);
+    map.current.getSource('guide')?.setData(guideOf(guide));
+    map.current.getSource('here')?.setData(hereOf(here));
+    map.current.getSource('here-dot')?.setData(hereDotOf(here));
+  }, [ready, shapes, boundary, spots, points, routes, dots, guide, here]);
+
+  // The view of chosen points (a pair's streets, one street, the walker and
+  // his next street), framed again only when the caller says what changed.
+  const fitRef = useRef(fit);
+  fitRef.current = fit;
+  useEffect(() => {
+    if (!ready || !map.current) return;
+    const b = fitRef.current ? boxAround(fitRef.current) : null;
+    if (!b) return;
+    map.current.fitBounds(b, { padding: 36, animate: true, duration: 600, maxZoom: 17.5 });
+  }, [ready, fitKey]);
 
   // The view: the territory in focus, or everything.
   useEffect(() => {
     if (!ready || !map.current || !box) return;
+    if (fitRef.current && fitRef.current.length) return;
     if (place) {
       // About 1.2 km across: the spot and the territories around it (a
       // spot is listed up to a few hundred metres from the nearest border).

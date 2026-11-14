@@ -8696,7 +8696,10 @@ export interface SharedPart {
   others: {
     n: number;
     untouched: boolean;
-    streets: Pick<DivisionStreet, 'key' | 'name' | 'range' | 'ranges' | 'side' | 'houses'>[];
+    streets: (Pick<DivisionStreet, 'key' | 'name' | 'range' | 'ranges' | 'side' | 'houses'> & {
+      /** Drawn pale on the pair's map (14 November 2026); absent from an older server. */
+      lines?: [number, number][][];
+    })[];
   }[];
   noCalls: number;
   congregationId: string;

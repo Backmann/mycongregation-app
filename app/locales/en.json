@@ -8055,11 +8055,32 @@
       "today": "Your part for today",
       "streets": "Your streets",
       "tapHint": "Tick a street once it is walked — every pair sees it. Who ticked it is not kept. Without a signal the tick waits on the phone.",
-      "route": "Route to your part",
       "which_one": "pair {{n}} of {{count}}",
       "which_other": "pair {{n}} of {{count}}",
       "noCalls_one": "Your streets have {{count}} do-not-call address — the conductor will name it.",
-      "noCalls_other": "Your streets have {{count}} do-not-call addresses — the conductor will name them."
+      "noCalls_other": "Your streets have {{count}} do-not-call addresses — the conductor will name them.",
+      "way": {
+        "first": "First",
+        "getThere": "Get to the start",
+        "startAway": "Start — {{dist}} away",
+        "route": "Route to the start",
+        "now": "Now · street {{n}} of {{count}}",
+        "toNext": "to street {{n}} · {{dist}}",
+        "onIt": "You are on this street",
+        "away": "{{dist}} from here",
+        "done": "Walked",
+        "show": "On the map",
+        "mine": "My streets",
+        "whole": "Whole territory",
+        "allDone": "All your streets are walked",
+        "next": "next",
+        "yours": "Your streets · {{count}}",
+        "arrowPhone": "The arrow shows the way from where the phone points",
+        "arrowMap": "The arrow follows the map, north up",
+        "beam": "The blue beam on the map is where the phone points.",
+        "metres": "{{n}} m",
+        "km": "{{n}} km"
+      }
     }
   }
 }
