@@ -8046,7 +8046,8 @@
       "fewer_one": "Divide into {{count}} pair",
       "fewer_other": "Divide into {{count}} pairs",
       "tooSmall_one": "One pair would get only {{count}} door — the territory is small for {{pairs}} pairs.",
-      "tooSmall_other": "One pair would get only {{count}} doors — the territory is small for {{pairs}} pairs."
+      "tooSmall_other": "One pair would get only {{count}} doors — the territory is small for {{pairs}} pairs.",
+      "sources": "Map data sources"
     },
     "part": {
       "gone": "This link no longer works",

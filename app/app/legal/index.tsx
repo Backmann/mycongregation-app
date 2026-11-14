@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import {
   LEGAL,
   LEGAL_CHROME,
@@ -18,7 +18,7 @@ import {
 import { getCurrentLanguage } from '../../lib/i18n';
 
 const LANGS: Lang[] = ['ru', 'de', 'en'];
-const DOCS: DocKey[] = ['impressum', 'privacy', 'terms', 'disclaimer'];
+const DOCS: DocKey[] = ['impressum', 'privacy', 'terms', 'disclaimer', 'sources'];
 
 const LINK_RE = /(https?:\/\/[^\s]+)/;
 
@@ -46,7 +46,11 @@ export default function LegalScreen() {
   const [lang, setLang] = useState<Lang>(
     LANGS.includes(current) ? current : 'de',
   );
-  const [docKey, setDocKey] = useState<DocKey>('privacy');
+  // A link may open one document: /legal?doc=sources (the map's data sources).
+  const { doc: asked } = useLocalSearchParams<{ doc?: string }>();
+  const [docKey, setDocKey] = useState<DocKey>(
+    DOCS.includes(asked as DocKey) ? (asked as DocKey) : 'privacy',
+  );
   const doc = LEGAL[lang][docKey];
   const chrome = LEGAL_CHROME[lang];
 

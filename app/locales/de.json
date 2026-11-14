@@ -8046,7 +8046,8 @@
       "fewer_one": "Auf {{count}} Paar teilen",
       "fewer_other": "Auf {{count}} Paare teilen",
       "tooSmall_one": "Ein Paar bekäme nur {{count}} Tür — das Gebiet ist klein für {{pairs}} Paare.",
-      "tooSmall_other": "Ein Paar bekäme nur {{count}} Türen — das Gebiet ist klein für {{pairs}} Paare."
+      "tooSmall_other": "Ein Paar bekäme nur {{count}} Türen — das Gebiet ist klein für {{pairs}} Paare.",
+      "sources": "Datenquellen der Karte"
     },
     "part": {
       "gone": "Der Link gilt nicht mehr",

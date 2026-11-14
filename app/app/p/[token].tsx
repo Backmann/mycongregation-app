@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -157,6 +157,7 @@ function Part({
 }) {
   const { t } = useTranslation();
   const [taking, setTaking] = useState(false);
+  const router = useRouter();
   const color = partColor(d.part.n);
   const part = { ...d.part, streets };
   const w = walkedOf([part]);
@@ -201,6 +202,13 @@ function Part({
           </Text>
         </View>
       ) : null}
+      <Text
+        style={s.sources}
+        onPress={() => router.push('/legal?doc=sources' as never)}
+        accessibilityRole="link"
+      >
+        {t('territories.division.sources')}
+      </Text>
       <View style={[s.card, { borderLeftColor: color }]}>
         <Text style={s.kicker}>{t('territories.part.today')}</Text>
         <Text style={s.title}>
@@ -346,6 +354,7 @@ const s = StyleSheet.create({
   hereBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, borderWidth: 1, borderColor: HERE, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: '#fff' },
   hereOn: { backgroundColor: HERE },
   hereText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: HERE },
+  sources: { fontFamily: 'Manrope_500Medium', fontSize: 11.5, color: BRAND, textDecorationLine: 'underline' },
   hereNote: { flex: 1, minWidth: 160, fontFamily: 'Manrope_500Medium', fontSize: 11.5, color: MUTED },
   takeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: BRAND, borderRadius: 16, paddingVertical: 12, backgroundColor: '#fff' },
   takeText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: BRAND },
