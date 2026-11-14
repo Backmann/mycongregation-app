@@ -8055,11 +8055,32 @@
       "today": "Ihr Teil für heute",
       "streets": "Ihre Straßen",
       "tapHint": "Eine Straße abhaken, wenn sie bearbeitet ist — alle Paare sehen es. Wer abgehakt hat, wird nicht gespeichert. Ohne Netz wartet der Haken auf dem Handy.",
-      "route": "Route zu Ihrem Teil",
       "which_one": "Paar {{n}} von {{count}}",
       "which_other": "Paar {{n}} von {{count}}",
       "noCalls_one": "In Ihren Straßen ist {{count}} Adresse «nicht besuchen» — der Leiter nennt sie.",
-      "noCalls_other": "In Ihren Straßen sind {{count}} Adressen «nicht besuchen» — der Leiter nennt sie."
+      "noCalls_other": "In Ihren Straßen sind {{count}} Adressen «nicht besuchen» — der Leiter nennt sie.",
+      "way": {
+        "first": "Zuerst",
+        "getThere": "Zum Startpunkt",
+        "startAway": "Startpunkt — {{dist}} entfernt",
+        "route": "Route zum Startpunkt",
+        "now": "Jetzt · Straße {{n}} von {{count}}",
+        "toNext": "zu Straße {{n}} · {{dist}}",
+        "onIt": "Sie sind in dieser Straße",
+        "away": "{{dist}} von hier",
+        "done": "Bearbeitet",
+        "show": "Auf der Karte",
+        "mine": "Meine Straßen",
+        "whole": "Ganzes Gebiet",
+        "allDone": "Alle Ihre Straßen sind bearbeitet",
+        "next": "als Nächstes",
+        "yours": "Ihre Straßen · {{count}}",
+        "arrowPhone": "Der Pfeil zeigt den Weg, gemessen an der Blickrichtung des Telefons",
+        "arrowMap": "Der Pfeil folgt der Karte, Norden oben",
+        "beam": "Der blaue Strahl auf der Karte zeigt, wohin das Telefon zeigt.",
+        "metres": "{{n}} m",
+        "km": "{{n}} km"
+      }
     }
   }
 }

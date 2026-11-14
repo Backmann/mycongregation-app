@@ -34,8 +34,9 @@ export function StreetLine({
           : w.key === 'from'
             ? t('territories.division.piece.from', { from: w.from })
             : t('territories.division.piece.nth', { piece: w.piece, pieces: w.pieces });
+  // «Обе стороны» is said nowhere (14 November 2026): a quiet street is
+  // walked whole as a rule; only a side of a main road is named.
   const sub = [
-    side ? null : street.side === undefined ? null : t('territories.division.side.both'),
     piece,
     across ? t('territories.division.across', { n: across }) : null,
     t('territories.division.houses', { count: street.houses }),
