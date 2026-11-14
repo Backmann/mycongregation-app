@@ -8640,6 +8640,8 @@ export interface DivisionStreet {
   /** Its houses, to draw as dots (public map data). */
   dots: [number, number][];
   walkedAt: string | null;
+  /** The road to it from the street before or the start (14 November 2026); absent or null: not worked out. */
+  link?: [number, number][] | null;
 }
 
 export interface DivisionPart {
@@ -8653,6 +8655,8 @@ export interface DivisionPart {
   streets: DivisionStreet[];
   /** Nothing walked yet: another pair may still take one of its streets. */
   untouched: boolean;
+  /** The first `today` streets are about one outing (14 November 2026); absent or null: not worked out. */
+  today?: number | null;
   /** In the app only: the «не посещать» addresses on its streets, and where when known. */
   noCalls?: { id: string; address: string; at: [number, number] | null }[];
 }

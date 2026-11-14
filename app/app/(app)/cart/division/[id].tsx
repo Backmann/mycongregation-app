@@ -58,6 +58,8 @@ import {
 } from '../../../../lib/division';
 import { useStreetTicks } from '../../../../lib/useStreetTicks';
 import { useHere } from '../../../../lib/useHere';
+import { useDistance } from '../../../../lib/useDistance';
+import { walkOf } from '../../../../lib/way';
 
 const NC = '#c2410c';
 const HERE = '#2563eb';
@@ -68,9 +70,19 @@ function mapOf(
   start: [number, number] | null,
   opts: { numbers: boolean; noCalls: boolean; here: [number, number] | null },
 ) {
-  const routes: MapRoute[] = parts.flatMap((p) =>
-    p.streets.map((x) => ({ lines: x.lines, color: partColor(p.n), walked: !!x.walkedAt })),
-  );
+  const routes: MapRoute[] = [
+    // The roads from street to street (14 November 2026): dashed, arrows on.
+    ...parts.flatMap((p) =>
+      p.streets.flatMap((x) =>
+        x.link && x.link.length > 1
+          ? [{ lines: [x.link], color: partColor(p.n), link: true, walked: !!x.walkedAt }]
+          : [],
+      ),
+    ),
+    ...parts.flatMap((p) =>
+      p.streets.map((x) => ({ lines: x.lines, color: partColor(p.n), walked: !!x.walkedAt })),
+    ),
+  ];
   const dots: MapDot[] = parts.flatMap((p) =>
     p.streets.flatMap((x) =>
       (x.dots ?? []).map(([lon, lat]) => ({ lon, lat, color: partColor(p.n), walked: !!x.walkedAt })),
@@ -641,6 +653,7 @@ function PartCard({
   onTake: () => void;
 }) {
   const { t } = useTranslation();
+  const distanceText = useDistance();
   const [qr, setQr] = useState<string | null>(null);
   const [linkNote, setLinkNote] = useState<string | null>(null);
   const color = partColor(part.n);
@@ -692,6 +705,16 @@ function PartCard({
           ? t('territories.division.partDone')
           : t('territories.division.streetsWalked', { walked: w.streetsWalked, count: w.streets })}
       </Text>
+      {typeof part.today === 'number' && part.today < part.streets.length ? (
+        <Text style={[s.partSub, { color, fontFamily: 'Manrope_800ExtraBold' }]}>
+          {part.today === 1
+            ? t('territories.part.way.todayOne', { dist: distanceText(walkOf(part.streets as never, part.today)) })
+            : t('territories.part.way.today', {
+                n: part.today,
+                dist: distanceText(walkOf(part.streets as never, part.today)),
+              })}
+        </Text>
+      ) : null}
 
       <View style={{ marginTop: 6 }}>
         {walkingOrder(part.streets).map((x) => (

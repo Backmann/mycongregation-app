@@ -8079,7 +8079,11 @@
         "arrowMap": "Der Pfeil folgt der Karte, Norden oben",
         "beam": "Der blaue Strahl auf der Karte zeigt, wohin das Telefon zeigt.",
         "metres": "{{n}} m",
-        "km": "{{n}} km"
+        "km": "{{n}} km",
+        "todayOne": "Für heute: Straße 1 · ≈ {{dist}}",
+        "today": "Für heute: Straßen 1–{{n}} · ≈ {{dist}}",
+        "later": "Danach — ein andermal",
+        "leftToday": "für heute noch ≈ {{dist}}"
       }
     }
   }

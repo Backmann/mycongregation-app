@@ -8079,7 +8079,11 @@
         "arrowMap": "The arrow follows the map, north up",
         "beam": "The blue beam on the map is where the phone points.",
         "metres": "{{n}} m",
-        "km": "{{n}} km"
+        "km": "{{n}} km",
+        "todayOne": "For today: street 1 · ≈ {{dist}}",
+        "today": "For today: streets 1–{{n}} · ≈ {{dist}}",
+        "later": "Then — another time",
+        "leftToday": "left for today ≈ {{dist}}"
       }
     }
   }
