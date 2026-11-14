@@ -10,7 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -511,6 +511,7 @@ export default function DivisionScreen() {
 /** What the marks on the map mean, and «вы здесь» — asked for only on a tap. */
 function MapLegend({ common, here }: { common: boolean; here: ReturnType<typeof useHere> }) {
   const { t } = useTranslation();
+  const router = useRouter();
   return (
     <View style={s.legend}>
       {common ? (
@@ -530,6 +531,13 @@ function MapLegend({ common, here }: { common: boolean; here: ReturnType<typeof 
         </Pressable>
       ) : null}
       {here.on ? <Text style={s.legendNote}>{t('territories.division.whereAmI.private')}</Text> : null}
+      <Text
+        style={[s.legendNote, s.sourcesLink]}
+        onPress={() => router.push('/legal?doc=sources' as never)}
+        accessibilityRole="link"
+      >
+        {t('territories.division.sources')}
+      </Text>
       {here.failed ? <Text style={s.legendNote}>{t('territories.division.whereAmI.failed')}</Text> : null}
     </View>
   );
@@ -844,6 +852,7 @@ const s = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 14, height: 14, borderRadius: 7 },
   legendText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: MUTED },
+  sourcesLink: { color: BRAND, textDecorationLine: 'underline' },
   legendNote: { width: '100%', fontFamily: 'Manrope_500Medium', fontSize: 11.5, color: MUTED },
   hereBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 999, borderWidth: 1, borderColor: HERE, paddingHorizontal: 10, paddingVertical: 5, marginLeft: 'auto' },
   hereOn: { backgroundColor: HERE },

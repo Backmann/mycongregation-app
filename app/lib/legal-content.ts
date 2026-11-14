@@ -3,12 +3,12 @@
 // Edition: 01.07.2026.
 
 export type Lang = 'ru' | 'de' | 'en';
-export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer';
+export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer' | 'sources';
 
 export type Block = { h?: string; p?: string; li?: string[] };
 export type Doc = { title: string; tab: string; blocks: Block[] };
 
-export const LEGAL_UPDATED = '10.11.2026';
+export const LEGAL_UPDATED = '14.11.2026';
 
 /**
  * Chrome strings for the legal screen itself (header title + footer notes).
@@ -126,6 +126,25 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { p: 'Право Федеративной Республики Германия. При расхождении языковых версий действует немецкая редакция.' },
       ],
     },
+    sources: {
+      title: 'Источники данных карты',
+      tab: 'Источники',
+      blocks: [
+        { p: 'Карты участков, дома и улицы собираются только из открытых данных. В них нет имён, владельцев и других сведений о людях.' },
+        { h: 'Карта, дома и улицы' },
+        { li: [
+          '© участники OpenStreetMap, лицензия Open Database License (ODbL): https://www.openstreetmap.org/copyright',
+          'Готовые фрагменты карты: Protomaps, на основе данных OpenStreetMap: https://protomaps.com',
+        ] },
+        { h: 'Адреса домов' },
+        { li: [
+          'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (любое использование без ограничений): https://www.govdata.de/dl-de/zero-2-0',
+          'Улица, номер дома и точка каждого главного здания с номером. Нужны, чтобы при делении участка дом попал на свою улицу.',
+        ] },
+        { h: 'Что остаётся на телефоне' },
+        { p: 'Положение «Вы здесь» на карте видно только на этом телефоне и никуда не отправляется. Кто отметил улицу пройденной, не записывается.' },
+      ],
+    },
     disclaimer: {
       title: 'Оговорка о неофициальности',
       tab: 'Оговорка',
@@ -220,6 +239,25 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { p: 'Es gilt das Recht der Bundesrepublik Deutschland. Bei Abweichungen zwischen den Sprachfassungen ist die deutsche Fassung maßgeblich.' },
       ],
     },
+    sources: {
+      title: 'Datenquellen der Karte',
+      tab: 'Quellen',
+      blocks: [
+        { p: 'Gebietskarten, Häuser und Straßen stammen ausschließlich aus offenen Daten. Sie enthalten keine Namen, Eigentümer oder sonstigen Angaben zu Personen.' },
+        { h: 'Karte, Häuser und Straßen' },
+        { li: [
+          '© OpenStreetMap-Mitwirkende, Lizenz Open Database License (ODbL): https://www.openstreetmap.org/copyright',
+          'Kartenkacheln: Protomaps, auf Grundlage von OpenStreetMap-Daten: https://protomaps.com',
+        ] },
+        { h: 'Hausadressen' },
+        { li: [
+          'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (jede Nutzung ohne Einschränkungen): https://www.govdata.de/dl-de/zero-2-0',
+          'Straße, Hausnummer und Lage jedes Hauptgebäudes mit Hausnummer. Damit kommt ein Haus beim Aufteilen eines Gebiets zu seiner eigenen Straße.',
+        ] },
+        { h: 'Was auf dem Handy bleibt' },
+        { p: 'Der Standort „Sie sind hier“ ist nur auf diesem Handy sichtbar und wird nirgendwohin gesendet. Wer eine Straße als bearbeitet abhakt, wird nicht gespeichert.' },
+      ],
+    },
     disclaimer: {
       title: 'Hinweis zur Unabhängigkeit',
       tab: 'Hinweis',
@@ -312,6 +350,25 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { li: ['Server: ' + REPO_SERVER, 'App: ' + REPO_APP] },
         { h: 'Governing law' },
         { p: 'The law of the Federal Republic of Germany applies. In case of discrepancy between language versions, the German version prevails.' },
+      ],
+    },
+    sources: {
+      title: 'Map data sources',
+      tab: 'Sources',
+      blocks: [
+        { p: 'Territory maps, houses and streets come from open data only. They hold no names, owners or other details about people.' },
+        { h: 'Map, houses and streets' },
+        { li: [
+          '© OpenStreetMap contributors, Open Database License (ODbL): https://www.openstreetmap.org/copyright',
+          'Map tiles: Protomaps, built from OpenStreetMap data: https://protomaps.com',
+        ] },
+        { h: 'House addresses' },
+        { li: [
+          'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (any use without restrictions): https://www.govdata.de/dl-de/zero-2-0',
+          'Street, number and position of every main building with a house number, so that a house goes to its own street when a territory is divided.',
+        ] },
+        { h: 'What stays on the phone' },
+        { p: 'Your “You are here” position shows on this phone only and is sent nowhere. Who ticked a street as walked is not kept.' },
       ],
     },
     disclaimer: {
