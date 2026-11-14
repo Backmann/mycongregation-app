@@ -12,7 +12,7 @@ import { refusalText } from "./refusal-text";
 import { bestOffset, LIVE_REQUEST_TIMEOUT_MS, offsetSample } from "./conduct-live";
 import type { LiveRoles } from "./conduct-live";
 import { deviceId } from "./device-id";
-import type { Side } from "./division";
+import type { NumberRanges, Side } from "./division";
 
 function resolveApiUrl(): string {
   const url = process.env.EXPO_PUBLIC_API_URL;
@@ -8628,6 +8628,11 @@ export interface DivisionStreet {
   side: Side | null;
   /** Its house numbers, lowest to highest; null when too few are known. */
   range: { from: string; to: string } | null;
+  /**
+   * Odd and even numbers each on their own, as on the doors (14 November
+   * 2026); absent from a server before that.
+   */
+  ranges?: NumberRanges;
   houses: number;
   /** Entrances: a house with three numbers is three. */
   doors: number;
@@ -8691,7 +8696,7 @@ export interface SharedPart {
   others: {
     n: number;
     untouched: boolean;
-    streets: Pick<DivisionStreet, 'key' | 'name' | 'range' | 'side' | 'houses'>[];
+    streets: Pick<DivisionStreet, 'key' | 'name' | 'range' | 'ranges' | 'side' | 'houses'>[];
   }[];
   noCalls: number;
   congregationId: string;

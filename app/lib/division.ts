@@ -17,6 +17,13 @@ export interface StreetLike {
   side?: Side | null;
   /** Its house numbers, lowest to highest; null when too few are known. */
   range?: { from: string; to: string } | null;
+  /** Odd and even numbers each on their own («1–35 · 2–40»). */
+  ranges?: NumberRanges;
+}
+
+export interface NumberRanges {
+  odd: { from: string; to: string } | null;
+  even: { from: string; to: string } | null;
 }
 
 /** A side of a main road: by its numbers when they agree, else by the compass. */
@@ -87,10 +94,23 @@ export function sideWord(s: { side?: Side | null }): SideWord | null {
   return s.side.parity ?? s.side.toward;
 }
 
-/** «2–84»: the numbers of a street, or null; one number alone is no range. */
-export function rangeText(s: { range?: { from: string; to: string } | null }): string | null {
-  if (!s.range) return null;
-  return s.range.from === s.range.to ? s.range.from : `${s.range.from}–${s.range.to}`;
+const fromTo = (r: { from: string; to: string }) => (r.from === r.to ? r.from : `${r.from}–${r.to}`);
+
+/**
+ * The numbers of a street as the doors say them (14 November 2026): the odd
+ * side and the even side each on its own, «1–35 · 2–40»; one side only on
+ * a side of a main road. Without them, the old single range «2–84»; null
+ * when too few numbers are known.
+ */
+export function rangeText(s: {
+  range?: { from: string; to: string } | null;
+  ranges?: NumberRanges;
+}): string | null {
+  if (s.ranges) {
+    const rows = [s.ranges.odd, s.ranges.even].filter((r): r is { from: string; to: string } => !!r);
+    return rows.length ? rows.map(fromTo).join(' · ') : null;
+  }
+  return s.range ? fromTo(s.range) : null;
 }
 
 /**
