@@ -89,6 +89,7 @@ const STEPS = [
   ['Участки: деловая территория', 'node', ['scripts/check-business-view.mjs']],
   ['Участки: выдача и приём', 'node', ['scripts/check-desk.mjs']],
   ['Участки: на группы', 'node', ['scripts/check-division.mjs']],
+  ['Обещание «не null» в обработчиках', 'node', ['scripts/check-nonnull-callbacks.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
   ['Главная: «изменено»', 'node', ['scripts/check-home-changes.mjs']],
