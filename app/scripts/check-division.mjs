@@ -95,6 +95,13 @@ try {
   check('never a street of one\'s own part', D.streetsToTake([mine, fresh], 5).map((x) => x.street.key), ['e', 'f']);
   check('the server saying «started» is believed', D.streetsToTake([{ ...fresh, untouched: false }], 2), []);
 
+  // Too fine for its territory (14 November 2026): offer fewer pairs.
+  const pp = (...d) => d.map((doors, i) => ({ n: i + 1, doors }));
+  check('a small territory for three pairs', D.tooFine(pp(20, 50, 18)), { why: 'small', least: 18, fewer: 2 });
+  check('even and big enough: fine', D.tooFine(pp(60, 64, 58)), null);
+  check('uneven though big enough', D.tooFine(pp(40, 90, 60)), { why: 'uneven', least: 40, fewer: 2 });
+  check('a pair that asked for less is measured against its own share', D.tooFine(pp(30, 60, 60), [1]), null);
+  check('two pairs: nothing fewer to offer', D.tooFine(pp(10, 50)), null);
   check('a colour per part, wrapping after eight', [D.partColor(1), D.partColor(9)], [D.PART_COLORS[0], D.PART_COLORS[0]]);
   check('eight different colours', new Set(D.PART_COLORS).size, 8);
   check('the route to a point: lat,lon', D.routeTo([7.81234567, 51.70987654]),

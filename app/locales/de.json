@@ -8040,7 +8040,13 @@
         "button": "Sie sind hier",
         "private": "Ihr Standort ist nur auf diesem Handy zu sehen und wird nirgendwohin gesendet.",
         "failed": "Das Handy hat den Standort nicht freigegeben — bitte den Standortzugriff für die Seite erlauben."
-      }
+      },
+      "tooUneven_one": "Auf {{count}} Paar lässt es sich nicht gleichmäßig teilen — zu wenige Straßen.",
+      "tooUneven_other": "Auf {{count}} Paare lässt es sich nicht gleichmäßig teilen — zu wenige Straßen.",
+      "fewer_one": "Auf {{count}} Paar teilen",
+      "fewer_other": "Auf {{count}} Paare teilen",
+      "tooSmall_one": "Ein Paar bekäme nur {{count}} Tür — das Gebiet ist klein für {{pairs}} Paare.",
+      "tooSmall_other": "Ein Paar bekäme nur {{count}} Türen — das Gebiet ist klein für {{pairs}} Paare."
     },
     "part": {
       "gone": "Der Link gilt nicht mehr",

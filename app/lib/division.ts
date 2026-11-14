@@ -61,6 +61,32 @@ export const PARTS_MIN = 2;
 export const PARTS_MAX = 6;
 export const PARTS_FIRST = 2;
 
+/** A part smaller than this is hardly a morning's work for a pair. */
+export const SMALL_PART_DOORS = 25;
+/** Parts further apart than this are not even. */
+export const UNEVEN = 1.5;
+
+/**
+ * Whether a looked-at division is too fine for its territory (14 November
+ * 2026: one small territory of 88 doors on four streets came out 20 · 50 ·
+ * 18 for three pairs): a part of fewer than SMALL_PART_DOORS doors, or the
+ * parts more than UNEVEN apart — each measured against its own share, so a
+ * pair that asked for less is not counted as too small. Then fewer pairs
+ * are offered. Null when it is fine, or already two pairs.
+ */
+export function tooFine(
+  parts: { n: number; doors: number }[],
+  smaller: number[] = [],
+): { why: 'small' | 'uneven'; least: number; fewer: number } | null {
+  if (parts.length <= PARTS_MIN) return null;
+  const share = parts.map((p) => p.doors / (smaller.includes(p.n) ? 2 / 3 : 1));
+  const least = Math.min(...parts.map((p) => p.doors));
+  const fewer = parts.length - 1;
+  if (Math.min(...share) < SMALL_PART_DOORS) return { why: 'small', least, fewer };
+  if (Math.max(...share) > UNEVEN * Math.min(...share)) return { why: 'uneven', least, fewer };
+  return null;
+}
+
 /**
  * Which words name a piece of a long street: «from X to Y», «up to Y»,
  * «from X», or its number when no street crosses where it is cut. A whole
