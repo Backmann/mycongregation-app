@@ -46,7 +46,7 @@ import {
   partColor,
   partDone,
   PARTS_FIRST,
-  rangeText,
+  partSummary,
   PARTS_MAX,
   PARTS_MIN,
   routeTo,
@@ -593,9 +593,7 @@ function PreviewParts({
             </Text>
           </View>
           <Text style={s.previewStreets} numberOfLines={3}>
-            {p.streets
-              .map((x) => [x.name, rangeText(x)].filter(Boolean).join(' '))
-              .join(' · ')}
+            {partSummary(preview.parts, p.n).join(' · ')}
           </Text>
           <Pressable
             onPress={() => onSmaller(p.n)}
