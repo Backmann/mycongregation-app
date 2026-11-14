@@ -35,7 +35,7 @@ import {
   withTicks,
   type PartLike,
 } from '../../lib/division';
-import { goOn, metres, nearestOn, streetNow, walkOf, type LonLat } from '../../lib/way';
+import { frameOf, goOn, metres, nearestOn, streetNow, walkOf, type LonLat } from '../../lib/way';
 import { useDistance } from '../../lib/useDistance';
 import { useStreetTicks } from '../../lib/useStreetTicks';
 import { useHere } from '../../lib/useHere';
@@ -236,7 +236,6 @@ function Part({
   // What to frame. With «Вы здесь» on, the walker and his street — framed
   // again only when the street changes or he first appears, never on every
   // step, so a hand moving the map is not fought.
-  const own: LonLat[] = streets.flatMap((x) => x.lines.flat() as LonLat[]);
   const picked = streets.find((x) => x.key === view);
   let fit: LonLat[] | null = null;
   let fitKey = view;
@@ -250,7 +249,10 @@ function Part({
     } else if (at && now) {
       fit = [at, ...(now.lines.flat() as LonLat[])];
       fitKey = `here:${nowKey}:${where}`;
-    } else fit = start ? [start, ...own] : own;
+    } else {
+      fit = frameOf(streets as never, today, start);
+      fitKey = `mine:${today ?? ''}`;
+    }
   }
   const toNextText = way && now ? t('territories.part.way.toNext', { n: nowStep, dist: distanceText(way.m) }) : null;
   // The arrow: the way to the street against where the phone points, else
