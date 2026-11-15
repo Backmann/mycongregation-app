@@ -11,7 +11,7 @@ import { TerritoryMap, type MapShape } from '../../../../components/territories/
 import { BRAND, INK, LINE, MUTED, Chip } from '../../../../components/reports/ReportBits';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { extractErrorMessage, recutApi, type RecutView } from '../../../../lib/api';
-import { km, PART_COLORS, RECUT_KEY, whereOf } from '../../../../lib/recut';
+import { km, monthsAt, PART_COLORS, RECUT_KEY, whereOf } from '../../../../lib/recut';
 import { formatDayShort } from '../../../../lib/territory-view';
 
 const BG = '#f1f5f9';
@@ -35,6 +35,8 @@ export default function RecutProposalScreen() {
     queryKey: RECUT_KEY,
     queryFn: () => recutApi.view(),
     throwOnError: failsScreen,
+    // While the parts' walks are being worked out, look again every few seconds.
+    refetchInterval: (q) => (q.state.data?.walking ? 3000 : false),
   });
   const [error, setError] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
@@ -130,10 +132,23 @@ export default function RecutProposalScreen() {
   const free = !p.blocks.includes('held') && !p.blocks.includes('meeting');
   const border = !p.blocks.includes('changed') && !p.blocks.includes('gone') && !p.blocks.includes('shape');
   const busy = remark.isPending || unremark.isPending || remove.isPending;
+  const walkText = (w: number | null) =>
+    w === null
+      ? view.walking
+        ? t('territories.recut.proposal.kmWait')
+        : null
+      : t('territories.recut.proposal.km', { km: km(w, lang) });
+  const monthsText = (w: number | null) => {
+    const n = monthsAt(w, view.pace);
+    return n === null ? null : t('territories.recut.proposal.months', { count: n });
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
-      <Stack.Screen options={{ title }} />
+      {/* The header holds the territory; the full title is on the page, where it may wrap. */}
+      <Stack.Screen
+        options={{ title: numbers.length > 1 ? `${numbers[0]} +${numbers.length - 1}` : numbers[0] }}
+      />
       <KeyboardScroll style={{ flex: 1 }} contentContainerStyle={s.content}>
         <View style={{ gap: 6 }}>
           <Text style={s.h1}>{title}</Text>
@@ -148,15 +163,14 @@ export default function RecutProposalScreen() {
               />
             ) : p.reopenedAt ? (
               <Chip tone="amber" text={t('territories.recut.proposal.reopenedAt')} />
-            ) : (
-              <Chip tone="amber" text={t('territories.recut.block.notApproved')} />
-            )}
+            ) : null}
             {p.blocks
               .filter((b) => b !== 'notApproved')
               .map((b) => (
                 <Chip
                   key={b}
-                  tone={b === 'held' || b === 'meeting' ? 'grey' : 'amber'}
+                  // On the page's grey a grey chip is lost: blue for what only waits.
+                  tone={b === 'held' || b === 'meeting' ? 'blue' : 'amber'}
                   text={t(`territories.recut.block.${b}`, { date: meetingOn ? formatDayShort(meetingOn, lang) : '' })}
                 />
               ))}
@@ -188,7 +202,12 @@ export default function RecutProposalScreen() {
                 <Text style={s.lineNum}>{x.number}</Text>
                 <Text style={s.lineText}>
                   {f && f.homes != null && f.walkKm != null
-                    ? t('territories.recut.proposal.nowLine', { homes: f.homes, km: km(f.walkKm, lang) })
+                    ? [
+                        t('territories.recut.proposal.nowLine', { homes: f.homes, km: km(f.walkKm, lang) }),
+                        monthsText(f.walkKm),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
                     : '—'}
                 </Text>
               </View>
@@ -206,7 +225,13 @@ export default function RecutProposalScreen() {
                   <View style={[s.swatch, { backgroundColor: PART_COLORS[i % PART_COLORS.length] }]} />
                   <View style={{ flex: 1 }}>
                     <Text style={s.lineStrong}>
-                      {t('territories.recut.proposal.part', { number: part.number, homes: part.homes ?? '—' })}
+                      {[
+                        t('territories.recut.proposal.part', { number: part.number, homes: part.homes ?? '—' }),
+                        walkText(part.walkKm),
+                        monthsText(part.walkKm),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </Text>
                     <Text style={s.quiet}>
                       {i === p.keep ? t('territories.recut.proposal.keeps') : t('territories.recut.proposal.newNumber')}
@@ -221,16 +246,28 @@ export default function RecutProposalScreen() {
             <>
               <View style={s.line}>
                 <View style={[s.swatch, { backgroundColor: '#1d4ed8' }]} />
-                <Text style={s.lineStrong}>
-                  {t('territories.recut.proposal.part', {
-                    number: keepNumber,
-                    homes: p.territories.reduce((n, x) => n + (byId.get(x.id)?.homes ?? 0), 0),
-                  })}
+                <Text style={[s.lineStrong, { flex: 1 }]}>
+                  {[
+                    t('territories.recut.proposal.part', {
+                      number: keepNumber,
+                      homes:
+                        p.parts[0]?.homes ?? p.territories.reduce((n, x) => n + (byId.get(x.id)?.homes ?? 0), 0),
+                    }),
+                    walkText(p.parts[0]?.walkKm ?? null),
+                    monthsText(p.parts[0]?.walkKm ?? null),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </Text>
               </View>
               <Text style={s.quiet}>{t('territories.recut.proposal.joinedKeeps', { number: keepNumber })}</Text>
             </>
           )}
+          <Text style={s.quiet}>
+            {view.pace
+              ? t('territories.recut.proposal.pace', { km: km(view.pace.kmPerMonth, lang), samples: view.pace.samples })
+              : t('territories.recut.proposal.paceNone')}
+          </Text>
         </View>
 
         {/* When it can be applied */}

@@ -3,7 +3,7 @@
  * The same screens, photographed with the main branch and with a pull request.
  *
  *   node scripts/screens-ci.mjs --a <dist of main> --b <dist of the PR> \
- *        --current YYYY-MM-DD --out <folder> [--reset "<command>"]
+ *        --current YYYY-MM-DD --out <folder> [--reset "<command>"] [--recut <id>]
  *
  * Run by the app's CI (job "screens") against a throwaway server filled by the
  * server's scripts/seed-screens.mjs; --current is the week it calls "current"
@@ -54,6 +54,11 @@ const DIST = { a: resolve(arg('a', '')), b: resolve(arg('b', '')) };
 const CURRENT = arg('current', '');
 /** Puts the seeded database back before each side (a screen can write). */
 const RESET = arg('reset', '');
+/**
+ * The proposal the seed made in the draft of re-cutting (its summary's
+ * `recut`); empty with an older seed: then its screen is not photographed.
+ */
+const RECUT = /^[0-9a-f-]{36}$/.test(arg('recut', '')) ? arg('recut', '') : '';
 const OUT = resolve(arg('out', 'screens-out'));
 const PASSWORD = process.env.SCREENS_PASSWORD || 'Screens-Check-2026!';
 const LOGIN = { admin: 'admin@example.invalid', publisher: 'publisher' };
@@ -103,6 +108,9 @@ const SCREENS = [
   ['my-territories', '/cart/my-territories', 'publisher'],
   // The desk (13 November 2026): on a phone the days beside a name cut it short.
   ['desk', '/cart/desk', 'admin'],
+  // The draft of re-cutting (15 November 2026): the overview and one cut.
+  ['recut', '/cart/recut', 'admin'],
+  ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
 ];
 // Phone, tablet portrait, the narrowest wide layout, wide screen.
 // 1024 is where the wide layout begins and is at its tightest: a tab label

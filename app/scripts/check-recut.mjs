@@ -100,6 +100,42 @@ try {
     r.decisionOf([p({ approvedAt: '2026-11-29T10:00:00Z', reopenedAt: '2026-11-23T10:00:00Z' })]).reopened,
     0,
   );
+  const T = (id, walkKm) => ({ id, walkKm });
+  const byId = new Map([T('a', 41), T('b', 3), T('c', 2.5), T('d', null), T('e', 20)].map((t) => [t.id, t]));
+  const cutA = { kind: 'cut', state: 'open', queue: 2, territories: [{ id: 'a' }], parts: [{ walkKm: 13.9 }, { walkKm: 14.2 }, { walkKm: 13.6 }] };
+  const joinBC = { kind: 'merge', state: 'open', queue: 1, territories: [{ id: 'b' }, { id: 'c' }], parts: [{ walkKm: 5.6 }] };
+  check('a cut: 41 → its longest part', r.walkNowAfter(cutA, byId), { now: 41, after: 14.2 });
+  check('a join: the two together → the one', r.walkNowAfter(joinBC, byId), { now: 5.5, after: 5.6 });
+  check(
+    'not in yet: no number made up',
+    [
+      r.walkNowAfter({ ...cutA, parts: [{ walkKm: 13.9 }, { walkKm: null }] }, byId).after,
+      r.walkNowAfter({ ...joinBC, territories: [{ id: 'b' }, { id: 'd' }] }, byId).now,
+      r.walkNowAfter({ ...cutA, parts: [] }, byId).after === null,
+    ],
+    [null, null, true],
+  );
+  check('rounds: joins first, then the cuts; applied ones left out', r.queuesOf([cutA, joinBC, { ...cutA, queue: 3 }, { ...joinBC, state: 'applied' }]), [
+    { queue: 1, cuts: 0, joins: 1 },
+    { queue: 2, cuts: 1, joins: 0 },
+    { queue: 3, cuts: 1, joins: 0 },
+  ]);
+  const all = [...byId.values()];
+  check('the longest walk: 41 now; after — the longest of the rest (20) and the parts', r.longestWalk(all, [cutA, joinBC]), { now: 41, after: 20 });
+  check('the longest after waits for the parts', r.longestWalk(all, [{ ...cutA, parts: [{ walkKm: null }] }]).after, null);
+  check(
+    'the longest after: a part longer than the rest',
+    r.longestWalk([T('a', 41), T('e', 10)], [{ ...cutA, parts: [{ walkKm: 19 }, { walkKm: 22 }] }]),
+    { now: 41, after: 22 },
+  );
+  check('months at the pace: whole, at least one, none without a pace', [
+    r.monthsAt(14, { kmPerMonth: 3.5 }),
+    r.monthsAt(1, { kmPerMonth: 3.5 }),
+    r.monthsAt(14, null),
+    r.monthsAt(null, { kmPerMonth: 3 }),
+  ], [4, 1, null, null]);
+  check('search: by the number, any case, spaces ignored', r.searchTerritories([{ number: 'Hamm52' }, { number: 'Ahlen 01' }, { number: 'Hamm5' }], 'hamm 5').map((t) => t.number), ['Hamm52', 'Hamm5']);
+  check('search: nothing asked — all', r.searchTerritories([{ number: 'A' }, { number: 'B' }], '  ').length, 2);
   check('eight colours for eight parts, all different', new Set(r.PART_COLORS).size, 8);
 } finally {
   rmSync(out, { recursive: true, force: true });
