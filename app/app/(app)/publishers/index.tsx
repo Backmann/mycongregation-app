@@ -239,15 +239,18 @@ export default function CongregationScreen() {
   // NARROWER THAN ITS SCREEN, on purpose: everybody may read the circuit
   // overseer's page (24 September) and reaches it from the visit; as a row of
   // the contents it stands among the administrator's settings only.
-  if (user?.role === 'admin') {
-    // Failures met in the app (10 November 2026): technical, for whoever
-    // runs it.
+  // Failures met in the app (10 November 2026): technical, and of every
+  // congregation — for whoever runs the platform only (15 November 2026),
+  // not for each congregation's administrator.
+  if (user?.canSeeCrashes === true) {
     management.push({
       key: 'crashes',
       title: t('crashes.title'),
       subtitle: t('crashes.rowSubtitle'),
       href: '/publishers/crashes',
     });
+  }
+  if (user?.role === 'admin') {
     management.push({
       key: 'circuitOverseer',
       title: t('profile.circuitOverseer'),

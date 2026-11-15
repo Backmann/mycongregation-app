@@ -244,6 +244,12 @@ export interface AuthUser {
    */
   canManageBackups?: boolean;
   /**
+   * Whether this account reads the failures met in the app — those of every
+   * congregation, so whoever runs the platform only (15 November 2026).
+   * Absent means no.
+   */
+  canSeeCrashes?: boolean;
+  /**
    * The language the account is kept in — the one its letters are written in.
    * Taken by a device where nobody has chosen a language (lib/i18n.ts
    * adoptLanguage). Absent on answers from an older server.
