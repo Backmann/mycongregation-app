@@ -8775,3 +8775,98 @@ export interface SharedTerritory {
   /** How many «не посещать» addresses lie inside; the addresses never travel by link. */
   noCalls?: number;
 }
+
+// ── The draft of re-cutting the territories (15 November 2026) ──────────
+
+/** How long a territory's walk may be, in the city and far out. */
+export interface RecutMeasure {
+  cityMaxKm: number;
+  cityTargetKm: number;
+  remoteMaxKm: number;
+  remoteTargetKm: number;
+  minKm: number;
+  /** Minutes by car from the nearest hall where «far» begins. */
+  remoteMinutes: number;
+}
+
+export type RecutVerdict =
+  | { action: "cut"; parts: number; partKm: number }
+  | { action: "merge" }
+  | { action: "keep" };
+
+/** One territory as the measure sees it. */
+export interface RecutTerritory {
+  id: string;
+  number: string;
+  homes: number | null;
+  walkKm: number | null;
+  driveMinutes: number | null;
+  hall: string | null;
+  cls: "city" | "far";
+  /** The keepers' word over the minutes; null: by the minutes. */
+  word: "city" | "far" | null;
+  verdict: RecutVerdict | null;
+  inProposal: boolean;
+}
+
+/** What stands between a proposal and applying it. */
+export type RecutBlock = "notApproved" | "held" | "meeting" | "changed" | "gone" | "shape";
+
+export interface RecutProposal {
+  id: string;
+  kind: "cut" | "merge";
+  queue: number;
+  state: "open" | "applied";
+  territories: {
+    id: string;
+    number: string;
+    held: boolean;
+    meetingOn: string | null;
+    changed: boolean;
+    geometry: TerritoryGeometry | null;
+  }[];
+  lines: [number, number][][] | null;
+  keep: number;
+  numbers: string[] | null;
+  keepId: string | null;
+  /** As the lines cut the territory now; empty when they no longer can. */
+  parts: { number: string; homes: number | null; geometry: TerritoryGeometry }[];
+  approvedAt: string | null;
+  reopenedAt: string | null;
+  appliedAt: string | null;
+  blocks: RecutBlock[];
+  /** About the border only; deleted once the proposal is applied or taken out. */
+  remarks: { mine: boolean; by: string; ok: boolean; text: string | null; at: string }[];
+}
+
+export interface RecutView {
+  measure: RecutMeasure;
+  metricsAt: string | null;
+  computing: boolean;
+  halls: { name: string; found: boolean }[];
+  territories: RecutTerritory[];
+  /** The territory servant and his assistant draw and change. */
+  canEdit: boolean;
+  /** A member of the service committee records its decision. */
+  canDecide: boolean;
+  proposals: RecutProposal[];
+}
+
+export const recutApi = {
+  view: async (): Promise<RecutView> => (await api.get<RecutView>("/territory-recut")).data,
+  setMeasure: async (m: RecutMeasure): Promise<RecutView> =>
+    (await api.put<RecutView>("/territory-recut/measure", m)).data,
+  /** Starts working out the figures; the view says `computing` until they are in. */
+  figures: async (): Promise<RecutView> => (await api.post<RecutView>("/territory-recut/figures")).data,
+  setClass: async (territoryId: string, cls: "city" | "far" | null): Promise<RecutView> =>
+    (await api.put<RecutView>(`/territory-recut/classes/${territoryId}`, { cls })).data,
+  suggest: async (): Promise<RecutView & { suggested: { made: string[]; byHand: string[] } }> =>
+    (await api.post<RecutView & { suggested: { made: string[]; byHand: string[] } }>("/territory-recut/suggest")).data,
+  remove: async (id: string): Promise<RecutView> =>
+    (await api.delete<RecutView>(`/territory-recut/proposals/${id}`)).data,
+  remark: async (id: string, body: { ok: boolean; text?: string }): Promise<RecutView> =>
+    (await api.put<RecutView>(`/territory-recut/proposals/${id}/remark`, body)).data,
+  unremark: async (id: string): Promise<RecutView> =>
+    (await api.delete<RecutView>(`/territory-recut/proposals/${id}/remark`)).data,
+  approve: async (): Promise<RecutView> => (await api.post<RecutView>("/territory-recut/approve")).data,
+};

@@ -196,6 +196,11 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // The server decides: whoever sees the territory today (13 November 2026).
   '/cart/division/[id]': 'self',
   '/cart/my-territories': 'self',
+  // The server decides: whoever sees all the territories looks at the
+  // draft of re-cutting; its keepers draw, the service committee decides
+  // (15 November 2026).
+  '/cart/recut': 'self',
+  '/cart/recut/[id]': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.
   '/cart/service-overseer': 'all',
