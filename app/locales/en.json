@@ -7225,13 +7225,24 @@
     "title": "App failures",
     "rowSubtitle": "What broke for people in 30 days — no personal data",
     "empty": "No failures in 30 days.",
-    "note": "Technical details without names or congregation data. The same failure on a day is one row with a count. Kept for 30 days.",
+    "note": "Technical details without names or congregation data. The same failure on a day is one row with a count. Kept for 30 days. Network failures are marked “network” and send no notification unless there are many in a day.",
     "times": "{{count}} times",
     "screen": "screen did not open",
     "uncaught": "error in the code",
     "before": "before sign-in",
     "build": "build {{id}}",
-    "stack": "Where in the code"
+    "stack": "Where in the code",
+    "network": "network",
+    "online": "online",
+    "offline": "offline",
+    "since": "{{s}} s after start",
+    "place": "File",
+    "event": {
+      "error": "script error",
+      "rejection": "unhandled promise",
+      "handler": "global handler",
+      "screen": "screen"
+    }
   },
   "pairPrep": {
     "button": "Arrange preparation",

@@ -4282,6 +4282,16 @@ export interface ClientErrorRow {
   count: number;
   firstAt: string;
   lastAt: string;
+  /** Which event caught it; null from older builds (15 November 2026). */
+  event?: "error" | "rejection" | "handler" | "screen" | null;
+  /** Whether the device thought it was online; null: not told. */
+  online?: boolean | null;
+  /** The file and line the browser names. */
+  place?: string | null;
+  /** Seconds from the app's start. */
+  sinceStartS?: number | null;
+  /** A request that did not get through — the network's, not the app's. */
+  network?: boolean;
 }
 
 export const clientErrorsApi = {

@@ -17,11 +17,20 @@ import * as Updates from 'expo-updates';
  *
  * The same failure is sent once per session; a report that cannot be sent is
  * dropped — a journal must never become a failure of its own.
+ *
+ * With it (15 November 2026), so that a failure without a stack can still be
+ * traced: which event caught it, whether the device was online, the file and
+ * line the browser names, and the seconds since the start. A request that
+ * did not get through is marked «сеть» by the server and wakes nobody.
  */
 
 const API = (process.env.EXPO_PUBLIC_API_URL ?? '').replace(/\/$/, '');
 
 let route = '/';
+const startedAt = Date.now();
+
+/** Which event caught a failure. */
+export type CrashEvent = 'error' | 'rejection' | 'handler' | 'screen';
 let role: string | null = null;
 
 /** The screen now shown, as its pattern — set by the root layout. */
@@ -67,7 +76,23 @@ async function buildOf(): Promise<string | null> {
 
 const sent = new Set<string>();
 
-export async function reportCrash(source: 'screen' | 'uncaught', error: unknown): Promise<void> {
+/** Whether the device thinks it is online; undefined where it cannot say. */
+function onlineNow(): boolean | undefined {
+  if (Platform.OS !== 'web' || typeof navigator === 'undefined') return undefined;
+  return typeof navigator.onLine === 'boolean' ? navigator.onLine : undefined;
+}
+
+/** «file:line:column» as an error event names it; undefined when it names none. */
+export function placeOf(filename?: string, line?: number, column?: number): string | undefined {
+  if (!filename) return undefined;
+  return scrubText(`${filename.split(/[?#]/)[0]}:${line ?? 0}:${column ?? 0}`, 300);
+}
+
+export async function reportCrash(
+  source: 'screen' | 'uncaught',
+  error: unknown,
+  ctx: { event?: CrashEvent; place?: string } = {},
+): Promise<void> {
   try {
     if (!API) return;
     const e = error instanceof Error ? error : new Error(String(error));
@@ -88,6 +113,10 @@ export async function reportCrash(source: 'screen' | 'uncaught', error: unknown)
         stack,
         appCommit: (await buildOf()) ?? undefined,
         role: role ?? undefined,
+        event: ctx.event ?? (source === 'screen' ? 'screen' : undefined),
+        online: onlineNow(),
+        place: ctx.place,
+        sinceStartS: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
       }),
     });
   } catch {
@@ -103,8 +132,18 @@ export function installCrashHandlers(): void {
   installed = true;
   if (Platform.OS === 'web') {
     if (typeof window === 'undefined') return;
-    window.addEventListener('error', (ev) => void reportCrash('uncaught', ev.error ?? ev.message));
-    window.addEventListener('unhandledrejection', (ev) => void reportCrash('uncaught', ev.reason));
+    window.addEventListener(
+      'error',
+      (ev) =>
+        void reportCrash('uncaught', ev.error ?? ev.message, {
+          event: 'error',
+          place: placeOf(ev.filename, ev.lineno, ev.colno),
+        }),
+    );
+    window.addEventListener(
+      'unhandledrejection',
+      (ev) => void reportCrash('uncaught', ev.reason, { event: 'rejection' }),
+    );
     return;
   }
   const g = globalThis as {
@@ -117,7 +156,7 @@ export function installCrashHandlers(): void {
   if (!eu) return;
   const previous = eu.getGlobalHandler();
   eu.setGlobalHandler((e, fatal) => {
-    void reportCrash('uncaught', e);
+    void reportCrash('uncaught', e, { event: 'handler' });
     previous(e, fatal);
   });
 }
