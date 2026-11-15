@@ -537,10 +537,18 @@ function WebMap({
             type: 'circle',
             source: 'dots',
             paint: {
+              // A zoom curve must be the whole expression (MapLibre refuses
+              // it inside '*', and then no later layer is added either).
               'circle-radius': [
-                '*',
-                ['case', ['get', 'chosen'], 1.8, 1],
-                ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 5, 19, 8],
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                13,
+                ['case', ['get', 'chosen'], 3.6, 2],
+                17,
+                ['case', ['get', 'chosen'], 9, 5],
+                19,
+                ['case', ['get', 'chosen'], 14, 8],
               ],
               'circle-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
               'circle-opacity': ['case', ['get', 'walked'], 0.45, 0.95],
