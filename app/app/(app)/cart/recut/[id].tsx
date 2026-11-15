@@ -11,7 +11,7 @@ import { TerritoryMap, type MapShape } from '../../../../components/territories/
 import { BRAND, INK, LINE, MUTED, Chip } from '../../../../components/reports/ReportBits';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { extractErrorMessage, recutApi, type RecutView } from '../../../../lib/api';
-import { km, monthsAt, PART_COLORS, RECUT_KEY, whereOf } from '../../../../lib/recut';
+import { km, PART_COLORS, RECUT_KEY, whereOf } from '../../../../lib/recut';
 import { formatDayShort } from '../../../../lib/territory-view';
 
 const BG = '#f1f5f9';
@@ -138,10 +138,6 @@ export default function RecutProposalScreen() {
         ? t('territories.recut.proposal.kmWait')
         : null
       : t('territories.recut.proposal.km', { km: km(w, lang) });
-  const monthsText = (w: number | null) => {
-    const n = monthsAt(w, view.pace);
-    return n === null ? null : t('territories.recut.proposal.months', { count: n });
-  };
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -204,7 +200,6 @@ export default function RecutProposalScreen() {
                   {f && f.homes != null && f.walkKm != null
                     ? [
                         t('territories.recut.proposal.nowLine', { homes: f.homes, km: km(f.walkKm, lang) }),
-                        monthsText(f.walkKm),
                       ]
                         .filter(Boolean)
                         .join(' · ')
@@ -228,7 +223,6 @@ export default function RecutProposalScreen() {
                       {[
                         t('territories.recut.proposal.part', { number: part.number, homes: part.homes ?? '—' }),
                         walkText(part.walkKm),
-                        monthsText(part.walkKm),
                       ]
                         .filter(Boolean)
                         .join(' · ')}
@@ -254,7 +248,6 @@ export default function RecutProposalScreen() {
                         p.parts[0]?.homes ?? p.territories.reduce((n, x) => n + (byId.get(x.id)?.homes ?? 0), 0),
                     }),
                     walkText(p.parts[0]?.walkKm ?? null),
-                    monthsText(p.parts[0]?.walkKm ?? null),
                   ]
                     .filter(Boolean)
                     .join(' · ')}
@@ -263,11 +256,6 @@ export default function RecutProposalScreen() {
               <Text style={s.quiet}>{t('territories.recut.proposal.joinedKeeps', { number: keepNumber })}</Text>
             </>
           )}
-          <Text style={s.quiet}>
-            {view.pace
-              ? t('territories.recut.proposal.pace', { km: km(view.pace.kmPerMonth, lang), samples: view.pace.samples })
-              : t('territories.recut.proposal.paceNone')}
-          </Text>
         </View>
 
         {/* When it can be applied */}

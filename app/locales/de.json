@@ -8190,7 +8190,7 @@
         "minKm": "Kürzester Weg, km",
         "remoteMinutes": "Außerhalb — Fahrt länger als, Min.",
         "save": "Maßstab speichern",
-        "reopenNote": "Beschlossene Vorschläge gehen erneut ans Dienstkomitee.",
+        "reopenNote": "Beschlossene Vorschläge gehen erneut zur Beratung ans Dienstkomitee.",
         "bad": "Bitte prüfen: Ein Teil darf nicht länger sein als der längste Weg."
       },
       "figures": {
@@ -8218,13 +8218,13 @@
       },
       "decision": {
         "title": "Beschluss des Dienstkomitees",
-        "waiting": "in Beratung: {{count}}",
+        "waiting": "beim Dienstkomitee in Beratung: {{count}}",
         "decided": "beschlossen: {{count}}",
-        "reopened": "erneut in Beratung: {{count}}",
+        "reopened": "erneut beim Dienstkomitee in Beratung: {{count}}",
         "remarks": "Anmerkungen: {{count}}",
-        "note": "Die Rückmeldungen der Brüder bereiten die Sitzung des Komitees vor. Den Beschluss trägt ein Mitglied des Dienstkomitees ein.",
-        "button": "Vom Komitee beschlossen…",
-        "confirmTitle": "Beschluss des Komitees eintragen?",
+        "note": "Die Rückmeldungen der Brüder bereiten die Sitzung des Dienstkomitees vor. Den Beschluss trägt ein Mitglied des Dienstkomitees ein.",
+        "button": "Vom Dienstkomitee beschlossen…",
+        "confirmTitle": "Beschluss des Dienstkomitees eintragen?",
         "confirmBody": "Die Vorschläge in Beratung ({{count}}) werden als heute vom Dienstkomitee beschlossen eingetragen.",
         "confirmYes": "Beschlossen",
         "done": "Beschluss eingetragen."
@@ -8261,7 +8261,7 @@
         "farNoMin": "außerhalb"
       },
       "block": {
-        "notApproved": "wartet auf Beschluss",
+        "notApproved": "wartet auf Beschluss des Dienstkomitees",
         "held": "ausgegeben",
         "meeting": "Treffpunkt {{date}}",
         "changed": "Grenze verschoben — prüfen",
@@ -8301,15 +8301,12 @@
         "removeTitle": "Vorschlag entfernen?",
         "removeBody": "Der Vorschlag und seine Anmerkungen werden gelöscht. Die Gebiete bleiben unverändert.",
         "removed": "Vorschlag entfernt.",
-        "decidedAt": "Vom Komitee beschlossen am {{date}}",
-        "reopenedAt": "Nach dem Beschluss geändert — erneut in Beratung",
+        "decidedAt": "Vom Dienstkomitee beschlossen am {{date}}",
+        "reopenedAt": "Nach dem Beschluss geändert — erneut beim Dienstkomitee in Beratung",
         "mapHint": "Farben sind Teile, Nummern auf der Karte.",
         "notFound": "Diesen Vorschlag gibt es im Entwurf nicht mehr.",
         "km": "{{km}} km",
-        "kmWait": "Weg wird berechnet…",
-        "months": "≈{{count}} Mon.",
-        "paceNone": "Die Dauer in Monaten erscheint, sobald die S-13 der letzten zwei Jahre mindestens acht bearbeitete Gebiete enthält.",
-        "pace": "Monate in Ihrem Tempo: laut S-13 der letzten zwei Jahre ≈{{km}} km pro Monat (bearbeitete Gebiete: {{samples}})."
+        "kmWait": "Weg wird berechnet…"
       },
       "remarks": {
         "title": "Anmerkungen",
