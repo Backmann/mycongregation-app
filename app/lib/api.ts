@@ -8830,7 +8830,13 @@ export interface RecutProposal {
   numbers: string[] | null;
   keepId: string | null;
   /** As the lines cut the territory now; empty when they no longer can. */
-  parts: { number: string; homes: number | null; geometry: TerritoryGeometry }[];
+  parts: {
+    number: string;
+    homes: number | null;
+    /** Its walk (km), worked out in the background; null until then. */
+    walkKm: number | null;
+    geometry: TerritoryGeometry;
+  }[];
   approvedAt: string | null;
   reopenedAt: string | null;
   appliedAt: string | null;
@@ -8843,6 +8849,10 @@ export interface RecutView {
   measure: RecutMeasure;
   metricsAt: string | null;
   computing: boolean;
+  /** The walks of the parts are being worked out now. */
+  walking?: boolean;
+  /** Km a month, the middle of the territories worked through (S-13); null: too few. */
+  pace?: { kmPerMonth: number; samples: number } | null;
   halls: { name: string; found: boolean }[];
   territories: RecutTerritory[];
   /** The territory servant and his assistant draw and change. */

@@ -108,3 +108,82 @@ export function whereOf(
   if (t.driveMinutes == null) return tr(far ? 'territories.recut.where.farNoMin' : 'territories.recut.where.cityNoMin');
   return tr(far ? 'territories.recut.where.far' : 'territories.recut.where.city', { min: km(t.driveMinutes, lang) });
 }
+
+/** A territory as the figures know it. */
+export interface WalkLike {
+  id: string;
+  walkKm: number | null;
+}
+export interface ProposalWalkLike {
+  kind: 'cut' | 'merge';
+  state: 'open' | 'applied';
+  queue: number;
+  territories: { id: string }[];
+  parts: { walkKm: number | null }[];
+}
+
+/**
+ * The walk now and after: a cut — the territory's walk, then its longest
+ * part; a join — the territories together, then the one they make. Null
+ * where a figure is not in yet.
+ */
+export function walkNowAfter(
+  p: ProposalWalkLike,
+  byId: Map<string, WalkLike>,
+): { now: number | null; after: number | null } {
+  const nows = p.territories.map((t) => byId.get(t.id)?.walkKm ?? null);
+  const now = nows.some((x) => x === null)
+    ? null
+    : nows.reduce<number>((n, x) => n + (x as number), 0);
+  const parts = p.parts.map((x) => x.walkKm);
+  const after =
+    parts.length === 0 || parts.some((x) => x === null) ? null : Math.max(...(parts as number[]));
+  return { now, after };
+}
+
+/** The open proposals by their round: how many cuts and joins in each. */
+export function queuesOf(
+  list: ProposalWalkLike[],
+): { queue: number; cuts: number; joins: number }[] {
+  const by = new Map<number, { queue: number; cuts: number; joins: number }>();
+  for (const p of list) {
+    if (p.state !== 'open') continue;
+    const q = by.get(p.queue) ?? { queue: p.queue, cuts: 0, joins: 0 };
+    if (p.kind === 'cut') q.cuts += 1;
+    else q.joins += 1;
+    by.set(p.queue, q);
+  }
+  return [...by.values()].sort((a, b) => a.queue - b.queue);
+}
+
+/**
+ * The longest walk of all the territories now, and if all were taken: the
+ * territories in no proposal as they are, the rest as their parts. After is
+ * null while a part's walk is not in yet.
+ */
+export function longestWalk(
+  territories: WalkLike[],
+  list: ProposalWalkLike[],
+): { now: number | null; after: number | null } {
+  const known = territories.filter((t) => t.walkKm !== null).map((t) => t.walkKm as number);
+  if (known.length === 0) return { now: null, after: null };
+  const now = Math.max(...known);
+  const open = list.filter((p) => p.state === 'open');
+  const inside = new Set(open.flatMap((p) => p.territories.map((t) => t.id)));
+  const rest = territories.filter((t) => !inside.has(t.id) && t.walkKm !== null).map((t) => t.walkKm as number);
+  const parts = open.flatMap((p) => p.parts.map((x) => x.walkKm));
+  if (parts.some((x) => x === null)) return { now, after: null };
+  return { now, after: Math.max(0, ...rest, ...(parts as number[])) };
+}
+
+/** Months a walk takes at the congregation's pace: whole months, at least one. */
+export function monthsAt(km: number | null, pace: { kmPerMonth: number } | null | undefined): number | null {
+  if (km === null || !pace || pace.kmPerMonth <= 0) return null;
+  return Math.max(1, Math.round(km / pace.kmPerMonth));
+}
+
+/** Territories whose number has the words searched for, any case, spaces ignored. */
+export function searchTerritories<T extends { number: string }>(list: T[], q: string): T[] {
+  const n = q.replace(/\s+/g, '').toLowerCase();
+  return list.filter((t) => t.number.replace(/\s+/g, '').toLowerCase().includes(n));
+}

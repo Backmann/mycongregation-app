@@ -8209,7 +8209,12 @@
         "unit_other": "territories",
         "cuts_one": "Cut {{cuts}} into {{count}} part",
         "cuts_other": "Cut {{cuts}} into {{count}} parts",
-        "joins": "join {{joined}} small into {{count}}"
+        "joins": "join {{joined}} small into {{count}}",
+        "queue": "Round {{n}}",
+        "qCuts": "cut: {{count}}",
+        "qJoins": "join: {{count}}",
+        "longest": "Longest walk: {{now}} → {{after}} km",
+        "longestWait": "Longest walk now {{now}} km · after — being worked out…"
       },
       "decision": {
         "title": "The service committee's decision",
@@ -8245,7 +8250,9 @@
         "merge": "join {{list}}",
         "queue": "round {{n}}",
         "homes": "homes: {{count}}",
-        "decided": "decided"
+        "decided": "decided",
+        "walk": "walk {{now}} → ≈{{after}} km",
+        "walkNow": "walk {{now}} km"
       },
       "where": {
         "city": "city · {{min}} min",
@@ -8272,7 +8279,8 @@
         "cut": "cut into {{count}}",
         "merge": "candidate to join",
         "keep": "within the measure",
-        "inProposal": "in the draft"
+        "inProposal": "in the draft",
+        "search": "Find a territory"
       },
       "proposal": {
         "titleCut": "{{number}} — cut into {{count}}",
@@ -8296,7 +8304,12 @@
         "decidedAt": "Decided by the committee {{date}}",
         "reopenedAt": "Changed after the decision — back under discussion",
         "mapHint": "Colours are the parts, numbers on the map.",
-        "notFound": "This proposal is no longer in the draft."
+        "notFound": "This proposal is no longer in the draft.",
+        "km": "{{km}} km",
+        "kmWait": "walk being worked out…",
+        "months": "≈{{count}} mo",
+        "paceNone": "The months appear once the S-13 of the last two years has at least eight territories worked.",
+        "pace": "Months at your pace: by the S-13 of the last two years, ≈{{km}} km a month ({{samples}} territories worked)."
       },
       "remarks": {
         "title": "Remarks",
@@ -8309,6 +8322,10 @@
         "mine": "yours",
         "takeBack": "Take mine back",
         "okBy": "no remarks"
+      },
+      "legend": {
+        "cut": "cut",
+        "merge": "join"
       }
     }
   }

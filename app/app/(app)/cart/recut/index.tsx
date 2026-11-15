@@ -33,7 +33,11 @@ import {
   needsHands,
   km,
   RECUT_KEY,
+  longestWalk,
+  queuesOf,
+  searchTerritories,
   summaryOf,
+  walkNowAfter,
   whereOf,
   type RecutFilter,
 } from '../../../../lib/recut';
@@ -64,11 +68,12 @@ export default function RecutScreen() {
     queryFn: () => recutApi.view(),
     throwOnError: failsScreen,
     // While the figures are being worked out, look again every few seconds.
-    refetchInterval: (q) => (q.state.data?.computing ? 3000 : false),
+    refetchInterval: (q) => (q.state.data?.computing || q.state.data?.walking ? 3000 : false),
   });
   const [filter, setFilter] = useState<RecutFilter>('all');
   const [editing, setEditing] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [query, setQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -126,6 +131,8 @@ export default function RecutScreen() {
   const m = view.measure;
   const open = view.proposals.filter((p) => p.state === 'open');
   const sum = summaryOf(view.territories.length, open);
+  const queues = queuesOf(open);
+  const longest = longestWalk(view.territories, open);
   const dec = decisionOf(open);
   const shown = filterProposals(open, filter);
   const counts: Record<RecutFilter, number> = {
@@ -277,6 +284,30 @@ export default function RecutScreen() {
                 .replace(/^./, (c) => c.toUpperCase())}
             </Text>
           ) : null}
+          {queues.length ? (
+            <View style={s.queues}>
+              {queues.map((q) => (
+                <View key={q.queue} style={s.queue}>
+                  <Text style={s.queueName}>{t('territories.recut.summary.queue', { n: q.queue })}</Text>
+                  <Text style={s.quiet}>
+                    {[
+                      q.joins ? t('territories.recut.summary.qJoins', { count: q.joins }) : null,
+                      q.cuts ? t('territories.recut.summary.qCuts', { count: q.cuts }) : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {longest.now !== null && open.length ? (
+            <Text style={s.body}>
+              {longest.after !== null
+                ? t('territories.recut.summary.longest', { now: km(longest.now, lang), after: km(longest.after, lang) })
+                : t('territories.recut.summary.longestWait', { now: km(longest.now, lang) })}
+            </Text>
+          ) : null}
         </View>
 
         {/* The committee's decision */}
@@ -346,11 +377,11 @@ export default function RecutScreen() {
             <View style={s.legend}>
               <View style={s.legendItem}>
                 <View style={[s.legendDot, { backgroundColor: CUT }]} />
-                <Text style={s.legendText}>{t('territories.recut.filter.cut', { count: counts.cut })}</Text>
+                <Text style={s.legendText}>{t('territories.recut.legend.cut')}</Text>
               </View>
               <View style={s.legendItem}>
                 <View style={[s.legendDot, { backgroundColor: JOIN }]} />
-                <Text style={s.legendText}>{t('territories.recut.filter.merge', { count: counts.merge })}</Text>
+                <Text style={s.legendText}>{t('territories.recut.legend.merge')}</Text>
               </View>
             </View>
           </View>
@@ -386,6 +417,7 @@ export default function RecutScreen() {
               key={p.id}
               p={p}
               first={byId.get(p.territories[0]?.id ?? '')}
+              byId={byId}
               lang={lang}
               onOpen={() => router.push(`/cart/recut/${p.id}` as never)}
             />
@@ -405,8 +437,20 @@ export default function RecutScreen() {
               <Ionicons name={showAll ? 'chevron-up' : 'chevron-down'} size={18} color={MUTED} />
             </Pressable>
             <Text style={s.quiet}>{t('territories.recut.all.hint')}</Text>
+            {showAll ? (
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+                placeholder={t('territories.recut.all.search')}
+                placeholderTextColor="#94a3b8"
+                style={[s.input, s.search]}
+                accessibilityLabel={t('territories.recut.all.search')}
+                autoCorrect={false}
+                autoCapitalize="none"
+              />
+            ) : null}
             {showAll
-              ? [...view.territories]
+              ? searchTerritories([...view.territories], query)
                   .sort((a, b) => (b.walkKm ?? 0) - (a.walkKm ?? 0))
                   .map((x) => (
                     <TerritoryLine
@@ -429,11 +473,13 @@ export default function RecutScreen() {
 function ProposalRow({
   p,
   first,
+  byId,
   lang,
   onOpen,
 }: {
   p: RecutProposal;
   first: RecutTerritory | undefined;
+  byId: Map<string, RecutTerritory>;
   lang: string;
   onOpen: () => void;
 }) {
@@ -445,6 +491,13 @@ function ProposalRow({
       ? t('territories.recut.list.cut', { count: n })
       : t('territories.recut.list.merge', { list: numbers.join(' + ') });
   const remarks = p.remarks.filter((r) => !r.ok).length;
+  const walk = walkNowAfter(p, byId);
+  const walkText =
+    walk.now === null
+      ? null
+      : walk.after === null
+        ? t('territories.recut.list.walkNow', { now: km(walk.now, lang) })
+        : t('territories.recut.list.walk', { now: km(walk.now, lang), after: km(walk.after, lang) });
   return (
     <Pressable
       onPress={onOpen}
@@ -460,7 +513,7 @@ function ProposalRow({
           <Text style={s.rowWhere}>{whereOf(first, (k, o) => t(k, o), lang)}</Text>
         </View>
         <Text style={s.rowWhat}>
-          {[what, t('territories.recut.list.queue', { n: p.queue })].join(' · ')}
+          {[what, walkText, t('territories.recut.list.queue', { n: p.queue })].filter(Boolean).join(' · ')}
         </Text>
         <View style={s.chips}>
           {p.blocks
@@ -691,6 +744,9 @@ const s = StyleSheet.create({
   notice: { backgroundColor: '#f0fdf4', borderRadius: 12, borderWidth: 1, borderColor: '#bbf7d0', padding: 12 },
   noticeText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: '#166534', lineHeight: 19 },
   mapWrap: { borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', borderWidth: 1, borderColor: LINE },
+  queues: { gap: 4, marginTop: 2 },
+  queue: { flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
+  queueName: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: INK, minWidth: 74 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 14, padding: 10 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 12, height: 12, borderRadius: 3 },
@@ -732,6 +788,7 @@ const s = StyleSheet.create({
   segOn: { backgroundColor: '#e0f2fe' },
   segText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: MUTED },
   segTextOn: { color: '#0369a1' },
+  search: { maxWidth: 420, width: '100%' },
   field: { gap: 4 },
   fieldLabel: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   input: {

@@ -8209,7 +8209,12 @@
         "unit_other": "Gebiete",
         "cuts_one": "{{cuts}} in {{count}} Teil teilen",
         "cuts_other": "{{cuts}} in {{count}} Teile teilen",
-        "joins": "{{joined}} kleine zu {{count}} zusammenlegen"
+        "joins": "{{joined}} kleine zu {{count}} zusammenlegen",
+        "queue": "Runde {{n}}",
+        "qCuts": "teilen: {{count}}",
+        "qJoins": "zusammenlegen: {{count}}",
+        "longest": "Längster Weg: {{now}} → {{after}} km",
+        "longestWait": "Längster Weg jetzt {{now}} km · danach — wird berechnet…"
       },
       "decision": {
         "title": "Beschluss des Dienstkomitees",
@@ -8245,7 +8250,9 @@
         "merge": "{{list}} zusammenlegen",
         "queue": "Runde {{n}}",
         "homes": "Häuser: {{count}}",
-        "decided": "beschlossen"
+        "decided": "beschlossen",
+        "walk": "Weg {{now}} → ≈{{after}} km",
+        "walkNow": "Weg {{now}} km"
       },
       "where": {
         "city": "Stadt · {{min}} Min.",
@@ -8272,7 +8279,8 @@
         "cut": "in {{count}} teilen",
         "merge": "Kandidat zum Zusammenlegen",
         "keep": "im Maßstab",
-        "inProposal": "im Entwurf"
+        "inProposal": "im Entwurf",
+        "search": "Gebiet suchen"
       },
       "proposal": {
         "titleCut": "{{number}} — in {{count}} teilen",
@@ -8296,7 +8304,12 @@
         "decidedAt": "Vom Komitee beschlossen am {{date}}",
         "reopenedAt": "Nach dem Beschluss geändert — erneut in Beratung",
         "mapHint": "Farben sind Teile, Nummern auf der Karte.",
-        "notFound": "Diesen Vorschlag gibt es im Entwurf nicht mehr."
+        "notFound": "Diesen Vorschlag gibt es im Entwurf nicht mehr.",
+        "km": "{{km}} km",
+        "kmWait": "Weg wird berechnet…",
+        "months": "≈{{count}} Mon.",
+        "paceNone": "Die Dauer in Monaten erscheint, sobald die S-13 der letzten zwei Jahre mindestens acht bearbeitete Gebiete enthält.",
+        "pace": "Monate in Ihrem Tempo: laut S-13 der letzten zwei Jahre ≈{{km}} km pro Monat (bearbeitete Gebiete: {{samples}})."
       },
       "remarks": {
         "title": "Anmerkungen",
@@ -8309,6 +8322,10 @@
         "mine": "Ihre",
         "takeBack": "Meine entfernen",
         "okBy": "keine Anmerkung"
+      },
+      "legend": {
+        "cut": "teilen",
+        "merge": "zusammenlegen"
       }
     }
   }

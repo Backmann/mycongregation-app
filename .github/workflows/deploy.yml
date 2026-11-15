@@ -246,8 +246,9 @@ jobs:
           SUMMARY: ${{ steps.seed.outputs.summary }}
         run: |
           CURRENT="$(node -e 'console.log(JSON.parse(process.env.SUMMARY).current)')"
+          RECUT="$(node -e 'console.log(JSON.parse(process.env.SUMMARY).recut || "")')"
           node scripts/screens-ci.mjs --a "$GITHUB_WORKSPACE/dist-base" --b "$GITHUB_WORKSPACE/dist-pr" \
-            --current "$CURRENT" --out "$GITHUB_WORKSPACE/screens-out" \
+            --current "$CURRENT" --out "$GITHUB_WORKSPACE/screens-out" --recut "$RECUT" \
             --reset "$GITHUB_WORKSPACE/server/scripts/screens-server.sh restore"
       - name: Report in the summary
         if: always() && steps.scope.outputs.run == 'true'
