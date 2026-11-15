@@ -50,11 +50,14 @@ export type AccessRule =
   | 'attendance'
   | 'duties'
   | 'dutyPlaces'
-  | 'backups';
+  | 'backups'
+  /** The failures met in the app: whoever runs the platform (15 November 2026). */
+  | 'crashes';
 
 /** What the account itself carries, beside the permissions. */
 export interface AccessUser {
   canManageBackups?: boolean;
+  canSeeCrashes?: boolean;
 }
 
 export const ACCESS_RULES: Record<
@@ -92,6 +95,7 @@ export const ACCESS_RULES: Record<
   // The places themselves: whoever edits the duties (27 October 2026).
   dutyPlaces: (p) => p.canEditDuties || p.isAdmin,
   backups: (_p, user) => user?.canManageBackups === true,
+  crashes: (_p, user) => user?.canSeeCrashes === true,
 };
 
 export const SCREEN_ACCESS: Record<string, AccessRule> = {
@@ -148,7 +152,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/publishers/meeting-settings': 'admin',
   '/publishers/admin-users': 'admin',
   '/publishers/journal': 'admin',
-  '/publishers/crashes': 'admin',
+  '/publishers/crashes': 'crashes',
   '/publishers/backups': 'backups',
   '/publishers/public-talks': 'elders',
   '/publishers/public-talks-import': 'elders',
