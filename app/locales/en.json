@@ -4225,6 +4225,9 @@
       "startTime": "Time",
       "address": "Address",
       "conductorPublisherId": "Conductor",
+      "conductorName": "Conductor — name",
+      "secondConductorName": "Second conductor — name",
+      "secondConductorPublisherId": "Second conductor",
       "topic": "Topic",
       "isGeneral": "Combined meeting",
       "direction": "Direction",
@@ -5901,7 +5904,9 @@
       "maxLength": "too long",
       "min": "the value is too small",
       "minLength": "too short",
-      "other": "the value does not fit"
+      "other": "the value does not fit",
+      "isLatitude": "this is not a latitude",
+      "isLongitude": "this is not a longitude"
     },
     "fields": {
       "address": "Address",
@@ -6225,7 +6230,13 @@
       "TERRITORY_RECUT_PARTS": "The proposal is not right: check the territories and the numbers of the parts.",
       "TERRITORY_RECUT_MEASURE": "The measure does not hold: a part may not be longer than the longest walk.",
       "TERRITORY_RECUT_NO_FIGURES": "Work out the territory figures first.",
-      "TERRITORY_JOIN_FAILED": "These territories cannot be joined along their borders — adjust the border of one of them."
+      "TERRITORY_RECUT_STALE": "The proposal was saved by someone else while you were editing. Load the saved lines and repeat your change if needed.",
+      "TERRITORY_JOIN_FAILED": "These territories cannot be joined along their borders — adjust the border of one of them.",
+      "TERRITORY_NO_CALL_MOVE": "The “do not call” address was not moved: only between the territories whose border moved.",
+      "TERRITORY_NOT_BUSINESS": "Only a business territory has a list of businesses.",
+      "TERRITORY_BUSINESSES_MANY": "Too many businesses in one territory: at most {{max}}.",
+      "TERRITORY_BUSINESS_OUTSIDE": "The point of the business lies outside territory {{number}}.",
+      "TERRITORY_NOT_GIVEN": "The territory is not given out at present."
     }
   },
   "stage": {
@@ -8323,6 +8334,49 @@
       "legend": {
         "cut": "cut",
         "merge": "join"
+      },
+      "lines": {
+        "title": "{{number}} — cut lines",
+        "webOnly": "Cut lines are edited on a computer: open the re-cutting draft in a browser.",
+        "parts": "Parts · homes at once, km once you let go",
+        "homes_one": "{{count}} home",
+        "homes_other": "{{count}} homes",
+        "walking": "The server is working out the walk along the roads… You can keep moving the line.",
+        "measure": "Measure: a part ≈ {{target}} km, at most {{max}} km.",
+        "over": "over {{km}} km",
+        "under": "under {{km}} km",
+        "fits": "within the measure",
+        "keeps": "Number {{number}} and its S-13 history stay with part:",
+        "part": "part {{n}}",
+        "moving": "Moving to another part",
+        "movedHomes": "{{moved}} of {{all}} homes · {{share}}%",
+        "reopens": "More than 10% — once saved, the proposal goes back to the service committee, and “no remarks” given before waits for a new look.",
+        "staleMarks": "More than 10% — once saved, “no remarks” given before waits for a new look.",
+        "small": "Up to 10% — the decision and the marks stand.",
+        "besideTitle": "Along the lines",
+        "beside_one": "Line {{n}}: {{count}} home within 25 m",
+        "beside_other": "Line {{n}}: {{count}} homes within 25 m",
+        "besideHint": "A line close to homes divides their street between parts. A border along a main road is usual; along a residential street — think it over.",
+        "loadSaved": "Load the saved lines",
+        "save": "Save in the draft",
+        "cancel": "Discard the change",
+        "toolPoints": "Move points",
+        "toolRedraw": "Redraw",
+        "toolAdd": "+ Line",
+        "remove": "Remove the line",
+        "stepBack": "Step back",
+        "suggested": "Back to the proposed lines",
+        "snap": "Snap to streets",
+        "how": "Drag a point · click the middle of a stretch for a new point · right-click a point to remove it. Grey dashes: the saved lines; a home in a white circle changes part.",
+        "problem": {
+          "short": "Line {{n}}: at least two points are needed.",
+          "crosses": "Line {{n}} crosses itself.",
+          "notThrough": "Line {{n}} does not go through the territory: its middle must lie inside it.",
+          "many": "One to seven lines."
+        },
+        "edit": "Edit the lines",
+        "movedByHand": "The lines were moved by hand after the draft proposed them.",
+        "staleRemark": "before the lines changed — waits for a new look"
       }
     }
   }

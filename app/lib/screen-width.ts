@@ -66,6 +66,8 @@ const OVERVIEW = new Set<string>([
   // The map where a boundary is drawn again, the changes beside it.
   '/cart/territory/outline/[id]',
   '/cart/territory/new',
+  // The map where a cut's lines are moved, the parts beside it (16 November 2026).
+  '/cart/recut/lines/[id]',
 ]);
 
 /** The tabs' own first screens: the side menu is their way back. */

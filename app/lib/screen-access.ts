@@ -201,6 +201,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // (15 November 2026).
   '/cart/recut': 'self',
   '/cart/recut/[id]': 'self',
+  '/cart/recut/lines/[id]': 'self',
   '/cart/co-schedule': 'coSchedule',
   // Readable by everybody: the owner's decision of 24 September.
   '/cart/service-overseer': 'all',
