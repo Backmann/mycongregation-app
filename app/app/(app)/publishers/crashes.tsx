@@ -12,6 +12,11 @@ import { FONT } from '../../../lib/typography';
  * thirty days, from the failure journal (lib/crash-report.ts). Technical
  * facts only; the same failure on a day is one row with a count. Admin only
  * (lib/screen-access.ts).
+ *
+ * 15 November 2026: a request that did not get through is marked «сеть»
+ * (the server decides; such a failure wakes nobody), and a row opens to show
+ * how it was caught — the event, online or not, when after the start, the
+ * file the browser named — so that a failure without a stack can be traced.
  */
 
 const PLATFORM_ICON: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -29,6 +34,14 @@ function Row({ r }: { r: ClientErrorRow }) {
     hour: '2-digit',
     minute: '2-digit',
   });
+  const context = [
+    r.event ? t(`crashes.event.${r.event}`, { defaultValue: r.event }) : null,
+    r.online === true ? t('crashes.online') : r.online === false ? t('crashes.offline') : null,
+    typeof r.sinceStartS === 'number' ? t('crashes.since', { s: r.sinceStartS }) : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const hasDetails = !!(r.stack || r.place || context);
   const meta = [
     when,
     t(r.source === 'screen' ? 'crashes.screen' : 'crashes.uncaught'),
@@ -42,11 +55,17 @@ function Row({ r }: { r: ClientErrorRow }) {
       onPress={() => setOpen((o) => !o)}
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
       accessibilityRole="button"
-      accessibilityState={{ expanded: open }}
+      accessibilityState={hasDetails ? { expanded: open } : undefined}
     >
       <View style={styles.rowTop}>
         <Ionicons name={PLATFORM_ICON[r.platform] ?? 'help-circle-outline'} size={16} color="#475569" />
         <Text style={styles.route}>{r.route}</Text>
+        {r.network ? (
+          <View style={styles.net}>
+            <Ionicons name="cloud-offline-outline" size={13} color="#475569" />
+            <Text style={styles.netText}>{t('crashes.network')}</Text>
+          </View>
+        ) : null}
         <View style={styles.count}>
           <Text style={styles.countText}>{t('crashes.times', { count: r.count })}</Text>
         </View>
@@ -55,12 +74,25 @@ function Row({ r }: { r: ClientErrorRow }) {
         {r.message}
       </Text>
       <Text style={styles.meta}>{meta}</Text>
-      {open && r.stack ? (
+      {open && hasDetails ? (
         <View style={styles.stack}>
-          <Text style={styles.stackLabel}>{t('crashes.stack')}</Text>
-          <Text style={styles.stackText} selectable>
-            {r.stack}
-          </Text>
+          {context ? <Text style={styles.stackText}>{context}</Text> : null}
+          {r.place ? (
+            <>
+              <Text style={styles.stackLabel}>{t('crashes.place')}</Text>
+              <Text style={styles.stackText} selectable>
+                {r.place}
+              </Text>
+            </>
+          ) : null}
+          {r.stack ? (
+            <>
+              <Text style={styles.stackLabel}>{t('crashes.stack')}</Text>
+              <Text style={styles.stackText} selectable>
+                {r.stack}
+              </Text>
+            </>
+          ) : null}
         </View>
       ) : null}
     </Pressable>
@@ -103,6 +135,16 @@ const styles = StyleSheet.create({
   route: { flex: 1, fontSize: 15, fontFamily: FONT.extrabold, color: '#0f172a' },
   count: { backgroundColor: '#fee2e2', borderRadius: 999, paddingHorizontal: 9, paddingVertical: 2 },
   countText: { fontSize: 12.5, fontFamily: FONT.bold, color: '#b91c1c' },
+  net: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  netText: { fontSize: 12.5, fontFamily: FONT.bold, color: '#475569' },
   message: { fontSize: 14, lineHeight: 20, fontFamily: FONT.medium, color: '#334155' },
   meta: { fontSize: 12.5, fontFamily: FONT.semibold, color: '#64748b' },
   stack: { marginTop: 4, backgroundColor: '#f8fafc', borderRadius: 10, padding: 10, gap: 4 },

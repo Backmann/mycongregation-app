@@ -92,6 +92,7 @@ const STEPS = [
   ['Участки: куда идти', 'node', ['scripts/check-way.mjs']],
   ['Участки: жилые дома', 'node', ['scripts/check-homes.mjs']],
   ['Карта: кривые по масштабу', 'node', ['scripts/check-map-zoom.mjs']],
+  ['Сбои: как пойман', 'node', ['scripts/check-crash-context.mjs']],
   ['Обещание «не null» в обработчиках', 'node', ['scripts/check-nonnull-callbacks.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],

@@ -7225,13 +7225,24 @@
     "title": "App-Fehler",
     "rowSubtitle": "Was in 30 Tagen bei Nutzern schiefging — ohne persönliche Daten",
     "empty": "In 30 Tagen keine Fehler.",
-    "note": "Technische Angaben ohne Namen und Versammlungsdaten. Derselbe Fehler an einem Tag ist eine Zeile mit Zähler. Gespeichert 30 Tage.",
+    "note": "Technische Angaben ohne Namen und Versammlungsdaten. Derselbe Fehler an einem Tag ist eine Zeile mit Zähler. Gespeichert 30 Tage. Netzfehler sind mit „Netz“ markiert und melden sich erst, wenn es an einem Tag viele werden.",
     "times": "{{count}}-mal",
     "screen": "Bildschirm öffnete nicht",
     "uncaught": "Fehler im Code",
     "before": "vor der Anmeldung",
     "build": "Build {{id}}",
-    "stack": "Wo im Code"
+    "stack": "Wo im Code",
+    "network": "Netz",
+    "online": "online",
+    "offline": "offline",
+    "since": "{{s}} s nach dem Start",
+    "place": "Datei",
+    "event": {
+      "error": "Skriptfehler",
+      "rejection": "unbehandeltes Promise",
+      "handler": "globaler Handler",
+      "screen": "Bildschirm"
+    }
   },
   "pairPrep": {
     "button": "Vorbereitung absprechen",
