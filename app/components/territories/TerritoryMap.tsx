@@ -19,6 +19,8 @@ export interface MapShape {
   number: string;
   geometry: TerritoryGeometry;
   tone: TerritoryTone | 'mine';
+  /** Its own colour over the tone's (the parts of a re-cut, 15 November 2026). */
+  color?: string;
 }
 
 /** A business of a business territory's list, numbered (13 November 2026). */
@@ -189,7 +191,7 @@ function featuresOf(shapes: MapShape[]) {
     features: shapes.map((s) => ({
       type: 'Feature',
       id: s.id,
-      properties: { id: s.id, number: s.number, color: TONE_COLOR[s.tone] },
+      properties: { id: s.id, number: s.number, color: s.color ?? TONE_COLOR[s.tone] },
       geometry: s.geometry,
     })),
   };

@@ -6220,7 +6220,12 @@
       "TERRITORY_NO_STREETS": "Die Karte hat hier noch keine Straßen — die Aufteilung geht nach der nächsten Kartenaktualisierung.",
       "TERRITORY_ALL_WALKED": "Alle Straßen des Gebiets sind schon bearbeitet.",
       "TERRITORY_SPLIT_BUSINESS": "Ein Geschäftsgebiet wird nach seiner Liste bearbeitet und nicht auf Paare aufgeteilt.",
-      "TERRITORY_PART_STARTED": "Dieses Paar hat schon begonnen — von ihm kann keine Straße übernommen werden."
+      "TERRITORY_PART_STARTED": "Dieses Paar hat schon begonnen — von ihm kann keine Straße übernommen werden.",
+      "TERRITORY_IN_PROPOSAL": "{{number}} ist schon in einem anderen Vorschlag des Entwurfs.",
+      "TERRITORY_RECUT_PARTS": "Der Vorschlag ist fehlerhaft: Gebiete und Nummern der Teile prüfen.",
+      "TERRITORY_RECUT_MEASURE": "Der Maßstab passt nicht: Ein Teil darf nicht länger sein als der längste Weg.",
+      "TERRITORY_RECUT_NO_FIGURES": "Bitte zuerst die Kennzahlen der Gebiete berechnen.",
+      "TERRITORY_JOIN_FAILED": "Diese Gebiete lassen sich an ihren Grenzen nicht zusammenlegen — bitte die Grenze eines der beiden anpassen."
     }
   },
   "stage": {
@@ -8162,6 +8167,149 @@
       "rowNowNot": "zählt derzeit nicht",
       "empty": "Auf der Karte dieses Gebiets gibt es noch keine Gebäude.",
       "onlyWeb": "Die Häuser eines Gebiets lassen sich im Browser ansehen, auf dem Handy oder am Computer."
+    },
+    "recut": {
+      "door": {
+        "title": "Neuaufteilung — Entwurf",
+        "hint": "Große teilen, kleine zusammenlegen · nichts wird geändert"
+      },
+      "title": "Neuaufteilung der Gebiete",
+      "badge": "Entwurf · nichts wird geändert",
+      "measure": {
+        "title": "Maßstab",
+        "city": "Stadt",
+        "far": "Außerhalb",
+        "maxKm": "Weg bis {{km}} km",
+        "partKm": "Teil ≈ {{km}} km",
+        "farFrom": "Außerhalb — mehr als {{min}} Min. Fahrt vom nächsten Saal. Unter {{km}} km Weg — Kandidat zum Zusammenlegen.",
+        "edit": "Maßstab ändern",
+        "cityMaxKm": "Stadt: längster Weg, km",
+        "cityTargetKm": "Stadt: Teil nach dem Teilen, km",
+        "remoteMaxKm": "Außerhalb: längster Weg, km",
+        "remoteTargetKm": "Außerhalb: Teil nach dem Teilen, km",
+        "minKm": "Kürzester Weg, km",
+        "remoteMinutes": "Außerhalb — Fahrt länger als, Min.",
+        "save": "Maßstab speichern",
+        "reopenNote": "Beschlossene Vorschläge gehen erneut ans Dienstkomitee.",
+        "bad": "Bitte prüfen: Ein Teil darf nicht länger sein als der längste Weg."
+      },
+      "figures": {
+        "title": "Kennzahlen der Gebiete",
+        "at": "Berechnet am {{date}}",
+        "never": "Noch nicht berechnet",
+        "run": "Neu berechnen",
+        "first": "Berechnen",
+        "computing": "Wird berechnet… etwa eine halbe Minute",
+        "halls": "Säle auf der Karte: {{list}}",
+        "hallMissing": "{{name}} — Adresse nicht auf der Karte gefunden"
+      },
+      "summary": {
+        "title": "Wenn alles übernommen wird",
+        "unit_one": "Gebiet",
+        "unit_other": "Gebiete",
+        "cuts_one": "{{cuts}} in {{count}} Teil teilen",
+        "cuts_other": "{{cuts}} in {{count}} Teile teilen",
+        "joins": "{{joined}} kleine zu {{count}} zusammenlegen"
+      },
+      "decision": {
+        "title": "Beschluss des Dienstkomitees",
+        "waiting": "in Beratung: {{count}}",
+        "decided": "beschlossen: {{count}}",
+        "reopened": "erneut in Beratung: {{count}}",
+        "remarks": "Anmerkungen: {{count}}",
+        "note": "Die Rückmeldungen der Brüder bereiten die Sitzung des Komitees vor. Den Beschluss trägt ein Mitglied des Dienstkomitees ein.",
+        "button": "Vom Komitee beschlossen…",
+        "confirmTitle": "Beschluss des Komitees eintragen?",
+        "confirmBody": "Die Vorschläge in Beratung ({{count}}) werden als heute vom Dienstkomitee beschlossen eingetragen.",
+        "confirmYes": "Beschlossen",
+        "done": "Beschluss eingetragen."
+      },
+      "suggest": {
+        "button": "Nach Maßstab vorschlagen",
+        "hint": "Lange Gebiete entlang der Straßen teilen, kleine mit Nachbarn zusammenlegen. Gebiete, die schon in Vorschlägen sind, bleiben unberührt.",
+        "done": "Vorschläge hinzugefügt: {{count}}.",
+        "nothing": "Keine neuen Vorschläge: alles nach Maßstab ist schon im Entwurf.",
+        "byHand": "Nicht mit einer geraden Linie teilbar — bitte selbst zeichnen: {{list}}"
+      },
+      "filter": {
+        "all": "Alle · {{count}}",
+        "cut": "Teilen · {{count}}",
+        "merge": "Zusammenlegen · {{count}}",
+        "hands": "Von Hand · {{count}}",
+        "free": "Gebiet frei · {{count}}"
+      },
+      "list": {
+        "empty": "Noch keine Vorschläge.",
+        "emptyHint": "Kennzahlen berechnen und „Nach Maßstab vorschlagen“ tippen.",
+        "cut": "in {{count}} teilen",
+        "merge": "{{list}} zusammenlegen",
+        "queue": "Runde {{n}}",
+        "homes": "Häuser: {{count}}",
+        "decided": "beschlossen"
+      },
+      "where": {
+        "city": "Stadt · {{min}} Min.",
+        "far": "außerhalb · {{min}} Min.",
+        "cityNoMin": "Stadt",
+        "farNoMin": "außerhalb"
+      },
+      "block": {
+        "notApproved": "wartet auf Beschluss",
+        "held": "ausgegeben",
+        "meeting": "Treffpunkt {{date}}",
+        "changed": "Grenze verschoben — prüfen",
+        "gone": "Gebiet gibt es nicht mehr",
+        "shape": "Linien teilen nicht mehr — von Hand"
+      },
+      "all": {
+        "title": "Alle Gebiete nach Maßstab",
+        "hint": "Stadt oder außerhalb — nach Fahrzeit vom nächsten Saal; von Hand änderbar.",
+        "walk": "Weg {{km}} km",
+        "drive": "{{min}} Min.",
+        "setCity": "Stadt",
+        "setFar": "Außerhalb",
+        "setAuto": "Nach Minuten",
+        "cut": "in {{count}} teilen",
+        "merge": "Kandidat zum Zusammenlegen",
+        "keep": "im Maßstab",
+        "inProposal": "im Entwurf"
+      },
+      "proposal": {
+        "titleCut": "{{number}} — in {{count}} teilen",
+        "titleMerge": "{{list}} zusammenlegen",
+        "now": "Jetzt",
+        "becomes": "Danach",
+        "nowLine": "Häuser: {{homes}} · Weg {{km}} km",
+        "part": "{{number}} · Häuser: {{homes}}",
+        "keeps": "behält Nummer und S-13-Verlauf",
+        "newNumber": "neue Nummer",
+        "joinedKeeps": "Die Nummer {{number}} bleibt; die anderen gehen ins Archiv, ihre S-13-Zeilen bleiben erhalten.",
+        "applyWhen": "Übernehmen ist möglich, wenn:",
+        "condDecided": "der Entwurf vom Dienstkomitee beschlossen ist",
+        "condFree": "die Gebiete frei sind und kein Treffpunkt dorthin geht",
+        "condBorder": "die Grenze unverändert ist und die Linien teilen",
+        "applyLater": "Das Übernehmen kommt im nächsten Schritt der App",
+        "remove": "Aus dem Entwurf nehmen",
+        "removeTitle": "Vorschlag entfernen?",
+        "removeBody": "Der Vorschlag und seine Anmerkungen werden gelöscht. Die Gebiete bleiben unverändert.",
+        "removed": "Vorschlag entfernt.",
+        "decidedAt": "Vom Komitee beschlossen am {{date}}",
+        "reopenedAt": "Nach dem Beschluss geändert — erneut in Beratung",
+        "mapHint": "Farben sind Teile, Nummern auf der Karte.",
+        "notFound": "Diesen Vorschlag gibt es im Entwurf nicht mehr."
+      },
+      "remarks": {
+        "title": "Anmerkungen",
+        "none": "Noch keine Anmerkungen.",
+        "ok": "Keine Anmerkung",
+        "words": "Anmerkung",
+        "label": "Anmerkung zur Grenze",
+        "hint": "Nur zu Grenzen und Straßen — kein Wort über Menschen oder Bewohner. Die Anmerkung wird gelöscht, wenn der Vorschlag abgeschlossen ist.",
+        "send": "Senden",
+        "mine": "Ihre",
+        "takeBack": "Meine entfernen",
+        "okBy": "keine Anmerkung"
+      }
     }
   }
 }

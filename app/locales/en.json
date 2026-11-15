@@ -6220,7 +6220,12 @@
       "TERRITORY_NO_STREETS": "The map has no streets here yet — dividing works after the next map update.",
       "TERRITORY_ALL_WALKED": "Every street of the territory is already walked.",
       "TERRITORY_SPLIT_BUSINESS": "A business territory is walked by its list and is not divided between pairs.",
-      "TERRITORY_PART_STARTED": "That pair has already started — no street can be taken from it."
+      "TERRITORY_PART_STARTED": "That pair has already started — no street can be taken from it.",
+      "TERRITORY_IN_PROPOSAL": "{{number}} is already in another proposal of the draft.",
+      "TERRITORY_RECUT_PARTS": "The proposal is not right: check the territories and the numbers of the parts.",
+      "TERRITORY_RECUT_MEASURE": "The measure does not hold: a part may not be longer than the longest walk.",
+      "TERRITORY_RECUT_NO_FIGURES": "Work out the territory figures first.",
+      "TERRITORY_JOIN_FAILED": "These territories cannot be joined along their borders — adjust the border of one of them."
     }
   },
   "stage": {
@@ -8162,6 +8167,149 @@
       "rowNowNot": "not counted now",
       "empty": "The map of this territory has no buildings yet.",
       "onlyWeb": "The homes of a territory can be looked at in a browser, on a phone or a computer."
+    },
+    "recut": {
+      "door": {
+        "title": "Re-cutting — draft",
+        "hint": "Cut the large, join the small · nothing changes"
+      },
+      "title": "Re-cutting the territories",
+      "badge": "draft · nothing changes",
+      "measure": {
+        "title": "Measure",
+        "city": "City",
+        "far": "Far out",
+        "maxKm": "walk up to {{km}} km",
+        "partKm": "part ≈ {{km}} km",
+        "farFrom": "Far out — more than {{min}} min by car from the nearest hall. Under {{km}} km of walk — a candidate to join.",
+        "edit": "Change the measure",
+        "cityMaxKm": "City: longest walk, km",
+        "cityTargetKm": "City: part after cutting, km",
+        "remoteMaxKm": "Far out: longest walk, km",
+        "remoteTargetKm": "Far out: part after cutting, km",
+        "minKm": "Shortest walk, km",
+        "remoteMinutes": "Far out — drive longer than, min",
+        "save": "Save the measure",
+        "reopenNote": "Decided proposals go back to the committee.",
+        "bad": "Check the numbers: a part may not be longer than the longest walk."
+      },
+      "figures": {
+        "title": "Territory figures",
+        "at": "Worked out {{date}}",
+        "never": "Not worked out yet",
+        "run": "Work out again",
+        "first": "Work out",
+        "computing": "Working out… about half a minute",
+        "halls": "Halls on the map: {{list}}",
+        "hallMissing": "{{name}} — address not found on the map"
+      },
+      "summary": {
+        "title": "If all is taken",
+        "unit_one": "territory",
+        "unit_other": "territories",
+        "cuts_one": "Cut {{cuts}} into {{count}} part",
+        "cuts_other": "Cut {{cuts}} into {{count}} parts",
+        "joins": "join {{joined}} small into {{count}}"
+      },
+      "decision": {
+        "title": "The service committee's decision",
+        "waiting": "under discussion: {{count}}",
+        "decided": "decided: {{count}}",
+        "reopened": "back under discussion: {{count}}",
+        "remarks": "remarks: {{count}}",
+        "note": "The brothers' remarks prepare the committee's meeting. A member of the service committee records the decision.",
+        "button": "Decided by the committee…",
+        "confirmTitle": "Record the committee's decision?",
+        "confirmBody": "The proposals under discussion ({{count}}) will be recorded as decided by the service committee today.",
+        "confirmYes": "Decided",
+        "done": "Decision recorded."
+      },
+      "suggest": {
+        "button": "Suggest by the measure",
+        "hint": "Long territories are cut along the streets, small ones joined with neighbours. Territories already in a proposal are left alone.",
+        "done": "Proposals added: {{count}}.",
+        "nothing": "No new proposals: everything by the measure is in the draft already.",
+        "byHand": "Cannot be cut with a straight line — draw it yourself: {{list}}"
+      },
+      "filter": {
+        "all": "All · {{count}}",
+        "cut": "Cut · {{count}}",
+        "merge": "Join · {{count}}",
+        "hands": "By hand · {{count}}",
+        "free": "Territory free · {{count}}"
+      },
+      "list": {
+        "empty": "No proposals yet.",
+        "emptyHint": "Work out the figures and tap “Suggest by the measure”.",
+        "cut": "cut into {{count}}",
+        "merge": "join {{list}}",
+        "queue": "round {{n}}",
+        "homes": "homes: {{count}}",
+        "decided": "decided"
+      },
+      "where": {
+        "city": "city · {{min}} min",
+        "far": "far · {{min}} min",
+        "cityNoMin": "city",
+        "farNoMin": "far"
+      },
+      "block": {
+        "notApproved": "waits for the committee",
+        "held": "given out",
+        "meeting": "meeting {{date}}",
+        "changed": "border moved — check",
+        "gone": "territory no longer there",
+        "shape": "lines no longer cut — by hand"
+      },
+      "all": {
+        "title": "All territories by the measure",
+        "hint": "City or far by the drive from the nearest hall; can be set by hand.",
+        "walk": "walk {{km}} km",
+        "drive": "{{min}} min",
+        "setCity": "City",
+        "setFar": "Far",
+        "setAuto": "By minutes",
+        "cut": "cut into {{count}}",
+        "merge": "candidate to join",
+        "keep": "within the measure",
+        "inProposal": "in the draft"
+      },
+      "proposal": {
+        "titleCut": "{{number}} — cut into {{count}}",
+        "titleMerge": "Join {{list}}",
+        "now": "Now",
+        "becomes": "Becomes",
+        "nowLine": "homes: {{homes}} · walk {{km}} km",
+        "part": "{{number}} · homes: {{homes}}",
+        "keeps": "keeps the number and the S-13 history",
+        "newNumber": "new number",
+        "joinedKeeps": "Number {{number}} stays; the others go to the archive, their S-13 lines are kept.",
+        "applyWhen": "It can be applied when:",
+        "condDecided": "the draft is decided by the service committee",
+        "condFree": "the territories are free and no meeting goes there",
+        "condBorder": "the border has not moved and the lines cut",
+        "applyLater": "Applying comes in the app's next step",
+        "remove": "Take out of the draft",
+        "removeTitle": "Take the proposal out?",
+        "removeBody": "The proposal and its remarks are deleted. The territories do not change.",
+        "removed": "Proposal taken out.",
+        "decidedAt": "Decided by the committee {{date}}",
+        "reopenedAt": "Changed after the decision — back under discussion",
+        "mapHint": "Colours are the parts, numbers on the map.",
+        "notFound": "This proposal is no longer in the draft."
+      },
+      "remarks": {
+        "title": "Remarks",
+        "none": "No remarks yet.",
+        "ok": "No remarks",
+        "words": "Remark",
+        "label": "Remark about the border",
+        "hint": "About borders and streets only — not a word about people or residents. The remark is deleted once the proposal is closed.",
+        "send": "Send",
+        "mine": "yours",
+        "takeBack": "Take mine back",
+        "okBy": "no remarks"
+      }
     }
   }
 }

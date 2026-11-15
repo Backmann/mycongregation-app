@@ -316,6 +316,21 @@ export default function TerritoriesScreen() {
             </Pressable>
           ) : null}
 
+          {/* The draft of re-cutting (15 November 2026): for whoever sees
+              all the territories; nothing in it changes a territory. */}
+          <Pressable
+            onPress={() => router.push('/cart/recut' as never)}
+            style={({ pressed }) => [s.recutBanner, pressed && { opacity: 0.85 }]}
+            accessibilityRole="button"
+          >
+            <Ionicons name="git-branch-outline" size={18} color={MUTED} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.recutTitle}>{t('territories.recut.door.title')}</Text>
+              <Text style={s.deskHint}>{t('territories.recut.door.hint')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color={MUTED} />
+          </Pressable>
+
           {hasBusiness ? (
             <SegmentedControl<TerritoryCategory>
               segments={[
@@ -1013,6 +1028,20 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: LINE,
   },
+  recutBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: LINE,
+    borderStyle: 'dashed',
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    marginBottom: 10,
+  },
+  recutTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: INK },
   deskIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: BRAND, alignItems: 'center', justifyContent: 'center' },
   deskTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: INK },
   deskHint: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: MUTED, marginTop: 1 },
