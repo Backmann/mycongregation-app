@@ -4519,7 +4519,11 @@
       "holderToldYes": "Mitteilung gesendet",
       "businessesAdded": "Zur Liste der Geschäfte hinzugefügt",
       "businessEdited": "Geschäft",
-      "businessRemoved": "Von der Liste der Geschäfte genommen"
+      "businessRemoved": "Von der Liste der Geschäfte genommen",
+      "homeMark": "Gebäude",
+      "homeMarkHome": "als Wohnhaus markiert",
+      "homeMarkNot": "als kein Wohnhaus markiert",
+      "homeMarkRule": "Markierung entfernt"
     }
   },
   "attendance": {
@@ -8085,6 +8089,68 @@
         "later": "Danach — ein andermal",
         "leftToday": "für heute noch ≈ {{dist}}"
       }
+    },
+    "homes": {
+      "title": "Wohnhäuser",
+      "cardWhy": "Nach dem amtlichen Liegenschaftskataster NRW. Nicht gezählt: Garagen, Schuppen, Werkstätten, Schulen, Scheunen ({{n}}).",
+      "unsureChip": "Unklar: {{n}}",
+      "markedChip": "Von Hand markiert: {{n}}",
+      "goneChip": "Markierungen ohne Gebäude: {{n}}",
+      "open": "Häuser prüfen",
+      "screenTitle": "Häuser im Gebiet {{number}}",
+      "viewMap": "Karte",
+      "viewList": "Liste",
+      "filter": {
+        "all": "Alle · {{n}}",
+        "unsure": "Unklar · {{n}}",
+        "not": "Keine Wohnhäuser · {{n}}",
+        "marked": "Von Hand · {{n}}"
+      },
+      "legend": {
+        "home": "Wohnhaus",
+        "not": "Kein Wohnhaus",
+        "piece": "Teil eines Hauses — zählt mit ihm",
+        "unsure": "Unklar"
+      },
+      "hint": "Tippen Sie auf ein Gebäude, um zu sehen, was das Kataster dazu sagt, und es bei Bedarf zu korrigieren.",
+      "next": "Nächstes unklares Gebäude",
+      "noneLeft": "Keine unklaren Gebäude mehr",
+      "orderNote": "Nach Straßen, zum bequemen Ansehen auf der Karte",
+      "noNumber": "Gebäude ohne Hausnummer",
+      "nearOf": "bei {{label}}, {{m}} m",
+      "area": "etwa {{m}} m²",
+      "cadastreSays": "Das Kataster NRW sagt",
+      "cadastreUnknown": "Das Kataster kennt dieses Gebäude nicht (z. B. ein Neubau)",
+      "means": {
+        "home": "Ein Wohngebäude.",
+        "not": "Kein Wohngebäude.",
+        "unsure": "Das Kataster sagt nicht, ob hier gewohnt wird."
+      },
+      "nowHome": "Zählt derzeit als Wohnhaus",
+      "nowNot": "Zählt derzeit nicht als Wohnhaus",
+      "markedNote": "Von Hand markiert. Ohne Markierung wäre es: {{what}}.",
+      "ruleHome": "ein Wohnhaus",
+      "ruleNot": "kein Wohnhaus",
+      "pieceNote": "Teil des Hauses {{label}}: zählt mit ihm, eine eigene Markierung ist nicht nötig.",
+      "question": "Was ist das für ein Gebäude?",
+      "setHome": "Wohngebäude (Haus, Wohnungen)",
+      "setNot": "Kein Wohngebäude (Garage, Schuppen, Laden …)",
+      "setRule": "Wie die Regel entscheidet",
+      "pieceConfirmTitle": "Ist das ein eigenes Gebäude mit eigenem Eingang?",
+      "pieceConfirmBody": "Es wird als weiteres Haus gezählt, getrennt von {{label}}.",
+      "pieceConfirmYes": "Ja, eigenes Gebäude",
+      "footnote": "Eine Korrektur der Karte wie eine Korrektur der Grenze: nur über das Gebäude, nie über Menschen — ein Notizfeld gibt es nicht. Bleibt bei einer neuen Karte erhalten; sichtbar nur für die, die die Gebiete führen.",
+      "doneHome": "Markiert: Wohnhaus · {{label}}",
+      "doneNot": "Markiert: kein Wohnhaus · {{label}}",
+      "doneRule": "Markierung entfernt · {{label}}",
+      "goneTitle": "Von Hand markiert, aber das Gebäude ist nicht mehr auf der Karte",
+      "goneDrop": "Markierung entfernen",
+      "rowCadastre": "Kataster: „{{w}}“",
+      "rowUnknown": "Dem Kataster unbekannt",
+      "rowNowHome": "zählt derzeit als Wohnhaus",
+      "rowNowNot": "zählt derzeit nicht",
+      "empty": "Auf der Karte dieses Gebiets gibt es noch keine Gebäude.",
+      "onlyWeb": "Die Häuser eines Gebiets lassen sich im Browser ansehen, auf dem Handy oder am Computer."
     }
   }
 }

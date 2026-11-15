@@ -8254,6 +8254,38 @@ export interface TerritoryImportAssignment {
   method?: "door_to_door" | "letters" | "campaign" | "other";
 }
 
+/** One building of a territory, as the keepers look at it (15 November 2026). */
+export interface TerritoryHouse {
+  key: string;
+  lon: number;
+  lat: number;
+  areaM2: number;
+  numbers: string | null;
+  /** «Ahornweg 12»: its own official address; null when it has none. */
+  label: string | null;
+  /** Without an address of its own: the nearest one and how far. */
+  near: { label: string; m: number } | null;
+  /** The cadastre's word and what it means; null: the cadastre does not know it. */
+  official: string | null;
+  use: 'home' | 'not' | 'unsure' | null;
+  /** Counted as a home now (the keepers' mark, else the rule). */
+  home: boolean;
+  /** What the rule says, without a mark. */
+  byRule: boolean;
+  /** The keepers' mark; null: none. */
+  mark: boolean | null;
+  /** A further piece of a building drawn in several: counted with this house. */
+  pieceOf: string | null;
+}
+
+export interface TerritoryHomes {
+  territory: { id: string; number: string };
+  counts: { homes: number; notHomes: number; unsure: number; marked: number; gone: number };
+  houses: TerritoryHouse[];
+  /** Marks whose building is no longer on the map. */
+  gone: { lon: number; lat: number; home: boolean; markedAt: string }[];
+}
+
 export const territoriesApi = {
   access: async (): Promise<TerritoryAccess> =>
     (await api.get<TerritoryAccess>("/territories/access")).data,
@@ -8263,6 +8295,12 @@ export const territoriesApi = {
     (await api.get<TerritoryChecks>("/territories/checks")).data,
   gaps: async (): Promise<TerritoryGaps> =>
     (await api.get<TerritoryGaps>("/territories/gaps")).data,
+  /** The buildings of a territory and the keepers' marks (keepers only). */
+  homes: async (id: string): Promise<TerritoryHomes> =>
+    (await api.get<TerritoryHomes>(`/territories/${id}/homes`)).data,
+  /** A home, not a home, or (null) back to the rule. */
+  markHome: async (id: string, body: { lon: number; lat: number; home: boolean | null }) =>
+    (await api.put<TerritoryHomes>(`/territories/${id}/homes/mark`, body)).data,
   businesses: async (id: string): Promise<TerritoryBusinessList> =>
     (await api.get<TerritoryBusinessList>(`/territories/${id}/businesses`)).data,
   businessSuggest: async (id: string): Promise<TerritoryBusinessSuggestion> =>

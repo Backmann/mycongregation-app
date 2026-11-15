@@ -24,6 +24,7 @@ import { streetsOfTerritory } from '../../../../lib/map-snapshot';
 import { useAuth } from '../../../../lib/auth';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
 import { DivisionButton } from '../../../../components/territories/DivisionButton';
+import { HomesCard } from '../../../../components/territories/HomesCard';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -273,6 +274,8 @@ export default function TerritoryScreen() {
           </>
         )}
       </View>
+
+      {a.keeps && !business && !d.archivedAt ? <HomesCard territoryId={d.id} /> : null}
 
       {business ? (
         <>
