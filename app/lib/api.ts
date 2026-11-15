@@ -8851,8 +8851,6 @@ export interface RecutView {
   computing: boolean;
   /** The walks of the parts are being worked out now. */
   walking?: boolean;
-  /** Km a month, the middle of the territories worked through (S-13); null: too few. */
-  pace?: { kmPerMonth: number; samples: number } | null;
   halls: { name: string; found: boolean }[];
   territories: RecutTerritory[];
   /** The territory servant and his assistant draw and change. */

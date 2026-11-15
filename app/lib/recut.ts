@@ -176,12 +176,6 @@ export function longestWalk(
   return { now, after: Math.max(0, ...rest, ...(parts as number[])) };
 }
 
-/** Months a walk takes at the congregation's pace: whole months, at least one. */
-export function monthsAt(km: number | null, pace: { kmPerMonth: number } | null | undefined): number | null {
-  if (km === null || !pace || pace.kmPerMonth <= 0) return null;
-  return Math.max(1, Math.round(km / pace.kmPerMonth));
-}
-
 /** Territories whose number has the words searched for, any case, spaces ignored. */
 export function searchTerritories<T extends { number: string }>(list: T[], q: string): T[] {
   const n = q.replace(/\s+/g, '').toLowerCase();

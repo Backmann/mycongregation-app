@@ -128,12 +128,6 @@ try {
     r.longestWalk([T('a', 41), T('e', 10)], [{ ...cutA, parts: [{ walkKm: 19 }, { walkKm: 22 }] }]),
     { now: 41, after: 22 },
   );
-  check('months at the pace: whole, at least one, none without a pace', [
-    r.monthsAt(14, { kmPerMonth: 3.5 }),
-    r.monthsAt(1, { kmPerMonth: 3.5 }),
-    r.monthsAt(14, null),
-    r.monthsAt(null, { kmPerMonth: 3 }),
-  ], [4, 1, null, null]);
   check('search: by the number, any case, spaces ignored', r.searchTerritories([{ number: 'Hamm52' }, { number: 'Ahlen 01' }, { number: 'Hamm5' }], 'hamm 5').map((t) => t.number), ['Hamm52', 'Hamm5']);
   check('search: nothing asked — all', r.searchTerritories([{ number: 'A' }, { number: 'B' }], '  ').length, 2);
   check('eight colours for eight parts, all different', new Set(r.PART_COLORS).size, 8);

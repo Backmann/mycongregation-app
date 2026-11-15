@@ -8190,7 +8190,7 @@
         "minKm": "Shortest walk, km",
         "remoteMinutes": "Far out — drive longer than, min",
         "save": "Save the measure",
-        "reopenNote": "Decided proposals go back to the committee.",
+        "reopenNote": "Decided proposals go back to the service committee for discussion.",
         "bad": "Check the numbers: a part may not be longer than the longest walk."
       },
       "figures": {
@@ -8218,13 +8218,13 @@
       },
       "decision": {
         "title": "The service committee's decision",
-        "waiting": "under discussion: {{count}}",
+        "waiting": "under discussion by the service committee: {{count}}",
         "decided": "decided: {{count}}",
-        "reopened": "back under discussion: {{count}}",
+        "reopened": "back under discussion by the service committee: {{count}}",
         "remarks": "remarks: {{count}}",
-        "note": "The brothers' remarks prepare the committee's meeting. A member of the service committee records the decision.",
-        "button": "Decided by the committee…",
-        "confirmTitle": "Record the committee's decision?",
+        "note": "The brothers' remarks prepare the service committee's meeting. A member of the service committee records the decision.",
+        "button": "Decided by the service committee…",
+        "confirmTitle": "Record the service committee's decision?",
         "confirmBody": "The proposals under discussion ({{count}}) will be recorded as decided by the service committee today.",
         "confirmYes": "Decided",
         "done": "Decision recorded."
@@ -8261,7 +8261,7 @@
         "farNoMin": "far"
       },
       "block": {
-        "notApproved": "waits for the committee",
+        "notApproved": "waits for the service committee",
         "held": "given out",
         "meeting": "meeting {{date}}",
         "changed": "border moved — check",
@@ -8301,15 +8301,12 @@
         "removeTitle": "Take the proposal out?",
         "removeBody": "The proposal and its remarks are deleted. The territories do not change.",
         "removed": "Proposal taken out.",
-        "decidedAt": "Decided by the committee {{date}}",
-        "reopenedAt": "Changed after the decision — back under discussion",
+        "decidedAt": "Decided by the service committee {{date}}",
+        "reopenedAt": "Changed after the decision — back under discussion by the service committee",
         "mapHint": "Colours are the parts, numbers on the map.",
         "notFound": "This proposal is no longer in the draft.",
         "km": "{{km}} km",
-        "kmWait": "walk being worked out…",
-        "months": "≈{{count}} mo",
-        "paceNone": "The months appear once the S-13 of the last two years has at least eight territories worked.",
-        "pace": "Months at your pace: by the S-13 of the last two years, ≈{{km}} km a month ({{samples}} territories worked)."
+        "kmWait": "walk being worked out…"
       },
       "remarks": {
         "title": "Remarks",
