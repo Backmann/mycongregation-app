@@ -8826,6 +8826,10 @@ export interface RecutProposal {
     geometry: TerritoryGeometry | null;
   }[];
   lines: [number, number][][] | null;
+  /** A cut: the lines first proposed (16 November 2026); null: drawn by hand. */
+  suggestedLines?: [number, number][][] | null;
+  /** A cut whose lines are no longer those first proposed. */
+  movedByHand?: boolean;
   keep: number;
   numbers: string[] | null;
   keepId: string | null;
@@ -8840,9 +8844,37 @@ export interface RecutProposal {
   approvedAt: string | null;
   reopenedAt: string | null;
   appliedAt: string | null;
+  /** The parts last changed by more than a tenth of the homes. */
+  linesChangedAt?: string | null;
+  /** Sent back with a save: a save over a newer one is refused. */
+  updatedAt?: string;
   blocks: RecutBlock[];
-  /** About the border only; deleted once the proposal is applied or taken out. */
-  remarks: { mine: boolean; by: string; ok: boolean; text: string | null; at: string }[];
+  /**
+   * About the border only; deleted once the proposal is applied or taken
+   * out. Stale: given before the parts last changed much.
+   */
+  remarks: { mine: boolean; by: string; ok: boolean; text: string | null; at: string; stale?: boolean }[];
+}
+
+/** A cut as it is saved (16 November 2026). */
+export interface RecutCutBody {
+  kind: "cut";
+  territoryIds: string[];
+  lines: { points: [number, number][] }[];
+  keep: number;
+  numbers: string[];
+  queue: number;
+  baseUpdatedAt?: string;
+}
+
+/** Lines tried in the editor: what they would make; nothing saved. */
+export interface RecutPreview {
+  parts: { number: string; homes: number | null; walkKm: number | null; geometry: TerritoryGeometry }[];
+  numbers: string[];
+  keep: number;
+  moved: number;
+  changesMuch: boolean;
+  reopens: boolean;
 }
 
 export interface RecutView {
@@ -8877,4 +8909,14 @@ export const recutApi = {
   unremark: async (id: string): Promise<RecutView> =>
     (await api.delete<RecutView>(`/territory-recut/proposals/${id}/remark`)).data,
   approve: async (): Promise<RecutView> => (await api.post<RecutView>("/territory-recut/approve")).data,
+  update: async (id: string, body: RecutCutBody): Promise<RecutView> =>
+    (await api.put<RecutView>(`/territory-recut/proposals/${id}`, body)).data,
+  preview: async (id: string, lines: [number, number][][], signal?: AbortSignal): Promise<RecutPreview> =>
+    (
+      await api.post<RecutPreview>(
+        `/territory-recut/proposals/${id}/preview`,
+        { lines: lines.map((points) => ({ points })) },
+        { signal },
+      )
+    ).data,
 };

@@ -4225,6 +4225,9 @@
       "startTime": "Uhrzeit",
       "address": "Adresse",
       "conductorPublisherId": "Leiter",
+      "conductorName": "Leiter — Name",
+      "secondConductorName": "Zweiter Leiter — Name",
+      "secondConductorPublisherId": "Zweiter Leiter",
       "topic": "Thema",
       "isGeneral": "Gemeinsame Zusammenkunft",
       "direction": "Richtung",
@@ -5901,7 +5904,9 @@
       "maxLength": "zu lang",
       "min": "Wert zu klein",
       "minLength": "zu kurz",
-      "other": "Wert passt nicht"
+      "other": "Wert passt nicht",
+      "isLatitude": "das ist kein Breitengrad",
+      "isLongitude": "das ist kein Längengrad"
     },
     "fields": {
       "address": "Adresse",
@@ -6225,7 +6230,13 @@
       "TERRITORY_RECUT_PARTS": "Der Vorschlag ist fehlerhaft: Gebiete und Nummern der Teile prüfen.",
       "TERRITORY_RECUT_MEASURE": "Der Maßstab passt nicht: Ein Teil darf nicht länger sein als der längste Weg.",
       "TERRITORY_RECUT_NO_FIGURES": "Bitte zuerst die Kennzahlen der Gebiete berechnen.",
-      "TERRITORY_JOIN_FAILED": "Diese Gebiete lassen sich an ihren Grenzen nicht zusammenlegen — bitte die Grenze eines der beiden anpassen."
+      "TERRITORY_RECUT_STALE": "Während Sie bearbeitet haben, hat sich der Vorschlag geändert: andere Linien wurden gespeichert oder die Entscheidung des Dienstkomitees vermerkt. Laden Sie das Gespeicherte oder speichern Sie Ihre Linien darüber.",
+      "TERRITORY_JOIN_FAILED": "Diese Gebiete lassen sich an ihren Grenzen nicht zusammenlegen — bitte die Grenze eines der beiden anpassen.",
+      "TERRITORY_NO_CALL_MOVE": "Die „Nicht besuchen“-Adresse wurde nicht verschoben: nur zwischen Gebieten, deren Grenze sich geändert hat.",
+      "TERRITORY_NOT_BUSINESS": "Eine Liste von Betrieben gibt es nur bei einem Geschäftsgebiet.",
+      "TERRITORY_BUSINESSES_MANY": "Zu viele Betriebe in einem Gebiet: höchstens {{max}}.",
+      "TERRITORY_BUSINESS_OUTSIDE": "Der Punkt des Betriebs liegt außerhalb des Gebiets {{number}}.",
+      "TERRITORY_NOT_GIVEN": "Das Gebiet ist zurzeit nicht ausgegeben."
     }
   },
   "stage": {
@@ -8323,6 +8334,50 @@
       "legend": {
         "cut": "teilen",
         "merge": "zusammenlegen"
+      },
+      "lines": {
+        "title": "{{number}} — Schnittlinien",
+        "webOnly": "Schnittlinien werden am Computer bearbeitet: Öffnen Sie den Neuzuschnitt im Browser.",
+        "parts": "Teile · Häuser sofort, km nach dem Loslassen",
+        "homes_one": "{{count}} Haus",
+        "homes_other": "{{count}} Häuser",
+        "walking": "Der Server berechnet den Weg auf den Straßen… Die Linie lässt sich weiter verschieben.",
+        "measure": "Maßstab: Teil ≈ {{target}} km, höchstens {{max}} km.",
+        "over": "über {{km}} km",
+        "under": "unter {{km}} km",
+        "fits": "im Maßstab",
+        "keeps": "Nummer {{number}} und S-13-Verlauf bleiben beim Teil:",
+        "part": "Teil {{n}}",
+        "moving": "Wechseln in einen anderen Teil",
+        "movedHomes": "{{moved}} von {{all}} Häusern · {{share}} %",
+        "reopens": "Mehr als 10 % — nach dem Speichern geht der Vorschlag erneut an das Dienstkomitee, und „keine Einwände“ wartet auf eine neue Rückmeldung.",
+        "staleMarks": "Mehr als 10 % — nach dem Speichern wartet „keine Einwände“ auf eine neue Rückmeldung.",
+        "small": "Bis 10 % — Entscheidung und Rückmeldungen bleiben gültig.",
+        "besideTitle": "Entlang der Linien",
+        "beside_one": "Linie {{n}}: {{count}} Haus näher als 25 m",
+        "beside_other": "Linie {{n}}: {{count}} Häuser näher als 25 m",
+        "besideHint": "Eine Linie dicht an Häusern teilt deren Straße zwischen Teilen. Eine Grenze entlang einer großen Straße ist üblich; entlang einer Wohnstraße — überlegen Sie.",
+        "loadSaved": "Gespeicherte Linien laden",
+        "save": "Im Entwurf speichern",
+        "cancel": "Änderung verwerfen",
+        "toolPoints": "Punkte verschieben",
+        "toolRedraw": "Neu zeichnen",
+        "toolAdd": "+ Linie",
+        "remove": "Linie entfernen",
+        "stepBack": "Schritt zurück",
+        "suggested": "Vorgeschlagene zurückholen",
+        "snap": "An Straßen ausrichten",
+        "how": "Punkt ziehen · Klick auf die Mitte eines Abschnitts ergibt einen neuen Punkt · Rechtsklick auf einen Punkt entfernt ihn. Grau gestrichelt: gespeicherte Linien; ein Haus mit weißem Kreis wechselt den Teil.",
+        "problem": {
+          "short": "Linie {{n}}: mindestens zwei Punkte nötig.",
+          "crosses": "Linie {{n}} kreuzt sich selbst.",
+          "notThrough": "Linie {{n}} geht nicht durch das Gebiet: Ihre Mitte muss darin liegen.",
+          "many": "Eine bis sieben Linien."
+        },
+        "edit": "Linien bearbeiten",
+        "movedByHand": "Linien nach dem Vorschlag des Entwurfs von Hand verschoben.",
+        "staleRemark": "vor der Linienänderung — wartet auf neue Rückmeldung",
+        "saveOver": "Meine Linien darüber speichern"
       }
     }
   }

@@ -63,6 +63,7 @@ export default function CartLayout() {
       <Stack.Screen name="desk" options={{ title: t('territories.desk.title') }} />
       <Stack.Screen name="recut/index" options={{ title: t('territories.recut.title') }} />
       <Stack.Screen name="recut/[id]" options={{ title: t('territories.recut.title') }} />
+      <Stack.Screen name="recut/lines/[id]" options={{ title: t('territories.recut.title') }} />
       <Stack.Screen name="my-territories" options={{ title: t('territories.my.title') }} />
       <Stack.Screen
         name="co-schedule"

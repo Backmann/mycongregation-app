@@ -94,6 +94,7 @@ const STEPS = [
   ['Карта: кривые по масштабу', 'node', ['scripts/check-map-zoom.mjs']],
   ['Сбои: как пойман', 'node', ['scripts/check-crash-context.mjs']],
   ['Участки: черновик перекройки', 'node', ['scripts/check-recut.mjs']],
+  ['Участки: линии разреза считаются как на сервере', 'node', ['scripts/check-recut-lines.mjs']],
   ['Обещание «не null» в обработчиках', 'node', ['scripts/check-nonnull-callbacks.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
