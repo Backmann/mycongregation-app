@@ -84,6 +84,11 @@ export function territoryJournalLines(
       );
     }
   }
+  // A keepers' mark on a building (15 November 2026): only what it says.
+  if (detail.homeMark === 'home' || detail.homeMark === 'not' || detail.homeMark === 'rule') {
+    const word = { home: 'homeMarkHome', not: 'homeMarkNot', rule: 'homeMarkRule' }[detail.homeMark];
+    line(k('homeMark'), k(word));
+  }
   if (detail.split === true && str(detail.made)) line(k('split'), k('splitNew', { number: detail.made }));
   if (str(detail.splitFrom)) line(k('splitFrom'), str(detail.splitFrom));
   if (str(detail.merged)) line(k('merged'), str(detail.merged));

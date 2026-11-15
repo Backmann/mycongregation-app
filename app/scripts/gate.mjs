@@ -90,6 +90,7 @@ const STEPS = [
   ['Участки: выдача и приём', 'node', ['scripts/check-desk.mjs']],
   ['Участки: на группы', 'node', ['scripts/check-division.mjs']],
   ['Участки: куда идти', 'node', ['scripts/check-way.mjs']],
+  ['Участки: жилые дома', 'node', ['scripts/check-homes.mjs']],
   ['Обещание «не null» в обработчиках', 'node', ['scripts/check-nonnull-callbacks.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],

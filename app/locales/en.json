@@ -4519,7 +4519,11 @@
       "holderToldYes": "notified",
       "businessesAdded": "Added to the list of businesses",
       "businessEdited": "Business",
-      "businessRemoved": "Taken off the list of businesses"
+      "businessRemoved": "Taken off the list of businesses",
+      "homeMark": "Building",
+      "homeMarkHome": "marked a home",
+      "homeMarkNot": "marked not a home",
+      "homeMarkRule": "mark removed"
     }
   },
   "attendance": {
@@ -8085,6 +8089,68 @@
         "later": "Then — another time",
         "leftToday": "left for today ≈ {{dist}}"
       }
+    },
+    "homes": {
+      "title": "Homes",
+      "cardWhy": "By the official land register of NRW. Not counted: garages, sheds, workshops, schools, barns ({{n}}).",
+      "unsureChip": "Unclear: {{n}}",
+      "markedChip": "Marked by hand: {{n}}",
+      "goneChip": "Marks without a building: {{n}}",
+      "open": "Check the homes",
+      "screenTitle": "Homes of territory {{number}}",
+      "viewMap": "Map",
+      "viewList": "List",
+      "filter": {
+        "all": "All · {{n}}",
+        "unsure": "Unclear · {{n}}",
+        "not": "Not homes · {{n}}",
+        "marked": "By hand · {{n}}"
+      },
+      "legend": {
+        "home": "Home",
+        "not": "Not a home",
+        "piece": "Part of a house — counted with it",
+        "unsure": "Unclear"
+      },
+      "hint": "Tap a building to see what the land register says about it, and correct it if needed.",
+      "next": "Next unclear building",
+      "noneLeft": "Nothing unclear left",
+      "orderNote": "By street, to look at on the map with ease",
+      "noNumber": "Building without a number",
+      "nearOf": "by {{label}}, {{m}} m",
+      "area": "about {{m}} m²",
+      "cadastreSays": "The NRW land register says",
+      "cadastreUnknown": "The land register does not know this building (a new one, perhaps)",
+      "means": {
+        "home": "A residential building.",
+        "not": "Not a residential building.",
+        "unsure": "The land register does not say whether people live here."
+      },
+      "nowHome": "Counted as a home now",
+      "nowNot": "Not counted as a home now",
+      "markedNote": "Marked by hand. Without the mark it would be: {{what}}.",
+      "ruleHome": "a home",
+      "ruleNot": "not a home",
+      "pieceNote": "Part of the house {{label}}: counted with it, no mark of its own needed.",
+      "question": "What is this building?",
+      "setHome": "Residential (house, flats)",
+      "setNot": "Not residential (garage, shed, shop …)",
+      "setRule": "As the rule decides",
+      "pieceConfirmTitle": "Is this a building of its own, with its own entrance?",
+      "pieceConfirmBody": "It will be counted as one more home, apart from {{label}}.",
+      "pieceConfirmYes": "Yes, its own",
+      "footnote": "A correction of the map, like a corrected boundary: about the building only, never about people — there is no note field. Kept when the map is rebuilt; seen only by those who keep the territories.",
+      "doneHome": "Marked: a home · {{label}}",
+      "doneNot": "Marked: not a home · {{label}}",
+      "doneRule": "Mark removed · {{label}}",
+      "goneTitle": "Marked by hand, but the building is no longer on the map",
+      "goneDrop": "Remove the mark",
+      "rowCadastre": "Land register: “{{w}}”",
+      "rowUnknown": "Unknown to the land register",
+      "rowNowHome": "counted as a home now",
+      "rowNowNot": "not counted now",
+      "empty": "The map of this territory has no buildings yet.",
+      "onlyWeb": "The homes of a territory can be looked at in a browser, on a phone or a computer."
     }
   }
 }

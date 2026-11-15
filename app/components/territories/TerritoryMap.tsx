@@ -45,6 +45,10 @@ export interface MapDot {
   lat: number;
   color: string;
   walked?: boolean;
+  /** A ring round it in this colour (15 November 2026: a building to look at). */
+  ring?: string;
+  /** The one chosen: drawn bigger. */
+  chosen?: boolean;
 }
 
 /** A street of a part of a division, in that part's colour (13 November 2026). */
@@ -87,6 +91,8 @@ const POINT = '#7c3aed';
 const POINT_DONE = '#15803d';
 // Walked streets and houses: grey, so what is left stands out (green is a part's colour).
 const WALKED = '#9ca3af';
+/** The ring round the building chosen (15 November 2026). */
+const INK_DOT = '#1b2328';
 
 /**
  * The territory map (11 November 2026): the congregation's own map file
@@ -113,6 +119,7 @@ export function TerritoryMap({
   fitKey,
   here,
   guide,
+  onDot,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -149,6 +156,8 @@ export function TerritoryMap({
   here?: MapHere | null;
   /** The way to the next street: a dashed line. */
   guide?: LonLat[] | null;
+  /** A dot tapped: its index in `dots`. */
+  onDot?: (i: number) => void;
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -169,6 +178,7 @@ export function TerritoryMap({
       fitKey={fitKey ?? ''}
       here={here ?? null}
       guide={guide ?? null}
+      onDot={onDot}
     />
   );
 }
@@ -193,9 +203,9 @@ const EMPTY_DOTS: MapDot[] = [];
 function dotsOf(dots: MapDot[]) {
   return {
     type: 'FeatureCollection',
-    features: dots.map((d) => ({
+    features: dots.map((d0, i) => ({ ...d0, i })).map((d) => ({
       type: 'Feature',
-      properties: { color: d.color, walked: !!d.walked },
+      properties: { color: d.color, walked: !!d.walked, ring: d.ring ?? '', chosen: !!d.chosen, i: d.i },
       geometry: { type: 'Point', coordinates: [d.lon, d.lat] },
     })),
   };
@@ -305,6 +315,7 @@ function WebMap({
   fitKey,
   here,
   guide,
+  onDot,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -322,6 +333,7 @@ function WebMap({
   fitKey: string;
   here: MapHere | null;
   guide: LonLat[] | null;
+  onDot?: (i: number) => void;
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -332,6 +344,8 @@ function WebMap({
   const [noStreets, setNoStreets] = useState(false);
   const select = useRef(onSelect);
   select.current = onSelect;
+  const dot = useRef(onDot);
+  dot.current = onDot;
   // Whether the map file is there: until the server's map job has run it is
   // not, and asking for it would only fail. The same answer the door reads.
   const accessQ = useQuery({
@@ -523,11 +537,15 @@ function WebMap({
             type: 'circle',
             source: 'dots',
             paint: {
-              'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 5],
+              'circle-radius': [
+                '*',
+                ['case', ['get', 'chosen'], 1.8, 1],
+                ['interpolate', ['linear'], ['zoom'], 13, 2, 17, 5, 19, 8],
+              ],
               'circle-color': ['case', ['get', 'walked'], WALKED, ['get', 'color']],
               'circle-opacity': ['case', ['get', 'walked'], 0.45, 0.95],
-              'circle-stroke-color': '#ffffff',
-              'circle-stroke-width': 0.8,
+              'circle-stroke-color': ['case', ['!=', ['get', 'ring'], ''], ['get', 'ring'], ['get', 'chosen'], INK_DOT, '#ffffff'],
+              'circle-stroke-width': ['case', ['!=', ['get', 'ring'], ''], 2.5, ['get', 'chosen'], 2.5, 0.8],
             },
           });
           m.addSource('here', { type: 'geojson', data: hereOf(here) });
@@ -590,6 +608,25 @@ function WebMap({
               'circle-stroke-color': '#ffffff',
               'circle-stroke-width': 3,
             },
+          });
+          // A building tapped (15 November 2026): a wide ring round each dot,
+          // unseen, so that a finger finds it.
+          m.addLayer({
+            id: 'dots-hit',
+            type: 'circle',
+            source: 'dots',
+            paint: { 'circle-radius': 14, 'circle-opacity': 0 },
+          });
+          m.on('click', 'dots-hit', (e: unknown) => {
+            const f = (e as { features?: { properties?: { i?: number } }[] }).features?.[0];
+            const i = f?.properties?.i;
+            if (typeof i === 'number' && dot.current) dot.current(i);
+          });
+          m.on('mouseenter', 'dots-hit', () => {
+            if (dot.current) m.getCanvas().style.cursor = 'pointer';
+          });
+          m.on('mouseleave', 'dots-hit', () => {
+            m.getCanvas().style.cursor = '';
           });
           m.on('click', 'terr-fill', (e: unknown) => {
             const f = (e as { features?: { properties?: { id?: string } }[] }).features?.[0];

@@ -55,6 +55,8 @@ try {
   }, t, date)), ['Номер: A01 → A10', 'Местность: Город → Пригород', 'Заметка: изменена']);
   check('outline', show(L('territory', { outline: 'edit', number: 'A01', with: ['A02'], leaving: 3, gaining: 0 }, t, date)),
     ['Участок: A01', 'Граница: изменена', 'Вместе с соседями: A02', 'По земле: уходит 3%, добавляется 0%']);
+  check('a building marked', show(L('territory', { number: 'A01', homeMark: 'not' }, t, date)),
+    ['Участок: A01', 'Здание: отмечено не жилым']);
   check('businesses added', show(L('territory', { number: 'G-1', businessesAdded: 12 }, t, date)),
     ['Участок: G-1', 'Добавлено в список предприятий: 12']);
   check('one business added', show(L('territory', { number: 'G-1', businessesAdded: 1, business: 'Kiosk' }, t, date)),
@@ -94,6 +96,7 @@ try {
       { archived: false, number: 'a' },
       { undone: 'split' }, { undone: 'merge' }, { undone: 'new' },
       { number: 'a', category: 'residential' },
+      { number: 'a', homeMark: 'home' }, { number: 'a', homeMark: 'not' }, { number: 'a', homeMark: 'rule' },
     ]) {
       const lines = show(L('territory', d, tl, date));
       check(`${lang}: no missing words in ${JSON.stringify(d)}`, lines.some((x) => x.includes('!!')), false);
