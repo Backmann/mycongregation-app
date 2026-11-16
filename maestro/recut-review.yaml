@@ -1,0 +1,77 @@
+# Перекройка участков: просмотр по одному (16 ноября 2026) — на телефоне, на
+# живых данных, ТОЛЬКО СМОТРИТ: открывает предложения, листает и уходит назад.
+# «Без замечаний» и «Замечание» НЕ нажимает — отметок не оставляет.
+# Проверяет: карточку «Просмотр по одному», «Начать/Продолжить», «N из M»,
+# «Следующее», кнопку «Открыть карту на сайте» (браузер телефона), и что
+# «Назад» ведёт туда, откуда пришли: следующее → первое → черновик → участки.
+# Приложение открыто и разблокировано заранее (см. back-nav.yaml).
+appId: com.backmann.mycongregation
+name: Перекройка — просмотр по одному
+---
+- openLink: mycongregation://cart/territories
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- scrollUntilVisible:
+    element: "Перекройка — черновик|Re-cutting — draft|Neuaufteilung — Entwurf"
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: 01-territories
+- tapOn: "Перекройка — черновик|Re-cutting — draft|Neuaufteilung — Entwurf"
+- extendedWaitUntil:
+    visible: "Просмотр по одному|Review one by one|Einzeln durchsehen"
+    timeout: 30000
+- takeScreenshot: 02-draft-card
+
+# 1. Начать / Продолжить → первое неотмеченное, «N из M»
+- tapOn: "(Начать|Продолжить|Start|Continue|Beginnen|Weiter): .*"
+- extendedWaitUntil:
+    visible: ".*\\d+ (из|of|von) \\d+.*"
+    timeout: 30000
+- takeScreenshot: 03-first
+- scrollUntilVisible:
+    element: "Открыть карту на сайте|Open the map on the website|Karte auf der Website öffnen"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 04-map-button
+
+# 2. Карта на сайте: браузер телефона, потом назад в приложение
+- tapOn: "Открыть карту на сайте|Open the map on the website|Karte auf der Website öffnen"
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: 05-browser
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Открыть карту на сайте|Open the map on the website|Karte auf der Website öffnen"
+    timeout: 20000
+- takeScreenshot: 06-back-from-browser
+
+# 3. Следующее → второе
+- scrollUntilVisible:
+    element: "Следующее|Next|Nächster"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Следующее|Next|Nächster"
+- extendedWaitUntil:
+    visible: ".*2 (из|of|von) \\d+.*"
+    timeout: 30000
+- takeScreenshot: 07-second
+
+# 4. Стрелка в шапке → первое; системная «Назад» → черновик → участки
+- tapOn: { id: "header-back" }
+- extendedWaitUntil:
+    visible: ".*1 (из|of|von) \\d+.*"
+    timeout: 20000
+- takeScreenshot: 08-back-to-first
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Просмотр по одному|Review one by one|Einzeln durchsehen"
+    timeout: 20000
+- takeScreenshot: 09-back-to-draft
+- pressKey: back
+- extendedWaitUntil:
+    visible: "Перекройка — черновик|Re-cutting — draft|Neuaufteilung — Entwurf"
+    timeout: 20000
+- takeScreenshot: 10-back-to-territories
