@@ -8463,5 +8463,10 @@
         "toTerritories": "To the territories"
       }
     }
+  },
+  "notFoundPage": {
+    "title": "There is no such page",
+    "body": "The link may be out of date, or the address may have a typo.",
+    "home": "To the home page"
   }
 }
