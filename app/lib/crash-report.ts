@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
+import { foreignOnly } from './foreign-code';
 
 /**
  * THE JOURNAL OF FAILURES (10 November 2026): a failure on someone's phone
@@ -91,11 +92,20 @@ export function placeOf(filename?: string, line?: number, column?: number): stri
 export async function reportCrash(
   source: 'screen' | 'uncaught',
   error: unknown,
-  ctx: { event?: CrashEvent; place?: string } = {},
+  ctx: { event?: CrashEvent; place?: string; filename?: string } = {},
 ): Promise<void> {
   try {
     if (!API) return;
     const e = error instanceof Error ? error : new Error(String(error));
+    // Not the app's code: a script run in the console or by a tool, an
+    // extension, another site (lib/foreign-code.ts).
+    if (
+      Platform.OS === 'web' &&
+      typeof location !== 'undefined' &&
+      foreignOnly(e.stack, ctx.filename, location.origin)
+    ) {
+      return;
+    }
     const message = scrubText(`${e.name}: ${e.message}`, 300);
     const stack = e.stack ? scrubText(e.stack.split('\n').slice(0, 6).join('\n'), 1500) : undefined;
     const key = `${source}|${route}|${message}`;
@@ -138,6 +148,7 @@ export function installCrashHandlers(): void {
         void reportCrash('uncaught', ev.error ?? ev.message, {
           event: 'error',
           place: placeOf(ev.filename, ev.lineno, ev.colno),
+          filename: ev.filename || undefined,
         }),
     );
     window.addEventListener(
