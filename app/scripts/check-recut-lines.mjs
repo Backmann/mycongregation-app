@@ -68,6 +68,13 @@ try {
     'crosses',
   );
   check('no line: refused', r.cutOf(sq, []).problem?.why, 'many');
+  // A line's middle carried across another line: it cuts another part.
+  const crossed = r.cutOf(sq, [v(1.5), [[2.5, -1], [2.5, 0.2], [0.7, 0.5], [2.5, 0.8], [2.5, 2]]]);
+  check('the part each line cuts', r.cutOf(sq, [v(1.5), v(2.5)]).targets, [0, 1]);
+  check('a middle carried across the first line: the second cuts the other part', crossed.targets, [0, 0]);
+  check('…and the screen names that line', r.retargeted(r.cutOf(sq, [v(1.5), v(2.5)]), crossed), [1]);
+  check('a small move: nothing named', r.retargeted(r.cutOf(sq, [v(1.5), v(2.5)]), r.cutOf(sq, [v(1.5), v(2.4)])), []);
+  check('another number of lines: nothing named (all is new anyway)', r.retargeted(r.cutOf(sq, [v(1.5)]), crossed), []);
   check('eight lines: too many parts', r.cutOf(sq, Array.from({ length: 8 }, (_, i) => v(0.3 + i * 0.3))).problem?.why, 'many');
   const homes = [[0.5, 0.5], [1.4, 0.5], [1.6, 0.5], [2.5, 0.5]];
   check('moved: one home of four changes part', r.movedShare(cut, r.cutOf(sq, [v(1), v(1.5)]), homes), 0.25);

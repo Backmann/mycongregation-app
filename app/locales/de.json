@@ -8367,7 +8367,7 @@
         "stepBack": "Schritt zurück",
         "suggested": "Vorgeschlagene zurückholen",
         "snap": "An Straßen ausrichten",
-        "how": "Punkt ziehen · Klick auf die Mitte eines Abschnitts ergibt einen neuen Punkt · Rechtsklick auf einen Punkt entfernt ihn. Grau gestrichelt: gespeicherte Linien; ein Haus mit weißem Kreis wechselt den Teil.",
+        "how": "Punkt ziehen · Klick auf die Mitte eines Abschnitts ergibt einen neuen Punkt · Rechtsklick auf einen Punkt entfernt ihn. Kreis mit Nummer: die Mitte einer Linie — sie schneidet den Teil, in dem ihre Mitte liegt. Grau gestrichelt: gespeicherte Linien; ein Haus mit weißem Kreis wechselt den Teil.",
         "problem": {
           "short": "Linie {{n}}: mindestens zwei Punkte nötig.",
           "crosses": "Linie {{n}} kreuzt sich selbst.",
@@ -8377,7 +8377,9 @@
         "edit": "Linien bearbeiten",
         "movedByHand": "Linien nach dem Vorschlag des Entwurfs von Hand verschoben.",
         "staleRemark": "vor der Linienänderung — wartet auf neue Rückmeldung",
-        "saveOver": "Meine Linien darüber speichern"
+        "saveOver": "Meine Linien darüber speichern",
+        "retargeted_one": "Die Mitte von Linie {{lines}} liegt jetzt in einem anderen Teil — die Linie schneidet einen anderen Teil, die Teile sind neu gebildet. Falls nicht gewollt: Schritt zurück.",
+        "retargeted_other": "Die Mitten der Linien {{lines}} liegen jetzt in anderen Teilen — die Teile sind neu gebildet. Falls nicht gewollt: Schritt zurück."
       }
     }
   }
