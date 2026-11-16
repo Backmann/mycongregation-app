@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { goBack } from '../../../components/NavHistory';
+import { useMayOpen } from '../../../lib/useMayOpen';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +29,7 @@ const BRAND = '#0e7490';
  * before the day. For the elders and for the elder who conducts it.
  */
 export default function PioneerMeetingScreen() {
+  const mayOpen = useMayOpen();
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -62,7 +65,7 @@ export default function PioneerMeetingScreen() {
     try {
       await pioneerMeetingsApi.remove(m.id);
       await qc.invalidateQueries({ queryKey: ['pioneer-meetings'] });
-      router.back();
+      goBack(mayOpen('/service-reports/pioneer-meetings') ? '/service-reports/pioneer-meetings' : '/service-reports');
     } catch (e) {
       setError(extractErrorMessage(e));
     }

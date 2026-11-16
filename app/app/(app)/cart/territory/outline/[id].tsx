@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { goBack } from '../../../../../components/NavHistory';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -523,7 +524,7 @@ export default function OutlineScreen() {
           <UndoReshape territory={main} onDone={(text) => setReshaped(text)} />
         </>
       )}
-      <Pressable onPress={() => router.back()} style={s.undo} accessibilityRole="button">
+      <Pressable onPress={() => goBack(`/cart/territory/${id}`)} style={s.undo} accessibilityRole="button">
         <Text style={s.undoText}>{t('territories.outline.back')}</Text>
       </Pressable>
     </View>

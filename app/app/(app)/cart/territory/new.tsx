@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { goBack } from '../../../../components/NavHistory';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../components/KeyboardScroll';
@@ -306,7 +307,7 @@ export default function NewTerritoryScreen() {
         >
           <Text style={s.linkText}>{t('territories.create.again')}</Text>
         </Pressable>
-        <Pressable onPress={() => router.back()} style={s.link} accessibilityRole="button">
+        <Pressable onPress={() => goBack('/cart/territories')} style={s.link} accessibilityRole="button">
           <Text style={s.linkText}>{t('common.cancel')}</Text>
         </Pressable>
       </View>

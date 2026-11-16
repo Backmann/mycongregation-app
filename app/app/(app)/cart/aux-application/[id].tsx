@@ -8,6 +8,8 @@ import {
   View,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { goBack } from '../../../../components/NavHistory';
+import { useMayOpen } from '../../../../lib/useMayOpen';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -38,6 +40,7 @@ import { buildS205bHtml } from '../../../../lib/auxApplicationPdf';
  * but «Одобряю».
  */
 export default function AuxApplicationScreen() {
+  const mayOpen = useMayOpen();
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const qc = useQueryClient();
@@ -76,7 +79,7 @@ export default function AuxApplicationScreen() {
     onSuccess: (res) => {
       setAsk(null);
       refresh();
-      if (res === null) router.back();
+      if (res === null) goBack(mayOpen('/cart/auxiliary-pioneers') ? '/cart/auxiliary-pioneers' : '/cart');
       else qc.setQueryData(['aux-applications', 'one', id], res);
     },
   });
