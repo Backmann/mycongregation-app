@@ -7674,7 +7674,7 @@
     "outline": {
       "open": "Grenze",
       "title": "Grenze von Gebiet {{number}}",
-      "help": "Ziehen Sie die Punkte der Grenze. Ziehen an der Mitte einer Seite fügt einen Punkt hinzu; Rechtsklick auf einen Punkt entfernt ihn. Punkte nahe am Nachbarn oder an einer Straße rasten dort ein.",
+      "help": "Ziehen Sie die Punkte der Grenze. Ein Klick auf die Mitte einer Seite fügt einen Punkt hinzu, der sich dann ziehen lässt; Rechtsklick auf einen Punkt entfernt ihn. Punkte nahe am Nachbarn oder an einer Straße rasten dort ein.",
       "shared": "Gemeinsame Grenze bei beiden Nachbarn verschieben",
       "snap": "An Straßen einrasten",
       "stepBack": "Schritt zurück",

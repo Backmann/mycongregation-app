@@ -7674,7 +7674,7 @@
     "outline": {
       "open": "Boundary",
       "title": "Boundary of territory {{number}}",
-      "help": "Drag the points of the boundary. Dragging the middle of a side adds a point; right-click a point to remove it. Points close to a neighbour or a street snap to it.",
+      "help": "Drag the points of the boundary. Clicking the middle of a side adds a point, which can then be dragged; right-click a point to remove it. Points close to a neighbour or a street snap to it.",
       "shared": "Move a shared border in both neighbours",
       "snap": "Snap to streets",
       "stepBack": "Step back",

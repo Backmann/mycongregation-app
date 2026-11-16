@@ -89,7 +89,9 @@ const seven = (ring: Ring): Ring =>
  *
  * The territory and its neighbours of the same kind lie on the map; the
  * territory is selected, its corners can be dragged, a corner added by
- * dragging the middle of a side, taken away with the right mouse button.
+ * a click on the middle of a side (16 November 2026: a drag there moves the
+ * map, the editor's library adds the point only on a click), taken away with
+ * the right mouse button.
  * A corner shared with a neighbour (within a metre) moves in both, a corner
  * added on a shared side appears in both. A dragged corner is drawn to a
  * nearby corner of a neighbour, then to a nearby street (optional).
