@@ -39,6 +39,8 @@ try {
   check('Home and the root: no (Home is where it goes anyway)', [returnPath('/'), returnPath('/home')], [null, null]);
   check('the sign-in pages: no', [returnPath('/login'), returnPath('/reset-password?token=x'), returnPath('/invite/abc')], [null, null, null]);
   check('nothing, a number, too long: no', [returnPath(undefined), returnPath(5), returnPath('/' + 'a'.repeat(400))], [null, null, null]);
+  check('route groups: no', [returnPath('/(auth)/login'), returnPath('/(app)/home')], [null, null]);
+  check('a slash hidden as %2F or %5C: no', [returnPath('/%2F%2Fevil.example'), returnPath('/%5cevil'), returnPath('/a%20b')], [null, null, '/a%20b']);
   check('spaces and quotes: no', [returnPath('/a b'), returnPath('/a"b'), returnPath('/a<b')], [null, null, null]);
 } finally {
   rmSync(out, { recursive: true, force: true });

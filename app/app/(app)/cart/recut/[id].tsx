@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { goBack } from '../../../../components/NavHistory';
@@ -44,6 +44,9 @@ export default function RecutProposalScreen() {
   const [writing, setWriting] = useState(false);
   const [text, setText] = useState('');
   const [notice, setNotice] = useState<string | null>(null);
+  // The proposal on screen now: an answer that comes after the person moved on moves nothing.
+  const shown = useRef(id);
+  shown.current = id;
   // Going to the next proposal keeps this screen: what was typed or said here stays behind.
   useEffect(() => {
     setError(null);
@@ -56,18 +59,11 @@ export default function RecutProposalScreen() {
   const fail = (e: unknown) => setError(extractErrorMessage(e));
   const remark = useMutation({
     mutationFn: (body: { ok: boolean; text?: string }) => recutApi.remark(id!, body),
-    onSuccess: (v, body) => {
+    onSuccess: (v) => {
       put(v);
       setError(null);
       setWriting(false);
       setText('');
-      // «No remarks» goes straight on to the next one not yet marked
-      // (16 November 2026, review one by one); a remark in words stays.
-      if (body.ok) {
-        const next = reviewStep(v.proposals, id!)?.nextToMark ?? null;
-        if (next) router.replace(`/cart/recut/${next.id}` as never);
-        else setNotice(t('territories.recut.review.lastDone'));
-      }
     },
     onError: fail,
   });
@@ -384,7 +380,23 @@ export default function RecutProposalScreen() {
             <View style={s.btnRow}>
               {!mine?.ok ? (
                 <Pressable
-                  onPress={() => remark.mutate({ ok: true })}
+                  onPress={() => {
+                    const sent = id!;
+                    remark.mutate(
+                      { ok: true },
+                      {
+                        // «No remarks» goes straight on to the next one not yet
+                        // marked (16 November 2026, review one by one); a remark
+                        // in words stays. Not run once this screen is gone.
+                        onSuccess: (v) => {
+                          if (shown.current !== sent) return;
+                          const next = reviewStep(v.proposals, sent)?.nextToMark ?? null;
+                          if (next) router.replace(`/cart/recut/${next.id}` as never);
+                          else setNotice(t('territories.recut.review.lastDone'));
+                        },
+                      },
+                    );
+                  }}
                   disabled={busy}
                   style={({ pressed }) => [s.btnGhost, busy && s.off, pressed && s.pressed]}
                   accessibilityRole="button"

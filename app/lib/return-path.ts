@@ -8,8 +8,10 @@
 export function returnPath(raw: unknown): string | null {
   const v = Array.isArray(raw) ? raw[0] : raw;
   if (typeof v !== 'string' || v.length > 300) return null;
-  // One leading slash; no "//host", no "/\host", no scheme, no control characters.
-  if (!/^\/[A-Za-z0-9\-._~%/()]*(\?[A-Za-z0-9\-._~%=&]*)?$/.test(v)) return null;
+  // One leading slash; no "//host", no "/\host", no scheme, no control characters,
+  // no route groups such as "/(auth)/login", no slash hidden as %2F or %5C.
+  if (!/^\/[A-Za-z0-9\-._~%/]*(\?[A-Za-z0-9\-._~%=&]*)?$/.test(v)) return null;
+  if (/%2f|%5c/i.test(v)) return null;
   if (v.startsWith('//')) return null;
   const path = v.split('?')[0];
   if (path === '/' || path === '/home') return null;

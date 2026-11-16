@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Redirect, Tabs, usePathname } from "expo-router";
 import { returnPath } from "../../lib/return-path";
 import {
@@ -91,6 +92,10 @@ export default function AppLayout() {
   const { t } = useTranslation();
   // A page opened by its address comes back after signing in (lib/return-path.ts).
   const pathname = usePathname();
+  // Only a page opened while nobody was signed in comes back — never the page
+  // of a person who has just signed out (lib/auth.tsx resetNav).
+  const hadUser = useRef(false);
+  if (user) hadUser.current = true;
   usePushNotifications();
   useDeviceNotifySync();
   if (isLoading) {
@@ -103,7 +108,7 @@ export default function AppLayout() {
   if (!user) {
     // Nobody could be asked who is signed in — which is not «signed out».
     if (unreachable) return <NoConnectionScreen />;
-    const next = returnPath(pathname);
+    const next = hadUser.current ? null : returnPath(pathname);
     return <Redirect href={(next ? { pathname: "/(auth)/login", params: { next } } : "/(auth)/login") as never} />;
   }
   // The screen on the stage never sees the app's sections — not by a menu,
