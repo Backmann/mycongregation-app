@@ -30,6 +30,17 @@ export interface LinePart {
   label: string;
 }
 
+/**
+ * The middle of a line, numbered: each line cuts the part its middle lies
+ * in, so the screen shows where that is (16 November 2026).
+ */
+export interface LineMiddle {
+  p: Pt;
+  label: string;
+  /** This line now cuts another part than as saved. */
+  warn: boolean;
+}
+
 export interface LineEditorHandle {
   /** One step back: the last drag, added or removed point, line drawn. */
   stepBack: () => void;
@@ -42,6 +53,7 @@ export interface LineEditorHandle {
 const OUTLINE = '#0f172a';
 const LINE_COLOR = '#b91c1c';
 const WAS = '#64748b';
+const WARN = '#b45309';
 /** Within this many screen pixels a street attracts a dragged point. */
 const STREET_PX = 14;
 /** A line not touched keeps its saved points: terra-draw holds seven decimals. */
@@ -59,7 +71,8 @@ const same = (a: Pt[], b: Pt[]) => JSON.stringify(a) === JSON.stringify(b);
  * the right mouse button takes one away. «Redraw» replaces the selected
  * line with one drawn anew, «add» draws one more. A dragged point is drawn
  * to a nearby street (optional). Every change is reported as it happens
- * (onMove) and once it is done (onDone).
+ * (onMove) and once it is done (onDone). Each line's middle is marked with
+ * its number: a line cuts the part its middle lies in.
  */
 export const LineEditor = forwardRef<
   LineEditorHandle,
@@ -73,6 +86,7 @@ export const LineEditor = forwardRef<
     lines: Pt[][];
     homes: LineHome[];
     parts: LinePart[];
+    middles: LineMiddle[];
     tool: LineTool;
     snapStreets: boolean;
     height: number;
@@ -285,6 +299,30 @@ export const LineEditor = forwardRef<
               'circle-stroke-width': ['case', ['get', 'moved'], 2.5, 0.8],
             },
           });
+          m.addSource('middles', { type: 'geojson', data: fc([]) });
+          m.addLayer({
+            id: 'middles-dot',
+            type: 'circle',
+            source: 'middles',
+            paint: {
+              'circle-radius': 9,
+              'circle-color': ['case', ['get', 'warn'], WARN, '#ffffff'],
+              'circle-stroke-color': ['case', ['get', 'warn'], '#ffffff', LINE_COLOR],
+              'circle-stroke-width': 2,
+            },
+          });
+          m.addLayer({
+            id: 'middles-label',
+            type: 'symbol',
+            source: 'middles',
+            layout: {
+              'text-field': ['get', 'label'],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': 11,
+              'text-allow-overlap': true,
+            },
+            paint: { 'text-color': ['case', ['get', 'warn'], '#ffffff', LINE_COLOR] },
+          });
           m.addLayer({
             id: 'parts-label',
             type: 'symbol',
@@ -439,6 +477,20 @@ export const LineEditor = forwardRef<
       })),
     });
   }, [loaded, props.homes]);
+
+  // The numbered middles of the lines.
+  useEffect(() => {
+    const m = mapRef.current;
+    if (!loaded || !m) return;
+    m.getSource('middles')?.setData({
+      type: 'FeatureCollection',
+      features: props.middles.map((x) => ({
+        type: 'Feature',
+        properties: { label: x.label, warn: x.warn },
+        geometry: { type: 'Point', coordinates: x.p },
+      })),
+    });
+  }, [loaded, props.middles]);
 
   // The parts as the server cut them.
   useEffect(() => {

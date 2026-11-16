@@ -20,6 +20,7 @@ import {
   LineEditor,
   type LineEditorHandle,
   type LineHome,
+  type LineMiddle,
   type LinePart,
   type LineTool,
 } from '../../../../../components/territories/LineEditor';
@@ -32,7 +33,9 @@ import {
   besideCounts,
   cutOf,
   homesByPart,
+  middleOf,
   movedShare,
+  retargeted,
   REOPEN_SHARE,
   type Pt,
 } from '../../../../../lib/recut-lines';
@@ -148,6 +151,12 @@ export default function RecutLinesScreen() {
     });
   }, [cut, savedCut, homes]);
 
+  // Lines that now cut another part than as saved: the parts were put together anew.
+  const changedTarget = useMemo(() => (savedCut && cut ? retargeted(savedCut, cut) : []), [savedCut, cut]);
+  const middles = useMemo<LineMiddle[]>(
+    () => (lines ?? []).map((l, i) => ({ p: middleOf(l), label: String(i + 1), warn: changedTarget.includes(i) })),
+    [lines, changedTarget],
+  );
   const key = lines ? JSON.stringify(lines) : '';
   const shown = preview && preview.key === key ? preview.data : null;
   const shownError = previewError && previewError.key === key ? previewError.text : null;
@@ -310,6 +319,19 @@ export default function RecutLinesScreen() {
       <View style={[cardStyles.card, s.box]}>
         <Text style={s.section}>{t('territories.recut.lines.parts')}</Text>
         {problemText ? <Text style={s.bad}>{problemText}</Text> : null}
+        {changedTarget.length ? (
+          <View style={s.alarm}>
+            <Text style={s.warn}>
+              {t('territories.recut.lines.retargeted', {
+                lines: changedTarget.map((i) => i + 1).join(', '),
+                count: changedTarget.length,
+              })}
+            </Text>
+            <Pressable onPress={() => editor.current?.stepBack()} style={s.tool} accessibilityRole="button">
+              <Text style={s.toolText}>{t('territories.recut.lines.stepBack')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
         {!problem && counts.length
           ? counts.map((n, i) => {
               const x = shown?.parts[i];
@@ -469,6 +491,7 @@ export default function RecutLinesScreen() {
             lines={lines}
             homes={mapHomes}
             parts={mapParts}
+            middles={middles}
             tool={tool}
             snapStreets={snap}
             height={mapHeight}
@@ -543,6 +566,7 @@ const s = StyleSheet.create({
   hint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, lineHeight: 18 },
   muted: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: MUTED, lineHeight: 19, textAlign: 'center' },
   warn: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: WARN, lineHeight: 18 },
+  alarm: { gap: 8, backgroundColor: '#fdf1df', borderRadius: 10, padding: 10, alignItems: 'flex-start' },
   bad: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: BAD, lineHeight: 18 },
   go: { backgroundColor: BRAND, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
   goText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: '#fff' },

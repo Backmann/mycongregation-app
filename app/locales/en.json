@@ -8367,7 +8367,7 @@
         "stepBack": "Step back",
         "suggested": "Back to the proposed lines",
         "snap": "Snap to streets",
-        "how": "Drag a point · click the middle of a stretch for a new point · right-click a point to remove it. Grey dashes: the saved lines; a home in a white circle changes part.",
+        "how": "Drag a point · click the middle of a stretch for a new point · right-click a point to remove it. A numbered circle is a line's middle: a line cuts the part its middle lies in. Grey dashes: the saved lines; a home in a white circle changes part.",
         "problem": {
           "short": "Line {{n}}: at least two points are needed.",
           "crosses": "Line {{n}} crosses itself.",
@@ -8377,7 +8377,9 @@
         "edit": "Edit the lines",
         "movedByHand": "The lines were moved by hand after the draft proposed them.",
         "staleRemark": "before the lines changed — waits for a new look",
-        "saveOver": "Save my lines over them"
+        "saveOver": "Save my lines over them",
+        "retargeted_one": "The middle of line {{lines}} is now in another part — the line cuts another part and the parts are put together anew. If that was not meant, step back.",
+        "retargeted_other": "The middles of lines {{lines}} are now in other parts — the parts are put together anew. If that was not meant, step back."
       }
     }
   }

@@ -112,6 +112,13 @@ export interface Cut {
   /** The part a point falls in, in the server's order; -1 outside the territory. */
   partOf: (p: Pt) => number;
   problem: CutProblem | null;
+  /**
+   * The part each line cuts — the one its middle lies in when it comes to
+   * be cut. A point dragged across another line's middle changes it, and
+   * the parts are put together anew (16 November 2026, Walstede: 74% of
+   * the homes «moved» from one drag).
+   */
+  targets: number[];
 }
 
 /**
@@ -119,6 +126,15 @@ export interface Cut {
  * each line cuts the part its middle lies in, the piece on its left keeps
  * the part's place, the other one is added at the end.
  */
+/**
+ * The lines whose cut part changed against before (same number of lines):
+ * the parts were put together anew, not moved a little.
+ */
+export function retargeted(before: Cut, after: Cut): number[] {
+  if (before.problem || after.problem || before.targets.length !== after.targets.length) return [];
+  return after.targets.flatMap((t, i) => (t !== before.targets[i] ? [i] : []));
+}
+
 export function cutOf(g: Outline, raw: Pt[][]): Cut {
   const lines = raw.map(cleanLine);
   const sides: Ring[] = [];
@@ -157,6 +173,7 @@ export function cutOf(g: Outline, raw: Pt[][]): Cut {
     parts: problem ? 0 : n + 1,
     partOf: (p) => (problem ? -1 : trace(p, n)),
     problem,
+    targets: problem ? [] : targets.slice(),
   };
 }
 
