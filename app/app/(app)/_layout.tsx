@@ -1,4 +1,5 @@
-import { Redirect, Tabs } from "expo-router";
+import { Redirect, Tabs, usePathname } from "expo-router";
+import { returnPath } from "../../lib/return-path";
 import {
   BottomTabBar,
   type BottomTabBarProps,
@@ -88,6 +89,8 @@ export default function AppLayout() {
   const side = width >= SIDE_NAV_FROM;
   const { user, isLoading, unreachable } = useAuth();
   const { t } = useTranslation();
+  // A page opened by its address comes back after signing in (lib/return-path.ts).
+  const pathname = usePathname();
   usePushNotifications();
   useDeviceNotifySync();
   if (isLoading) {
@@ -100,7 +103,8 @@ export default function AppLayout() {
   if (!user) {
     // Nobody could be asked who is signed in — which is not «signed out».
     if (unreachable) return <NoConnectionScreen />;
-    return <Redirect href="/(auth)/login" />;
+    const next = returnPath(pathname);
+    return <Redirect href={(next ? { pathname: "/(auth)/login", params: { next } } : "/(auth)/login") as never} />;
   }
   // The screen on the stage never sees the app's sections — not by a menu,
   // not by an address typed in (app/stage.tsx; the server refuses it the

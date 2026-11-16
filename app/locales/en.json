@@ -8380,6 +8380,23 @@
         "saveOver": "Save my lines over them",
         "retargeted_one": "The middle of line {{lines}} is now in another part — the line cuts another part and the parts are put together anew. If that was not meant, step back.",
         "retargeted_other": "The middles of lines {{lines}} are now in other parts — the parts are put together anew. If that was not meant, step back."
+      },
+      "review": {
+        "title": "Review one by one",
+        "progress": "Your marks: {{done}} of {{total}}",
+        "hint": "Open a proposal, look at the map and mark it: “No remarks” takes you straight to the next one.",
+        "start": "Start: {{number}}",
+        "continue": "Continue: {{number}}",
+        "allDone": "You have marked every proposal.",
+        "place": "{{place}} of {{total}}",
+        "prev": "Previous",
+        "next": "Next",
+        "openOnSite": "Open the map on the website",
+        "openOnSiteHint": "The map opens in the phone’s browser, on this same page.",
+        "markOk": "You: no remarks",
+        "markRemark": "You: a remark",
+        "markStale": "You: look again",
+        "lastDone": "That was the last proposal not yet marked."
       }
     }
   }

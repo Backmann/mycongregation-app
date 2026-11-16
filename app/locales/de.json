@@ -8380,6 +8380,23 @@
         "saveOver": "Meine Linien darüber speichern",
         "retargeted_one": "Die Mitte von Linie {{lines}} liegt jetzt in einem anderen Teil — die Linie schneidet einen anderen Teil, die Teile sind neu gebildet. Falls nicht gewollt: Schritt zurück.",
         "retargeted_other": "Die Mitten der Linien {{lines}} liegen jetzt in anderen Teilen — die Teile sind neu gebildet. Falls nicht gewollt: Schritt zurück."
+      },
+      "review": {
+        "title": "Einzeln durchsehen",
+        "progress": "Ihre Markierungen: {{done}} von {{total}}",
+        "hint": "Vorschlag öffnen, Karte ansehen und markieren: „Keine Anmerkungen“ führt gleich zum nächsten.",
+        "start": "Beginnen: {{number}}",
+        "continue": "Weiter: {{number}}",
+        "allDone": "Sie haben alle Vorschläge markiert.",
+        "place": "{{place}} von {{total}}",
+        "prev": "Vorheriger",
+        "next": "Nächster",
+        "openOnSite": "Karte auf der Website öffnen",
+        "openOnSiteHint": "Die Karte öffnet sich im Browser des Telefons, auf derselben Seite.",
+        "markOk": "Sie: keine Anmerkungen",
+        "markRemark": "Sie: Anmerkung",
+        "markStale": "Sie: erneut ansehen",
+        "lastDone": "Das war der letzte nicht markierte Vorschlag."
       }
     }
   }

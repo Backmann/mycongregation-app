@@ -13,7 +13,7 @@ export interface RecutProposalLike {
   approvedAt: string | null;
   reopenedAt: string | null;
   blocks: string[];
-  remarks: { ok: boolean }[];
+  remarks: { ok: boolean; mine?: boolean; stale?: boolean }[];
 }
 
 /** How many territories there are now, and how many if the open proposals were all applied. */
@@ -180,4 +180,65 @@ export function longestWalk(
 export function searchTerritories<T extends { number: string }>(list: T[], q: string): T[] {
   const n = q.replace(/\s+/g, '').toLowerCase();
   return list.filter((t) => t.number.replace(/\s+/g, '').toLowerCase().includes(n));
+}
+
+/**
+ * My own mark on a proposal (16 November 2026, review one by one): none yet,
+ * "no remarks", a remark in words, or a mark given before the parts last
+ * changed much — that one asks to be looked at again.
+ */
+export type MyMark = 'none' | 'ok' | 'remark' | 'stale';
+
+export function myMarkOf(p: RecutProposalLike): MyMark {
+  const r = p.remarks.find((x) => x.mine);
+  if (!r) return 'none';
+  if (r.stale) return 'stale';
+  return r.ok ? 'ok' : 'remark';
+}
+
+/** Looked at by me: a mark that still stands. */
+export function reviewedByMe(p: RecutProposalLike): boolean {
+  const m = myMarkOf(p);
+  return m === 'ok' || m === 'remark';
+}
+
+/**
+ * The order of going through: the open proposals as the list shows them
+ * (round, then when made). How many I have marked, and which to open next.
+ */
+export function reviewOf<T extends RecutProposalLike & { id: string }>(
+  list: T[],
+): { done: number; total: number; next: T | null } {
+  const open = list.filter((p) => p.state === 'open');
+  const done = open.filter(reviewedByMe).length;
+  return { done, total: open.length, next: open.find((p) => !reviewedByMe(p)) ?? null };
+}
+
+/**
+ * Where one proposal stands in the going-through: its place (from 1), the
+ * one before and after, and the next one not yet marked after it — round
+ * the end to the start; null when all are marked.
+ */
+export function reviewStep<T extends RecutProposalLike & { id: string }>(
+  list: T[],
+  id: string,
+): { place: number; total: number; prev: T | null; next: T | null; nextToMark: T | null } | null {
+  const open = list.filter((p) => p.state === 'open');
+  const i = open.findIndex((p) => p.id === id);
+  if (i < 0) return null;
+  let nextToMark: T | null = null;
+  for (let k = 1; k < open.length; k++) {
+    const q = open[(i + k) % open.length];
+    if (!reviewedByMe(q)) {
+      nextToMark = q;
+      break;
+    }
+  }
+  return {
+    place: i + 1,
+    total: open.length,
+    prev: i > 0 ? open[i - 1] : null,
+    next: i < open.length - 1 ? open[i + 1] : null,
+    nextToMark,
+  };
 }

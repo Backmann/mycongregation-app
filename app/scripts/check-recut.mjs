@@ -130,6 +130,23 @@ try {
   );
   check('search: by the number, any case, spaces ignored', r.searchTerritories([{ number: 'Hamm52' }, { number: 'Ahlen 01' }, { number: 'Hamm5' }], 'hamm 5').map((t) => t.number), ['Hamm52', 'Hamm5']);
   check('search: nothing asked — all', r.searchTerritories([{ number: 'A' }, { number: 'B' }], '  ').length, 2);
+
+  // Going through one by one (16 November 2026).
+  const a = p({ id: 'a', remarks: [{ ok: true, mine: true }] });
+  const b = p({ id: 'b', remarks: [{ ok: true, mine: false }] });
+  const c = p({ id: 'c', remarks: [{ ok: false, mine: true, stale: true }] });
+  const d = p({ id: 'd', remarks: [{ ok: false, mine: true }] });
+  const e = p({ id: 'e', state: 'applied' });
+  check('my mark: ok, none (only another\'s), stale, remark', [a, b, c, d].map(r.myMarkOf), ['ok', 'none', 'stale', 'remark']);
+  const rv = r.reviewOf([a, b, c, d, e]);
+  check('marked by me: a stale mark does not count; applied ones are out', [rv.done, rv.total, rv.next?.id], [2, 4, 'b']);
+  const st = r.reviewStep([a, b, c, d, e], 'b');
+  check('step on b: place, neighbours, next to mark after it', [st.place, st.total, st.prev?.id, st.next?.id, st.nextToMark?.id], [2, 4, 'a', 'c', 'c']);
+  const st2 = r.reviewStep([a, b, c, d, e], 'd');
+  check('step on the last: no next; next to mark goes round to the start', [st2.next, st2.nextToMark?.id], [null, 'b']);
+  const allMarked = [p({ id: 'x', remarks: [{ ok: true, mine: true }] }), p({ id: 'y', remarks: [{ ok: true, mine: true }] })];
+  check('all marked: nothing next', [r.reviewOf(allMarked).next, r.reviewStep(allMarked, 'x').nextToMark], [null, null]);
+  check('step on a proposal not open: none', r.reviewStep([a, e], 'e'), null);
   check('eight colours for eight parts, all different', new Set(r.PART_COLORS).size, 8);
 } finally {
   rmSync(out, { recursive: true, force: true });
