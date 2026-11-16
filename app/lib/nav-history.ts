@@ -133,6 +133,19 @@ export function foreignAfter(prevForeign: ReadonlySet<string>, history: NavEntry
   return out;
 }
 
+/**
+ * Going from one screen to a sibling of it — the next proposal, the one
+ * before (16 November 2026): when the sibling is exactly where the person
+ * came from, the step is a step back; otherwise a new screen is opened on
+ * top. Never a replace: a replaced screen leaves the history and the stack
+ * telling two different stories, and back then leads somewhere the person
+ * never came from.
+ */
+export function siblingStep(history: NavEntry[], path: string): 'back' | 'open' {
+  const before = history[history.length - 2];
+  return before && before.path === path ? 'back' : 'open';
+}
+
 // --- the module's own state (components/NavHistory.tsx keeps it) ---------
 
 let history: NavEntry[] = [];

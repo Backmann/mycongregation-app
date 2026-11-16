@@ -34,7 +34,9 @@ import {
   km,
   RECUT_KEY,
   longestWalk,
+  myMarkOf,
   queuesOf,
+  reviewOf,
   searchTerritories,
   summaryOf,
   walkNowAfter,
@@ -134,6 +136,7 @@ export default function RecutScreen() {
   const queues = queuesOf(open);
   const longest = longestWalk(view.territories, open);
   const dec = decisionOf(open);
+  const review = reviewOf(open);
   const shown = filterProposals(open, filter);
   const counts: Record<RecutFilter, number> = {
     all: open.length,
@@ -178,6 +181,45 @@ export default function RecutScreen() {
             <Text style={s.noticeText}>{notice}</Text>
           </View>
         ) : null}
+
+        {/* Going through one by one: my own marks */}
+        {open.length ? (
+          <View style={s.card}>
+            <Text style={s.kicker}>{t('territories.recut.review.title')}</Text>
+            <Text style={s.body}>
+              {t('territories.recut.review.progress', { done: review.done, total: review.total })}
+            </Text>
+            <View
+              style={s.track}
+              accessibilityRole="progressbar"
+              accessibilityValue={{ min: 0, max: review.total, now: review.done }}
+            >
+              <View style={[s.fill, { width: `${Math.round((review.done / review.total) * 100)}%` }]} />
+            </View>
+            {review.next ? (
+              <>
+                <Text style={s.quiet}>{t('territories.recut.review.hint')}</Text>
+                <View style={s.btnRow}>
+                  <Pressable
+                    onPress={() => router.push(`/cart/recut/${review.next!.id}` as never)}
+                    style={({ pressed }) => [s.btn, pressed && s.pressed]}
+                    accessibilityRole="button"
+                  >
+                    <Ionicons name="play-forward-outline" size={16} color="#fff" />
+                    <Text style={s.btnText}>
+                      {t(review.done ? 'territories.recut.review.continue' : 'territories.recut.review.start', {
+                        number: review.next.territories.map((x) => x.number).join(' + '),
+                      })}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <Text style={s.quiet}>{t('territories.recut.review.allDone')}</Text>
+            )}
+          </View>
+        ) : null}
+
 
         {/* The measure */}
         <View style={s.card}>
@@ -491,6 +533,7 @@ function ProposalRow({
       ? t('territories.recut.list.cut', { count: n })
       : t('territories.recut.list.merge', { list: numbers.join(' + ') });
   const remarks = p.remarks.filter((r) => !r.ok).length;
+  const mark = myMarkOf(p);
   const walk = walkNowAfter(p, byId);
   const walkText =
     walk.now === null
@@ -531,6 +574,9 @@ function ProposalRow({
             <Chip tone="green" text={t('territories.recut.list.decided')} />
           ) : null}
           {remarks ? <Chip tone="blue" text={t('territories.recut.decision.remarks', { count: remarks })} /> : null}
+          {mark === 'ok' ? <Chip tone="green" text={t('territories.recut.review.markOk')} /> : null}
+          {mark === 'remark' ? <Chip tone="blue" text={t('territories.recut.review.markRemark')} /> : null}
+          {mark === 'stale' ? <Chip tone="amber" text={t('territories.recut.review.markStale')} /> : null}
         </View>
       </View>
       <Ionicons name="chevron-forward" size={18} color={MUTED} />
@@ -744,6 +790,8 @@ const s = StyleSheet.create({
   notice: { backgroundColor: '#f0fdf4', borderRadius: 12, borderWidth: 1, borderColor: '#bbf7d0', padding: 12 },
   noticeText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: '#166534', lineHeight: 19 },
   mapWrap: { borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', borderWidth: 1, borderColor: LINE },
+  track: { height: 6, borderRadius: 3, backgroundColor: '#e2e8f0', overflow: 'hidden' },
+  fill: { height: 6, backgroundColor: '#15803d' },
   queues: { gap: 4, marginTop: 2 },
   queue: { flexDirection: 'row', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' },
   queueName: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: INK, minWidth: 74 },

@@ -11,7 +11,8 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { returnPath } from '../../lib/return-path';
 import { useAuth } from '../../lib/auth';
 import { extractErrorMessage } from '../../lib/api';
 import { LanguagePills } from '../../components/LanguagePills';
@@ -21,6 +22,8 @@ import BrandLockup from '../../components/BrandLockup';
 export default function LoginScreen() {
   const { t } = useTranslation();
   const { signIn } = useAuth();
+  // Opened from a page of the app by its address: go back there (lib/return-path.ts).
+  const { next } = useLocalSearchParams<{ next?: string }>();
   // A login name or an address — one field, because a person should not have
   // to know which kind of thing they hold before they can type it.
   const [login, setLogin] = useState('');
@@ -37,7 +40,7 @@ export default function LoginScreen() {
     setError(null);
     try {
       await signIn(login.trim(), password);
-      router.replace('/(app)/home' as any);
+      router.replace((returnPath(next) ?? '/(app)/home') as any);
     } catch (e) {
       // 401 is «no» and nothing more — deliberately, so this page cannot be
       // used to find out whose address exists. But «Invalid credentials» is a

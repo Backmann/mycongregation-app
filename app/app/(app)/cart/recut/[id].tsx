@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { goBack } from '../../../../components/NavHistory';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../components/KeyboardScroll';
@@ -12,8 +13,9 @@ import { TerritoryMap, type MapShape } from '../../../../components/territories/
 import { BRAND, INK, LINE, MUTED, Chip } from '../../../../components/reports/ReportBits';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { extractErrorMessage, recutApi, type RecutView } from '../../../../lib/api';
-import { km, PART_COLORS, RECUT_KEY, whereOf } from '../../../../lib/recut';
-import { formatDayShort } from '../../../../lib/territory-view';
+import { navHistory, siblingStep } from '../../../../lib/nav-history';
+import { km, PART_COLORS, RECUT_KEY, reviewStep, whereOf } from '../../../../lib/recut';
+import { formatDayShort, siteOrigin } from '../../../../lib/territory-view';
 
 const BG = '#f1f5f9';
 const OK = '#15803d';
@@ -31,6 +33,15 @@ export default function RecutProposalScreen() {
   const tr = (k: string, o?: Record<string, unknown>) => t(k, o);
   const lang = i18n.language;
   const router = useRouter();
+  const navigation = useNavigation();
+  // Another proposal: a step back when it is where the person came from,
+  // otherwise opened on top — so back leads where he came from, as
+  // everywhere in the app (lib/nav-history.ts siblingStep).
+  const openProposal = (pid: string) => {
+    const path = `/cart/recut/${pid}`;
+    if (siblingStep(navHistory(), path) === 'back') goBack('/cart/recut');
+    else router.push(path as never);
+  };
   const qc = useQueryClient();
   const viewQ = useQuery({
     queryKey: RECUT_KEY,
@@ -42,6 +53,17 @@ export default function RecutProposalScreen() {
   const [error, setError] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
   const [text, setText] = useState('');
+  const [notice, setNotice] = useState<string | null>(null);
+  // The proposal on screen now: an answer that comes after the person moved on moves nothing.
+  const shown = useRef(id);
+  shown.current = id;
+  // Going to the next proposal keeps this screen: what was typed or said here stays behind.
+  useEffect(() => {
+    setError(null);
+    setWriting(false);
+    setText('');
+    setNotice(null);
+  }, [id]);
 
   const put = (v: RecutView) => qc.setQueryData(RECUT_KEY, v);
   const fail = (e: unknown) => setError(extractErrorMessage(e));
@@ -98,6 +120,7 @@ export default function RecutProposalScreen() {
   }
 
   const numbers = p.territories.map((x) => x.number);
+  const step = reviewStep(view.proposals, p.id);
   const nParts = Math.max(p.parts.length, (p.lines?.length ?? 0) + 1);
   const title =
     p.kind === 'cut'
@@ -146,11 +169,18 @@ export default function RecutProposalScreen() {
       <Stack.Screen
         options={{ title: numbers.length > 1 ? `${numbers[0]} +${numbers.length - 1}` : numbers[0] }}
       />
-      <KeyboardScroll style={{ flex: 1 }} contentContainerStyle={s.content}>
+      {/* A new key per proposal: the next one opens at its top. */}
+      <KeyboardScroll key={p.id} style={{ flex: 1 }} contentContainerStyle={s.content}>
         <View style={{ gap: 6 }}>
           <Text style={s.h1}>{title}</Text>
           <Text style={s.quiet}>
-            {[whereOf(first, tr, lang), t('territories.recut.list.queue', { n: p.queue })].filter(Boolean).join(' · ')}
+            {[
+              step ? t('territories.recut.review.place', { place: step.place, total: step.total }) : null,
+              whereOf(first, tr, lang),
+              t('territories.recut.list.queue', { n: p.queue }),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
           </Text>
           <View style={s.chips}>
             {decided ? (
@@ -177,6 +207,21 @@ export default function RecutProposalScreen() {
         {error ? (
           <View style={s.error} accessibilityLiveRegion="polite">
             <Text style={s.errorText}>{error}</Text>
+          </View>
+        ) : null}
+
+        {/* On the phone the map is not drawn: the same page opens in its browser. */}
+        {Platform.OS !== 'web' && shapes.length ? (
+          <View style={s.card}>
+            <Pressable
+              onPress={() => void WebBrowser.openBrowserAsync(`${siteOrigin()}/cart/recut/${p.id}`)}
+              style={({ pressed }) => [s.btnGhost, { alignSelf: 'flex-start' }, pressed && s.pressed]}
+              accessibilityRole="link"
+            >
+              <Ionicons name="map-outline" size={16} color={BRAND} />
+              <Text style={s.btnGhostText}>{t('territories.recut.review.openOnSite')}</Text>
+            </Pressable>
+            <Text style={s.quiet}>{t('territories.recut.review.openOnSiteHint')}</Text>
           </View>
         ) : null}
 
@@ -345,7 +390,24 @@ export default function RecutProposalScreen() {
             <View style={s.btnRow}>
               {!mine?.ok ? (
                 <Pressable
-                  onPress={() => remark.mutate({ ok: true })}
+                  onPress={() => {
+                    const sent = id!;
+                    remark.mutate(
+                      { ok: true },
+                      {
+                        // «No remarks» goes straight on to the next one not yet
+                        // marked (16 November 2026, review one by one); a remark
+                        // in words stays. Not run once this screen is gone.
+                        onSuccess: (v) => {
+                          // Only from this screen, still on top: not after the person moved on.
+                          if (shown.current !== sent || !navigation.isFocused()) return;
+                          const next = reviewStep(v.proposals, sent)?.nextToMark ?? null;
+                          if (next) openProposal(next.id);
+                          else setNotice(t('territories.recut.review.lastDone'));
+                        },
+                      },
+                    );
+                  }}
                   disabled={busy}
                   style={({ pressed }) => [s.btnGhost, busy && s.off, pressed && s.pressed]}
                   accessibilityRole="button"
@@ -379,6 +441,40 @@ export default function RecutProposalScreen() {
             </View>
           )}
         </View>
+
+        {/* Said where the button was pressed: the page does not jump. */}
+        {notice ? (
+          <View style={s.notice} accessibilityLiveRegion="polite">
+            <Text style={s.noticeText}>{notice}</Text>
+          </View>
+        ) : null}
+
+        {/* One by one: the one before and after, in the list's order */}
+        {step && step.total > 1 ? (
+          <View style={s.steps}>
+            <Pressable
+              onPress={() => step.prev && openProposal(step.prev.id)}
+              disabled={!step.prev || busy}
+              style={({ pressed }) => [s.btnGhost, (!step.prev || busy) && s.off, pressed && s.pressed]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !step.prev }}
+            >
+              <Ionicons name="chevron-back" size={16} color={BRAND} />
+              <Text style={s.btnGhostText}>{t('territories.recut.review.prev')}</Text>
+            </Pressable>
+            <Text style={s.quiet}>{t('territories.recut.review.place', { place: step.place, total: step.total })}</Text>
+            <Pressable
+              onPress={() => step.next && openProposal(step.next.id)}
+              disabled={!step.next || busy}
+              style={({ pressed }) => [s.btnGhost, (!step.next || busy) && s.off, pressed && s.pressed]}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !step.next }}
+            >
+              <Text style={s.btnGhostText}>{t('territories.recut.review.next')}</Text>
+              <Ionicons name="chevron-forward" size={16} color={BRAND} />
+            </Pressable>
+          </View>
+        ) : null}
 
         {view.canEdit ? (
           <Pressable
@@ -482,6 +578,9 @@ const s = StyleSheet.create({
   pressed: { opacity: 0.85 },
   error: { backgroundColor: '#fef2f2', borderRadius: 12, borderWidth: 1, borderColor: '#fecaca', padding: 12 },
   errorText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: BAD },
+  notice: { backgroundColor: '#f0fdf4', borderRadius: 12, borderWidth: 1, borderColor: '#bbf7d0', padding: 12 },
+  noticeText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13.5, color: OK },
+  steps: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   remove: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 10 },
   removeText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: BAD },
 });

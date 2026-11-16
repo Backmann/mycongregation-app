@@ -103,4 +103,14 @@ check('a tab whose top screen came from another section opens at its start', () 
   assert.ok(!N.foreignAfter(new Set(), g).has('profile'), 'opened inside Profile: kept');
 });
 
+check('a sibling screen (next / previous proposal): back if it is where we came from, else opened on top', () => {
+  const h = walk(e('/cart/recut'), e('/cart/recut/a'), e('/cart/recut/b'));
+  assert.equal(N.siblingStep(h, '/cart/recut/a'), 'back');
+  assert.equal(N.siblingStep(h, '/cart/recut/c'), 'open');
+  assert.equal(N.siblingStep(walk(e('/cart/recut/a')), '/cart/recut/b'), 'open');
+  // Opened on top, then back: the history ends where it began.
+  const h2 = N.stepped(N.stepped(h, e('/cart/recut/c')), e('/cart/recut/b'));
+  assert.deepEqual(h2.map((x) => x.path), ['/cart/recut', '/cart/recut/a', '/cart/recut/b']);
+});
+
 console.log(`nav-history: ${n} groups ok`);
