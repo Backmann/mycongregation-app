@@ -87,6 +87,7 @@ const STEPS = [
   ['Участки: журнал изменений', 'node', ['scripts/check-territory-journal.mjs']],
   ['Участки: лента и журнал участка', 'node', ['scripts/check-territory-history.mjs']],
   ['Участки: запись S-13 вручную', 'node', ['scripts/check-territory-record.mjs']],
+  ['Коммиты по-английски', 'node', ['scripts/check-commit-english.mjs']],
   ['Участки: проверка и места', 'node', ['scripts/check-territory-place.mjs']],
   ['Участки: деловая территория', 'node', ['scripts/check-business-view.mjs']],
   ['Участки: выдача и приём', 'node', ['scripts/check-desk.mjs']],
