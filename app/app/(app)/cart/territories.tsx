@@ -16,7 +16,9 @@ import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import {
   extractErrorMessage,
+  recutApi,
   territoriesApi,
+  type RecutWaiting,
   type TerritoryCategory,
   type TerritoryRow,
 } from '../../../lib/api';
@@ -46,6 +48,7 @@ import {
   toneOf,
   type TerritoryTone,
 } from '../../../lib/territory-view';
+import { RECUT_KEY } from '../../../lib/recut';
 
 type Filter = 'attention' | 'held' | 'free' | 'all';
 type Sort = 'age' | 'number';
@@ -105,6 +108,17 @@ export default function TerritoriesScreen() {
     queryFn: () => territoriesApi.checks(),
     enabled: open && !!a?.keeps,
   });
+  // Decided in the re-cutting draft, not applied yet (16 November 2026).
+  const waitingQ = useQuery({
+    queryKey: [...RECUT_KEY, 'waiting'],
+    queryFn: () => recutApi.waiting(),
+    enabled: open && !!a?.keeps,
+    retry: false,
+  });
+  const recutOf = useMemo(
+    () => new Map((waitingQ.data ?? []).map((w) => [w.territoryId, w])),
+    [waitingQ.data],
+  );
   const gapsQ = useQuery({
     queryKey: ['territories', 'gaps'],
     queryFn: () => territoriesApi.gaps(),
@@ -428,6 +442,7 @@ export default function TerritoriesScreen() {
                 tone={tone}
                 today={today}
                 lang={i18n.language}
+                recut={recutOf.get(row.id)}
                 selected={selecting ? selected.has(row.id) : undefined}
                 onToggle={selecting ? () => toggle(row.id) : undefined}
                 onGive={a.keeps && !row.holder ? () => setGiving(row.id) : undefined}
@@ -742,6 +757,7 @@ export default function TerritoriesScreen() {
                 tone={tone}
                 today={today}
                 lang={i18n.language}
+                recut={recutOf.get(row.id)}
                 selected={selecting ? selected.has(row.id) : undefined}
                 onToggle={selecting ? () => toggle(row.id) : undefined}
                 onGive={a.keeps && !row.holder ? () => setGiving(row.id) : undefined}
@@ -875,8 +891,11 @@ function Row({
   onToggle,
   onGive,
   onHandOn,
+  recut,
 }: {
   row: TerritoryRow;
+  /** Decided in the re-cutting draft, not applied yet. */
+  recut?: RecutWaiting;
   tone: TerritoryTone;
   today: string;
   lang: string;
@@ -925,6 +944,18 @@ function Row({
         {h?.handOnTo ? (
           <Text style={s.handOnNote}>
             {t('territories.handOn.note', { name: h.handOnTo.name })}
+          </Text>
+        ) : null}
+        {recut && !h ? (
+          <Text style={s.recutNote}>
+            {recut.hold
+              ? t('territories.recut.apply.rowHeld')
+              : recut.ready
+                ? t(recut.kind === 'merge' ? 'territories.recut.apply.rowReadyJoin' : 'territories.recut.apply.rowReadyCut')
+                : t(recut.kind === 'merge' ? 'territories.recut.apply.rowWaitJoin' : 'territories.recut.apply.rowWaitCut', {
+                    free: recut.free,
+                    total: recut.total,
+                  })}
           </Text>
         ) : null}
       </View>
@@ -978,6 +1009,7 @@ const s = StyleSheet.create({
   campaignText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
   retention: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED, lineHeight: 16 },
   handOnNote: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: '#c2410c', marginTop: 2 },
+  recutNote: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: '#b45309', marginTop: 2 },
   dialogText: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK, lineHeight: 20 },
   dialogError: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 8 },
   screen: { flex: 1, backgroundColor: '#f3f5f7' },

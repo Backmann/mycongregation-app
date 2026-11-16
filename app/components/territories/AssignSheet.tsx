@@ -15,11 +15,14 @@ import { useTranslation } from 'react-i18next';
 import { Sheet } from '../Sheet';
 import { DateField } from '../DateField';
 import { SegmentedControl } from '../SegmentedControl';
-import { extractErrorMessage, territoriesApi } from '../../lib/api';
+import { router } from 'expo-router';
+import { extractErrorMessage, recutApi, territoriesApi } from '../../lib/api';
+import { RECUT_KEY } from '../../lib/recut';
 import { formatDateISO } from '../../lib/dates';
 import { addDaysISO, formatDayShort, TERM_DAYS } from '../../lib/territory-view';
 import { BRAND, INK, LINE, MUTED } from '../reports/ReportBits';
 import { HandOver } from './HandOver';
+import { RecutWaitingCard } from './RecutWaitingCard';
 
 type Whom = 'person' | 'group';
 
@@ -64,6 +67,25 @@ export function AssignSheet({
     number: string;
   } | null>(null);
 
+  // A territory the service committee decided to cut or join (16 November
+  // 2026, step 5 of the re-cutting draft): warned before it goes out again.
+  const waitingQ = useQuery({
+    queryKey: [...RECUT_KEY, 'waiting'],
+    queryFn: () => recutApi.waiting(),
+    enabled: visible,
+    retry: false,
+  });
+  const waiting = waitingQ.data?.find((w) => w.territoryId === territoryId) ?? null;
+  const [anyway, setAnyway] = useState(false);
+  const hold = useMutation({
+    mutationFn: (w: { proposalId: string }) => recutApi.hold(w.proposalId, territoryId, true),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['territories'] });
+      onClose();
+    },
+    onError: (e) => setError(extractErrorMessage(e)),
+  });
+
   const q = useQuery({
     queryKey: ['territories', 'candidates', territoryId],
     queryFn: () => territoriesApi.candidates(territoryId),
@@ -79,6 +101,7 @@ export function AssignSheet({
     setDueOn(addDaysISO(today, TERM_DAYS));
     setError(null);
     setHanding(null);
+    setAnyway(false);
   }, [visible, today]);
 
   const people = useMemo(() => {
@@ -103,6 +126,8 @@ export function AssignSheet({
         publisherId: chosen!,
         dueOn,
         ...(whom === 'group' && groupId ? { forGroupId: groupId } : {}),
+        // Held back for a join: the keeper chose to give it out anyway.
+        ...(anyway && waiting?.hold ? { releaseHold: true } : {}),
       }),
     onSuccess: async (r) => {
       // The list must know the new holder before a map is printed for him.
@@ -124,7 +149,9 @@ export function AssignSheet({
   });
 
   const months = Math.round((Date.parse(dueOn) - Date.parse(today)) / (30.4 * 86_400_000));
-  const ready = !!chosen && dueOn > today && (whom === 'person' || !!groupId);
+  // Until the keeper has answered the warning, nothing is given out.
+  const warned = !!waiting && !anyway;
+  const ready = !!chosen && dueOn > today && (whom === 'person' || !!groupId) && !warned;
 
   if (handing) {
     return (
@@ -187,6 +214,21 @@ export function AssignSheet({
         </View>
       }
     >
+      {warned && waiting ? (
+        <View style={{ marginBottom: 14 }}>
+          <RecutWaitingCard
+            row={waiting}
+            giving
+            busy={hold.isPending}
+            onOpen={() => {
+              onClose();
+              router.push(`/cart/recut/${waiting.proposalId}` as never);
+            }}
+            onHold={() => hold.mutate({ proposalId: waiting.proposalId })}
+            onAnyway={() => setAnyway(true)}
+          />
+        </View>
+      ) : null}
       <SegmentedControl<Whom>
         segments={[
           { key: 'person', label: t('territories.assign.toPerson') },

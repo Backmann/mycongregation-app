@@ -10,6 +10,7 @@ import { KeyboardScroll } from '../../../../components/KeyboardScroll';
 import { LoadFailure } from '../../../../components/LoadFailure';
 import { confirm } from '../../../../components/ConfirmHost';
 import { TerritoryMap, type MapShape } from '../../../../components/territories/TerritoryMap';
+import { RecutApplyCard } from '../../../../components/territories/RecutApplyCard';
 import { BRAND, INK, LINE, MUTED, Chip } from '../../../../components/reports/ReportBits';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { extractErrorMessage, recutApi, type RecutView } from '../../../../lib/api';
@@ -163,6 +164,30 @@ export default function RecutProposalScreen() {
         : null
       : t('territories.recut.proposal.km', { km: km(w, lang) });
 
+  // Applied (16 November 2026, step 5): what happened and the way back;
+  // the territories themselves are in the list now.
+  if (p.state === 'applied') {
+    return (
+      <View style={{ flex: 1, backgroundColor: BG }}>
+        <Stack.Screen
+          options={{ title: numbers.length > 1 ? `${numbers[0]} +${numbers.length - 1}` : numbers[0] }}
+        />
+        <KeyboardScroll key={p.id} style={{ flex: 1 }} contentContainerStyle={s.content}>
+          <Text style={s.h1}>{title}</Text>
+          {view.canEdit ? <RecutApplyCard p={p} /> : null}
+          <Pressable
+            onPress={() => router.push('/cart/territories' as never)}
+            style={({ pressed }) => [s.btnGhost, { alignSelf: 'flex-start' }, pressed && s.pressed]}
+            accessibilityRole="link"
+          >
+            <Ionicons name="map-outline" size={16} color={BRAND} />
+            <Text style={s.btnGhostText}>{t('territories.recut.apply.toTerritories')}</Text>
+          </Pressable>
+        </KeyboardScroll>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       {/* The header holds the territory; the full title is on the page, where it may wrap. */}
@@ -203,6 +228,9 @@ export default function RecutProposalScreen() {
               ))}
           </View>
         </View>
+
+        {/* Decided: apply it (16 November 2026, step 5; board 6a) */}
+        {view.canEdit && p.approvedAt ? <RecutApplyCard p={p} /> : null}
 
         {error ? (
           <View style={s.error} accessibilityLiveRegion="polite">

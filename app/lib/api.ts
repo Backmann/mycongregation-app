@@ -8452,7 +8452,14 @@ export const territoriesApi = {
     (await api.get<TerritoryCandidates>(`/territories/${id}/candidates`)).data,
   assign: async (
     id: string,
-    body: { publisherId: string; forGroupId?: string; assignedOn?: string; dueOn?: string },
+    body: {
+      publisherId: string;
+      forGroupId?: string;
+      assignedOn?: string;
+      dueOn?: string;
+      /** Held back for a join of the re-cutting draft: given out anyway. */
+      releaseHold?: boolean;
+    },
   ) => (await api.post<TerritoryAssignmentRow>(`/territories/${id}/assign`, body)).data,
   complete: async (
     assignmentId: string,
@@ -8892,6 +8899,40 @@ export interface RecutView {
   proposals: RecutProposal[];
 }
 
+/** What «Применить» would do now (16 November 2026, step 5 of the draft). */
+export type RecutApplyBlock = "notApproved" | "gone" | "held" | "meeting" | "changed" | "shape" | "number";
+export interface RecutApplyCheck {
+  proposalId: string;
+  kind: "cut" | "merge";
+  updatedAt: string;
+  blocks: RecutApplyBlock[];
+  takenNumber: string | null;
+  parts: { number: string; homes: number | null; keeps: boolean }[];
+  lastWorkedOn: string | null;
+  /** A cut: each address and the part the official addresses put it in; null — the keeper chooses. */
+  noCalls: { id: string; address: string; part: number | null }[];
+  /** A join: addresses kept once that were in two of its territories. */
+  noCallsTwice: number;
+  standing: { free: number; total: number; waiting: { number: string; since: string }[] } | null;
+  holdIds: string[];
+}
+
+/** A territory of a decided proposal not applied yet: the keepers' screens. */
+export interface RecutWaiting {
+  territoryId: string;
+  number: string;
+  proposalId: string;
+  kind: "cut" | "merge";
+  numbers: string[];
+  free: number;
+  total: number;
+  waiting: { number: string; since: string }[];
+  /** Held back for the join: not to be given out. */
+  hold: boolean;
+  /** Free of all and nothing else in the way: it can be applied now. */
+  ready: boolean;
+}
+
 export const recutApi = {
   view: async (): Promise<RecutView> => (await api.get<RecutView>("/territory-recut")).data,
   setMeasure: async (m: RecutMeasure): Promise<RecutView> =>
@@ -8919,4 +8960,18 @@ export const recutApi = {
         { signal },
       )
     ).data,
+  /** Decided proposals not applied yet (keepers only). */
+  waiting: async (): Promise<RecutWaiting[]> =>
+    (await api.get<RecutWaiting[]>("/territory-recut/waiting")).data,
+  applyCheck: async (id: string): Promise<RecutApplyCheck> =>
+    (await api.get<RecutApplyCheck>(`/territory-recut/proposals/${id}/apply`)).data,
+  apply: async (
+    id: string,
+    body: { updatedAt: string; noCalls?: { id: string; part: number }[] },
+  ): Promise<{ kind: "cut" | "merge"; kept: string; made: string[]; archived: string[]; noCalls: number }> =>
+    (await api.post(`/territory-recut/proposals/${id}/apply`, body)).data,
+  unapply: async (id: string): Promise<{ kind: "cut" | "merge"; number: string }> =>
+    (await api.post(`/territory-recut/proposals/${id}/unapply`)).data,
+  hold: async (id: string, territoryId: string, hold: boolean): Promise<RecutWaiting[]> =>
+    (await api.put<RecutWaiting[]>(`/territory-recut/proposals/${id}/hold`, { territoryId, hold })).data,
 };

@@ -575,7 +575,14 @@ function ProposalRow({
               />
             ))}
           {p.approvedAt ? (
-            <Chip tone="green" text={t('territories.recut.list.decided')} />
+            <Chip
+              tone="green"
+              text={
+                p.blocks.length === 0
+                  ? t('territories.recut.apply.rowReadyChip')
+                  : t('territories.recut.list.decided')
+              }
+            />
           ) : null}
           {remarks ? <Chip tone="blue" text={t('territories.recut.decision.remarks', { count: remarks })} /> : null}
           {mark === 'ok' ? <Chip tone="green" text={t('territories.recut.review.markOk')} /> : null}
