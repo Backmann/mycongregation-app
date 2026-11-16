@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../../components/KeyboardScroll';
 import {
   extractErrorMessage,
+  recutApi,
   territoriesApi,
   type TerritoryAssignmentRow,
   type TerritoryNoCallRow,
@@ -25,6 +26,8 @@ import { useAuth } from '../../../../lib/auth';
 import { OpenMapButton, ShareLink } from '../../../../components/territories/MapLinks';
 import { DivisionButton } from '../../../../components/territories/DivisionButton';
 import { HomesCard } from '../../../../components/territories/HomesCard';
+import { RecutWaitingCard } from '../../../../components/territories/RecutWaitingCard';
+import { RECUT_KEY } from '../../../../lib/recut';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -89,6 +92,19 @@ export default function TerritoryScreen() {
     queryKey: ['territories', 'list'],
     queryFn: () => territoriesApi.list(),
     enabled: open && Platform.OS === 'web',
+  });
+  // Decided in the re-cutting draft and not applied yet (16 November 2026).
+  const waitingQ = useQuery({
+    queryKey: [...RECUT_KEY, 'waiting'],
+    queryFn: () => recutApi.waiting(),
+    enabled: open && !!a?.keeps,
+    retry: false,
+  });
+  const waiting = waitingQ.data?.find((w) => w.territoryId === id) ?? null;
+  const waitingProposalId = waiting?.proposalId ?? '';
+  const hold = useMutation({
+    mutationFn: (on: boolean) => recutApi.hold(waitingProposalId, id ?? '', on),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['territories'] }),
   });
   const [acting, setActing] = useState<{
     action: AssignmentAction;
@@ -213,6 +229,18 @@ export default function TerritoryScreen() {
               {restore.error ? <Text style={s.restoreError}>{extractErrorMessage(restore.error)}</Text> : null}
             </>
           ) : null}
+        </View>
+      ) : null}
+
+      {a.keeps && waiting && !current && !d.archivedAt ? (
+        <View style={{ marginBottom: 12 }}>
+          <RecutWaitingCard
+            row={waiting}
+            busy={hold.isPending}
+            onOpen={() => router.push(`/cart/recut/${waiting.proposalId}` as never)}
+            onHold={(on) => hold.mutate(on)}
+          />
+          {hold.error ? <Text style={s.restoreError}>{extractErrorMessage(hold.error)}</Text> : null}
         </View>
       ) : null}
 
