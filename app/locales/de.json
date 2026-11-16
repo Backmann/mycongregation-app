@@ -8463,5 +8463,10 @@
         "toTerritories": "Zu den Gebieten"
       }
     }
+  },
+  "notFoundPage": {
+    "title": "Diese Seite gibt es nicht",
+    "body": "Vielleicht ist der Link veraltet oder die Adresse hat einen Tippfehler.",
+    "home": "Zur Startseite"
   }
 }
