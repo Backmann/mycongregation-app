@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { goBack } from '../../../../../components/NavHistory';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { AxiosError } from 'axios';
@@ -220,7 +221,7 @@ export default function RecutLinesScreen() {
     },
     onSuccess: (v) => {
       qc.setQueryData(RECUT_KEY, v);
-      router.back();
+      goBack(`/cart/recut/${id}`);
     },
     onError: (e) => {
       const code = e instanceof AxiosError ? (e.response?.data as { code?: string } | undefined)?.code : undefined;
@@ -458,7 +459,7 @@ export default function RecutLinesScreen() {
       >
         {save.isPending ? <ActivityIndicator color="#fff" /> : <Text style={s.goText}>{t('territories.recut.lines.save')}</Text>}
       </Pressable>
-      <Pressable onPress={() => router.back()} style={s.back} accessibilityRole="button">
+      <Pressable onPress={() => goBack(`/cart/recut/${id}`)} style={s.back} accessibilityRole="button">
         <Text style={s.backText}>{t('territories.recut.lines.cancel')}</Text>
       </Pressable>
     </View>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { goBack } from '../../../../components/NavHistory';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -66,7 +67,7 @@ export default function RecutProposalScreen() {
     mutationFn: () => recutApi.remove(id!),
     onSuccess: (v) => {
       put(v);
-      router.back();
+      goBack('/cart/recut');
     },
     onError: fail,
   });

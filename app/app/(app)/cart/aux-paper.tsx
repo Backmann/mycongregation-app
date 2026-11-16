@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import { goBack } from '../../../components/NavHistory';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
@@ -71,7 +72,7 @@ export default function AuxPaperScreen() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['aux-pioneers'] });
       void qc.invalidateQueries({ queryKey: ['aux-applications'] });
-      router.back();
+      goBack('/cart/auxiliary-pioneers');
     },
     onError: (e) => setError(extractErrorMessage(e)),
   });
