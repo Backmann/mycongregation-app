@@ -78,3 +78,23 @@ export function neighboursOf<L extends RecordLine>(
   const i = sorted.findIndex((r) => r.id === row.id);
   return { before: i > 0 ? sorted[i - 1] : null, after: i >= 0 && i < sorted.length - 1 ? sorted[i + 1] : null };
 }
+
+/**
+ * The day a territory handed on is due (review of 17 November 2026): the
+ * day it was due if that is still after the handing-on day and the keeper
+ * keeps it; otherwise four months from that day. `send` is what goes to the
+ * server — the server keeps the old day when none is sent, so a day that
+ * differs from it must always be sent (an overdue territory used to be
+ * refused with «keep» shown as a new day).
+ */
+export function transferDue(
+  currentDue: string | null,
+  on: string,
+  fresh: boolean,
+  addDays: (iso: string, n: number) => string,
+  termDays: number,
+): { keep: string | null; dueOn: string; send: string | undefined } {
+  const keep = currentDue && currentDue > on ? currentDue : null;
+  const dueOn = fresh || !keep ? addDays(on, termDays) : keep;
+  return { keep, dueOn, send: dueOn !== currentDue ? dueOn : undefined };
+}

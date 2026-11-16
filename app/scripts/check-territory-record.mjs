@@ -30,7 +30,7 @@ try {
     join(out, 'tr.mjs'),
     ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText,
   );
-  const { keptFromOf, recordProblem, neighboursOf } = await import(pathToFileURL(join(out, 'tr.mjs')));
+  const { keptFromOf, recordProblem, neighboursOf, transferDue } = await import(pathToFileURL(join(out, 'tr.mjs')));
   check('kept from, autumn', keptFromOf('2026-11-17'), '2025-09-01');
   check('kept from, 1 September', keptFromOf('2026-09-01'), '2025-09-01');
   check('kept from, summer', keptFromOf('2026-08-31'), '2024-09-01');
@@ -54,6 +54,19 @@ try {
   check('future', P({ assignedOn: '2026-11-18', endedOn: null }, 'start', []), 'future');
   check('ends before it starts', P({ assignedOn: '2026-03-01', endedOn: '2026-02-01' }, 'start', []), 'endBeforeStart');
   check('nothing chosen yet', P({ assignedOn: '', endedOn: null }), null);
+  const add = (iso, n) => {
+    const d = new Date(`${iso}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  };
+  check('hand on, due later, kept: nothing sent', transferDue('2027-02-02', '2026-11-17', false, add, 122),
+    { keep: '2027-02-02', dueOn: '2027-02-02' });
+  check('hand on, due later, renewed', transferDue('2027-02-02', '2026-11-17', true, add, 122),
+    { keep: '2027-02-02', dueOn: '2027-03-19', send: '2027-03-19' });
+  check('hand on an overdue territory: a new day is sent', transferDue('2026-11-01', '2026-11-17', false, add, 122),
+    { keep: null, dueOn: '2027-03-19', send: '2027-03-19' });
+  check('hand on with no day due', transferDue(null, '2026-11-17', false, add, 122),
+    { keep: null, dueOn: '2027-03-19', send: '2027-03-19' });
   const n = neighboursOf(rows[1], [rows[2], rows[0], rows[1]]);
   check('neighbours', [n.before?.id, n.after?.id], ['A', 'C']);
 } finally {

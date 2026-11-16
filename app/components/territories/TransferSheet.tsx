@@ -7,6 +7,7 @@ import { DateField } from '../DateField';
 import { extractErrorMessage, territoriesApi, type TerritoryAssignmentRow } from '../../lib/api';
 import { formatDateISO } from '../../lib/dates';
 import { addDaysISO, formatDayShort, TERM_DAYS } from '../../lib/territory-view';
+import { transferDue } from '../../lib/territory-record';
 import { BRAND, INK, LINE, MUTED } from '../reports/ReportBits';
 import { HandOver } from './HandOver';
 import { PersonPicker, type Candidate } from './PersonPicker';
@@ -54,13 +55,13 @@ export function TransferSheet({
   // «Как он получит карту?» (found on the stand, 17 November 2026). It is
   // mounted afresh each time it opens.
 
-  const newDue = addDaysISO(on, TERM_DAYS);
+  const due = transferDue(current?.dueOn ?? null, on, fresh, addDaysISO, TERM_DAYS);
   const go = useMutation({
     mutationFn: () =>
       territoriesApi.transfer(current!.id, {
         toPublisherId: chosen!.publisherId,
         on,
-        ...(fresh || !current?.dueOn ? { dueOn: newDue } : {}),
+        ...(due.send ? { dueOn: due.send } : {}),
       }),
     onSuccess: async (r) => {
       await qc.invalidateQueries({ queryKey: ['territories'] });
@@ -103,8 +104,8 @@ export function TransferSheet({
 
   const day = (iso: string) => formatDayShort(iso, lang);
   const from = current.holderName;
-  const keepDue = current.dueOn && current.dueOn > on ? current.dueOn : null;
-  const dueOn = fresh || !keepDue ? newDue : keepDue;
+  const keepDue = due.keep;
+  const dueOn = due.dueOn;
   const ready = !!chosen && on <= today && on >= current.assignedOn && !go.isPending;
   const oldHasApp =
     !!current.publisherId &&

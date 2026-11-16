@@ -176,10 +176,15 @@ export function HolderSheet({
         });
       }
       return territoriesApi.editAssignment(row!.id, {
+        // Only what changed: the same card again would make the server treat
+        // a change of group as a change of holder (review of 17 November 2026).
         ...(holderChanged
           ? who === 'off'
             ? { holderName: name.trim() }
-            : { publisherId: publisherId!, forGroupId: who === 'group' ? groupId : null }
+            : {
+                ...(publisherId !== row!.publisherId ? { publisherId: publisherId! } : {}),
+                forGroupId: who === 'group' ? groupId : null,
+              }
           : {}),
         assignedOn: assigned,
         ...(due ? { dueOn: due } : {}),
