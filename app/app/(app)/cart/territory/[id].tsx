@@ -28,6 +28,9 @@ import { DivisionButton } from '../../../../components/territories/DivisionButto
 import { HomesCard } from '../../../../components/territories/HomesCard';
 import { RecutWaitingCard } from '../../../../components/territories/RecutWaitingCard';
 import { RECUT_KEY } from '../../../../lib/recut';
+import { HolderSheet } from '../../../../components/territories/HolderSheet';
+import { TransferSheet } from '../../../../components/territories/TransferSheet';
+import { keptFromOf } from '../../../../lib/territory-record';
 import {
   AssignmentSheet,
   type AssignmentAction,
@@ -110,6 +113,9 @@ export default function TerritoryScreen() {
     action: AssignmentAction;
     row: TerritoryAssignmentRow;
   } | null>(null);
+  // A line of the S-13 by hand (17 November 2026): corrected, or from paper.
+  const [record, setRecord] = useState<{ mode: 'edit' | 'past'; row: TerritoryAssignmentRow | null } | null>(null);
+  const [handing, setHanding] = useState(false);
 
   const d = q.data;
   const current = d?.assignments.find((x) => !x.completedOn && !x.returnedOn) ?? null;
@@ -281,6 +287,7 @@ export default function TerritoryScreen() {
                   label={t('territories.action.return.title')}
                   onPress={() => setActing({ action: 'return', row: current })}
                 />
+                <Action label={t('territories.transfer.open')} onPress={() => setHanding(true)} />
               </View>
             ) : null}
             {a.keeps ? <ShareLink assignmentId={current.id} /> : null}
@@ -359,38 +366,79 @@ export default function TerritoryScreen() {
         <Text style={s.small}>{t('territories.detail.noCallsRule')}</Text>
       </View>
 
-      <Text style={s.section}>{t('territories.detail.history')}</Text>
+      <View style={s.sectionRow}>
+        <Text style={[s.section, { flex: 1 }]}>{t('territories.detail.history')}</Text>
+        <Pressable
+          onPress={() => router.push(`/cart/territory/journal/${d.id}` as never)}
+          accessibilityRole="link"
+          hitSlop={8}
+        >
+          <Text style={s.sectionLink}>{t('territories.history.journal')} ›</Text>
+        </Pressable>
+      </View>
       <View style={[cardStyles.card, s.list]}>
         {d.assignments.length === 0 ? (
           <Text style={s.empty}>{t('territories.detail.historyNone')}</Text>
         ) : (
-          d.assignments.map((x) => (
-            <Pressable
-              key={x.id}
-              disabled={!a.keeps}
-              onPress={() => setActing({ action: 'edit', row: x })}
-              style={({ pressed }) => [s.hist, pressed && { opacity: 0.6 }]}
-              accessibilityRole={a.keeps ? 'button' : undefined}
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={s.histName}>
-                  {x.forGroupName ? `${x.forGroupName} · ` : ''}
-                  {x.holderName}
-                </Text>
-                <Text style={s.meta}>
-                  {formatDayShort(x.assignedOn, lang)} →{' '}
-                  {x.completedOn
-                    ? `${formatDayShort(x.completedOn, lang)} · ${t(`territories.method.${x.method ?? 'door_to_door'}`)}`
-                    : x.returnedOn
-                      ? t('territories.detail.returned', { date: formatDayShort(x.returnedOn, lang) })
-                      : t('territories.detail.stillHeld')}
-                </Text>
-              </View>
-              {a.keeps ? <Ionicons name="create-outline" size={16} color={MUTED} /> : null}
-            </Pressable>
-          ))
+          d.assignments.map((x) => {
+            // Handed on: the S-13 names who took it next (17 November 2026).
+            // The next line is the first one made after this, the day it ended
+            // (a territory may be handed on twice in one day).
+            const next = x.transferred
+              ? d.assignments
+                  .filter(
+                    (y) =>
+                      y.id !== x.id &&
+                      y.assignedOn === x.returnedOn &&
+                      (!x.createdAt || !y.createdAt || y.createdAt > x.createdAt),
+                  )
+                  .sort((p, q) => ((p.createdAt ?? '') < (q.createdAt ?? '') ? -1 : 1))[0]
+              : undefined;
+            const end = x.completedOn
+              ? `${formatDayShort(x.completedOn, lang)} · ${t(`territories.method.${x.method ?? 'door_to_door'}`)}`
+              : x.returnedOn
+                ? x.transferred
+                  ? `${formatDayShort(x.returnedOn, lang)} · ${
+                      next
+                        ? t('territories.line.transferredTo', { who: next.holderName })
+                        : t('territories.line.transferred')
+                    }`
+                  : t('territories.detail.returned', { date: formatDayShort(x.returnedOn, lang) })
+                : t('territories.detail.stillHeld');
+            return (
+              <Pressable
+                key={x.id}
+                disabled={!a.keeps}
+                onPress={() => setRecord({ mode: 'edit', row: x })}
+                style={({ pressed }) => [s.hist, pressed && { opacity: 0.6 }]}
+                accessibilityRole={a.keeps ? 'button' : undefined}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={s.histName}>
+                    {x.forGroupName ? `${x.forGroupName} · ` : ''}
+                    {x.holderName}
+                    {x.publisherId === null && x.holderName !== '—' ? (
+                      <Text style={s.offList}> · {t('territories.line.offList')}</Text>
+                    ) : null}
+                  </Text>
+                  <Text style={s.meta}>
+                    {formatDayShort(x.assignedOn, lang)} → {end}
+                  </Text>
+                </View>
+                {a.keeps ? <Ionicons name="create-outline" size={16} color={MUTED} /> : null}
+              </Pressable>
+            );
+          })
         )}
-        <Text style={s.small}>{t('territories.detail.historyKept')}</Text>
+        {a.keeps && !d.archivedAt ? (
+          <Pressable onPress={() => setRecord({ mode: 'past', row: null })} style={s.addNc} accessibilityRole="button">
+            <Ionicons name="add" size={18} color={BRAND} />
+            <Text style={s.addNcText}>{t('territories.holder.addPast')}</Text>
+          </Pressable>
+        ) : null}
+        <Text style={s.small}>
+          {t('territories.detail.historyKept', { date: formatDayShort(keptFromOf(today), lang) })}
+        </Text>
       </View>
 
       {editing ? (
@@ -420,6 +468,24 @@ export default function TerritoryScreen() {
           all={listQ.data ?? []}
           visible
           onClose={() => setPrinting(false)}
+        />
+      ) : null}
+      <HolderSheet
+        mode={record?.mode ?? null}
+        territoryId={d.id}
+        number={d.number}
+        rows={d.assignments}
+        row={record?.row ?? null}
+        onClose={() => setRecord(null)}
+      />
+      {handing && current ? (
+        <TransferSheet
+          territoryId={d.id}
+          number={d.number}
+          current={current}
+          noCalls={d.noCalls.length}
+          onClose={() => setHanding(false)}
+          onPrint={() => setPrinting(true)}
         />
       ) : null}
       <AssignmentSheet
@@ -476,6 +542,9 @@ const s = StyleSheet.create({
   btnPrimary: { backgroundColor: BRAND, borderColor: BRAND },
   btnText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: INK },
   btnTextPrimary: { color: '#fff' },
+  sectionRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  sectionLink: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13, color: BRAND },
+  offList: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED },
   section: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12, letterSpacing: 0.6, color: MUTED, textTransform: 'uppercase', marginTop: 6 },
   list: { paddingVertical: 8, marginBottom: 0 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 },

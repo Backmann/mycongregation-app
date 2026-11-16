@@ -20,6 +20,8 @@ import { DateField } from '../../../components/DateField';
 import { AssignmentSheet, type AssignmentAction } from '../../../components/territories/AssignmentSheet';
 import { HandOver } from '../../../components/territories/HandOver';
 import { PrintMapSheet } from '../../../components/territories/PrintMapSheet';
+import { HistoryFeed } from '../../../components/territories/HistoryFeed';
+import { SegmentedControl } from '../../../components/SegmentedControl';
 import { failsScreen } from '../../../lib/screen-failure';
 import {
   extractErrorMessage,
@@ -94,6 +96,8 @@ export default function DeskScreen() {
     throwOnError: failsScreen,
   });
   const [step, setStep] = useState<Step>({ at: 'home' });
+  // «Нужно сделать» or «Что происходит» (17 November 2026; mockup board 6).
+  const [tab, setTab] = useState<'todo' | 'feed'>('todo');
   const [query, setQuery] = useState('');
   const [acting, setActing] = useState<{ action: AssignmentAction; out: DeskOut } | null>(null);
   const [undo, setUndo] = useState<{ text: string; assignmentId: string } | null>(null);
@@ -186,6 +190,36 @@ export default function DeskScreen() {
         ) : null}
 
         {step.at === 'home' ? (
+          <SegmentedControl<'todo' | 'feed'>
+            segments={[
+              { key: 'todo', label: t('territories.history.tabTodo') },
+              { key: 'feed', label: t('territories.history.tabFeed') },
+            ]}
+            value={tab}
+            onChange={setTab}
+          />
+        ) : null}
+
+        {step.at === 'home' && tab === 'todo' && desk.namesGo ? (
+          <View style={[s.card, s.namesGo]}>
+            <Ionicons name="time-outline" size={18} color="#b45309" style={{ marginTop: 1 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={s.namesGoTitle}>
+                {t('territories.history.namesGoTitle', {
+                  date: formatDayShort(desk.namesGo.on, lang),
+                  count: desk.namesGo.count,
+                })}
+              </Text>
+              <Text style={s.small}>{t('territories.history.namesGoHint')}</Text>
+            </View>
+          </View>
+        ) : null}
+
+        {step.at === 'home' && tab === 'feed' ? (
+          <HistoryFeed filters={['given', 'back', 'fixes']} />
+        ) : null}
+
+        {step.at === 'home' && tab === 'todo' ? (
           <Home
             entries={entries}
             query={query}
@@ -807,6 +841,8 @@ const s = StyleSheet.create({
   name: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: INK },
   sub: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, lineHeight: 17 },
   muted: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: MUTED, paddingVertical: 10 },
+  namesGo: { flexDirection: 'row', gap: 10, paddingVertical: 12, borderLeftWidth: 4, borderLeftColor: '#f59e0b' },
+  namesGoTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: INK, lineHeight: 19, marginBottom: 4 },
   small: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED, lineHeight: 17, marginHorizontal: 4 },
   error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 4 },
   pill: {
