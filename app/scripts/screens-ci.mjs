@@ -111,6 +111,8 @@ const SCREENS = [
   // The draft of re-cutting (15 November 2026): the overview and one cut.
   ['recut', '/cart/recut', 'admin'],
   ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
+  // Its lines moved on the map (16 November 2026, step 3b).
+  ...(RECUT ? [['recut-lines', `/cart/recut/lines/${RECUT}`, 'admin']] : []),
 ];
 // Phone, tablet portrait, the narrowest wide layout, wide screen.
 // 1024 is where the wide layout begins and is at its tightest: a tab label

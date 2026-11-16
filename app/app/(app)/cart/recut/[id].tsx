@@ -185,6 +185,16 @@ export default function RecutProposalScreen() {
             {p.kind === 'cut' ? (
               <Text style={[s.quiet, { padding: 10 }]}>{t('territories.recut.proposal.mapHint')}</Text>
             ) : null}
+            {p.kind === 'cut' && view.canEdit && p.state === 'open' && !p.blocks.includes('gone') ? (
+              <Pressable
+                onPress={() => router.push(`/cart/recut/lines/${p.id}` as never)}
+                style={s.editLines}
+                accessibilityRole="button"
+              >
+                <Ionicons name="git-branch-outline" size={16} color={BRAND} />
+                <Text style={s.editLinesText}>{t('territories.recut.lines.edit')}</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : null}
 
@@ -215,7 +225,8 @@ export default function RecutProposalScreen() {
           <Text style={s.kicker}>{t('territories.recut.proposal.becomes')}</Text>
           {p.kind === 'cut' ? (
             p.parts.length ? (
-              p.parts.map((part, i) => (
+              <>
+              {p.parts.map((part, i) => (
                 <View key={i} style={s.line}>
                   <View style={[s.swatch, { backgroundColor: PART_COLORS[i % PART_COLORS.length] }]} />
                   <View style={{ flex: 1 }}>
@@ -232,7 +243,9 @@ export default function RecutProposalScreen() {
                     </Text>
                   </View>
                 </View>
-              ))
+              ))}
+              {p.movedByHand ? <Text style={s.quiet}>{t('territories.recut.lines.movedByHand')}</Text> : null}
+              </>
             ) : (
               <Text style={[s.body, { color: BAD }]}>{t('territories.recut.block.shape')}</Text>
             )
@@ -292,6 +305,7 @@ export default function RecutProposalScreen() {
                 <Text style={s.quiet}>
                   {[r.mine ? t('territories.recut.remarks.mine') : r.by, formatDayShort(r.at.slice(0, 10), lang)].join(' · ')}
                 </Text>
+                {r.stale ? <Text style={s.stale}>{t('territories.recut.lines.staleRemark')}</Text> : null}
               </View>
             </View>
           ))}
@@ -403,6 +417,22 @@ const s = StyleSheet.create({
   },
   body: { fontFamily: 'Manrope_600SemiBold', fontSize: 14.5, color: INK },
   quiet: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: MUTED, lineHeight: 18 },
+  stale: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: '#b45309', lineHeight: 17 },
+  editLines: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    margin: 10,
+    marginTop: 0,
+    borderWidth: 1,
+    borderColor: LINE,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    minHeight: 40,
+    backgroundColor: '#fff',
+  },
+  editLinesText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: BRAND },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   mapWrap: { borderRadius: 18, overflow: 'hidden', backgroundColor: '#fff', borderWidth: 1, borderColor: LINE },
   line: { flexDirection: 'row', alignItems: 'center', gap: 10 },
