@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { goBack } from '../../../../components/NavHistory';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
@@ -13,6 +13,7 @@ import { TerritoryMap, type MapShape } from '../../../../components/territories/
 import { BRAND, INK, LINE, MUTED, Chip } from '../../../../components/reports/ReportBits';
 import { failsScreen } from '../../../../lib/screen-failure';
 import { extractErrorMessage, recutApi, type RecutView } from '../../../../lib/api';
+import { navHistory, siblingStep } from '../../../../lib/nav-history';
 import { km, PART_COLORS, RECUT_KEY, reviewStep, whereOf } from '../../../../lib/recut';
 import { formatDayShort, siteOrigin } from '../../../../lib/territory-view';
 
@@ -32,6 +33,15 @@ export default function RecutProposalScreen() {
   const tr = (k: string, o?: Record<string, unknown>) => t(k, o);
   const lang = i18n.language;
   const router = useRouter();
+  const navigation = useNavigation();
+  // Another proposal: a step back when it is where the person came from,
+  // otherwise opened on top — so back leads where he came from, as
+  // everywhere in the app (lib/nav-history.ts siblingStep).
+  const openProposal = (pid: string) => {
+    const path = `/cart/recut/${pid}`;
+    if (siblingStep(navHistory(), path) === 'back') goBack('/cart/recut');
+    else router.push(path as never);
+  };
   const qc = useQueryClient();
   const viewQ = useQuery({
     queryKey: RECUT_KEY,
@@ -389,9 +399,10 @@ export default function RecutProposalScreen() {
                         // marked (16 November 2026, review one by one); a remark
                         // in words stays. Not run once this screen is gone.
                         onSuccess: (v) => {
-                          if (shown.current !== sent) return;
+                          // Only from this screen, still on top: not after the person moved on.
+                          if (shown.current !== sent || !navigation.isFocused()) return;
                           const next = reviewStep(v.proposals, sent)?.nextToMark ?? null;
-                          if (next) router.replace(`/cart/recut/${next.id}` as never);
+                          if (next) openProposal(next.id);
                           else setNotice(t('territories.recut.review.lastDone'));
                         },
                       },
@@ -442,9 +453,9 @@ export default function RecutProposalScreen() {
         {step && step.total > 1 ? (
           <View style={s.steps}>
             <Pressable
-              onPress={() => step.prev && router.replace(`/cart/recut/${step.prev.id}` as never)}
-              disabled={!step.prev}
-              style={({ pressed }) => [s.btnGhost, !step.prev && s.off, pressed && s.pressed]}
+              onPress={() => step.prev && openProposal(step.prev.id)}
+              disabled={!step.prev || busy}
+              style={({ pressed }) => [s.btnGhost, (!step.prev || busy) && s.off, pressed && s.pressed]}
               accessibilityRole="button"
               accessibilityState={{ disabled: !step.prev }}
             >
@@ -453,9 +464,9 @@ export default function RecutProposalScreen() {
             </Pressable>
             <Text style={s.quiet}>{t('territories.recut.review.place', { place: step.place, total: step.total })}</Text>
             <Pressable
-              onPress={() => step.next && router.replace(`/cart/recut/${step.next.id}` as never)}
-              disabled={!step.next}
-              style={({ pressed }) => [s.btnGhost, !step.next && s.off, pressed && s.pressed]}
+              onPress={() => step.next && openProposal(step.next.id)}
+              disabled={!step.next || busy}
+              style={({ pressed }) => [s.btnGhost, (!step.next || busy) && s.off, pressed && s.pressed]}
               accessibilityRole="button"
               accessibilityState={{ disabled: !step.next }}
             >
