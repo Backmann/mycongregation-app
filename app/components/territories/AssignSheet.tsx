@@ -151,7 +151,10 @@ export function AssignSheet({
   const months = Math.round((Date.parse(dueOn) - Date.parse(today)) / (30.4 * 86_400_000));
   // Until the keeper has answered the warning, nothing is given out.
   const warned = !!waiting && !anyway;
-  const ready = !!chosen && dueOn > today && (whom === 'person' || !!groupId) && !warned;
+  // Not given out before the draft has been asked (a keeper only; a refusal
+  // or a failure there does not stop the giving out).
+  const asked = !waitingQ.isLoading;
+  const ready = !!chosen && dueOn > today && (whom === 'person' || !!groupId) && !warned && asked;
 
   if (handing) {
     return (
