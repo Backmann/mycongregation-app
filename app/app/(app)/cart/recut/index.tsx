@@ -202,13 +202,17 @@ export default function RecutScreen() {
                 <View style={s.btnRow}>
                   <Pressable
                     onPress={() => router.push(`/cart/recut/${review.next!.id}` as never)}
-                    style={({ pressed }) => [s.btn, pressed && s.pressed]}
+                    style={({ pressed }) => [s.btn, { maxWidth: '100%' }, pressed && s.pressed]}
                     accessibilityRole="button"
                   >
                     <Ionicons name="play-forward-outline" size={16} color="#fff" />
-                    <Text style={s.btnText}>
+                    {/* Short, as in the rows: a join of four does not run off a phone's screen. */}
+                    <Text style={[s.btnText, { flexShrink: 1 }]}>
                       {t(review.done ? 'territories.recut.review.continue' : 'territories.recut.review.start', {
-                        number: review.next.territories.map((x) => x.number).join(' + '),
+                        number:
+                          review.next.territories.length > 1
+                            ? `${review.next.territories[0].number} +${review.next.territories.length - 1}`
+                            : review.next.territories[0]?.number ?? '',
                       })}
                     </Text>
                   </Pressable>
