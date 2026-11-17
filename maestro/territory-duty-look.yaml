@@ -1,0 +1,90 @@
+# Участки, шаг 2 (17 ноября 2026) — на телефоне, на живых данных, ТОЛЬКО
+# СМОТРИТ: «Мои участки» (или «Попросить участок»), «Нужно сделать» с
+# просьбами и охватом, «Не обработаны 2 года и дольше», лист «Общая карта»
+# (закрывается «Отмена»), «Граница собрания». Ничего не нажимает из того,
+# что меняет данные: ни «Попросить», ни «Участок обработан», ни «Скачать»,
+# ни «Печать», ни замену границы.
+# Приложение открыто и разблокировано заранее (см. back-nav.yaml).
+appId: com.backmann.mycongregation
+name: Участки — обязанность, охват, граница
+---
+- openLink: mycongregation://cart
+- runFlow:
+    when:
+      visible: "Позже|Later|Später"
+    commands:
+      - tapOn: "Позже|Later|Später"
+- extendedWaitUntil:
+    visible: "Участки|Territories|Gebiete"
+    timeout: 30000
+- takeScreenshot: 01-cart-doors
+
+# 1. Мои участки — если у него есть участок или он может попросить
+- runFlow:
+    when:
+      visible: "Мои участки|My territories|Meine Gebiete|Попросить участок|Ask for a territory|Um ein Gebiet bitten"
+    commands:
+      - openLink: mycongregation://cart/my-territories
+      - extendedWaitUntil:
+          visible: "Мои участки|My territories|Meine Gebiete"
+          timeout: 30000
+      - takeScreenshot: 02-my-territories
+      - scrollUntilVisible:
+          element: "Прошлые участки|Past territories|Frühere Gebiete|Попросить ещё участок|Ask for another territory|Um ein weiteres Gebiet bitten|Попросить ещё участок можно.*|You can ask.*|Um ein weiteres.*"
+          direction: DOWN
+          timeout: 20000
+          optional: true
+      - takeScreenshot: 03-my-territories-bottom
+
+# 2. Нужно сделать: просьбы, просроченные с процентом, охват
+- openLink: mycongregation://cart/desk
+- extendedWaitUntil:
+    visible: "Нужно сделать|To do|Zu erledigen"
+    timeout: 30000
+- takeScreenshot: 04-desk-top
+- scrollUntilVisible:
+    element: "(?i)Охват за 12 месяцев|Coverage in 12 months|Abdeckung in 12 Monaten"
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: 05-desk-coverage
+
+# 3. Не обработаны 2 года и дольше — с пометкой «предварительно»
+- openLink: mycongregation://cart/territory-coverage
+- extendedWaitUntil:
+    visible: "(?i)Предварительно|Preliminary|Vorläufig"
+    timeout: 30000
+- takeScreenshot: 06-long-unworked
+- scrollUntilVisible:
+    element: "Скачать файл к визиту районного \\(PDF\\)|Download the file.*|Datei für den Besuch.*"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 07-long-unworked-bottom
+
+# 4. Участки → «Общая карта» (лист, закрыть «Отмена»)
+- openLink: mycongregation://cart/territories
+- scrollUntilVisible:
+    element: "Общая карта|Whole map|Gesamtkarte"
+    direction: DOWN
+    timeout: 30000
+- takeScreenshot: 08-territories-buttons
+- tapOn: "Общая карта|Whole map|Gesamtkarte"
+- extendedWaitUntil:
+    visible: "Размер листа|Sheet size|Blattgröße"
+    timeout: 20000
+- takeScreenshot: 09-whole-map-sheet
+- tapOn: "Отмена|Cancel|Abbrechen"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 5. Граница собрания — только смотреть
+- openLink: mycongregation://cart/territory-boundary
+- extendedWaitUntil:
+    visible: "Границу устанавливает филиал.*|The branch sets the boundary.*|Die Grenze legt das Zweigbüro fest.*"
+    timeout: 30000
+- takeScreenshot: 10-boundary
+- scrollUntilVisible:
+    element: "Выбрать файл границы|Choose the boundary file|Grenzdatei wählen"
+    direction: DOWN
+    timeout: 20000
+- takeScreenshot: 11-boundary-bottom
+- pressKey: back
