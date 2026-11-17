@@ -189,6 +189,12 @@ function routeForNotification(data) {
       return data.role === 'c' && data.meetingId
         ? { path: '/service-reports/pioneer-meeting', params: { id: data.meetingId } }
         : { path: '/home', params: {} };
+    // The folder for the circuit overseer (S-61): the S-62, open items, the
+    // files to delete — the folder of that visit.
+    case 'co_visit_folder':
+      return data.eventId
+        ? { path: `/special-events/folder/${data.eventId}`, params: {} }
+        : { path: '/special-events', params: {} };
     // Today's meeting still without its attendance figure (20:00): the card
     // on Home takes it in one field.
     case 'attendance_due':

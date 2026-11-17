@@ -41,6 +41,9 @@ const OVERVIEW = new Set<string>([
   '/publishers/duties',
   '/publishers/cleaning',
   '/special-events',
+  // The folder for the circuit overseer: the items beside the progress,
+  // page 2 and the sending (S-61, 17 November 2026).
+  '/special-events/folder/[id]',
   '/publishers/list',
   // A table of the duties with the picker beside it (27 October 2026).
   '/publishers/responsibilities',

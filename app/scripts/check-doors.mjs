@@ -40,6 +40,10 @@ const problems = [];
  */
 const NARROWER = new Map([
   [
+    'lib/push-notifications.ts → /special-events/folder/[id]',
+    'напоминания папки для районного (S-61) получают только координатор совета старейшин, секретарь и служебный старейшина — все старейшины, кому экран открыт',
+  ],
+  [
     'app/(app)/schedule/index.tsx → /publishers/duties-meeting',
     '«Изменить» под обязанностями встречи: только тому, кто их ведёт (canEditDuties), а экран читают и старейшины',
   ],

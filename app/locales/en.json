@@ -6245,7 +6245,13 @@
       "TERRITORY_ASK_OPEN": "Your request is already with the territory servant.",
       "TERRITORY_BOUNDARY_S54": "Enter the date of the branch's S-54 form.",
       "TERRITORY_BOUNDARY_S54_DATE": "The S-54 date cannot be later than today or earlier than the S-54 of the boundary in force.",
-      "TERRITORY_AWAITS_RECUT": "Territory {{number}} waits for a re-cutting approved by the service committee — it goes back to the territory servant."
+      "TERRITORY_AWAITS_RECUT": "Territory {{number}} waits for a re-cutting approved by the service committee — it goes back to the territory servant.",
+      "FOLDER_NO_ACCESS": "The folder for the circuit overseer is for the coordinator of the body of elders, the secretary and the service overseer.",
+      "FOLDER_NOT_A_VISIT": "No circuit overseer visit found.",
+      "FOLDER_MARK_INVALID": "This mark does not fit this item.",
+      "FOLDER_ANSWER_INVALID": "This answer does not fit this question.",
+      "FOLDER_ANSWERS_ERASED": "The visit is over — the answers to page 2 have been erased.",
+      "FOLDER_PAGE2_INCOMPLETE": "Answer every question on page 2 first: {{answered}} of {{total}} answered."
     }
   },
   "stage": {
@@ -8693,5 +8699,283 @@
     "title": "There is no such page",
     "body": "The link may be out of date, or the address may have a typo.",
     "home": "To the home page"
+  },
+  "coFolder": {
+    "title": "Folder for the circuit overseer",
+    "kicker": "Folder for the circuit overseer · S-61",
+    "visitKicker": "Circuit overseer visit · {{when}}",
+    "dueLabel": "Due by",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left",
+    "dueToday": "due today",
+    "duePassed": "past due",
+    "numbersNote": "Numbers as on form S-61",
+    "ofItems": "{{ready}} of {{total}} items",
+    "ofShort": "{{ready}} of {{total}}",
+    "open": "Open the folder",
+    "filter": {
+      "all": "All · {{count}}",
+      "mine": "Mine · {{count}}",
+      "open": "Not ready · {{count}}"
+    },
+    "role": {
+      "coordinator": "Coordinator of the body of elders",
+      "secretary": "Secretary",
+      "service_overseer": "Service overseer"
+    },
+    "roleShort": {
+      "coordinator": "Coordinator",
+      "secretary": "Secretary",
+      "service_overseer": "Service overseer"
+    },
+    "you": "you",
+    "othersSeeText": "Section 1 · Coordinator: {{ready}} of {{total}}. The state of the whole folder, the S-21 and the contacts are not shown to them.",
+    "sectionOnly": "You see section 1 — what the coordinator of the body of elders prepares. The rest of the folder is put together by the coordinator, the secretary and the service overseer.",
+    "item": {
+      "1_1": {
+        "title": "Names of brothers recommended for appointment or deletion",
+        "hint": "Given on the Tuesday. The content is not kept in the app"
+      },
+      "1_2": {
+        "title": "Questions for the meeting with the elders",
+        "hint": "With the quarterly meetings of the body — attached by a member of the service committee. Not kept in the app"
+      },
+      "1_3": {
+        "title": "Shepherding calls",
+        "hint": "Whom the circuit overseer visits and which elder goes with him"
+      },
+      "1_4": {
+        "title": "Accommodation for the visit week",
+        "hint": "Needed if the circuit overseer asked for accommodation: host and contact details"
+      },
+      "1_5": {
+        "title": "Meals of the circuit overseer and his wife",
+        "hint": "Who invited them for a meal"
+      },
+      "2_1": {
+        "title": "Publisher record cards (S-21) by group",
+        "hint": "2025/26 and 2026/27 — one file per group"
+      },
+      "2_2": {
+        "title": "Meeting attendance (S-88)",
+        "hint": "This and last service year"
+      },
+      "2_3": {
+        "title": "Congregation accounts",
+        "hint": "Accounts folder and the last two account audits"
+      },
+      "2_4": {
+        "title": "Kingdom Hall operating committee accounts",
+        "hint": "Only if two or more congregations use the hall and yours is the contact congregation"
+      },
+      "2_5": {
+        "title": "Contact details of all publishers",
+        "hint": "Only in this file — never on a screen"
+      },
+      "3_1": {
+        "title": "Territory assignment record (S-13)",
+        "hint": "Current service year"
+      },
+      "3_2": {
+        "title": "Monthly literature inventory (S-28)",
+        "hint": "If the congregation coordinates literature orders"
+      },
+      "3_3": {
+        "title": "Territories and ministry in the visit week",
+        "hint": "Meetings for field service and the cart: places, hours, participants"
+      },
+      "3_4": {
+        "title": "Who goes in the ministry with the circuit overseer and his wife",
+        "hint": "A partner for every outing"
+      },
+      "3_5": {
+        "title": "Territories two years and longer (preliminary)",
+        "hint": "Beyond the form — for the elders' talk with the circuit overseer"
+      },
+      "3_6": {
+        "title": "General map of the territories",
+        "hint": "Beyond the form — borders and numbers"
+      }
+    },
+    "extra": "beyond the form",
+    "fact": {
+      "pastoral_one": "{{count}} call",
+      "pastoral_other": "{{count}} calls",
+      "lunchDays": "a meal on {{count}} of {{of}} days",
+      "noHost": "no host given",
+      "hostSet": "host given",
+      "contacts": "publishers: {{count}}",
+      "outings": "outings of the circuit overseer: {{count}}",
+      "again": "again: {{count}}",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people"
+    },
+    "noGroup": "No group",
+    "state": {
+      "saved": "saved",
+      "savedOn": "saved {{date}}",
+      "changed": "changed — save again",
+      "separate": "separate file",
+      "paper": "on paper",
+      "na": "does not apply",
+      "none": "not saved",
+      "open": "not marked",
+      "partial": "{{saved}} of {{groups}} groups"
+    },
+    "markedBy": "Marked by {{name}} · {{date}}",
+    "action": {
+      "save": "Save PDF",
+      "saveAgain": "Save again",
+      "notApplicable": "Does not apply",
+      "clear": "Remove mark",
+      "how": "How it is given"
+    },
+    "how": {
+      "separate": "Separate file",
+      "separateHint": "sent with the folder",
+      "paper": "On paper",
+      "paperHint": "handed to the circuit overseer in person",
+      "na": "Does not apply",
+      "naHint": "not needed in this congregation"
+    },
+    "saved": {
+      "title": "Was the file saved?",
+      "body": "If you chose «Save as PDF» in the print window and saved the file, mark it. If you closed the window, tap «No».",
+      "yes": "Yes, saved",
+      "no": "No"
+    },
+    "printHint": "The file name is filled in — in the print window choose «Save as PDF». For sending through jwpub.org it is easiest to gather the whole folder on a computer.",
+    "s62": {
+      "title": "S-62 by {{date}}",
+      "body": "The secretary sends the recommendations (S-62) at least a month before the visit; the coordinator makes sure the form went.",
+      "sent": "Sent by {{name}} · {{date}}",
+      "checked": "The coordinator made sure · {{date}}",
+      "markSent": "S-62 sent",
+      "markChecked": "Made sure",
+      "undo": "Undo",
+      "none": "If there are no recommendations, no mark is needed."
+    },
+    "timeline": {
+      "s62Remind": "Reminder of the S-62",
+      "s62Due": "S-62 due",
+      "gaps": "Reminder of open items",
+      "due": "Give to the circuit overseer"
+    },
+    "checks": {
+      "title": "Readiness checks",
+      "lunch": "No meal arranged on {{days}}",
+      "partner": "Outing without a partner: {{days}}",
+      "toSchedule": "to the visit schedule",
+      "allGood": "Nothing is missing in the visit schedule"
+    },
+    "page2": {
+      "title": "Page 2",
+      "body": "The elders' answers to 15 questions. The hints are the app's data since the previous visit, not ready answers. The answers are erased after the visit week ({{date}}).",
+      "progress": "answered {{answered}} of {{total}}",
+      "answer": "Answer · {{count}} left",
+      "hide": "Collapse the questions",
+      "done": "All 15 answered",
+      "erased": "Answers erased on {{date}} — the visit week is over",
+      "by": "{{name}} · {{date}}",
+      "fileTitle": "Answers to page 2",
+      "save": "Save the answers (4)",
+      "fromApp": "From the app:",
+      "since": "since the previous visit ({{date}})",
+      "sinceStart": "since {{date}}",
+      "hint4": "no longer regular pioneers: {{ended}}; moved to another congregation as regular pioneers: {{moved}}. Name changes are not recorded in the app — please check yourselves.",
+      "hint5": "disfellowshipped: {{count}}. Disassociations are not recorded in the app — please check yourselves.",
+      "hint6": "died: {{count}}. Reinstatements are not recorded in the app — please check yourselves.",
+      "hint9": "moved to other congregations: {{count}}",
+      "hint12": "contacts confirmed in the {{year}} service year: {{confirmed}} of {{total}}"
+    },
+    "answer": {
+      "yes": "Yes",
+      "no": "No",
+      "na": "N/A"
+    },
+    "q": {
+      "1": "Are the current contact details of the coordinator of the body of elders and the secretary given on JW Hub?",
+      "2": "Has the congregation passed a resolution on monthly donations to the worldwide work?",
+      "3": "Are the publishers' records kept up to date according to the «Instructions for Congregation Use of JW Hub» (S-135)? (sfg chap. 14, par. 3, 4). This is especially important if it was decided about a publisher that he or she may no longer submit applications.",
+      "4": "Has the branch been told of all regular pioneers who no longer serve in this assignment, of name changes of regular pioneers and of their move to another congregation?",
+      "5": "Has the branch been told if since the last visit someone was disfellowshipped or disassociated himself?",
+      "6": "Has the branch been told of all disfellowshipped or disassociated ones who were reinstated or have died?",
+      "7": "If there are publishers on whom a judicial committee placed restrictions, are the elders following their spiritual progress closely?",
+      "8": "If since the last visit a publisher serving in one of the privileges listed in chapter 6, paragraphs 12, 13 of «Shepherd the Flock» was accused of or confessed to a serious wrong, did you contact the Service Department or the Bethel office for direction?",
+      "9": "Have letters of introduction been sent for all publishers who moved to other congregations?",
+      "10": "Are the directions on congregation records in «Shepherd the Flock», chapter 17, paragraphs 2–6, and the rules for keeping congregation records in the «Supplement to „Shepherd the Flock“» (sfga) followed?",
+      "11": "Has the branch been told of any changes in the language group?",
+      "12": "Does the body of elders follow the latest direction on disaster preparedness, and are the publishers' contact details and emergency numbers kept up to date? (sfg chap. 11, par. 3)",
+      "13": "If since the circuit overseer's last visit «Risk and Incident Reports» (TO-5) were sent to the branch, was everything done to prevent further incidents? (sfg chap. 13, par. 13)",
+      "14": "If you learned that an imprisoned publisher receives no spiritual support, did you tell the congregation responsible for the preaching in correctional facilities?",
+      "15": "Is something being done to care for publishers who live in remote areas?"
+    },
+    "send": {
+      "title": "Sending through jwpub.org",
+      "body": "Save the files into one folder — the names are numbered as on the form, «00 Contents» comes first.",
+      "toc": "Save the contents (00)",
+      "handOver": "Mark as «handed over»",
+      "needsPage2": "«Handed over» opens once all 15 questions on page 2 are answered",
+      "confirmTitle": "Folder given to the circuit overseer?",
+      "confirmBody": "Everyone who saved files will be reminded to delete them from the computer.",
+      "confirm": "Handed over",
+      "undo": "Undo «handed over»"
+    },
+    "done": {
+      "title": "Handed over · {{date}}",
+      "by": "marked by {{name}}",
+      "deleteTitle": "Delete the files from the computer",
+      "deleteBody": "The folder held the S-21, the publishers' contact details and the answers to page 2. Delete it and the copies in Downloads (Supplement to «Shepherd the Flock», par. 29). Everyone who saved files was reminded.",
+      "deleted": "deleted {{date}}",
+      "notYet": "not yet",
+      "iDeleted": "I deleted my files",
+      "changedTitle": "Changed after handing over",
+      "changedBody": "These files changed after the folder was given. Only these can be sent on.",
+      "eraseTitle": "{{date}}",
+      "eraseBody": "The answers to page 2 will be erased. The date «handed over» stays — the hints for the next visit count from it."
+    },
+    "toc": {
+      "title": "Contents",
+      "item": "Item",
+      "how": "File or how it is given"
+    },
+    "pdf": {
+      "kicker": "S-61 · Information for the circuit overseer",
+      "visit": "Visit {{when}}",
+      "madeOn": "put together {{date}}",
+      "deleteAfter": "Delete the files after reading (Supplement to «Shepherd the Flock», par. 29).",
+      "empty": "No entries.",
+      "noLodging": "The circuit overseer did not ask for accommodation, or no host is given in the visit schedule.",
+      "lunchBox": "packed meal",
+      "forWife": "for his wife",
+      "forBoth": "circuit overseer and wife",
+      "together": "circuit overseer with his wife",
+      "wife": "circuit overseer's wife",
+      "overseer": "circuit overseer",
+      "eachOther": "with each other",
+      "stand": "Cart",
+      "col": {
+        "day": "Day",
+        "time": "Time",
+        "whom": "Whom he visits",
+        "withElder": "Goes with him",
+        "host": "Host",
+        "phone": "Phone",
+        "email": "Email",
+        "address": "Address",
+        "forWhom": "For whom",
+        "place": "Place",
+        "who": "Who",
+        "goes": "Who goes",
+        "partner": "Partner",
+        "name": "Name",
+        "group": "Group"
+      }
+    },
+    "visitCard": {
+      "s62Done": "S-62 sent {{date}} — due {{due}}",
+      "s62Open": "S-62 — by {{due}}",
+      "handedOver": "Folder given {{date}}"
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { VisitFolderCard } from './co-folder/VisitFolderCard';
 import { KeyboardScroll } from './KeyboardScroll';
 import { goBack } from './NavHistory';
 import { useEffect, useState } from 'react';
@@ -338,6 +339,7 @@ export function SpecialEventDetail({
 
       {isCoVisit && !isRemoved ? <VisitWeek event={event} versions={versions} /> : null}
       {isCoVisit ? <VisitTools /> : null}
+      {isCoVisit && !isRemoved ? <VisitFolderCard eventId={event.id} /> : null}
       {isCongress ? <CongressSections event={event} versions={versions} /> : null}
 
       {isMemorial ? (
