@@ -17,6 +17,8 @@ export interface DeskOut {
   dueOn: string | null;
   extended: boolean;
   paperWanted: boolean;
+  /** A decided re-cutting waits for it (17 November 2026); absent from an older server. */
+  awaitsRecut?: boolean;
 }
 
 export interface DeskPerson {

@@ -116,6 +116,46 @@ try {
     [20, 20, 1],
   );
   check('an empty year is still one sheet', S.s13Sheets([]).length, 1);
+
+  // Put away during the year (17 November 2026): the year's lines stay on
+  // the sheet, the number marked where it went, and listed under the sheet.
+  const awayData = {
+    serviceYear: 2027,
+    territories: [
+      { number: 'Hamm17', lastCompletedBefore: null, assignments: [] },
+      {
+        number: 'Hamm14',
+        lastCompletedBefore: null,
+        assignments: [a('Белова Анна', '2026-09-02', '2026-11-30')],
+        archived: { on: '2026-12-02', joinedInto: 'Hamm17' },
+      },
+      {
+        number: 'Hamm40',
+        lastCompletedBefore: null,
+        assignments: [a('Орлов Иван', '2026-09-05', '2026-10-01')],
+        archived: { on: '2026-10-10', joinedInto: null },
+      },
+    ],
+  };
+  const awayLines = S.s13Lines(awayData, { ...W, archived: 'архив' });
+  check(
+    'a joined territory says where it went; an archived one says so; the rest nothing',
+    awayLines.map((l) => [l.number, l.under]),
+    [
+      ['Hamm14', '→ Hamm17'],
+      ['Hamm17', ''],
+      ['Hamm40', 'архив'],
+    ],
+  );
+  check('the note under the sheet', S.s13PutAway(awayData), [
+    'Hamm14 → Hamm17 (02.12.26)',
+    'Hamm40 (10.10.26)',
+  ]);
+  check(
+    'an older server without the field: nothing marked',
+    S.s13Lines({ serviceYear: 2027, territories: [{ number: 'T1', lastCompletedBefore: null, assignments: [] }] }, W)[0].under,
+    '',
+  );
 } finally {
   rmSync(out, { recursive: true, force: true });
 }

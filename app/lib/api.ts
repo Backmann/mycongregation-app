@@ -8009,6 +8009,8 @@ export interface TerritoryDetail {
   lastWorkedOn?: string | null;
   /** Out of use since; null while in use. */
   archivedAt?: string | null;
+  /** A decided re-cutting waits for it (17 November 2026); absent from an older server. */
+  awaitsRecut?: boolean;
   assignments: TerritoryAssignmentRow[];
   noCalls: TerritoryNoCallRow[];
 }
@@ -8030,6 +8032,8 @@ export interface MyTerritory {
     dueOn: string | null;
     extended: boolean;
     mine: boolean;
+    /** A decided re-cutting waits for it (17 November 2026); absent from an older server. */
+    awaitsRecut?: boolean;
   };
   /** A meeting for field service going out to it, the day before and on the day. */
   meeting: { id: string; date: string; startTime: string; address: string } | null;
@@ -8101,6 +8105,8 @@ export interface TerritoryDesk {
     dueOn: string | null;
     extended: boolean;
     paperWanted: boolean;
+    /** A decided re-cutting waits for it (17 November 2026); absent from an older server. */
+    awaitsRecut?: boolean;
   }[];
   history: {
     publisherId: string;
@@ -9109,7 +9115,9 @@ export const recutApi = {
     (await api.put<RecutView>(`/territory-recut/proposals/${id}/remark`, body)).data,
   unremark: async (id: string): Promise<RecutView> =>
     (await api.delete<RecutView>(`/territory-recut/proposals/${id}/remark`)).data,
-  approve: async (): Promise<RecutView> => (await api.post<RecutView>("/territory-recut/approve")).data,
+  /** One queue at a time (17 November 2026). */
+  approve: async (queue: number): Promise<RecutView> =>
+    (await api.post<RecutView>("/territory-recut/approve", { queue })).data,
   update: async (id: string, body: RecutCutBody): Promise<RecutView> =>
     (await api.put<RecutView>(`/territory-recut/proposals/${id}`, body)).data,
   preview: async (id: string, lines: [number, number][][], signal?: AbortSignal): Promise<RecutPreview> =>

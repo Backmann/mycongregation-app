@@ -115,6 +115,21 @@ try {
     ],
     [null, null, true],
   );
+  check(
+    'to decide, one queue at a time: only undecided open ones, joins and cuts counted',
+    r.undecidedQueues([
+      { kind: 'merge', state: 'open', queue: 1, approvedAt: null },
+      { kind: 'merge', state: 'open', queue: 1, approvedAt: '2026-11-17T10:00:00Z' },
+      { kind: 'cut', state: 'open', queue: 2, approvedAt: null },
+      { kind: 'cut', state: 'open', queue: 2, approvedAt: null },
+      { kind: 'cut', state: 'applied', queue: 3, approvedAt: null },
+    ]),
+    [
+      { queue: 1, count: 1, cuts: 0, joins: 1 },
+      { queue: 2, count: 2, cuts: 2, joins: 0 },
+    ],
+  );
+  check('nothing to decide: no buttons', r.undecidedQueues([{ kind: 'cut', state: 'open', queue: 2, approvedAt: '2026-11-17T10:00:00Z' }]), []);
   check('rounds: joins first, then the cuts; applied ones left out', r.queuesOf([cutA, joinBC, { ...cutA, queue: 3 }, { ...joinBC, state: 'applied' }]), [
     { queue: 1, cuts: 0, joins: 1 },
     { queue: 2, cuts: 1, joins: 0 },

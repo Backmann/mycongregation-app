@@ -33,6 +33,7 @@ export function AssignmentSheet({
   action,
   assignment,
   keeps,
+  awaitsRecut = false,
   onClose,
 }: {
   action: AssignmentAction | null;
@@ -42,6 +43,11 @@ export function AssignmentSheet({
   > | null;
   /** A keeper: may pick the day of an extension, and correct. */
   keeps: boolean;
+  /**
+   * A decided re-cutting waits for this territory (17 November 2026): it
+   * goes back to the territory servant, not «kept for working again».
+   */
+  awaitsRecut?: boolean;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -91,7 +97,7 @@ export function AssignmentSheet({
         return territoriesApi.complete(assignment.id, {
           completedOn: day,
           method,
-          ...(again ? { again: true } : {}),
+          ...(again && !awaitsRecut ? { again: true } : {}),
         });
       }
       if (action === 'return') {
@@ -229,7 +235,10 @@ export function AssignmentSheet({
       {action === 'complete' ? (
         <View style={s.methods}>
           <Text style={s.label}>{t('territories.action.complete.next')}</Text>
-          {([false, true] as const).map((k) => (
+          {awaitsRecut ? (
+            <Text style={s.lead}>{t('territories.action.complete.awaitsRecut')}</Text>
+          ) : null}
+          {(awaitsRecut ? ([false] as const) : ([false, true] as const)).map((k) => (
             <Pressable
               key={String(k)}
               onPress={() => setAgain(k)}

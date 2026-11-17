@@ -323,6 +323,7 @@ export default function DeskScreen() {
             : null
         }
         keeps
+        awaitsRecut={!!acting?.out.awaitsRecut}
         onClose={() => {
           setActing(null);
           void refresh();

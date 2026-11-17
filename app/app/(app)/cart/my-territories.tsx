@@ -107,6 +107,7 @@ export default function MyTerritoriesScreen() {
             : null
         }
         keeps={false}
+        awaitsRecut={!!acting?.item.assignment.awaitsRecut}
         onClose={() => setActing(null)}
       />
     </KeyboardScroll>
