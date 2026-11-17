@@ -1,15 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
   Pressable,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Sheet } from '../Sheet';
@@ -19,9 +17,10 @@ import { router } from 'expo-router';
 import { extractErrorMessage, recutApi, territoriesApi } from '../../lib/api';
 import { RECUT_KEY } from '../../lib/recut';
 import { formatDateISO } from '../../lib/dates';
-import { addDaysISO, formatDayShort, TERM_DAYS } from '../../lib/territory-view';
+import { addDaysISO, TERM_DAYS } from '../../lib/territory-view';
 import { BRAND, INK, LINE, MUTED } from '../reports/ReportBits';
 import { HandOver } from './HandOver';
+import { PersonPicker } from './PersonPicker';
 import { RecutWaitingCard } from './RecutWaitingCard';
 
 type Whom = 'person' | 'group';
@@ -47,12 +46,11 @@ export function AssignSheet({
   /** Offered on the web: once given out, print the holder's map. */
   onPrint?: (territoryId: string) => void;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const { width } = useWindowDimensions();
   const today = formatDateISO(new Date());
   const [whom, setWhom] = useState<Whom>('person');
-  const [query, setQuery] = useState('');
   const [chosen, setChosen] = useState<string | null>(null);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [dueOn, setDueOn] = useState(addDaysISO(today, TERM_DAYS));
@@ -95,7 +93,6 @@ export function AssignSheet({
   useEffect(() => {
     if (!visible) return;
     setWhom('person');
-    setQuery('');
     setChosen(null);
     setGroupId(null);
     setDueOn(addDaysISO(today, TERM_DAYS));
@@ -104,11 +101,6 @@ export function AssignSheet({
     setAnyway(false);
   }, [visible, today]);
 
-  const people = useMemo(() => {
-    const all = q.data?.people ?? [];
-    const needle = query.trim().toLowerCase();
-    return needle ? all.filter((p) => p.name.toLowerCase().includes(needle)) : all;
-  }, [q.data, query]);
   const person = q.data?.people.find((p) => p.publisherId === chosen) ?? null;
   const groups = q.data?.groups ?? [];
 
@@ -244,61 +236,16 @@ export function AssignSheet({
         <Text style={s.hint}>{t('territories.assign.groupHint')}</Text>
       ) : null}
 
-      <View style={s.search}>
-        <Ionicons name="search" size={16} color={MUTED} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder={t('territories.assign.search')}
-          placeholderTextColor="#94a3b8"
-          style={s.searchInput}
-        />
-      </View>
-
-      {q.isLoading ? (
-        <ActivityIndicator color={BRAND} style={{ marginVertical: 20 }} />
-      ) : q.error ? (
-        <Text style={s.error}>{extractErrorMessage(q.error)}</Text>
-      ) : (
-        <View style={s.list}>
-          {people.map((p) => {
-            const on = p.publisherId === chosen;
-            const holds = p.holds.length
-              ? t('territories.assign.holds', { count: p.holds.length, list: p.holds.join(', ') })
-              : t('territories.assign.holdsNone');
-            const had = p.hadThisOn
-              ? t('territories.assign.hadOn', { date: formatDayShort(p.hadThisOn, i18n.language) })
-              : t('territories.assign.hadNever');
-            return (
-              <Pressable
-                key={p.publisherId}
-                onPress={() => {
-                  setChosen(p.publisherId);
-                  setGroupId(null);
-                }}
-                style={[s.person, on && s.personOn]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: on }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={s.name}>
-                    {p.name}
-                    {p.pioneer ? <Text style={s.pioneer}>  {t('territories.assign.pioneer')}</Text> : null}
-                  </Text>
-                  <Text style={[s.meta, p.overdue > 0 && s.metaDue]}>
-                    {holds}
-                    {p.overdue > 0 ? ` · ${t('territories.assign.overdue', { count: p.overdue })}` : ''}
-                    {' · '}
-                    {had}
-                  </Text>
-                </View>
-                {on ? <Ionicons name="checkmark-circle" size={22} color={BRAND} /> : null}
-              </Pressable>
-            );
-          })}
-          {people.length === 0 ? <Text style={s.meta}>{t('territories.assign.nobody')}</Text> : null}
-        </View>
-      )}
+      <PersonPicker
+        data={q.data}
+        loading={q.isLoading}
+        error={q.error}
+        chosen={chosen}
+        onChoose={(p) => {
+          setChosen(p.publisherId);
+          setGroupId(null);
+        }}
+      />
 
       {whom === 'group' && person ? (
         <View style={s.groups}>
@@ -332,34 +279,7 @@ export function AssignSheet({
 
 const s = StyleSheet.create({
   hint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 8 },
-  search: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: LINE,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    marginTop: 14,
-    backgroundColor: '#fff',
-  },
-  searchInput: { flex: 1, paddingVertical: 10, fontFamily: 'Manrope_500Medium', fontSize: 14, color: INK },
-  list: { marginTop: 10, gap: 6 },
-  person: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: LINE,
-    backgroundColor: '#fff',
-  },
-  personOn: { borderColor: BRAND, backgroundColor: '#ecfeff' },
-  name: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: INK },
-  pioneer: { fontFamily: 'Manrope_800ExtraBold', fontSize: 10.5, color: '#15803d', letterSpacing: 0.5 },
   meta: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 2 },
-  metaDue: { color: '#c2410c' },
   groups: { marginTop: 16 },
   label: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: INK, marginBottom: 8 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

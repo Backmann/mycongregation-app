@@ -188,6 +188,9 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // a holder's and his group's territories for the other.
   '/cart/territory/[id]': 'self',
   '/cart/territory/outline/[id]': 'self',
+  // The journal of one territory (17 November 2026): the screen asks the
+  // territory section itself (seesAll).
+  '/cart/territory/journal/[id]': 'self',
   // The server decides: the keepers of the territories (15 November 2026).
   '/cart/territory/homes/[id]': 'self',
   '/cart/territory/new': 'self',

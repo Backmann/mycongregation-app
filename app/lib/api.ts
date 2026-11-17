@@ -7937,7 +7937,43 @@ export interface TerritoryAssignmentRow {
   method: TerritoryMethod | null;
   extended: boolean;
   imported: boolean;
+  /**
+   * Ended because the keeper handed it on to someone else (17 November
+   * 2026): `returnedOn` is the day; the S-13 reads «передан …».
+   */
+  transferred?: boolean;
+  createdAt?: string;
 }
+
+/** What happened to the territories (17 November 2026), one step. */
+export type TerritoryHistoryKind =
+  | "given"
+  | "transferred"
+  | "past"
+  | "worked"
+  | "returned"
+  | "campaign"
+  | "extended"
+  | "corrected"
+  | "removed"
+  | "territory";
+
+export interface TerritoryHistoryItem {
+  id: string;
+  at: string;
+  kind: TerritoryHistoryKind;
+  entityType: string;
+  territoryId: string | null;
+  number: string | null;
+  holder: string | null;
+  fromHolder: string | null;
+  forGroup: string | null;
+  actor: string | null;
+  detail: Record<string, unknown> | null;
+}
+
+/** The filters of «Что происходит» and of a territory's journal. */
+export type TerritoryHistoryFilter = "given" | "back" | "fixes" | "territory";
 
 export interface TerritoryNoCallRow {
   id: string;
@@ -8028,6 +8064,11 @@ export interface MyServiceMeeting {
 /** «Выдача и приём» (13 November 2026): everything the desk needs. */
 export interface TerritoryDesk {
   today: string;
+  /**
+   * A month before the S-13 lets go of a service year's names (17 November
+   * 2026): on that day `count` lines will read «—». Null otherwise.
+   */
+  namesGo?: { on: string; count: number } | null;
   people: {
     publisherId: string;
     name: string;
@@ -8494,6 +8535,12 @@ export const territoriesApi = {
       returnedOn?: string;
       method?: TerritoryMethod;
       reopen?: boolean;
+      /** Who held it: a card … */
+      publisherId?: string;
+      /** … or «нет в списке», a name by hand. */
+      holderName?: string;
+      /** The group it was held for; null: his own. */
+      forGroupId?: string | null;
     },
   ) =>
     (
@@ -8574,7 +8621,39 @@ export const territoriesApi = {
         ...(workedOn ? { workedOn } : {}),
       })
     ).data,
-  transfer: async (assignmentId: string, body: { toPublisherId?: string; on?: string } = {}) =>
+  /** A line of the S-13 from before the app («начать учёт с бумаги»). */
+  addPast: async (
+    territoryId: string,
+    body: {
+      publisherId?: string;
+      holderName?: string;
+      forGroupId?: string;
+      assignedOn: string;
+      dueOn?: string;
+      end: "completed" | "returned" | "open";
+      endedOn?: string;
+      method?: TerritoryMethod;
+    },
+  ) =>
+    (await api.post<TerritoryAssignmentRow>(`/territories/${territoryId}/past`, body))
+      .data,
+  /** A territory's journal (with territoryId) or «Что происходит». */
+  history: async (params: {
+    territoryId?: string;
+    filter?: TerritoryHistoryFilter;
+    before?: string;
+    limit?: number;
+  }) =>
+    (
+      await api.get<{ items: TerritoryHistoryItem[]; nextCursor: string | null }>(
+        "/territories/history",
+        { params },
+      )
+    ).data,
+  transfer: async (
+    assignmentId: string,
+    body: { toPublisherId?: string; on?: string; dueOn?: string } = {},
+  ) =>
     (
       await api.post<TerritoryAssignmentRow>(
         `/territories/assignments/${assignmentId}/transfer`,
