@@ -23,6 +23,8 @@ export interface CoPdfLabels {
   item: string;
   who: string;
   together: string;
+  /** «напарник не назначен» — an outing that still has nobody beside him. */
+  noPartner: string;
   visitTitle: string;
   coScheduleTitle: string;
   wifeScheduleTitle: string;
@@ -205,20 +207,16 @@ function overseerPage(
   locale: string,
   L: CoPdfLabels,
 ): string {
-  // The overseer print copy omits: the wife's rows, document review, personal
-  // lunch-box entries (not part of the official program), and the Tuesday /
-  // Sunday of the visit — those days are printed on the congregation page
-  // (page 1), which is attached alongside.
-  const isTueOrSun = (iso: string): boolean => {
-    const dow = new Date(`${iso}T00:00:00`).getDay(); // 0=Sun .. 6=Sat
-    return dow === 2 || dow === 0;
-  };
+  // The overseer print copy omits the wife's rows (folded into his outings),
+  // document review and the personal lunch-box entries (not part of the
+  // official programme). It keeps EVERY day: the congregation page lists the
+  // meetings without a single name, so an outing or a lunch on the meeting
+  // day reached the overseer without his partner or host. That day used to be
+  // dropped by calendar weekday — Tuesday and Sunday — whatever the visit's
+  // own meeting day was (audit, 17 November 2026).
   const visible = items.filter(
     (i) =>
-      !i.forWife &&
-      i.kind !== 'document_review' &&
-      i.kind !== 'lunch_box' &&
-      !isTueOrSun(i.itemDate),
+      !i.forWife && i.kind !== 'document_review' && i.kind !== 'lunch_box',
   );
   if (visible.length === 0) return '<p class="empty">—</p>';
 
@@ -249,7 +247,9 @@ function overseerPage(
   ): string | null => {
     const person = boldName(name, phone);
     if (!person && !note) return null;
-    return `${esc(label)}: ${person || '—'}${
+    // No partner yet reads as words, not as a dash: «— — по домам» printed two
+    // dashes in a row (audit, 17 November 2026).
+    return `${esc(label)}: ${person || esc(L.noPartner)}${
       note ? ` — ${esc(note)}` : ''
     }`;
   };
