@@ -3,6 +3,7 @@ import {
   CELLS_PER_LINE,
   LINES_PER_SHEET,
   s13Lines,
+  s13PutAway,
   s13Sheets,
   type S13Data,
   type S13Line,
@@ -18,23 +19,44 @@ export function buildS13Html(data: S13Data, t: TFunction): string {
   const lines = s13Lines(data, {
     group: t('territories.s13.groupShort'),
     campaign: t('territories.s13.campaign'),
+    archived: t('territories.s13.archivedShort'),
   });
+  const away = s13PutAway(data);
   const year = `${data.serviceYear - 1}/${String(data.serviceYear).slice(2)}`;
   const sheets = s13Sheets(lines)
-    .map((sheet, i, all) => page(sheet, t, year, i + 1, all.length))
+    .map((sheet, i, all) =>
+      page(
+        sheet,
+        t,
+        year,
+        i + 1,
+        all.length,
+        // The note on every sheet that carries one of them.
+        sheet.some((l) => l?.under) ? away : [],
+      ),
+    )
     .join('');
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(
     `S-13 ${year}`,
   )}</title><style>${STYLES}</style></head><body>${sheets}</body></html>`;
 }
 
-function page(lines: S13Line[], t: TFunction, year: string, n: number, of: number): string {
+function page(
+  lines: S13Line[],
+  t: TFunction,
+  year: string,
+  n: number,
+  of: number,
+  away: string[],
+): string {
   const rows: string[] = [];
   for (let i = 0; i < LINES_PER_SHEET; i++) {
     const l = lines[i];
     const cells = Array.from({ length: CELLS_PER_LINE }, (_, k) => l?.cells[k]);
     rows.push(`<tr class="top">
-      <td class="num" rowspan="2">${esc(l?.number ?? '')}</td>
+      <td class="num" rowspan="2">${esc(l?.number ?? '')}${
+        l?.under ? `<div class="under">${esc(l.under)}</div>` : ''
+      }</td>
       <td class="last" rowspan="2">${esc(l?.last ?? '')}</td>
       ${cells
         .map(
@@ -80,7 +102,11 @@ function page(lines: S13Line[], t: TFunction, year: string, n: number, of: numbe
     </thead>
     <tbody>${rows.join('')}</tbody>
   </table>
-  <div class="note">${esc(t('territories.s13.note'))}</div>
+  <div class="note">${esc(t('territories.s13.note'))}</div>${
+    away.length
+      ? `<div class="note">${esc(t('territories.s13.putAway', { list: away.join(', ') }))}</div>`
+      : ''
+  }
   <div class="foot"><span>S-13</span><span>${of > 1 ? `${n} / ${of}` : ''}</span></div>
 </section>`;
 }
@@ -118,5 +144,6 @@ tr.top { border-top: 1.2pt solid #000; }
 th.who, td.name, tr.bottom td.day:nth-child(odd) { border-left: 1.2pt solid #000; }
 thead tr:nth-child(2) th.sub:nth-child(odd) { border-left: 1.2pt solid #000; }
 .note { font-size: 7.5pt; margin-top: 2.5mm; }
+td.num .under { font-weight: 400; font-size: 6.2pt; margin-top: 0.4mm; }
 .foot { position: absolute; left: 12.7mm; right: 12.7mm; bottom: 8mm; display: flex; justify-content: space-between; font-size: 7.5pt; }
 `;

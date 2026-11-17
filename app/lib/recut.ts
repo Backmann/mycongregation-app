@@ -141,6 +141,26 @@ export function walkNowAfter(
   return { now, after };
 }
 
+/**
+ * What the service committee may still decide, one queue at a time
+ * (17 November 2026: «вводить очередями» — the joins first, the cuts once
+ * the joins have been seen to work). Only queues with something undecided.
+ */
+export function undecidedQueues(
+  list: { kind: 'cut' | 'merge'; state: 'open' | 'applied'; queue: number; approvedAt: string | null }[],
+): { queue: number; count: number; cuts: number; joins: number }[] {
+  const by = new Map<number, { queue: number; count: number; cuts: number; joins: number }>();
+  for (const p of list) {
+    if (p.state !== 'open' || p.approvedAt) continue;
+    const q = by.get(p.queue) ?? { queue: p.queue, count: 0, cuts: 0, joins: 0 };
+    q.count += 1;
+    if (p.kind === 'cut') q.cuts += 1;
+    else q.joins += 1;
+    by.set(p.queue, q);
+  }
+  return [...by.values()].sort((a, b) => a.queue - b.queue);
+}
+
 /** The open proposals by their round: how many cuts and joins in each. */
 export function queuesOf(
   list: ProposalWalkLike[],

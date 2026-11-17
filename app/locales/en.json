@@ -6244,7 +6244,8 @@
       "TERRITORY_ASK_OVERDUE": "First work {{number}} — or talk to the territory servant.",
       "TERRITORY_ASK_OPEN": "Your request is already with the territory servant.",
       "TERRITORY_BOUNDARY_S54": "Enter the date of the branch's S-54 form.",
-      "TERRITORY_BOUNDARY_S54_DATE": "The S-54 date cannot be later than today or earlier than the S-54 of the boundary in force."
+      "TERRITORY_BOUNDARY_S54_DATE": "The S-54 date cannot be later than today or earlier than the S-54 of the boundary in force.",
+      "TERRITORY_AWAITS_RECUT": "Territory {{number}} waits for a re-cutting approved by the service committee — it goes back to the territory servant."
     }
   },
   "stage": {
@@ -7469,7 +7470,8 @@
         "back": "Return to the territory servant",
         "backHint": "The territory becomes free for others. If you have a paper map, give it back.",
         "again": "Keep it to work again",
-        "againHint": "A new S-13 line starts from this day, again for 4 months."
+        "againHint": "A new S-13 line starts from this day, again for 4 months.",
+        "awaitsRecut": "This territory waits for a re-cutting approved by the service committee — return it to the territory servant."
       },
       "return": {
         "title": "Return unworked",
@@ -7599,7 +7601,9 @@
       "note": "*When beginning a new sheet, use this column to record the date on which each territory was last completed.",
       "groupShort": "Gr.",
       "campaign": "campaign",
-      "namesUntil": "Names on the S-13 for {{year}} will be replaced by «—» on {{date}}: the form keeps names for the current and the previous service year. Need a paper copy? Print it before then."
+      "namesUntil": "Names on the S-13 for {{year}} will be replaced by «—» on {{date}}: the form keeps names for the current and the previous service year. Need a paper copy? Print it before then.",
+      "archivedShort": "archived",
+      "putAway": "Put away this year: {{list}}. The year’s lines stay on the sheet."
     },
     "sheet": {
       "printTitle": "Territory map to print",
@@ -8262,11 +8266,16 @@
         "reopened": "back under discussion by the service committee: {{count}}",
         "remarks": "remarks: {{count}}",
         "note": "The brothers' remarks prepare the service committee's meeting. A member of the service committee records the decision.",
-        "button": "Decided by the service committee…",
-        "confirmTitle": "Record the service committee's decision?",
-        "confirmBody": "The proposals under discussion ({{count}}) will be recorded as decided by the service committee today.",
         "confirmYes": "Decided",
-        "done": "Decision recorded."
+        "byQueue": "The decision is recorded one queue at a time: first the joins of small territories, then the cuts — once the joins have shown how they work.",
+        "buttonQueue": "Queue {{n}} approved · {{count}}",
+        "confirmQueueTitle": "Record the decision on queue {{n}}?",
+        "confirmQueueBody": "Queue {{n}}: {{what}}. They will be marked as approved by the service committee today. The other queues stay under discussion.",
+        "doneQueue": "Decision on queue {{n}} recorded.",
+        "joins_one": "{{count}} join",
+        "joins_other": "{{count}} joins",
+        "cuts_one": "{{count}} cut",
+        "cuts_other": "{{count}} cuts"
       },
       "suggest": {
         "button": "Suggest by the measure",

@@ -492,6 +492,7 @@ export default function TerritoryScreen() {
         action={acting?.action ?? null}
         assignment={acting?.row ?? null}
         keeps={a.keeps}
+        awaitsRecut={!!q.data?.awaitsRecut}
         onClose={() => setActing(null)}
       />
     </KeyboardScroll>

@@ -6244,7 +6244,8 @@
       "TERRITORY_ASK_OVERDUE": "Bearbeiten Sie zuerst {{number}} — oder sprechen Sie mit dem Gebietsdiener.",
       "TERRITORY_ASK_OPEN": "Ihre Bitte liegt bereits beim Gebietsdiener.",
       "TERRITORY_BOUNDARY_S54": "Geben Sie das Datum des S-54 vom Zweigbüro an.",
-      "TERRITORY_BOUNDARY_S54_DATE": "Das S-54-Datum darf nicht nach heute und nicht vor dem S-54 der geltenden Grenze liegen."
+      "TERRITORY_BOUNDARY_S54_DATE": "Das S-54-Datum darf nicht nach heute und nicht vor dem S-54 der geltenden Grenze liegen.",
+      "TERRITORY_AWAITS_RECUT": "Gebiet {{number}} wartet auf eine vom Dienstkomitee beschlossene Neuaufteilung — es geht an den Gebietsdiener zurück."
     }
   },
   "stage": {
@@ -7469,7 +7470,8 @@
         "back": "Dem Gebietsdiener zurückgeben",
         "backHint": "Das Gebiet wird für andere frei. Wenn Sie eine Papierkarte haben, geben Sie sie zurück.",
         "again": "Zum erneuten Bearbeiten behalten",
-        "againHint": "Im S-13 beginnt ab diesem Tag eine neue Zeile, wieder für 4 Monate."
+        "againHint": "Im S-13 beginnt ab diesem Tag eine neue Zeile, wieder für 4 Monate.",
+        "awaitsRecut": "Dieses Gebiet wartet auf eine vom Dienstkomitee beschlossene Neuaufteilung — geben Sie es dem Gebietsdiener zurück."
       },
       "return": {
         "title": "Unbearbeitet zurückgeben",
@@ -7599,7 +7601,9 @@
       "note": "*Beim Anlegen eines neuen Blattes in dieser Spalte das Datum eintragen, an dem jedes Gebiet zuletzt bearbeitet wurde.",
       "groupShort": "Gr.",
       "campaign": "Aktion",
-      "namesUntil": "Die Namen im S-13 für {{year}} werden am {{date}} durch «—» ersetzt: Das Formular bewahrt Namen für das laufende und das vorige Dienstjahr auf. Papierkopie nötig? Vorher ausdrucken."
+      "namesUntil": "Die Namen im S-13 für {{year}} werden am {{date}} durch «—» ersetzt: Das Formular bewahrt Namen für das laufende und das vorige Dienstjahr auf. Papierkopie nötig? Vorher ausdrucken.",
+      "archivedShort": "Archiv",
+      "putAway": "In diesem Jahr weggelegt: {{list}}. Die Zeilen des Jahres bleiben auf dem Blatt."
     },
     "sheet": {
       "printTitle": "Gebietskarte zum Drucken",
@@ -8262,11 +8266,16 @@
         "reopened": "erneut beim Dienstkomitee in Beratung: {{count}}",
         "remarks": "Anmerkungen: {{count}}",
         "note": "Die Rückmeldungen der Brüder bereiten die Sitzung des Dienstkomitees vor. Den Beschluss trägt ein Mitglied des Dienstkomitees ein.",
-        "button": "Vom Dienstkomitee beschlossen…",
-        "confirmTitle": "Beschluss des Dienstkomitees eintragen?",
-        "confirmBody": "Die Vorschläge in Beratung ({{count}}) werden als heute vom Dienstkomitee beschlossen eingetragen.",
         "confirmYes": "Beschlossen",
-        "done": "Beschluss eingetragen."
+        "byQueue": "Der Beschluss wird je Gruppe festgehalten: zuerst das Zusammenlegen kleiner Gebiete, dann das Teilen — wenn sich das Zusammenlegen bewährt hat.",
+        "buttonQueue": "Gruppe {{n}} beschlossen · {{count}}",
+        "confirmQueueTitle": "Beschluss zu Gruppe {{n}} festhalten?",
+        "confirmQueueBody": "Gruppe {{n}}: {{what}}. Sie werden heute als vom Dienstkomitee beschlossen markiert. Die übrigen Gruppen bleiben in Beratung.",
+        "doneQueue": "Beschluss zu Gruppe {{n}} festgehalten.",
+        "joins_one": "{{count}} Zusammenlegung",
+        "joins_other": "{{count}} Zusammenlegungen",
+        "cuts_one": "{{count}} Teilung",
+        "cuts_other": "{{count}} Teilungen"
       },
       "suggest": {
         "button": "Nach Maßstab vorschlagen",

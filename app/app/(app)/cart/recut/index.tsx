@@ -36,6 +36,7 @@ import {
   longestWalk,
   myMarkOf,
   queuesOf,
+  undecidedQueues,
   reviewOf,
   searchTerritories,
   summaryOf,
@@ -104,11 +105,11 @@ export default function RecutScreen() {
     onError: fail,
   });
   const approve = useMutation({
-    mutationFn: () => recutApi.approve(),
-    onSuccess: (v) => {
+    mutationFn: (queue: number) => recutApi.approve(queue),
+    onSuccess: (v, queue) => {
       put(v);
       setError(null);
-      setNotice(t('territories.recut.decision.done'));
+      setNotice(t('territories.recut.decision.doneQueue', { n: queue }));
     },
     onError: fail,
   });
@@ -136,6 +137,7 @@ export default function RecutScreen() {
   const queues = queuesOf(open);
   const longest = longestWalk(view.territories, open);
   const dec = decisionOf(open);
+  const toDecide = undecidedQueues(open);
   const review = reviewOf(open);
   const shown = filterProposals(open, filter);
   const counts: Record<RecutFilter, number> = {
@@ -367,25 +369,39 @@ export default function RecutScreen() {
               {dec.remarks ? <Chip tone="blue" text={t('territories.recut.decision.remarks', { count: dec.remarks })} /> : null}
             </View>
             <Text style={s.quiet}>{t('territories.recut.decision.note')}</Text>
-            {view.canDecide && dec.waiting ? (
-              <View style={s.btnRow}>
-                <Pressable
-                  onPress={async () => {
-                    const ok = await confirm({
-                      title: t('territories.recut.decision.confirmTitle'),
-                      body: t('territories.recut.decision.confirmBody', { count: dec.waiting }),
-                      confirmLabel: t('territories.recut.decision.confirmYes'),
-                    });
-                    if (ok) approve.mutate();
-                  }}
-                  disabled={busy}
-                  style={({ pressed }) => [s.btn, busy && s.off, pressed && s.pressed]}
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="checkmark-done" size={16} color="#fff" />
-                  <Text style={s.btnText}>{t('territories.recut.decision.button')}</Text>
-                </Pressable>
-              </View>
+            {view.canDecide && toDecide.length ? (
+              <>
+                <Text style={s.quiet}>{t('territories.recut.decision.byQueue')}</Text>
+                <View style={s.btnRow}>
+                  {toDecide.map((q) => (
+                    <Pressable
+                      key={q.queue}
+                      onPress={async () => {
+                        const what = [
+                          q.joins ? t('territories.recut.decision.joins', { count: q.joins }) : '',
+                          q.cuts ? t('territories.recut.decision.cuts', { count: q.cuts }) : '',
+                        ]
+                          .filter(Boolean)
+                          .join(', ');
+                        const ok = await confirm({
+                          title: t('territories.recut.decision.confirmQueueTitle', { n: q.queue }),
+                          body: t('territories.recut.decision.confirmQueueBody', { n: q.queue, what }),
+                          confirmLabel: t('territories.recut.decision.confirmYes'),
+                        });
+                        if (ok) approve.mutate(q.queue);
+                      }}
+                      disabled={busy}
+                      style={({ pressed }) => [s.btn, busy && s.off, pressed && s.pressed]}
+                      accessibilityRole="button"
+                    >
+                      <Ionicons name="checkmark-done" size={16} color="#fff" />
+                      <Text style={s.btnText}>
+                        {t('territories.recut.decision.buttonQueue', { n: q.queue, count: q.count })}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
             ) : null}
           </View>
         ) : null}

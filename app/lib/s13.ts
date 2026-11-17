@@ -30,6 +30,12 @@ export interface S13Data {
     number: string;
     lastCompletedBefore: string | null;
     assignments: S13Assignment[];
+    /**
+     * Put away during the year (17 November 2026) — joined into another by
+     * a re-cutting, or archived: the year's lines stay on the sheet, marked.
+     * Absent from an older server.
+     */
+    archived?: { on: string; joinedInto: string | null } | null;
   }[];
 }
 
@@ -44,6 +50,26 @@ export interface S13Line {
   /** Empty on a line that continues the one above. */
   last: string;
   cells: S13Cell[];
+  /**
+   * Under the number on a territory put away: «→ Hamm17» where it was
+   * joined into, «архив» otherwise; empty on every other line.
+   */
+  under: string;
+}
+
+/**
+ * The territories put away during the year, for the note under the sheet:
+ * «Hamm14 → Hamm17 (02.12.26)», or «Hamm40 (02.12.26)» archived alone.
+ */
+export function s13PutAway(data: S13Data): string[] {
+  return [...data.territories]
+    .filter((t) => t.archived)
+    .sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true, sensitivity: 'base' }))
+    .map((t) =>
+      t.archived!.joinedInto
+        ? `${t.number} → ${t.archived!.joinedInto} (${shortDay(t.archived!.on)})`
+        : `${t.number} (${shortDay(t.archived!.on)})`,
+    );
 }
 
 export const LINES_PER_SHEET = 20;
@@ -90,7 +116,7 @@ export function surnames(names: string[]): Map<string, string> {
 /** The sheet's lines in order, before cutting into sheets. */
 export function s13Lines(
   data: S13Data,
-  words: { group: string; campaign: string },
+  words: { group: string; campaign: string; archived?: string },
 ): S13Line[] {
   const all = data.territories.flatMap((t) => t.assignments.map((a) => a.holderName));
   const label = surnames(all);
@@ -119,6 +145,12 @@ export function s13Lines(
         number: t.number,
         last: i === 0 ? shortDay(t.lastCompletedBefore) : '',
         cells: c,
+        under:
+          i === 0 && t.archived
+            ? t.archived.joinedInto
+              ? `→ ${t.archived.joinedInto}`
+              : (words.archived ?? '')
+            : '',
       }),
     );
   }
