@@ -24,6 +24,7 @@ import {
 } from '../../../lib/api';
 import { usePermissions } from '../../../lib/permissions';
 import { LoadFailure } from '../../../components/LoadFailure';
+import { attendancePrintLabels } from '../../../lib/attendance-labels';
 import {
   buildS3Html,
   buildS88Html,
@@ -121,34 +122,7 @@ export default function AttendanceScreen() {
 
   const [printing, setPrinting] = useState(false);
   const congregationName = overview.data?.congregation?.name ?? '';
-  const printLabels = (): AttendancePrintLabels => ({
-    s88Title: t('attendance.forms.s88Title'),
-    midweek: t('attendance.forms.midweek'),
-    weekend: t('attendance.forms.weekend'),
-    meetings: t('attendance.forms.meetings'),
-    attended: t('attendance.forms.attended'),
-    perWeek: t('attendance.forms.perWeek'),
-    perMonth: t('attendance.forms.perMonth'),
-    notesTitle: t('attendance.forms.notesTitle'),
-    incomplete: (n) => t('attendance.print.incomplete', { count: n }),
-    incompleteMonth: (month, n) => t('attendance.forms.incompleteMonth', { month, count: n }),
-    notHeld: (day, reason) =>
-      reason
-        ? t('attendance.forms.notHeldWhy', { day, reason })
-        : t('attendance.forms.notHeld', { day }),
-    memorial: (day, count) => t('attendance.forms.memorial', { day, count }),
-    s3Title: t('attendance.forms.s3Title'),
-    s3Hint: t('attendance.forms.s3Hint'),
-    congregation: t('attendance.forms.congregation'),
-    month: t('attendance.forms.month'),
-    week: (n) => t('attendance.forms.week', { n }),
-    total: t('attendance.totalShort'),
-    average: t('attendance.averageShort'),
-    midweekShort: t('attendance.forms.midweekShort'),
-    weekendShort: t('attendance.forms.weekendShort'),
-    legend: t('attendance.printLegend'),
-    printed: t('attendance.printedOn'),
-  });
+  const printLabels = (): AttendancePrintLabels => attendancePrintLabels(t);
 
   /** S-88 — this service year beside the one before it. */
   const printS88 = async () => {

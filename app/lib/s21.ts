@@ -307,7 +307,7 @@ function cardHtml(data: S21DataResponse, lang: S21Lang): string {
   </div>`;
 }
 
-const STYLES = `
+export const S21_STYLES = `
   * { box-sizing: border-box; }
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #111; margin: 0; padding: 14mm; }
   .s21 { page-break-inside: avoid; }
@@ -327,6 +327,15 @@ const STYLES = `
   @media print { body { padding: 8mm; } }
 `;
 
+/**
+ * The cards of one person, a year after another, without the page around
+ * them — for the S-21 of a whole group in the folder for the circuit
+ * overseer (17 November 2026).
+ */
+export function buildS21CardsBody(years: S21DataResponse[], lang = 'ru'): string {
+  return years.map((d) => cardHtml(d, s21Lang(lang))).join('');
+}
+
 /** Full printable HTML for a single S-21 card from the server data package. */
 export function buildS21Html(data: S21DataResponse, lang = 'ru'): string {
   const body = cardHtml(data, s21Lang(lang));
@@ -338,5 +347,5 @@ export function buildS21Html(data: S21DataResponse, lang = 'ru'): string {
     'S-21';
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(
     name,
-  )} — S-21</title><style>${STYLES}</style></head><body>${body}</body></html>`;
+  )} — S-21</title><style>${S21_STYLES}</style></head><body>${body}</body></html>`;
 }

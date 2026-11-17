@@ -6245,7 +6245,13 @@
       "TERRITORY_ASK_OPEN": "Ihre Bitte liegt bereits beim Gebietsdiener.",
       "TERRITORY_BOUNDARY_S54": "Geben Sie das Datum des S-54 vom Zweigbüro an.",
       "TERRITORY_BOUNDARY_S54_DATE": "Das S-54-Datum darf nicht nach heute und nicht vor dem S-54 der geltenden Grenze liegen.",
-      "TERRITORY_AWAITS_RECUT": "Gebiet {{number}} wartet auf eine vom Dienstkomitee beschlossene Neuaufteilung — es geht an den Gebietsdiener zurück."
+      "TERRITORY_AWAITS_RECUT": "Gebiet {{number}} wartet auf eine vom Dienstkomitee beschlossene Neuaufteilung — es geht an den Gebietsdiener zurück.",
+      "FOLDER_NO_ACCESS": "Die Unterlagen für den Kreisaufseher sind für den Koordinator der Ältestenschaft, den Sekretär und den Dienstaufseher.",
+      "FOLDER_NOT_A_VISIT": "Kein Besuch des Kreisaufsehers gefunden.",
+      "FOLDER_MARK_INVALID": "Diese Markierung passt nicht zu diesem Punkt.",
+      "FOLDER_ANSWER_INVALID": "Diese Antwort passt nicht zu dieser Frage.",
+      "FOLDER_ANSWERS_ERASED": "Der Besuch ist vorbei — die Antworten zu Seite 2 sind gelöscht.",
+      "FOLDER_PAGE2_INCOMPLETE": "Bitte zuerst alle Fragen auf Seite 2 beantworten: {{answered}} von {{total}} beantwortet."
     }
   },
   "stage": {
@@ -8693,5 +8699,283 @@
     "title": "Diese Seite gibt es nicht",
     "body": "Vielleicht ist der Link veraltet oder die Adresse hat einen Tippfehler.",
     "home": "Zur Startseite"
+  },
+  "coFolder": {
+    "title": "Unterlagen für den Kreisaufseher",
+    "kicker": "Unterlagen für den Kreisaufseher · S-61",
+    "visitKicker": "Besuch des Kreisaufsehers · {{when}}",
+    "dueLabel": "Abgabe bis",
+    "daysLeft_one": "noch {{count}} Tag",
+    "daysLeft_other": "noch {{count}} Tage",
+    "dueToday": "heute fällig",
+    "duePassed": "Frist verstrichen",
+    "numbersNote": "Nummern wie im Formular S-61",
+    "ofItems": "{{ready}} von {{total}} Punkten",
+    "ofShort": "{{ready}} von {{total}}",
+    "open": "Unterlagen öffnen",
+    "filter": {
+      "all": "Alle · {{count}}",
+      "mine": "Meine · {{count}}",
+      "open": "Offen · {{count}}"
+    },
+    "role": {
+      "coordinator": "Koordinator der Ältestenschaft",
+      "secretary": "Sekretär",
+      "service_overseer": "Dienstaufseher"
+    },
+    "roleShort": {
+      "coordinator": "Koordinator",
+      "secretary": "Sekretär",
+      "service_overseer": "Dienstaufseher"
+    },
+    "you": "Sie",
+    "othersSeeText": "Teil 1 · Koordinator: {{ready}} von {{total}}. Den Stand der ganzen Unterlagen, S-21 und Kontaktdaten sehen sie nicht.",
+    "sectionOnly": "Sie sehen Teil 1 — was der Koordinator der Ältestenschaft vorbereitet. Den Rest stellen der Koordinator, der Sekretär und der Dienstaufseher zusammen.",
+    "item": {
+      "1_1": {
+        "title": "Namen der Brüder, die zur Ernennung oder Streichung empfohlen werden",
+        "hint": "Wird am Dienstag übergeben. Der Inhalt wird in der App nicht gespeichert"
+      },
+      "1_2": {
+        "title": "Fragen für die Zusammenkunft mit den Ältesten",
+        "hint": "Mit den vierteljährlichen Zusammenkünften der Ältestenschaft — legt ein Mitglied des Dienstkomitees bei. Wird in der App nicht gespeichert"
+      },
+      "1_3": {
+        "title": "Hirtenbesuche",
+        "hint": "Wen der Kreisaufseher besucht und welcher Älteste mitgeht"
+      },
+      "1_4": {
+        "title": "Unterkunft in der Besuchswoche",
+        "hint": "Nötig, wenn der Kreisaufseher um Unterkunft gebeten hat: Gastgeber und Kontaktdaten"
+      },
+      "1_5": {
+        "title": "Mittagessen des Kreisaufsehers und seiner Frau",
+        "hint": "Wer zum Mittagessen eingeladen hat"
+      },
+      "2_1": {
+        "title": "Versammlungsberichtskarten (S-21) nach Gruppen",
+        "hint": "2025/26 und 2026/27 — eine Datei je Gruppe"
+      },
+      "2_2": {
+        "title": "Zusammenkunftsbesuch (S-88)",
+        "hint": "Dieses und das vorige Dienstjahr"
+      },
+      "2_3": {
+        "title": "Buchhaltung der Versammlung",
+        "hint": "Ordner mit den Unterlagen und die letzten zwei Kontenprüfungen"
+      },
+      "2_4": {
+        "title": "Buchhaltung des Königreichssaal-Betriebskomitees",
+        "hint": "Nur nötig, wenn zwei oder mehr Versammlungen den Saal nutzen und Ihre Versammlung die Kontaktversammlung ist"
+      },
+      "2_5": {
+        "title": "Kontaktdaten aller Verkündiger",
+        "hint": "Nur in dieser Datei — auf keinem Bildschirm"
+      },
+      "3_1": {
+        "title": "Gebietszuteilungen (S-13)",
+        "hint": "Laufendes Dienstjahr"
+      },
+      "3_2": {
+        "title": "Monatliche Literaturbestandsaufnahme (S-28)",
+        "hint": "Wenn die Versammlung Literaturbestellungen koordiniert"
+      },
+      "3_3": {
+        "title": "Gebiete und Predigtdienst in der Besuchswoche",
+        "hint": "Treffpunkte und Trolley: Orte, Zeiten, Teilnehmer"
+      },
+      "3_4": {
+        "title": "Wer mit dem Kreisaufseher und seiner Frau in den Dienst geht",
+        "hint": "Partner für jeden Dienst"
+      },
+      "3_5": {
+        "title": "Gebiete zwei Jahre und länger (vorläufig)",
+        "hint": "Über das Formular hinaus — für das Gespräch der Ältesten mit dem Kreisaufseher"
+      },
+      "3_6": {
+        "title": "Gesamtkarte der Gebiete",
+        "hint": "Über das Formular hinaus — Grenzen und Nummern"
+      }
+    },
+    "extra": "über das Formular hinaus",
+    "fact": {
+      "pastoral_one": "{{count}} Besuch",
+      "pastoral_other": "{{count}} Besuche",
+      "lunchDays": "Mittagessen an {{count}} von {{of}} Tagen",
+      "noHost": "kein Gastgeber angegeben",
+      "hostSet": "Gastgeber angegeben",
+      "contacts": "Verkündiger: {{count}}",
+      "outings": "Dienste des Kreisaufsehers: {{count}}",
+      "again": "neu: {{count}}",
+      "people_one": "{{count}} Person",
+      "people_other": "{{count}} Personen"
+    },
+    "noGroup": "Ohne Gruppe",
+    "state": {
+      "saved": "gespeichert",
+      "savedOn": "gespeichert am {{date}}",
+      "changed": "geändert — neu speichern",
+      "separate": "eigene Datei",
+      "paper": "auf Papier",
+      "na": "trifft nicht zu",
+      "none": "nicht gespeichert",
+      "open": "nicht markiert",
+      "partial": "{{saved}} von {{groups}} Gruppen"
+    },
+    "markedBy": "Markiert: {{name}} · {{date}}",
+    "action": {
+      "save": "PDF speichern",
+      "saveAgain": "Neu speichern",
+      "notApplicable": "Trifft nicht zu",
+      "clear": "Markierung entfernen",
+      "how": "Wie es übergeben wird"
+    },
+    "how": {
+      "separate": "Eigene Datei",
+      "separateHint": "wird mit den Unterlagen gesendet",
+      "paper": "Auf Papier",
+      "paperHint": "wird dem Kreisaufseher persönlich übergeben",
+      "na": "Trifft nicht zu",
+      "naHint": "für diese Versammlung nicht nötig"
+    },
+    "saved": {
+      "title": "Datei gespeichert?",
+      "body": "Wenn Sie im Druckfenster «Als PDF speichern» gewählt und die Datei gespeichert haben, markieren Sie es. Wenn Sie das Fenster geschlossen haben, tippen Sie auf «Nein».",
+      "yes": "Ja, gespeichert",
+      "no": "Nein"
+    },
+    "printHint": "Der Dateiname wird eingesetzt — wählen Sie im Druckfenster «Als PDF speichern». Für den Versand über jwpub.org stellen Sie die Unterlagen am besten am Computer zusammen.",
+    "s62": {
+      "title": "S-62 bis {{date}}",
+      "body": "Die Empfehlungen (S-62) sendet der Sekretär spätestens einen Monat vor dem Besuch; der Koordinator vergewissert sich, dass das Formular abgeschickt wurde.",
+      "sent": "Gesendet von {{name}} · {{date}}",
+      "checked": "Koordinator hat sich vergewissert · {{date}}",
+      "markSent": "S-62 gesendet",
+      "markChecked": "Vergewissert",
+      "undo": "Zurücknehmen",
+      "none": "Gibt es keine Empfehlungen, ist keine Markierung nötig."
+    },
+    "timeline": {
+      "s62Remind": "Erinnerung an das S-62",
+      "s62Due": "Frist S-62",
+      "gaps": "Erinnerung an offene Punkte",
+      "due": "Dem Kreisaufseher übergeben"
+    },
+    "checks": {
+      "title": "Prüfungen",
+      "lunch": "Mittagessen am {{days}} nicht eingeplant",
+      "partner": "Dienst ohne Partner: {{days}}",
+      "toSchedule": "zum Besuchsplan",
+      "allGood": "Im Besuchsplan fehlt nichts"
+    },
+    "page2": {
+      "title": "Seite 2",
+      "body": "Antworten der Ältesten auf 15 Fragen. Die Hinweise sind Daten der App seit dem letzten Besuch, keine fertigen Antworten. Die Antworten werden nach der Besuchswoche gelöscht ({{date}}).",
+      "progress": "beantwortet: {{answered}} von {{total}}",
+      "answer": "Beantworten · noch {{count}}",
+      "hide": "Fragen einklappen",
+      "done": "Alle 15 Fragen beantwortet",
+      "erased": "Antworten am {{date}} gelöscht — die Besuchswoche ist vorbei",
+      "by": "{{name}} · {{date}}",
+      "fileTitle": "Antworten zu Seite 2",
+      "save": "Antworten speichern (4)",
+      "fromApp": "Laut App:",
+      "since": "seit dem letzten Besuch ({{date}})",
+      "sinceStart": "seit {{date}}",
+      "hint4": "nicht mehr allgemeine Pioniere: {{ended}}; als allgemeine Pioniere in eine andere Versammlung gewechselt: {{moved}}. Namensänderungen erfasst die App nicht — bitte selbst prüfen.",
+      "hint5": "ausgeschlossen: {{count}}. Distanzierungen erfasst die App nicht — bitte selbst prüfen.",
+      "hint6": "verstorben: {{count}}. Wiederaufnahmen erfasst die App nicht — bitte selbst prüfen.",
+      "hint9": "in andere Versammlungen gezogen: {{count}}",
+      "hint12": "Kontaktdaten im Dienstjahr {{year}} bestätigt: {{confirmed}} von {{total}}"
+    },
+    "answer": {
+      "yes": "Ja",
+      "no": "Nein",
+      "na": "N. z."
+    },
+    "q": {
+      "1": "Sind auf JW Hub die aktuellen Kontaktdaten des Koordinators der Ältestenschaft und des Sekretärs angegeben?",
+      "2": "Hat die Versammlung einen Beschluss über monatliche Spenden für das weltweite Werk gefasst?",
+      "3": "Werden die Daten der Verkündiger gemäß den «Anleitungen zur Nutzung von JW Hub durch die Versammlung» (S-135) aktualisiert? (sfg Kap. 14, Abs. 3, 4). Das ist besonders wichtig, wenn über einen Verkündiger entschieden wurde, dass er oder sie keine Bewerbungen mehr einreichen kann.",
+      "4": "Wurde das Zweigbüro über alle allgemeinen Pioniere informiert, die nicht mehr in diesem Dienst stehen, über Namensänderungen allgemeiner Pioniere und über den Wechsel in eine andere Versammlung?",
+      "5": "Wurde das Zweigbüro informiert, wenn seit dem letzten Besuch jemand ausgeschlossen wurde oder sich jemand von der Versammlung distanziert hat?",
+      "6": "Wurde das Zweigbüro über alle Ausgeschlossenen oder Distanzierten informiert, die wiederaufgenommen wurden oder verstorben sind?",
+      "7": "Wenn es Verkündiger gibt, denen das Rechtskomitee Einschränkungen auferlegt hat: Achten die Ältesten aufmerksam auf ihre geistigen Fortschritte?",
+      "8": "Wenn seit dem letzten Besuch ein Verkündiger, der in einem der in Kapitel 6, Absatz 12, 13 des Buches «Hütet» aufgeführten Dienste steht, eines schweren Vergehens beschuldigt wurde oder es bekannt hat: Haben Sie sich an die Dienstabteilung oder das Bethelbüro gewandt, um Anleitung zu erhalten?",
+      "9": "Wurden Empfehlungsschreiben für alle Verkündiger gesandt, die in andere Versammlungen gewechselt sind?",
+      "10": "Werden die Anweisungen zur Führung der Versammlungsunterlagen aus dem Buch «Hütet», Kapitel 17, Absatz 2–6, sowie die Regeln zur Aufbewahrung der Versammlungsunterlagen aus der «Ergänzung zu „Hütet“» (sfga) befolgt?",
+      "11": "Wurde das Zweigbüro über Änderungen in der Sprachgruppe informiert?",
+      "12": "Wendet die Ältestenschaft die neuesten Anweisungen zur Katastrophenvorsorge an, und werden die Kontaktdaten und Notfallnummern der Verkündiger aktualisiert? (sfg Kap. 11, Abs. 3)",
+      "13": "Wenn seit dem letzten Besuch des Kreisaufsehers «Risiko- und Vorfallsberichte» (TO-5) an das Zweigbüro gesandt wurden: Wurden alle nötigen Schritte unternommen, um weitere Vorfälle zu verhindern? (sfg Kap. 13, Abs. 13)",
+      "14": "Wenn Ihnen bekannt wurde, dass ein inhaftierter Verkündiger keine geistige Unterstützung erhält: Haben Sie es der Versammlung mitgeteilt, die für das Predigen in Justizvollzugsanstalten zuständig ist?",
+      "15": "Wird etwas unternommen, um für Verkündiger zu sorgen, die in abgelegenen Gegenden wohnen?"
+    },
+    "send": {
+      "title": "Versand über jwpub.org",
+      "body": "Speichern Sie die Dateien in einen Ordner — die Namen sind nach dem Formular nummeriert, zuerst kommt «00 Inhaltsverzeichnis».",
+      "toc": "Inhaltsverzeichnis speichern (00)",
+      "handOver": "Als «übergeben» markieren",
+      "needsPage2": "«Übergeben» ist möglich, sobald alle 15 Fragen auf Seite 2 beantwortet sind",
+      "confirmTitle": "Unterlagen dem Kreisaufseher übergeben?",
+      "confirmBody": "Jeder, der Dateien gespeichert hat, wird daran erinnert, sie vom Computer zu löschen.",
+      "confirm": "Übergeben",
+      "undo": "«Übergeben» zurücknehmen"
+    },
+    "done": {
+      "title": "Übergeben · {{date}}",
+      "by": "markiert von {{name}}",
+      "deleteTitle": "Dateien vom Computer löschen",
+      "deleteBody": "Im Ordner waren S-21, die Kontaktdaten der Verkündiger und die Antworten zu Seite 2. Löschen Sie ihn und die Kopien in «Downloads» (Ergänzung zu «Hütet», Abs. 29). Jeder, der Dateien gespeichert hat, wurde erinnert.",
+      "deleted": "gelöscht am {{date}}",
+      "notYet": "noch nicht",
+      "iDeleted": "Ich habe meine Dateien gelöscht",
+      "changedTitle": "Nach der Übergabe geändert",
+      "changedBody": "Diese Dateien haben sich nach der Übergabe geändert. Nur sie können nachgereicht werden.",
+      "eraseTitle": "{{date}}",
+      "eraseBody": "Die Antworten zu Seite 2 werden gelöscht. Es bleibt das Datum «übergeben» — von dort an zählen die Hinweise für den nächsten Besuch."
+    },
+    "toc": {
+      "title": "Inhaltsverzeichnis",
+      "item": "Punkt",
+      "how": "Datei oder wie es übergeben wird"
+    },
+    "pdf": {
+      "kicker": "S-61 · Angaben für den Kreisaufseher",
+      "visit": "Besuch {{when}}",
+      "madeOn": "zusammengestellt am {{date}}",
+      "deleteAfter": "Dateien nach dem Lesen löschen (Ergänzung zu «Hütet», Abs. 29).",
+      "empty": "Keine Einträge.",
+      "noLodging": "Der Kreisaufseher hat nicht um Unterkunft gebeten, oder im Besuchsplan ist kein Gastgeber angegeben.",
+      "lunchBox": "Essen zum Mitnehmen",
+      "forWife": "für die Frau",
+      "forBoth": "Kreisaufseher und Frau",
+      "together": "Kreisaufseher mit Frau",
+      "wife": "Frau des Kreisaufsehers",
+      "overseer": "Kreisaufseher",
+      "eachOther": "miteinander",
+      "stand": "Trolley",
+      "col": {
+        "day": "Tag",
+        "time": "Zeit",
+        "whom": "Wen er besucht",
+        "withElder": "Begleitet von",
+        "host": "Gastgeber",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "address": "Adresse",
+        "forWhom": "Für wen",
+        "place": "Ort",
+        "who": "Wer",
+        "goes": "Wer geht",
+        "partner": "Partner",
+        "name": "Name, Vorname",
+        "group": "Gruppe"
+      }
+    },
+    "visitCard": {
+      "s62Done": "S-62 gesendet am {{date}} — Frist {{due}}",
+      "s62Open": "S-62 — bis {{due}}",
+      "handedOver": "Unterlagen übergeben am {{date}}"
+    }
   }
 }

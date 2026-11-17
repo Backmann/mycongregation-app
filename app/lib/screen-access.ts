@@ -122,6 +122,9 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/special-events': 'all',
   '/special-events/[id]': 'all',
   '/special-events/new': 'events',
+  // The folder for the circuit overseer (S-61): elders; the server narrows
+  // it to section 1 for those not in the service committee's three.
+  '/special-events/folder/[id]': 'elders',
   '/local-needs': 'localNeeds',
 
   // ── Собрание ─────────────────────────────────────────────────────────

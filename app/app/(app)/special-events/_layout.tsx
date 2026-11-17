@@ -39,6 +39,13 @@ export default function SpecialEventsLayout() {
         }}
       />
       <Stack.Screen
+        name="folder/[id]"
+        options={{
+          title: t('coFolder.title'),
+          headerLeft: () => <BackButton fallback="/special-events" />,
+        }}
+      />
+      <Stack.Screen
         name="new"
         options={{
           title: t('specialEvents.title.new'),
