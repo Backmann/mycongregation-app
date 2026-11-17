@@ -335,7 +335,7 @@ export default function CoScheduleScreen() {
       moves,
     ],
     queryFn: () => buildVisitMeetings(),
-    enabled: !!visit && !!settingsOverview?.effective,
+    enabled: !!visit && !!settingsOverview,
     staleTime: 5 * 60 * 1000,
   });
   const visitMeetings = visitMeetingsQuery.data ?? [];
@@ -757,9 +757,13 @@ export default function CoScheduleScreen() {
   // This used to be built only when printing, so the PDF listed the meetings
   // and the screen did not — the two disagreed about the same visit, and the
   // day a brother gives the service talk looked empty on the phone.
+  //
+  // It asks the settings version of each visit WEEK, never today's: with no
+  // version in force today (a congregation whose first version starts later)
+  // the screen showed no meetings while the visit page showed them
+  // (audit, 17 November 2026).
   const buildVisitMeetings = async (): Promise<CoMeetingInfo[]> => {
-    const eff = settingsOverview?.effective;
-    if (!eff) return [];
+    const fallbackAddress = settingsOverview?.effective?.address ?? null;
     const startISO = visit.date;
     const endISO = visit.endDate ?? visit.date;
     const inRange = (iso: string) => iso >= startISO && iso <= endISO;
@@ -800,9 +804,10 @@ export default function CoScheduleScreen() {
       // no row for a meeting the Memorial or a convention takes away. The
       // weekend day and hour used to come from today's settings, and a
       // Memorial in the visit week still listed the meeting it takes.
+      const version = effectiveVersionFor(settingsOverview?.versions, weekStart);
       const rules = weekRules({
         weekStartISO: weekStart,
-        version: effectiveVersionFor(settingsOverview?.versions, weekStart),
+        version,
         events: events ?? [],
         moves,
       });
@@ -814,7 +819,7 @@ export default function CoScheduleScreen() {
           date: mw.date,
           // The rules' hour; none only with no settings at all.
           time: mw.time ?? '',
-          place: mw.place ?? eff.address ?? null,
+          place: mw.place ?? version?.address ?? fallbackAddress,
           talks: [coTalk].filter((x): x is string => !!x),
         });
       }
@@ -827,7 +832,7 @@ export default function CoScheduleScreen() {
           kind: 'weekend',
           date: we.date,
           time: we.time ?? '',
-          place: we.place ?? eff.address ?? null,
+          place: we.place ?? version?.address ?? fallbackAddress,
           talks: [publicTalk, coConcluding].filter(
             (x): x is string => !!x,
           ),
@@ -894,6 +899,7 @@ export default function CoScheduleScreen() {
         item: t('coVisit.pdfItem'),
         who: t('coVisit.pdfWho'),
         together: t('coVisit.spouseBadge'),
+        noPartner: t('coVisit.noPartner'),
         coShort: coName || t('coVisit.coShort'),
         wifeShort: visit.coWifeName || t('coVisit.wifeShort'),
       },
