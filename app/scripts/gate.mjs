@@ -83,6 +83,7 @@ const STEPS = [
   ['Участки: перенос данных', 'node', ['scripts/check-territory-import.mjs']],
   ['Участки: S-13 по бланку', 'node', ['scripts/check-s13.mjs']],
   ['Папка для районного (S-61)', 'node', ['scripts/check-co-folder.mjs']],
+  ['Лист деления на пары', 'node', ['scripts/check-division-sheet.mjs']],
   ['Участки: карта для печати', 'node', ['scripts/check-territory-sheet.mjs']],
   ['Участки: правка границы', 'node', ['scripts/check-outline-edit.mjs']],
   ['Участки: журнал изменений', 'node', ['scripts/check-territory-journal.mjs']],

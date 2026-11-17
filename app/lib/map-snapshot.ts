@@ -24,6 +24,15 @@ export interface SnapshotInput {
   /** The picture's size in device pixels (print dots). */
   wPx: number;
   hPx: number;
+  /**
+   * Drawn over the map (17 November 2026, the division on paper): each
+   * pair's streets in its own colour, and round numbered marks — the part's
+   * number, readable on a black-and-white printer too.
+   */
+  overlay?: {
+    lines: { lines: [number, number][][]; color: string; faded?: boolean }[];
+    marks: { lon: number; lat: number; label: string; color: string }[];
+  };
 }
 
 export interface Snapshot {
@@ -162,6 +171,75 @@ export async function snapshotTerritory(input: SnapshotInput): Promise<Snapshot>
           source: 'own',
           paint: { 'line-color': '#0f172a', 'line-width': 3.5 },
         });
+        if (input.overlay) {
+          const o = input.overlay;
+          map.addSource('parts', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: o.lines.map((l) => ({
+                type: 'Feature',
+                properties: { color: l.color, opacity: l.faded ? 0.35 : 1 },
+                geometry: { type: 'MultiLineString', coordinates: l.lines },
+              })),
+            },
+          });
+          // A white casing under each colour keeps two parts apart where
+          // their streets meet.
+          map.addLayer({
+            id: 'parts-casing',
+            type: 'line',
+            source: 'parts',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': '#ffffff', 'line-width': 8 },
+          });
+          map.addLayer({
+            id: 'parts-line',
+            type: 'line',
+            source: 'parts',
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: {
+              'line-color': ['get', 'color'],
+              'line-width': 5,
+              'line-opacity': ['get', 'opacity'],
+            },
+          });
+          map.addSource('marks', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: o.marks.map((m) => ({
+                type: 'Feature',
+                properties: { label: m.label, color: m.color },
+                geometry: { type: 'Point', coordinates: [m.lon, m.lat] },
+              })),
+            },
+          });
+          map.addLayer({
+            id: 'marks-circle',
+            type: 'circle',
+            source: 'marks',
+            paint: {
+              'circle-radius': 15,
+              'circle-color': ['get', 'color'],
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-width': 3,
+            },
+          });
+          map.addLayer({
+            id: 'marks-label',
+            type: 'symbol',
+            source: 'marks',
+            layout: {
+              'text-field': ['get', 'label'],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': 17,
+              'text-allow-overlap': true,
+              'icon-allow-overlap': true,
+            },
+            paint: { 'text-color': '#ffffff' },
+          });
+        }
         map.once('idle', () => {
           clearTimeout(timer);
           resolve();
