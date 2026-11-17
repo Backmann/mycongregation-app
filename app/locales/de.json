@@ -8116,7 +8116,25 @@
       "fewer_other": "Auf {{count}} Paare teilen",
       "tooSmall_one": "Ein Paar bekäme nur {{count}} Tür — das Gebiet ist klein für {{pairs}} Paare.",
       "tooSmall_other": "Ein Paar bekäme nur {{count}} Türen — das Gebiet ist klein für {{pairs}} Paare.",
-      "sources": "Datenquellen der Karte"
+      "sources": "Datenquellen der Karte",
+      "sheet": {
+        "print": "Für die Paare drucken",
+        "title": "{{number}} — Paare {{day}}",
+        "kicker": "Gebiet für Paare · {{day}}",
+        "pairs_one": "{{count}} Paar",
+        "pairs_other": "{{count}} Paare",
+        "houses_one": "{{count}} Haus",
+        "houses_other": "{{count}} Häuser",
+        "doors_one": "{{count}} Eingang",
+        "doors_other": "{{count}} Eingänge",
+        "commonStart": "alle beginnen bei ★",
+        "ownStart": "jedes Paar hat seinen eigenen Anfang",
+        "pair": "Paar {{n}}",
+        "noCalls_one": "In den Straßen dieses Paares gibt es {{count}} Adresse «nicht besuchen» — fragen Sie den Inhaber des Gebiets.",
+        "noCalls_other": "In den Straßen dieses Paares gibt es {{count}} Adressen «nicht besuchen» — fragen Sie den Inhaber des Gebiets.",
+        "walked": "bearbeitet",
+        "foot": "Blatt nur für heute. Adressen «nicht besuchen» stehen nicht darauf — sie sind in der App. Bitte nach dem Dienst vernichten."
+      }
     },
     "part": {
       "gone": "Der Link gilt nicht mehr",
@@ -8239,7 +8257,7 @@
         "minKm": "Kürzester Weg, km",
         "remoteMinutes": "Außerhalb — Fahrt länger als, Min.",
         "save": "Maßstab speichern",
-        "reopenNote": "Beschlossene Vorschläge gehen erneut zur Beratung ans Dienstkomitee.",
+        "reopenNote": "Erneut zur Beratung ans Dienstkomitee gehen nur die beschlossenen Vorschläge, deren Gebiete das neue Maß anders beurteilt. Die übrigen bleiben beschlossen.",
         "bad": "Bitte prüfen: Ein Teil darf nicht länger sein als der längste Weg."
       },
       "figures": {

@@ -8116,7 +8116,25 @@
       "fewer_other": "Divide into {{count}} pairs",
       "tooSmall_one": "One pair would get only {{count}} door — the territory is small for {{pairs}} pairs.",
       "tooSmall_other": "One pair would get only {{count}} doors — the territory is small for {{pairs}} pairs.",
-      "sources": "Map data sources"
+      "sources": "Map data sources",
+      "sheet": {
+        "print": "Print for the pairs",
+        "title": "{{number}} — pairs {{day}}",
+        "kicker": "Territory for pairs · {{day}}",
+        "pairs_one": "{{count}} pair",
+        "pairs_other": "{{count}} pairs",
+        "houses_one": "{{count}} house",
+        "houses_other": "{{count}} houses",
+        "doors_one": "{{count}} entrance",
+        "doors_other": "{{count}} entrances",
+        "commonStart": "everyone starts at ★",
+        "ownStart": "each pair has its own start",
+        "pair": "Pair {{n}}",
+        "noCalls_one": "The streets of this pair have {{count}} «do not call» address — ask the territory's holder.",
+        "noCalls_other": "The streets of this pair have {{count}} «do not call» addresses — ask the territory's holder.",
+        "walked": "walked",
+        "foot": "This sheet is for today only. It holds no «do not call» addresses — they are in the app. Destroy it after the ministry."
+      }
     },
     "part": {
       "gone": "This link no longer works",
@@ -8239,7 +8257,7 @@
         "minKm": "Shortest walk, km",
         "remoteMinutes": "Far out — drive longer than, min",
         "save": "Save the measure",
-        "reopenNote": "Decided proposals go back to the service committee for discussion.",
+        "reopenNote": "Only the decided proposals whose territories the new measure judges otherwise go back to the service committee for discussion. The rest stay decided.",
         "bad": "Check the numbers: a part may not be longer than the longest walk."
       },
       "figures": {

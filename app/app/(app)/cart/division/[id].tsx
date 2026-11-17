@@ -37,6 +37,7 @@ import {
   type MapRoute,
 } from '../../../../components/territories/TerritoryMap';
 import { StreetLine } from '../../../../components/territories/StreetLine';
+import { DivisionPrint } from '../../../../components/territories/DivisionPrint';
 import { BRAND, INK, LINE, MUTED, cardStyles } from '../../../../components/reports/ReportBits';
 import { siteOrigin } from '../../../../lib/territory-view';
 import {
@@ -409,6 +410,8 @@ export default function DivisionScreen() {
             {split.leftOut > 0 ? (
               <Text style={s.hint}>{t('territories.division.leftOut', { count: split.leftOut })}</Text>
             ) : null}
+            {/* On paper for a pair without a phone (17 November 2026). */}
+            <DivisionPrint d={d} parts={parts} />
             {offerComplete(parts, !!d.mayComplete) && ticks.queue.length === 0 ? (
               <View style={[cardStyles.card, s.card, s.completeCard]}>
                 <Text style={s.completeTitle}>{t('territories.division.completeAsk')}</Text>
