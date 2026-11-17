@@ -8857,7 +8857,11 @@
       "recutJoined": "Объединение применено",
       "recutCut": "Разрезание применено",
       "recutMade": "новые: {{list}}",
-      "recutArchived": "в архив: {{list}}"
+      "recutArchived": "в архив: {{list}}",
+      "splitMade": "Разделён на пары",
+      "splitAgain": "Деление на пары переделано",
+      "splitRemoved": "Деление на пары убрано",
+      "splitParts": "частей: {{count}}"
     },
     "line": {
       "transferredTo": "передан {{who}}",

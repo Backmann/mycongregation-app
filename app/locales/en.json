@@ -8517,7 +8517,11 @@
       "recutJoined": "Join applied",
       "recutCut": "Cut applied",
       "recutMade": "new: {{list}}",
-      "recutArchived": "archived: {{list}}"
+      "recutArchived": "archived: {{list}}",
+      "splitMade": "Divided for pairs",
+      "splitAgain": "Division for pairs redone",
+      "splitRemoved": "Division for pairs removed",
+      "splitParts": "parts: {{count}}"
     },
     "line": {
       "transferredTo": "handed on to {{who}}",

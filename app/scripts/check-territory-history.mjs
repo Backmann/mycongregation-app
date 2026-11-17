@@ -113,6 +113,15 @@ try {
   check('the territory itself: nothing readable', L({ kind: 'territory', entityType: 'territory', detail: { number: 'A01' } }),
     'Участок изменён | ');
 
+  // Live data, 17 November 2026: the division for pairs read as «Участок изменён».
+  check('divided for pairs', L({ kind: 'territory', entityType: 'territory', detail: { split: 'made', mode: 'together', parts: 3, doors: [10, 11, 9] } }),
+    'Разделён на пары | частей: 3');
+  check('divided for pairs (older shape)', L({ kind: 'territory', entityType: 'territory', detail: { split: 'made', parts: 2, houses: [4, 5] } }),
+    'Разделён на пары | частей: 2');
+  check('division redone', L({ kind: 'territory', entityType: 'territory', detail: { split: 'again', parts: 4 } }),
+    'Деление на пары переделано | частей: 4');
+  check('division removed', L({ kind: 'territory', entityType: 'territory', detail: { split: 'removed' } }),
+    'Деление на пары убрано | ');
   check('held back for a join', L({ kind: 'territory', entityType: 'territory', detail: { recut: 'held', number: 'A01' } }),
     'Придержан для объединения | ');
   check('a join applied', L({ kind: 'territory', entityType: 'territory', detail: { recut: 'applied', kind: 'join', kept: 'A01', made: [], archived: ['A02'] } }),

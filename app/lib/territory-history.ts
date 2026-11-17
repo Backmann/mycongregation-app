@@ -113,6 +113,15 @@ export function historyLine(
       // The re-cutting, where it reached the territories.
       const list = (v: unknown) =>
         Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+      // Divided into parts for pairs (13 November 2026), done on the day.
+      if (d.split === 'made' || d.split === 'again') {
+        const parts = typeof d.parts === 'number' ? d.parts : null;
+        return {
+          title: d.split === 'again' ? k('splitAgain') : k('splitMade'),
+          meta: parts ? k('splitParts', { count: parts }) : '',
+        };
+      }
+      if (d.split === 'removed') return { title: k('splitRemoved'), meta: '' };
       if (d.recut === 'held') return { title: k('recutHeld'), meta: '' };
       if (d.recut === 'released') return { title: k('recutReleased'), meta: '' };
       if (d.recut === 'unapplied') return { title: k('recutUnapplied'), meta: str(d.number) ?? '' };
