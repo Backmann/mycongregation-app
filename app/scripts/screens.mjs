@@ -463,6 +463,20 @@ async function dutiesWide(page) {
 }
 
 /**
+ * The circuit overseer's visit schedule on a laptop (audit, 17 November 2026):
+ * the screen showed none of the congregation's meetings when no settings
+ * version was in force TODAY — and the seed's first version starts later, so
+ * this frame is exactly that case.
+ */
+async function coScheduleWide(page) {
+  await page.goto(`${BASE}/cart/co-schedule`);
+  await page.getByText(/^График визита$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.waitForTimeout(2500);
+  await page.screenshot({ path: join(OUT, '34-co-schedule-desktop.png') });
+  await words(page, '34-co-schedule-desktop.png', ['График визита', 'Встреча в выходной день · \\d\\d:\\d\\d', 'Встреча для проповеди', 'Проживание'], ['График районного', 'Встреча собрания \\(будни\\)']);
+}
+
+/**
  * Wait for Expo to finish bundling before anything is measured.
  *
  * After a change Expo rebuilds the app, which took minutes on a cold start;
@@ -622,6 +636,7 @@ try {
   } else console.log('· 11-desktop-sunday.png — пропущено: воскресенья 27-го нет в списке');
   await cleaningWide(a);
   await dutiesWide(a);
+  await coScheduleWide(a);
 
   await a.setViewportSize(REAL_PHONE);
   await openFeed(a);
