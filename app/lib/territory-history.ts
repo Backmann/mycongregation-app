@@ -64,6 +64,13 @@ export function historyLine(
 
   switch (item.kind) {
     case 'given':
+      // Kept by the same holder for working again (17 November 2026).
+      if (d.again === true) {
+        return {
+          title: k('keptAgain', { who: holder }),
+          meta: join(day(d.dueOn) ? k('due', { date: day(d.dueOn) }) : null),
+        };
+      }
       return {
         title: k('given', { who: holder }),
         meta: join(day(d.dueOn) ? k('due', { date: day(d.dueOn) }) : null),

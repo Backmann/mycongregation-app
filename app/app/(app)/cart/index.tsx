@@ -202,27 +202,36 @@ export default function ServiceHubScreen() {
   // The whole section for those who keep or oversee it; for a holder or a
   // member of a group holding one, his own territories (11 November 2026).
   const myTerritories = ta?.mine ?? [];
-  const territories: Door[] = ta?.seesAll
-    ? [
-        {
-          key: 'territories',
-          title: t('territories.title'),
-          subtitle: ta.verified
-            ? t('territories.door.count', { count: ta.territories })
-            : t('territories.door.import'),
-          href: '/cart/territories',
-        },
-      ]
-    : myTerritories.length > 0
+  // «Мои участки» for everyone a territory may be given to — there he asks
+  // for one (17 November 2026); for those who keep or oversee the section,
+  // only when they hold one themselves.
+  const holdsOwn = myTerritories.some((m) => m.mine);
+  const showMine = ta?.seesAll ? holdsOwn : myTerritories.length > 0 || !!ta?.mayAsk;
+  const territories: Door[] = [
+    ...(ta?.seesAll
       ? [
           {
             key: 'territories',
             title: t('territories.title'),
-            subtitle: t('territories.door.mine'),
+            subtitle: ta.verified
+              ? t('territories.door.count', { count: ta.territories })
+              : t('territories.door.import'),
+            href: '/cart/territories',
+          },
+        ]
+      : []),
+    ...(showMine
+      ? [
+          {
+            key: 'myTerritories',
+            title: t('territories.my.title'),
+            subtitle:
+              myTerritories.length > 0 ? t('territories.door.mine') : t('territories.door.ask'),
             href: '/cart/my-territories',
           },
         ]
-      : [];
+      : []),
+  ];
   const cart: Door = {
     key: 'cart',
     title: t('service.publicWitnessing'),

@@ -191,6 +191,10 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // The journal of one territory (17 November 2026): the screen asks the
   // territory section itself (seesAll).
   '/cart/territory/journal/[id]': 'self',
+  // 17 November 2026: both ask the territory section themselves (seesAll /
+  // keeps).
+  '/cart/territory-coverage': 'self',
+  '/cart/territory-boundary': 'self',
   // The server decides: the keepers of the territories (15 November 2026).
   '/cart/territory/homes/[id]': 'self',
   '/cart/territory/new': 'self',

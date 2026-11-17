@@ -53,6 +53,9 @@ export function AssignmentSheet({
   const [method, setMethod] = useState<TerritoryMethod>('door_to_door');
   const [assigned, setAssigned] = useState('');
   const [end, setEnd] = useState<'open' | 'completed' | 'returned'>('open');
+  // «Что дальше» after «Участок обработан» (17 November 2026, book ch. 9
+  // §33): back to the territory servant, or kept for working again.
+  const [again, setAgain] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Removing asks twice: the first tap only turns the button red.
   const [sure, setSure] = useState(false);
@@ -61,6 +64,7 @@ export function AssignmentSheet({
     if (!action || !assignment) return;
     setError(null);
     setSure(false);
+    setAgain(false);
     setDay(
       action === 'edit'
         ? (assignment.completedOn ?? assignment.returnedOn ?? today)
@@ -84,7 +88,11 @@ export function AssignmentSheet({
     mutationFn: async () => {
       if (!assignment) return null;
       if (action === 'complete') {
-        return territoriesApi.complete(assignment.id, { completedOn: day, method });
+        return territoriesApi.complete(assignment.id, {
+          completedOn: day,
+          method,
+          ...(again ? { again: true } : {}),
+        });
       }
       if (action === 'return') {
         return territoriesApi.giveBack(assignment.id, { returnedOn: day });
@@ -218,6 +226,28 @@ export function AssignmentSheet({
         </View>
       ) : null}
 
+      {action === 'complete' ? (
+        <View style={s.methods}>
+          <Text style={s.label}>{t('territories.action.complete.next')}</Text>
+          {([false, true] as const).map((k) => (
+            <Pressable
+              key={String(k)}
+              onPress={() => setAgain(k)}
+              style={[s.option, again === k && s.optionOn]}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: again === k }}
+            >
+              <Text style={[s.optionTitle, again === k && s.optionTitleOn]}>
+                {k ? t('territories.action.complete.again') : t('territories.action.complete.back')}
+              </Text>
+              <Text style={[s.optionHint, again === k && s.optionHintOn]}>
+                {k ? t('territories.action.complete.againHint') : t('territories.action.complete.backHint')}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
       {action === 'return' ? <Text style={s.lead}>{t('territories.action.return.hint')}</Text> : null}
     </Sheet>
   );
@@ -232,6 +262,12 @@ const s = StyleSheet.create({
   chipOn: { backgroundColor: BRAND, borderColor: BRAND },
   chipText: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
   chipTextOn: { color: '#fff' },
+  option: { borderWidth: 1, borderColor: LINE, borderRadius: 14, padding: 12, marginBottom: 8, backgroundColor: '#fff' },
+  optionOn: { borderColor: BRAND, backgroundColor: BRAND },
+  optionTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: INK },
+  optionTitleOn: { color: '#fff' },
+  optionHint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 3, lineHeight: 17 },
+  optionHintOn: { color: '#d9ecef' },
   foot: { gap: 8 },
   error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c' },
   go: { backgroundColor: BRAND, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },

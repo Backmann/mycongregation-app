@@ -6239,7 +6239,12 @@
       "TERRITORY_NOT_GIVEN": "The territory is not given out at present.",
       "TERRITORY_RECUT_NOT_READY": "It cannot be applied now: something changed — a territory was given out, a meeting planned or a border moved. Reload the page.",
       "TERRITORY_RECUT_NO_CALLS": "Choose a part for every «do not visit» address.",
-      "TERRITORY_HELD_FOR_RECUT": "{{number}} is held back for a join decided by the service committee. «Give out anyway» gives it out."
+      "TERRITORY_HELD_FOR_RECUT": "{{number}} is held back for a join decided by the service committee. «Give out anyway» gives it out.",
+      "TERRITORY_ASK_KEEPER": "Only the territory servant takes a territory back or hands it on — talk to him.",
+      "TERRITORY_ASK_OVERDUE": "First work {{number}} — or talk to the territory servant.",
+      "TERRITORY_ASK_OPEN": "Your request is already with the territory servant.",
+      "TERRITORY_BOUNDARY_S54": "Enter the date of the branch's S-54 form.",
+      "TERRITORY_BOUNDARY_S54_DATE": "The S-54 date cannot be later than today or earlier than the S-54 of the boundary in force."
     }
   },
   "stage": {
@@ -7340,7 +7345,8 @@
       "count": "Territories: {{count}}",
       "import": "Bringing the records over",
       "mine": "Your territories and your group’s",
-      "due": "{{number}} · return by {{date}}"
+      "due": "{{number}} · work by {{date}}",
+      "ask": "Ask for a territory"
     },
     "import": {
       "computerOnly": "The records are brought over on a computer: open this section in a browser.",
@@ -7458,7 +7464,12 @@
     "action": {
       "complete": {
         "title": "Territory worked",
-        "confirm": "Mark as worked"
+        "confirm": "Mark as worked",
+        "next": "What next",
+        "back": "Return to the territory servant",
+        "backHint": "The territory becomes free for others. If you have a paper map, give it back.",
+        "again": "Keep it to work again",
+        "againHint": "A new S-13 line starts from this day, again for 4 months."
       },
       "return": {
         "title": "Return unworked",
@@ -7510,14 +7521,14 @@
       "months_other": "{{count}} months"
     },
     "my": {
-      "title": "My territory",
+      "title": "My territories",
       "none": "You and your group hold no territory right now.",
       "openMap": "Open the map",
       "openMapHint": "Opens on the website, without signing in again.",
       "since": "assigned {{date}}",
       "forGroup": "Group territory · {{group}}",
       "ofGroup": "Group territory · {{group}} · held by {{name}}",
-      "due": "Return by {{date}}",
+      "due": "Work by {{date}}",
       "left_one": "{{count}} day left",
       "left_other": "{{count}} days left",
       "late_one": "{{count}} day overdue",
@@ -7526,7 +7537,15 @@
       "noCalls_other": "Do not call: {{count}} addresses",
       "noCallsNone": "No do-not-call addresses",
       "noCallsRule": "Address only, no names or reasons. Seen by the holder, his group and those responsible.",
-      "meeting": "Meeting for field service: {{when}} · {{where}}"
+      "meeting": "Meeting for field service: {{when}} · {{where}}",
+      "progress": "About {{pct}}% worked",
+      "progressBy": "by the street marks",
+      "talkTo": "Cannot work it? Talk to the territory servant — {{name}}. Only he can take it back or hand it on.",
+      "talk": "Cannot work it? Talk to the territory servant — only he can take it back or hand it on.",
+      "past": "Past territories",
+      "pastWorked": "worked",
+      "pastReturned": "returned",
+      "pastRule": "Only your own records for the current and the previous service year."
     },
     "link": {
       "gone": "This link no longer works",
@@ -7961,7 +7980,13 @@
       "bannerSoon_one": "{{count}} territory due soon",
       "bannerSoon_other": "{{count}} territories due soon",
       "paperQueue_one": "Waiting to print: {{count}}",
-      "paperQueue_other": "Waiting to print: {{count}}"
+      "paperQueue_other": "Waiting to print: {{count}}",
+      "workedPct": "about {{pct}}% worked",
+      "asks": "Asking for a territory · {{count}}",
+      "askSince": "days asking: {{count}}",
+      "askGive": "Give…",
+      "askNotNow": "None free for now",
+      "askToday": "asked today"
     },
     "handover": {
       "title": "How will they get the map?",
@@ -8521,7 +8546,8 @@
       "splitMade": "Divided for pairs",
       "splitAgain": "Division for pairs redone",
       "splitRemoved": "Division for pairs removed",
-      "splitParts": "parts: {{count}}"
+      "splitParts": "parts: {{count}}",
+      "keptAgain": "Kept to work again: {{who}}"
     },
     "line": {
       "transferredTo": "handed on to {{who}}",
@@ -8539,7 +8565,7 @@
       "fresh": "New: 4 months",
       "choose": "Choose to whom",
       "go": "Hand on: {{name}}",
-      "preview": "On the S-13: {{from}} {{start}} → {{on}} · handed on; {{to}} from {{on}}.",
+      "preview": "On the S-13: {{from}} {{start}} → {{on}} · handed on; {{to}} from {{on}}",
       "tellBoth": "{{to}} gets «Territory {{number}} is yours», {{from}} gets «Territory {{number}} was handed on».",
       "tellNew": "{{to}} gets «Territory {{number}} is yours».",
       "tellOld": "{{from}} gets «Territory {{number}} was handed on».",
@@ -8579,10 +8605,79 @@
       "save": "Save",
       "add": "Add",
       "addNext": "Add and next",
-      "pastRule": "Not before {{date}}. Nobody is notified. Records of one territory never overlap.",
+      "pastRule": "Not before {{date}}; nobody is notified. Records of one territory never overlap.",
       "added": "Record added. You can enter the next one.",
       "heldNow": "The territory is checked out now — «Still checked out» only on the last record.",
       "addPast": "Add an earlier record"
+    },
+    "ask": {
+      "sent": "Request sent · {{date}}",
+      "waiting": "Your request is with the territory servant",
+      "waitingHint": "When a territory is given to you, you will get «Territory … is yours». If not for now, you will get a short answer.",
+      "cancel": "Withdraw the request",
+      "overdue": "You can ask for another territory once {{list}} is worked — or talk to the territory servant.",
+      "another": "Ask for another territory",
+      "none": "You have no territory now",
+      "hint": "Personal territories are given when there are enough. The territory servant will see your request and decide.",
+      "go": "Ask for a territory"
+    },
+    "coverage": {
+      "title": "Coverage in 12 months",
+      "within": "{{done}} of {{total}} territories worked",
+      "oneToTwo": "One to two years: {{count}}",
+      "overTwo": "2 years and longer: {{count}}",
+      "sinceYear": "Since 1 September: {{count}}",
+      "rule": "The aim: the whole territory at least once a year. Territories checked out count too: taken long ago and unworked — here as well. Business territories separately.",
+      "longLink": "Territories of 2 years and longer",
+      "longTitle": "Not worked for 2 years or longer",
+      "preliminaryTitle": "Preliminary",
+      "preliminary": "Records are kept in the app since {{date}} — earlier dates came from former records and may be inaccurate. Check them before talking with the circuit overseer.",
+      "preliminaryNoDate": "The dates came from former records and may be inaccurate — check them before talking with the circuit overseer.",
+      "longCount": "Territories: {{count}}",
+      "noneLong": "There are none.",
+      "lastWorked": "last worked {{date}}",
+      "never": "no record of being worked",
+      "heldSince": "checked out since {{date}}",
+      "free": "free",
+      "download": "Download the file for the circuit overseer's visit (PDF)",
+      "fileHint": "A separate file «Territories — not worked for 2 years or longer (preliminary)». Seen by the service committee, the territory servant, his assistant and administrators.",
+      "fileTitle": "Territories — not worked for 2 years or longer (preliminary)",
+      "fileAsOf": "as of {{date}}",
+      "colNumber": "Territory",
+      "colPlace": "Locality",
+      "colLast": "Last worked",
+      "colNow": "Now",
+      "noRecord": "No record of being worked: {{count}}",
+      "noRecordHint": "Territories with no record of being worked: {{count}}. They are not in the list or the file — check them against the paper S-13."
+    },
+    "wholeMap": {
+      "button": "Whole map",
+      "title": "Map of all territories",
+      "count": "Territories: {{count}}",
+      "legend": "grey — checked out",
+      "size": "Sheet size",
+      "show": "Show",
+      "plain": "Numbers only",
+      "status": "Free and checked out",
+      "hint": "All territories on one map with their borders and numbers, and the congregation's boundary. Numbers only, no names — it can hang in the hall.",
+      "print": "Print"
+    },
+    "boundary": {
+      "title": "Congregation boundary",
+      "now": "In force",
+      "byS54": "Per S-54 of {{date}}",
+      "noBasis": "No basis recorded",
+      "rule": "The branch sets the boundary. In the app it cannot be drawn or edited — only replaced with a new file from the branch.",
+      "s54Date": "Date of the S-54 form",
+      "saveS54": "Save the S-54 date",
+      "newTitle": "A new file came from the branch",
+      "newHint": "Upload the boundary file (KML or GeoJSON) — first you see which territories fall outside the new boundary.",
+      "pick": "Choose the boundary file",
+      "outside": "Outside the new boundary ({{count}}): {{list}}. They will have to be re-cut.",
+      "allInside": "All territories stay inside the new boundary.",
+      "replace": "Replace the boundary",
+      "history": "The old boundary stays in the history.",
+      "noArea": "the file holds no area"
     }
   },
   "notFoundPage": {

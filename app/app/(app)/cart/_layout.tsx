@@ -58,6 +58,8 @@ export default function CartLayout() {
       <Stack.Screen name="territory/[id]" options={{ title: t('territories.title') }} />
       <Stack.Screen name="territory/outline/[id]" options={{ title: t('territories.title') }} />
       <Stack.Screen name="territory/journal/[id]" options={{ title: t('territories.history.journal') }} />
+      <Stack.Screen name="territory-coverage" options={{ title: t('territories.coverage.longTitle') }} />
+      <Stack.Screen name="territory-boundary" options={{ title: t('territories.boundary.title') }} />
       <Stack.Screen name="territory/homes/[id]" options={{ title: t('territories.homes.title') }} />
       <Stack.Screen name="territory/new" options={{ title: t('territories.title') }} />
       <Stack.Screen name="division/[id]" options={{ title: t('territories.division.entry') }} />

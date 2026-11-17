@@ -72,7 +72,7 @@ try {
   check('split off', show(L('territory', { splitFrom: 'A01', number: 'A06' }, t, date)),
     ['Участок: A06', 'Выделен из участка: A01']);
   check('merge', show(L('territory', { merged: 'A02', number: 'A01', lastWorkedOn: '2026-04-04', noCallsMoved: 0 }, t, date)),
-    ['Участок: A01', 'Присоединён участок: A02', '«Последний раз пройден»: [2026-04-04]']);
+    ['Участок: A01', 'Присоединён участок: A02', '«Последний раз обработан»: [2026-04-04]']);
   check('merged away', show(L('territory', { archived: true, mergedInto: 'A01' }, t, date)),
     ['Объединён с участком: A01', 'Архив: убран в архив']);
   check('undo', show(L('territory', { undone: 'merge', number: 'A01' }, t, date)),
