@@ -6243,7 +6243,8 @@
       "TERRITORY_ASK_KEEPER": "Ein Gebiet zurücknehmen oder weitergeben kann nur der Gebietsdiener — sprechen Sie mit ihm.",
       "TERRITORY_ASK_OVERDUE": "Bearbeiten Sie zuerst {{number}} — oder sprechen Sie mit dem Gebietsdiener.",
       "TERRITORY_ASK_OPEN": "Ihre Bitte liegt bereits beim Gebietsdiener.",
-      "TERRITORY_BOUNDARY_S54": "Geben Sie das Datum des S-54 vom Zweigbüro an."
+      "TERRITORY_BOUNDARY_S54": "Geben Sie das Datum des S-54 vom Zweigbüro an.",
+      "TERRITORY_BOUNDARY_S54_DATE": "Das S-54-Datum darf nicht nach heute und nicht vor dem S-54 der geltenden Grenze liegen."
     }
   },
   "stage": {

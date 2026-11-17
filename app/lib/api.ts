@@ -8072,7 +8072,8 @@ export interface TerritoryDesk {
    */
   namesGo?: { on: string; count: number } | null;
   /** Open «Попросить участок», oldest first (17 November 2026). */
-  requests?: { id: string; publisherId: string; createdAt: string }[];
+  /** askedOn: the day asked, in the congregation's own zone (an older server leaves it out). */
+  requests?: { id: string; publisherId: string; createdAt: string; askedOn?: string }[];
   /** How far the overdue territories are worked, per cent, by territory id. */
   progress?: Record<string, number>;
   /** How the whole territory is covered in a year. */
@@ -8478,10 +8479,11 @@ export const territoriesApi = {
     (await api.patch<{ id: string; s54On: string }>("/territories/boundary/s54", { s54On })).data,
   previewBoundary: async (geometry: unknown) =>
     (await api.post<{ outside: string[] }>("/territories/boundary/preview", { geometry })).data,
-  replaceBoundary: async (geometry: unknown, s54On: string) =>
+  replaceBoundary: async (geometry: unknown, s54On: string, description?: Record<string, string>) =>
     (
       await api.post<{ id: string; s54On: string }>("/territories/boundary/replace", {
         geometry,
+        ...(description && Object.keys(description).length ? { description } : {}),
         s54On,
       })
     ).data,

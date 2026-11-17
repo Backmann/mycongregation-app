@@ -6243,7 +6243,8 @@
       "TERRITORY_ASK_KEEPER": "Only the territory servant takes a territory back or hands it on — talk to him.",
       "TERRITORY_ASK_OVERDUE": "First work {{number}} — or talk to the territory servant.",
       "TERRITORY_ASK_OPEN": "Your request is already with the territory servant.",
-      "TERRITORY_BOUNDARY_S54": "Enter the date of the branch's S-54 form."
+      "TERRITORY_BOUNDARY_S54": "Enter the date of the branch's S-54 form.",
+      "TERRITORY_BOUNDARY_S54_DATE": "The S-54 date cannot be later than today or earlier than the S-54 of the boundary in force."
     }
   },
   "stage": {

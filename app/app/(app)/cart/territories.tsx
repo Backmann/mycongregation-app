@@ -563,6 +563,17 @@ export default function TerritoriesScreen() {
               style={s.campaignBtn}
               textStyle={s.campaignText}
             />
+            {/* The service committee as well as the keepers (independent
+                review, 17 November 2026): the list for the circuit
+                overseer's visit. */}
+            <Pressable
+              onPress={() => router.push('/cart/territory-coverage' as never)}
+              style={s.campaignBtn}
+              accessibilityRole="link"
+            >
+              <Ionicons name="time-outline" size={17} color={BRAND} />
+              <Text style={s.campaignText}>{t('territories.coverage.longLink')}</Text>
+            </Pressable>
             {a.keeps ? (
               <Pressable
                 onPress={() => router.push('/cart/territory-boundary' as never)}
@@ -709,6 +720,17 @@ export default function TerritoriesScreen() {
               style={s.campaignBtn}
               textStyle={s.campaignText}
             />
+            {/* The service committee as well as the keepers (independent
+                review, 17 November 2026): the list for the circuit
+                overseer's visit. */}
+            <Pressable
+              onPress={() => router.push('/cart/territory-coverage' as never)}
+              style={s.campaignBtn}
+              accessibilityRole="link"
+            >
+              <Ionicons name="time-outline" size={17} color={BRAND} />
+              <Text style={s.campaignText}>{t('territories.coverage.longLink')}</Text>
+            </Pressable>
             {a.keeps ? (
               <Pressable
                 onPress={() => router.push('/cart/territory-boundary' as never)}

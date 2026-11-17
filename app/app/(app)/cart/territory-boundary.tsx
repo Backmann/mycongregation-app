@@ -41,7 +41,12 @@ export default function TerritoryBoundaryScreen() {
     throwOnError: failsScreen,
   });
   const [s54, setS54] = useState('');
-  const [file, setFile] = useState<{ name: string; geometry: Geometry } | null>(null);
+  const [file, setFile] = useState<{
+    name: string;
+    geometry: Geometry;
+    /** The branch file's borders north, east, south, west (KML). */
+    description?: Record<string, string>;
+  } | null>(null);
   const [newS54, setNewS54] = useState('');
   const [outside, setOutside] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +61,7 @@ export default function TerritoryBoundaryScreen() {
     onError: (e) => setError(extractErrorMessage(e)),
   });
   const replace = useMutation({
-    mutationFn: () => territoriesApi.replaceBoundary(file!.geometry, newS54),
+    mutationFn: () => territoriesApi.replaceBoundary(file!.geometry, newS54, file!.description),
     onSuccess: () => {
       setFile(null);
       setOutside(null);
@@ -76,11 +81,14 @@ export default function TerritoryBoundaryScreen() {
       if (!asset) return;
       const web = (asset as unknown as { file?: Blob }).file;
       const text = web ? await web.text() : await (await fetch(asset.uri)).text();
-      const geometry = /<kml|<coordinates>/i.test(text)
-        ? (readBoundaryKml(text).geometry as Geometry)
-        : boundaryFromGeoJson(text);
+      const kml = /<kml|<coordinates>/i.test(text) ? readBoundaryKml(text) : null;
+      const geometry = kml ? (kml.geometry as Geometry) : boundaryFromGeoJson(text);
       if (!geometry) throw new Error(t('territories.boundary.noArea'));
-      setFile({ name: asset.name, geometry });
+      setFile({
+        name: asset.name,
+        geometry,
+        description: kml?.description as Record<string, string> | undefined,
+      });
       setOutside((await territoriesApi.previewBoundary(geometry)).outside);
     } catch (e) {
       setError(t('territories.import.fileUnreadable', { reason: extractErrorMessage(e) }));

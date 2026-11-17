@@ -487,7 +487,7 @@ function Home({
                         </Text>
                         <Text style={s.sub}>
                           {t('territories.desk.askSince', {
-                            count: Math.max(0, daysBetween(r.createdAt.slice(0, 10), today)),
+                            count: Math.max(0, daysBetween(r.askedOn ?? r.createdAt.slice(0, 10), today)),
                           })}
                           {' · '}
                           {e.holds.length
