@@ -7985,7 +7985,8 @@
       "asks": "Asking for a territory · {{count}}",
       "askSince": "days asking: {{count}}",
       "askGive": "Give…",
-      "askNotNow": "None free for now"
+      "askNotNow": "None free for now",
+      "askToday": "asked today"
     },
     "handover": {
       "title": "How will they get the map?",

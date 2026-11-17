@@ -486,9 +486,12 @@ function Home({
                           {e.name}
                         </Text>
                         <Text style={s.sub}>
-                          {t('territories.desk.askSince', {
-                            count: Math.max(0, daysBetween(r.askedOn ?? r.createdAt.slice(0, 10), today)),
-                          })}
+                          {(() => {
+                            const days = Math.max(0, daysBetween(r.askedOn ?? r.createdAt.slice(0, 10), today));
+                            return days === 0
+                              ? t('territories.desk.askToday')
+                              : t('territories.desk.askSince', { count: days });
+                          })()}
                           {' · '}
                           {e.holds.length
                             ? e.holds.map((h) => h.number).join(', ')

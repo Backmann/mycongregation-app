@@ -7985,7 +7985,8 @@
       "asks": "Bitten um ein Gebiet · {{count}}",
       "askSince": "Tage: {{count}}",
       "askGive": "Zuteilen…",
-      "askNotNow": "Zurzeit keins frei"
+      "askNotNow": "Zurzeit keins frei",
+      "askToday": "heute gebeten"
     },
     "handover": {
       "title": "Wie bekommt er die Karte?",
