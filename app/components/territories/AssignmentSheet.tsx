@@ -62,6 +62,11 @@ export function AssignmentSheet({
   // «Что дальше» after «Участок обработан» (17 November 2026, book ch. 9
   // §33): back to the territory servant, or kept for working again.
   const [again, setAgain] = useState(false);
+  // A re-cutting decided while the sheet is open: the one choice left is
+  // the one shown as chosen (independent review, 17 November 2026).
+  useEffect(() => {
+    if (awaitsRecut) setAgain(false);
+  }, [awaitsRecut]);
   const [error, setError] = useState<string | null>(null);
   // Removing asks twice: the first tap only turns the button red.
   const [sure, setSure] = useState(false);
