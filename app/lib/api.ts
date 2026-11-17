@@ -7911,6 +7911,8 @@ export interface TerritoryAccess {
   territories: number;
   /** The congregation's map file is in place (the server's map job ran). */
   mapReady: boolean;
+  /** May ask for a territory — «Мои участки» for him (17 November 2026). */
+  mayAsk?: boolean;
   /** The territories the user has a part in: his own, his group's. */
   mine: {
     id: string;
@@ -8069,6 +8071,12 @@ export interface TerritoryDesk {
    * 2026): on that day `count` lines will read «—». Null otherwise.
    */
   namesGo?: { on: string; count: number } | null;
+  /** Open «Попросить участок», oldest first (17 November 2026). */
+  requests?: { id: string; publisherId: string; createdAt: string }[];
+  /** How far the overdue territories are worked, per cent, by territory id. */
+  progress?: Record<string, number>;
+  /** How the whole territory is covered in a year. */
+  coverage?: { residential: TerritoryCoverage; business: TerritoryCoverage };
   people: {
     publisherId: string;
     name: string;
@@ -8127,6 +8135,57 @@ export interface TerritoryBoundary {
   geometry: TerritoryGeometry;
   description: { north?: string; east?: string; south?: string; west?: string } | null;
   validFrom: string | null;
+  /** The branch's S-54 this boundary follows (17 November 2026). */
+  s54On?: string | null;
+}
+
+/** «Охват за год» (17 November 2026). */
+export interface TerritoryCoverage {
+  total: number;
+  within12: number;
+  oneToTwo: number;
+  overTwo: number;
+  /** No record of ever being worked: unknown, not «two years» (an older server leaves it out). */
+  noRecord?: number;
+  sinceYear: number;
+}
+
+/** «Мои участки» beside the territories themselves (17 November 2026). */
+export interface TerritoryMe {
+  /** May ask the territory servant for a personal territory. */
+  mayAsk: boolean;
+  request: { id: string; createdAt: string } | null;
+  /** His own territories past their day: no new request until done. */
+  overdue: { number: string; dueOn: string | null }[];
+  /** The territory servant to talk to. */
+  keeper: string | null;
+  past: {
+    number: string;
+    assignedOn: string;
+    completedOn: string | null;
+    returnedOn: string | null;
+    transferred: boolean;
+    method: TerritoryMethod | null;
+  }[];
+  /** How far each territory he holds is worked, per cent; absent: unmarked. */
+  progress: Record<string, number>;
+}
+
+/** «Не обработаны 2 года и дольше». */
+export interface TerritoryLongUnworked {
+  today: string;
+  /** When the records in the app were confirmed: older days came over. */
+  recordsFrom: string | null;
+  /** Territories with no record of being worked: not in the list, to check by hand. */
+  noRecord?: number;
+  items: {
+    territoryId: string;
+    number: string;
+    locality: string | null;
+    category: TerritoryCategory;
+    lastWorkedOn: string | null;
+    heldSince: string | null;
+  }[];
 }
 
 export type TerritoryCategory = "residential" | "business";
@@ -8406,6 +8465,26 @@ export const territoriesApi = {
   reset: async () => (await api.post("/territories/import/reset")).data,
   verify: async () =>
     (await api.post<{ verifiedAt: string }>("/territories/verify")).data,
+  /** «Мои участки»: past lines, request, progress (17 November 2026). */
+  me: async () => (await api.get<TerritoryMe>("/territories/me")).data,
+  ask: async () =>
+    (await api.post<{ id: string; createdAt: string }>("/territories/requests", {})).data,
+  cancelAsk: async () => (await api.delete<{ closed: number }>("/territories/requests/mine")).data,
+  notNow: async (requestId: string) =>
+    (await api.post<{ closed: number }>(`/territories/requests/${requestId}/not-now`, {})).data,
+  longUnworked: async () =>
+    (await api.get<TerritoryLongUnworked>("/territories/coverage/long")).data,
+  setS54: async (s54On: string) =>
+    (await api.patch<{ id: string; s54On: string }>("/territories/boundary/s54", { s54On })).data,
+  previewBoundary: async (geometry: unknown) =>
+    (await api.post<{ outside: string[] }>("/territories/boundary/preview", { geometry })).data,
+  replaceBoundary: async (geometry: unknown, s54On: string) =>
+    (
+      await api.post<{ id: string; s54On: string }>("/territories/boundary/replace", {
+        geometry,
+        s54On,
+      })
+    ).data,
   boundary: async (): Promise<TerritoryBoundary | null> =>
     (await api.get<TerritoryBoundary | null>("/territories/boundary")).data || null,
   detail: async (id: string): Promise<TerritoryDetail> =>
@@ -8504,7 +8583,7 @@ export const territoriesApi = {
   ) => (await api.post<TerritoryAssignmentRow>(`/territories/${id}/assign`, body)).data,
   complete: async (
     assignmentId: string,
-    body: { completedOn?: string; method?: TerritoryMethod } = {},
+    body: { completedOn?: string; method?: TerritoryMethod; again?: boolean } = {},
   ) =>
     (
       await api.post<TerritoryAssignmentRow>(

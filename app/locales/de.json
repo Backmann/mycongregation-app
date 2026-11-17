@@ -6239,7 +6239,11 @@
       "TERRITORY_NOT_GIVEN": "Das Gebiet ist zurzeit nicht ausgegeben.",
       "TERRITORY_RECUT_NOT_READY": "Jetzt nicht anwendbar: etwas hat sich geändert — ein Gebiet ausgegeben, ein Treffpunkt geplant oder eine Grenze verschoben. Laden Sie die Seite neu.",
       "TERRITORY_RECUT_NO_CALLS": "Wählen Sie für jede Adresse «nicht besuchen» einen Teil.",
-      "TERRITORY_HELD_FOR_RECUT": "{{number}} ist laut Beschluss des Dienstkomitees für die Zusammenlegung zurückgehalten. Ausgeben geht mit «Trotzdem ausgeben»."
+      "TERRITORY_HELD_FOR_RECUT": "{{number}} ist laut Beschluss des Dienstkomitees für die Zusammenlegung zurückgehalten. Ausgeben geht mit «Trotzdem ausgeben».",
+      "TERRITORY_ASK_KEEPER": "Ein Gebiet zurücknehmen oder weitergeben kann nur der Gebietsdiener — sprechen Sie mit ihm.",
+      "TERRITORY_ASK_OVERDUE": "Bearbeiten Sie zuerst {{number}} — oder sprechen Sie mit dem Gebietsdiener.",
+      "TERRITORY_ASK_OPEN": "Ihre Bitte liegt bereits beim Gebietsdiener.",
+      "TERRITORY_BOUNDARY_S54": "Geben Sie das Datum des S-54 vom Zweigbüro an."
     }
   },
   "stage": {
@@ -7340,7 +7344,8 @@
       "count": "Gebiete: {{count}}",
       "import": "Datenübernahme und Abgleich",
       "mine": "Ihre Gebiete und die Ihrer Gruppe",
-      "due": "{{number}} · zurück bis {{date}}"
+      "due": "{{number}} · bearbeiten bis {{date}}",
+      "ask": "Um ein Gebiet bitten"
     },
     "import": {
       "computerOnly": "Die Daten werden am Computer übernommen: öffnen Sie diesen Bereich im Browser.",
@@ -7458,7 +7463,12 @@
     "action": {
       "complete": {
         "title": "Gebiet bearbeitet",
-        "confirm": "Als bearbeitet markieren"
+        "confirm": "Als bearbeitet markieren",
+        "next": "Wie weiter",
+        "back": "Dem Gebietsdiener zurückgeben",
+        "backHint": "Das Gebiet wird für andere frei. Wenn Sie eine Papierkarte haben, geben Sie sie zurück.",
+        "again": "Zum erneuten Bearbeiten behalten",
+        "againHint": "Im S-13 beginnt ab diesem Tag eine neue Zeile, wieder für 4 Monate."
       },
       "return": {
         "title": "Unbearbeitet zurückgeben",
@@ -7510,14 +7520,14 @@
       "months_other": "{{count}} Monate"
     },
     "my": {
-      "title": "Mein Gebiet",
+      "title": "Meine Gebiete",
       "none": "Sie und Ihre Gruppe haben gerade kein Gebiet.",
       "openMap": "Karte öffnen",
       "openMapHint": "Öffnet sich auf der Website, ohne erneute Anmeldung.",
       "since": "ausgegeben {{date}}",
       "forGroup": "Gruppengebiet · {{group}}",
       "ofGroup": "Gruppengebiet · {{group}} · bei {{name}}",
-      "due": "Zurück bis {{date}}",
+      "due": "Bearbeiten bis {{date}}",
       "left_one": "noch {{count}} Tag",
       "left_other": "noch {{count}} Tage",
       "late_one": "{{count}} Tag überfällig",
@@ -7526,7 +7536,15 @@
       "noCalls_other": "Nicht besuchen: {{count}} Adressen",
       "noCallsNone": "Keine Nicht-besuchen-Adressen",
       "noCallsRule": "Nur die Adresse, ohne Namen und Gründe. Sichtbar für den Inhaber, seine Gruppe und die Verantwortlichen.",
-      "meeting": "Treffpunkt: {{when}} · {{where}}"
+      "meeting": "Treffpunkt: {{when}} · {{where}}",
+      "progress": "Etwa {{pct}} % bearbeitet",
+      "progressBy": "nach den Straßenmarkierungen",
+      "talkTo": "Sie schaffen es nicht? Sprechen Sie mit dem Gebietsdiener — {{name}}. Nur er nimmt ein Gebiet zurück oder gibt es weiter.",
+      "talk": "Sie schaffen es nicht? Sprechen Sie mit dem Gebietsdiener — nur er nimmt ein Gebiet zurück oder gibt es weiter.",
+      "past": "Frühere Gebiete",
+      "pastWorked": "bearbeitet",
+      "pastReturned": "zurückgegeben",
+      "pastRule": "Nur Ihre eigenen Einträge für das laufende und das vorige Dienstjahr."
     },
     "link": {
       "gone": "Dieser Link funktioniert nicht mehr",
@@ -7961,7 +7979,12 @@
       "bannerSoon_one": "{{count}} Gebiet bald fällig",
       "bannerSoon_other": "{{count}} Gebiete bald fällig",
       "paperQueue_one": "Zum Drucken: {{count}}",
-      "paperQueue_other": "Zum Drucken: {{count}}"
+      "paperQueue_other": "Zum Drucken: {{count}}",
+      "workedPct": "etwa {{pct}} % bearbeitet",
+      "asks": "Bitten um ein Gebiet · {{count}}",
+      "askSince": "Tage: {{count}}",
+      "askGive": "Zuteilen…",
+      "askNotNow": "Zurzeit keins frei"
     },
     "handover": {
       "title": "Wie bekommt er die Karte?",
@@ -8521,7 +8544,8 @@
       "splitMade": "Für Paare aufgeteilt",
       "splitAgain": "Aufteilung für Paare neu gemacht",
       "splitRemoved": "Aufteilung für Paare entfernt",
-      "splitParts": "Teile: {{count}}"
+      "splitParts": "Teile: {{count}}",
+      "keptAgain": "Zum erneuten Bearbeiten behalten: {{who}}"
     },
     "line": {
       "transferredTo": "weitergegeben an {{who}}",
@@ -8539,7 +8563,7 @@
       "fresh": "Neu: 4 Monate",
       "choose": "Wählen Sie, an wen",
       "go": "Weitergeben: {{name}}",
-      "preview": "Im S-13: {{from}} {{start}} → {{on}} · weitergegeben; {{to}} ab {{on}}.",
+      "preview": "Im S-13: {{from}} {{start}} → {{on}} · weitergegeben; {{to}} ab {{on}}",
       "tellBoth": "{{to}} erhält «Gebiet {{number}} ist Ihnen zugeteilt», {{from}} — «Gebiet {{number}} wurde weitergegeben».",
       "tellNew": "{{to}} erhält «Gebiet {{number}} ist Ihnen zugeteilt».",
       "tellOld": "{{from}} erhält «Gebiet {{number}} wurde weitergegeben».",
@@ -8579,10 +8603,79 @@
       "save": "Speichern",
       "add": "Hinzufügen",
       "addNext": "Hinzufügen und nächster",
-      "pastRule": "Nicht vor {{date}}. Niemand wird benachrichtigt. Einträge eines Gebiets überschneiden sich nie.",
+      "pastRule": "Nicht vor {{date}}; niemand wird benachrichtigt. Einträge eines Gebiets überschneiden sich nie.",
       "added": "Eintrag hinzugefügt. Sie können den nächsten eintragen.",
       "heldNow": "Das Gebiet ist gerade ausgegeben — «Noch ausgegeben» nur beim letzten Eintrag.",
       "addPast": "Früheren Eintrag hinzufügen"
+    },
+    "ask": {
+      "sent": "Bitte gesendet · {{date}}",
+      "waiting": "Ihre Bitte liegt beim Gebietsdiener",
+      "waitingHint": "Wenn Ihnen ein Gebiet zugeteilt wird, erhalten Sie «Gebiet … ist Ihnen zugeteilt». Wenn es noch nicht geht, kommt eine kurze Antwort.",
+      "cancel": "Bitte zurückziehen",
+      "overdue": "Um ein weiteres Gebiet können Sie bitten, sobald {{list}} bearbeitet ist — oder sprechen Sie mit dem Gebietsdiener.",
+      "another": "Um ein weiteres Gebiet bitten",
+      "none": "Sie haben zurzeit kein Gebiet",
+      "hint": "Persönliche Gebiete gibt es, wenn genug vorhanden sind. Der Gebietsdiener sieht Ihre Bitte und entscheidet.",
+      "go": "Um ein Gebiet bitten"
+    },
+    "coverage": {
+      "title": "Abdeckung in 12 Monaten",
+      "within": "{{done}} von {{total}} Gebieten bearbeitet",
+      "oneToTwo": "Ein bis zwei Jahre: {{count}}",
+      "overTwo": "2 Jahre und länger: {{count}}",
+      "sinceYear": "Seit 1. September: {{count}}",
+      "rule": "Ziel: das ganze Gebiet mindestens einmal im Jahr. Ausgegebene Gebiete zählen mit: lange ausgegeben und nicht bearbeitet — ebenfalls hier. Geschäftsgebiete gesondert.",
+      "longLink": "Gebiete von 2 Jahren und länger",
+      "longTitle": "2 Jahre und länger nicht bearbeitet",
+      "preliminaryTitle": "Vorläufig",
+      "preliminary": "In der App wird seit {{date}} geführt — frühere Daten stammen aus bisherigen Aufzeichnungen und können ungenau sein. Prüfen Sie sie vor dem Gespräch mit dem Kreisaufseher.",
+      "preliminaryNoDate": "Die Daten stammen aus bisherigen Aufzeichnungen und können ungenau sein — prüfen Sie sie vor dem Gespräch mit dem Kreisaufseher.",
+      "longCount": "Gebiete: {{count}}",
+      "noneLong": "Keine.",
+      "lastWorked": "zuletzt bearbeitet {{date}}",
+      "never": "keine Aufzeichnung über Bearbeitung",
+      "heldSince": "ausgegeben seit {{date}}",
+      "free": "frei",
+      "download": "Datei für den Besuch des Kreisaufsehers herunterladen (PDF)",
+      "fileHint": "Eine eigene Datei «Gebiete — 2 Jahre und länger nicht bearbeitet (vorläufig)». Sichtbar für das Dienstkomitee, den Gebietsdiener, seinen Gehilfen und Administratoren.",
+      "fileTitle": "Gebiete — 2 Jahre und länger nicht bearbeitet (vorläufig)",
+      "fileAsOf": "Stand {{date}}",
+      "colNumber": "Gebiet",
+      "colPlace": "Ort",
+      "colLast": "Zuletzt bearbeitet",
+      "colNow": "Jetzt",
+      "noRecord": "Keine Aufzeichnung über Bearbeitung: {{count}}",
+      "noRecordHint": "Gebiete ohne Aufzeichnung über Bearbeitung: {{count}}. Sie stehen nicht in der Liste und nicht in der Datei — gleichen Sie sie mit den S-13 auf Papier ab."
+    },
+    "wholeMap": {
+      "button": "Gesamtkarte",
+      "title": "Karte aller Gebiete",
+      "count": "Gebiete: {{count}}",
+      "legend": "grau — ausgegeben",
+      "size": "Blattgröße",
+      "show": "Zeigen",
+      "plain": "Nur Nummern",
+      "status": "Frei und ausgegeben",
+      "hint": "Alle Gebiete auf einer Karte mit Grenzen und Nummern, dazu die Versammlungsgrenze. Nur Nummern, keine Namen — sie kann im Saal hängen.",
+      "print": "Drucken"
+    },
+    "boundary": {
+      "title": "Versammlungsgrenze",
+      "now": "Gültig",
+      "byS54": "Nach S-54 vom {{date}}",
+      "noBasis": "Grundlage nicht angegeben",
+      "rule": "Die Grenze legt das Zweigbüro fest. In der App kann sie nicht gezeichnet oder bearbeitet werden — nur durch eine neue Datei vom Zweigbüro ersetzt.",
+      "s54Date": "Datum des Formulars S-54",
+      "saveS54": "S-54-Datum speichern",
+      "newTitle": "Eine neue Datei vom Zweigbüro ist da",
+      "newHint": "Laden Sie die Grenzdatei (KML oder GeoJSON) hoch — zuerst sehen Sie, welche Gebiete außerhalb der neuen Grenze liegen.",
+      "pick": "Grenzdatei wählen",
+      "outside": "Außerhalb der neuen Grenze ({{count}}): {{list}}. Sie müssen neu aufgeteilt werden.",
+      "allInside": "Alle Gebiete bleiben innerhalb der neuen Grenze.",
+      "replace": "Grenze ersetzen",
+      "history": "Die alte Grenze bleibt in der Geschichte.",
+      "noArea": "die Datei enthält keine Fläche"
     }
   },
   "notFoundPage": {

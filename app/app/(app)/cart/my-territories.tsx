@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
-import { territoriesApi, type MyTerritory } from '../../../lib/api';
+import { extractErrorMessage, territoriesApi, type MyTerritory, type TerritoryMe } from '../../../lib/api';
 import { failsScreen } from '../../../lib/screen-failure';
 import { LoadFailure } from '../../../components/LoadFailure';
 import { TerritoryMap } from '../../../components/territories/TerritoryMap';
@@ -27,12 +27,17 @@ import { BusinessList, pointsOf, useBusinesses } from '../../../components/terri
 import { DivisionButton } from '../../../components/territories/DivisionButton';
 
 /**
- * «Мой участок» (11 November 2026; mockup «Мой участок»).
+ * «Мои участки» (11 November 2026; since 17 November 2026 by mockup boards
+ * 7–11 and «Организованы…» ch. 9 §31–34).
  *
  * The territories the user walks: his own, and those held for his group
  * (the members see them too, with the «не беспокоить» addresses — they are
- * the ones knocking). Only the holder closes or extends; «Маршрут» hands
- * the place to the phone's own navigation.
+ * the ones knocking). A territory is the holder's duty: he sees what he took
+ * on (the day it is to be worked by, how far it is), reports it worked and
+ * keeps it or gives it back, and once takes a month more. Returning it
+ * unworked or handing it on is the territory servant's decision after a
+ * word with him — the screen names him. Without a territory: «Попросить
+ * участок»; not while one of his is overdue. Below: his own past lines.
  */
 export default function MyTerritoriesScreen() {
   const { t } = useTranslation();
@@ -41,9 +46,14 @@ export default function MyTerritoriesScreen() {
     queryFn: () => territoriesApi.mine(),
     throwOnError: failsScreen,
   });
+  const meQ = useQuery({
+    queryKey: ['territories', 'me'],
+    queryFn: () => territoriesApi.me(),
+    throwOnError: failsScreen,
+  });
   const [acting, setActing] = useState<{ action: AssignmentAction; item: MyTerritory } | null>(null);
 
-  if (q.isLoading) {
+  if (q.isLoading || meQ.isLoading) {
     return (
       <View style={s.center}>
         <ActivityIndicator color={BRAND} />
@@ -51,26 +61,36 @@ export default function MyTerritoriesScreen() {
     );
   }
   if (q.error) return <LoadFailure error={q.error} onRetry={() => q.refetch()} />;
+  if (meQ.error) return <LoadFailure error={meQ.error} onRetry={() => meQ.refetch()} />;
+  const me = meQ.data!;
   // His own first, then his group's; each by the day it is due.
   const items = [...(q.data ?? [])].sort(
     (x, y) =>
       Number(y.assignment.mine) - Number(x.assignment.mine) ||
       (x.assignment.dueOn ?? '').localeCompare(y.assignment.dueOn ?? ''),
   );
+  const ownCount = items.filter((i) => i.assignment.mine).length;
 
   return (
     <KeyboardScroll style={s.screen} contentContainerStyle={s.content}>
       <MyMeetings />
-      {items.length === 0 ? (
+      {items.length === 0 && !me.mayAsk ? (
         <View style={[cardStyles.card, s.emptyCard]}>
           <Ionicons name="map-outline" size={28} color="#94a3b8" />
           <Text style={s.emptyText}>{t('territories.my.none')}</Text>
         </View>
-      ) : (
-        items.map((item) => (
-          <Item key={item.assignment.id} item={item} onAct={(action) => setActing({ action, item })} />
-        ))
-      )}
+      ) : null}
+      {items.map((item) => (
+        <Item
+          key={item.assignment.id}
+          item={item}
+          progress={me.progress[item.id] ?? null}
+          keeper={me.keeper}
+          onAct={(action) => setActing({ action, item })}
+        />
+      ))}
+      {me.mayAsk ? <Ask me={me} holds={ownCount > 0} /> : null}
+      {me.past.length > 0 ? <Past me={me} /> : null}
       <AssignmentSheet
         action={acting?.action ?? null}
         assignment={
@@ -93,7 +113,133 @@ export default function MyTerritoriesScreen() {
   );
 }
 
-function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction) => void }) {
+/**
+ * «Попросить участок» — asked of the territory servant (ch. 9 §32). With
+ * none: a card; with some: a quiet line. Not while one of his is overdue.
+ */
+function Ask({ me, holds }: { me: TerritoryMe; holds: boolean }) {
+  const { t, i18n } = useTranslation();
+  const qc = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  const refresh = () => void qc.invalidateQueries({ queryKey: ['territories', 'me'] });
+  const ask = useMutation({
+    mutationFn: () => territoriesApi.ask(),
+    onSuccess: refresh,
+    onError: (e) => setError(extractErrorMessage(e)),
+  });
+  const cancel = useMutation({
+    mutationFn: () => territoriesApi.cancelAsk(),
+    onSuccess: refresh,
+    onError: (e) => setError(extractErrorMessage(e)),
+  });
+  const busy = ask.isPending || cancel.isPending;
+  if (me.request) {
+    return (
+      <View style={[cardStyles.card, s.askCard]}>
+        <Text style={s.kicker}>
+          {t('territories.ask.sent', {
+            date: formatDayShort(me.request.createdAt.slice(0, 10), i18n.language),
+          })}
+        </Text>
+        <Text style={s.askTitle}>{t('territories.ask.waiting')}</Text>
+        <Text style={s.askText}>{t('territories.ask.waitingHint')}</Text>
+        {error ? <Text style={s.error}>{error}</Text> : null}
+        <Pressable
+          onPress={() => cancel.mutate()}
+          disabled={busy}
+          style={({ pressed }) => [s.btn, s.btnSelf, pressed && { opacity: 0.7 }]}
+          accessibilityRole="button"
+        >
+          <Text style={s.btnText}>{t('territories.ask.cancel')}</Text>
+        </Pressable>
+      </View>
+    );
+  }
+  if (me.overdue.length > 0) {
+    return (
+      <Text style={s.quiet}>
+        {t('territories.ask.overdue', { list: me.overdue.map((o) => o.number).join(', ') })}
+      </Text>
+    );
+  }
+  if (holds) {
+    return (
+      <View style={{ alignItems: 'center', gap: 6 }}>
+        <Pressable
+          onPress={() => ask.mutate()}
+          disabled={busy}
+          style={({ pressed }) => [s.more, pressed && { opacity: 0.6 }]}
+          accessibilityRole="button"
+        >
+          <Ionicons name="add" size={18} color={BRAND} />
+          <Text style={s.moreText}>{t('territories.ask.another')}</Text>
+        </Pressable>
+        {error ? <Text style={s.error}>{error}</Text> : null}
+      </View>
+    );
+  }
+  return (
+    <View style={[cardStyles.card, s.askCard]}>
+      <Text style={s.askTitle}>{t('territories.ask.none')}</Text>
+      <Text style={s.askText}>{t('territories.ask.hint')}</Text>
+      {error ? <Text style={s.error}>{error}</Text> : null}
+      <Pressable
+        onPress={() => ask.mutate()}
+        disabled={busy}
+        style={({ pressed }) => [s.btn, s.btnPrimary, s.btnSelf, pressed && { opacity: 0.7 }]}
+        accessibilityRole="button"
+      >
+        {ask.isPending ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={[s.btnText, { color: '#fff' }]}>{t('territories.ask.go')}</Text>
+        )}
+      </Pressable>
+    </View>
+  );
+}
+
+/** His own lines of the S-13, the current and the previous service year. */
+function Past({ me }: { me: TerritoryMe }) {
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  return (
+    <View style={[cardStyles.card, { gap: 2 }]}>
+      <Text style={s.kicker}>{t('territories.my.past')}</Text>
+      {me.past.map((p, i) => {
+        const end = p.completedOn
+          ? `${formatDayShort(p.completedOn, lang)} · ${t('territories.my.pastWorked')}${
+              p.method ? `, ${t(`territories.method.${p.method}`)}` : ''
+            }`
+          : p.transferred
+            ? `${formatDayShort(p.returnedOn!, lang)} · ${t('territories.line.transferred')}`
+            : `${formatDayShort(p.returnedOn!, lang)} · ${t('territories.my.pastReturned')}`;
+        return (
+          <View key={`${p.number}-${p.assignedOn}-${i}`} style={s.pastRow}>
+            <Text style={s.pastNumber}>{p.number}</Text>
+            <Text style={s.pastMeta}>
+              {formatDayShort(p.assignedOn, lang)} → {end}
+            </Text>
+          </View>
+        );
+      })}
+      <Text style={s.small}>{t('territories.my.pastRule')}</Text>
+    </View>
+  );
+}
+
+function Item({
+  item,
+  progress,
+  keeper,
+  onAct,
+}: {
+  item: MyTerritory;
+  /** Per cent worked by the «street walked» marks; null: none marked. */
+  progress: number | null;
+  keeper: string | null;
+  onAct: (a: AssignmentAction) => void;
+}) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const today = formatDateISO(new Date());
@@ -162,6 +308,17 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
             </Text>
           </View>
         ) : null}
+        {progress !== null ? (
+          <View style={s.progress}>
+            <View style={s.progressHead}>
+              <Text style={s.progressText}>{t('territories.my.progress', { pct: progress })}</Text>
+              <Text style={s.progressBy}>{t('territories.my.progressBy')}</Text>
+            </View>
+            <View style={s.bar}>
+              <View style={[s.barFill, { width: `${progress}%` }]} />
+            </View>
+          </View>
+        ) : null}
 
         {/* Several groups on one territory today: each its own streets. */}
         {!business ? <DivisionButton territoryId={item.id} /> : null}
@@ -210,16 +367,17 @@ function Item({ item, onAct }: { item: MyTerritory; onAct: (a: AssignmentAction)
                 <Text style={s.btnText}>{t('territories.action.extend.title')}</Text>
               </Pressable>
             ) : null}
-            <Pressable
-              onPress={() => onAct('return')}
-              style={({ pressed }) => [s.btn, pressed && { opacity: 0.7 }]}
-              accessibilityRole="button"
-            >
-              <Text style={s.btnText}>{t('territories.action.return.title')}</Text>
-            </Pressable>
           </View>
         ) : null}
-        {a.mine && a.extended ? <Text style={s.small}>{t('territories.action.extend.already')}</Text> : null}
+        {/* Returning it unworked or handing it on: a word with the territory
+            servant, not a button (17 November 2026). */}
+        {a.mine ? (
+          <Text style={s.talk}>
+            {keeper
+              ? t('territories.my.talkTo', { name: keeper })
+              : t('territories.my.talk')}
+          </Text>
+        ) : null}
         {a.mine ? <ShareLink assignmentId={a.id} /> : null}
       </View>
     </View>
@@ -284,4 +442,22 @@ const s = StyleSheet.create({
   },
   btnPrimary: { backgroundColor: BRAND, borderColor: BRAND },
   btnText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: INK },
+  btnSelf: { alignSelf: 'flex-start', marginTop: 10 },
+  progress: { marginTop: 10, gap: 6 },
+  progressHead: { flexDirection: 'row', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' },
+  progressText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: INK },
+  progressBy: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: MUTED },
+  bar: { height: 8, borderRadius: 999, backgroundColor: '#e2e8f0', overflow: 'hidden' },
+  barFill: { height: '100%', backgroundColor: '#16a34a' },
+  talk: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 12, lineHeight: 18 },
+  askCard: { gap: 4 },
+  askTitle: { fontFamily: 'Manrope_800ExtraBold', fontSize: 17, color: INK, marginTop: 2 },
+  askText: { fontFamily: 'Manrope_500Medium', fontSize: 13.5, color: MUTED, lineHeight: 19 },
+  error: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#b91c1c', marginTop: 6 },
+  quiet: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: MUTED, textAlign: 'center', lineHeight: 18 },
+  more: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 12 },
+  moreText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: BRAND },
+  pastRow: { paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  pastNumber: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14.5, color: INK },
+  pastMeta: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: MUTED, marginTop: 2 },
 });

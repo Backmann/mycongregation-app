@@ -64,6 +64,8 @@ try {
 
   check('given', L({ kind: 'given', holder: 'Петренко С.', detail: { dueOn: '2027-02-02' } }),
     'Выдан: Петренко С. | срок [2027-02-02]');
+  check('kept for working again', L({ kind: 'given', holder: 'Петренко С.', detail: { again: true, dueOn: '2027-03-17' } }),
+    'Оставлен для повторной обработки: Петренко С. | срок [2027-03-17]');
   check('given for a group', L({ kind: 'given', holder: 'Кузьмин В.', forGroup: 'Гр. 2', detail: {} }),
     'Выдан: Гр. 2 · Кузьмин В. | ');
   check('handed on (new shape)', L({
@@ -75,11 +77,11 @@ try {
   check('earlier record', L({
     kind: 'past', holder: 'Ткач Н.',
     detail: { assignedOn: '2025-09-04', completedOn: '2025-12-19' },
-  }), 'Добавлена прошлая запись: Ткач Н. | [2025-09-04] → [2025-12-19] · пройден');
+  }), 'Добавлена прошлая запись: Ткач Н. | [2025-09-04] → [2025-12-19] · обработан');
   check('earlier record still held', L({ kind: 'past', holder: 'Ткач Н.', detail: { assignedOn: '2026-10-01' } }),
     'Добавлена прошлая запись: Ткач Н. | [2026-10-01] → на руках');
   check('worked', L({ kind: 'worked', holder: 'Шмидт Д.', forGroup: 'Гр. 1', detail: { completedOn: '2026-11-15' } }),
-    'Пройден | держал Гр. 1 · Шмидт Д. · [2026-11-15]');
+    'Обработан | держал Гр. 1 · Шмидт Д. · [2026-11-15]');
   check('returned', L({ kind: 'returned', holder: 'Шмидт Д.', detail: { returnedOn: '2026-11-15' } }),
     'Возвращён без обработки | держал Шмидт Д. · [2026-11-15]');
   check('campaign', L({ kind: 'campaign', detail: { campaign: ['A01', 'A02'], workedOn: '2026-11-01' } }),
@@ -95,7 +97,7 @@ try {
       before: { holder: 'Кузьмин В.', forGroup: null, assignedOn: '2026-01-03', completedOn: '2026-05-09', method: 'door_to_door' },
       after: { holder: 'Кузьмин В.', forGroup: 'Гр. 2', assignedOn: '2026-01-03', completedOn: '2026-05-11', method: 'door_to_door' },
     },
-  }), 'Исправлена запись: Гр. 2 · Кузьмин В. | Кузьмин В. → Гр. 2 · Кузьмин В. · пройден [2026-05-09] → [2026-05-11]');
+  }), 'Исправлена запись: Гр. 2 · Кузьмин В. | Кузьмин В. → Гр. 2 · Кузьмин В. · обработан [2026-05-09] → [2026-05-11]');
   check('corrected (new shape): method', L({
     kind: 'corrected', holder: 'А',
     detail: {

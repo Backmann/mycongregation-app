@@ -9,7 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -39,7 +39,7 @@ import {
   type DeskEntry,
   type DeskOut,
 } from '../../../lib/desk';
-import { addDaysISO, formatDayShort, TERM_DAYS } from '../../../lib/territory-view';
+import { addDaysISO, daysBetween, formatDayShort, TERM_DAYS } from '../../../lib/territory-view';
 import { BRAND, INK, LINE, MUTED } from '../../../components/reports/ReportBits';
 
 const LATE = '#c2410c';
@@ -222,6 +222,8 @@ export default function DeskScreen() {
         {step.at === 'home' && tab === 'todo' ? (
           <Home
             entries={entries}
+            desk={desk}
+            today={today}
             query={query}
             setQuery={setQuery}
             groupOf={groupOf}
@@ -370,22 +372,44 @@ function Avatar({ entry, size = 38 }: { entry: DeskEntry; size?: number }) {
 
 function Home({
   entries,
+  desk,
+  today,
   query,
   setQuery,
   groupOf,
   onOpen,
 }: {
   entries: DeskEntry[];
+  desk: TerritoryDesk;
+  today: string;
   query: string;
   setQuery: (q: string) => void;
   groupOf: (id: string | null) => string | null;
   onOpen: (key: string) => void;
 }) {
   const { t } = useTranslation();
+  const qc = useQueryClient();
   // On a phone the days go under the name: beside it they cut the name short.
   const narrow = useWindowDimensions().width < 520;
   const found = searchDesk(entries, query);
   const { late, soon } = attentionOf(entries);
+  // «Просят участок» (17 November 2026): the keepers answer — give one (his
+  // card opens with «Выдать») or «Пока нет свободных».
+  const asks = (desk.requests ?? [])
+    .map((r) => ({ r, e: entries.find((x) => x.publisherId === r.publisherId) }))
+    .filter((x): x is { r: (typeof x)['r']; e: DeskEntry } => !!x.e);
+  const notNow = useMutation({
+    mutationFn: (id: string) => territoriesApi.notNow(id),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['territories'] }),
+  });
+  // How far his overdue territories are worked, by the «street walked» marks.
+  const worked = (e: DeskEntry) => {
+    const pcts = e.holds
+      .map((h) => desk.progress?.[h.territoryId])
+      .filter((p): p is number => typeof p === 'number');
+    return pcts.length ? Math.max(...pcts) : null;
+  };
+  const cov = desk.coverage?.residential;
   const pill = (e: DeskEntry, tone: 'late' | 'soon' | null) =>
     tone === 'late' ? (
       <Text style={[s.pill, s.pillLate]}>{t('territories.desk.lateDays', { count: e.late })}</Text>
@@ -411,6 +435,9 @@ function Home({
             ? e.holds.map((h) => h.number).join(', ')
             : [groupOf(e.serviceGroupId), t('territories.desk.holdsNone')].filter(Boolean).join(' · ')}
         </Text>
+        {tone === 'late' && worked(e) !== null ? (
+          <Text style={s.sub}>{t('territories.desk.workedPct', { pct: worked(e) })}</Text>
+        ) : null}
         {narrow && pill(e, tone) ? <View style={s.pills}>{pill(e, tone)}</View> : null}
       </View>
       {narrow ? null : pill(e, tone)}
@@ -442,6 +469,56 @@ function Home({
         </View>
       ) : (
         <>
+          {asks.length ? (
+            <>
+              <Text style={s.section}>{t('territories.desk.asks', { count: asks.length })}</Text>
+              <View style={s.card}>
+                {asks.map(({ r, e }) => (
+                  <View key={r.id} style={s.askRow}>
+                    <Pressable
+                      onPress={() => onOpen(e.key)}
+                      style={({ pressed }) => [s.person, pressed && { opacity: 0.6 }]}
+                      accessibilityRole="button"
+                    >
+                      <Avatar entry={e} />
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={s.name} numberOfLines={1}>
+                          {e.name}
+                        </Text>
+                        <Text style={s.sub}>
+                          {t('territories.desk.askSince', {
+                            count: Math.max(0, daysBetween(r.createdAt.slice(0, 10), today)),
+                          })}
+                          {' · '}
+                          {e.holds.length
+                            ? e.holds.map((h) => h.number).join(', ')
+                            : t('territories.desk.holdsNone')}
+                        </Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={16} color={MUTED} />
+                    </Pressable>
+                    <View style={s.askActions}>
+                      <Pressable
+                        onPress={() => onOpen(e.key)}
+                        style={({ pressed }) => [s.askGive, pressed && { opacity: 0.7 }]}
+                        accessibilityRole="button"
+                      >
+                        <Text style={s.askGiveText}>{t('territories.desk.askGive')}</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => notNow.mutate(r.id)}
+                        disabled={notNow.isPending}
+                        style={({ pressed }) => [s.askNo, pressed && { opacity: 0.7 }]}
+                        accessibilityRole="button"
+                      >
+                        <Text style={s.askNoText}>{t('territories.desk.askNotNow')}</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          ) : null}
           <Text style={s.section}>{t('territories.desk.late', { count: late.length })}</Text>
           <View style={s.card}>
             {late.length ? late.map((e) => line(e, 'late')) : <Text style={s.muted}>{t('territories.desk.lateNone')}</Text>}
@@ -450,6 +527,45 @@ function Home({
           <View style={s.card}>
             {soon.length ? soon.map((e) => line(e, 'soon')) : <Text style={s.muted}>{t('territories.desk.soonNone')}</Text>}
           </View>
+          {cov && cov.total > 0 ? (
+            <>
+              <Text style={s.section}>{t('territories.coverage.title')}</Text>
+              <View style={[s.card, s.coverCard]}>
+                <Text style={s.coverBig}>
+                  {t('territories.coverage.within', { done: cov.within12, total: cov.total })}
+                </Text>
+                <View style={s.bar}>
+                  <View
+                    style={[s.barFill, { width: `${Math.round((cov.within12 * 100) / cov.total)}%` }]}
+                  />
+                </View>
+                <View style={s.coverStats}>
+                  <Text style={s.coverStat}>
+                    {t('territories.coverage.oneToTwo', { count: cov.oneToTwo })}
+                  </Text>
+                  <Text style={[s.coverStat, cov.overTwo > 0 && s.coverWarn]}>
+                    {t('territories.coverage.overTwo', { count: cov.overTwo })}
+                  </Text>
+                  {(cov.noRecord ?? 0) > 0 ? (
+                    <Text style={s.coverStat}>
+                      {t('territories.coverage.noRecord', { count: cov.noRecord })}
+                    </Text>
+                  ) : null}
+                  <Text style={s.coverStat}>
+                    {t('territories.coverage.sinceYear', { count: cov.sinceYear })}
+                  </Text>
+                </View>
+                <Text style={s.small}>{t('territories.coverage.rule')}</Text>
+                <Pressable
+                  onPress={() => router.push('/cart/territory-coverage' as never)}
+                  accessibilityRole="link"
+                  style={{ paddingVertical: 8 }}
+                >
+                  <Text style={s.coverLink}>{t('territories.coverage.longLink')} ›</Text>
+                </Pressable>
+              </View>
+            </>
+          ) : null}
           <Text style={s.small}>{t('territories.desk.homeHint')}</Text>
         </>
       )}
@@ -835,6 +951,20 @@ const s = StyleSheet.create({
     marginLeft: 4,
   },
   card: { backgroundColor: '#fff', borderRadius: 18, paddingHorizontal: 14, paddingVertical: 6, ...shadow },
+  askRow: { paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' },
+  askActions: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', paddingLeft: 4 },
+  askGive: { backgroundColor: BRAND, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 },
+  askGiveText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#fff' },
+  askNo: { borderWidth: 1, borderColor: LINE, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 9 },
+  askNoText: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: INK },
+  coverCard: { paddingVertical: 12, gap: 8 },
+  coverBig: { fontFamily: 'Manrope_800ExtraBold', fontSize: 17, color: INK },
+  bar: { height: 8, borderRadius: 999, backgroundColor: '#e2e8f0', overflow: 'hidden' },
+  barFill: { height: '100%', backgroundColor: '#16a34a' },
+  coverStats: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  coverStat: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: INK },
+  coverWarn: { color: '#b91c1c' },
+  coverLink: { fontFamily: 'Manrope_800ExtraBold', fontSize: 13.5, color: BRAND },
   person: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 10 },
   avatar: { alignItems: 'center', justifyContent: 'center' },
   avatarText: { fontFamily: 'Manrope_800ExtraBold', color: '#fff' },

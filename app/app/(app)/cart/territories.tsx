@@ -32,6 +32,7 @@ import { TerritoryMap, type MapShape } from '../../../components/territories/Ter
 import { AssignSheet } from '../../../components/territories/AssignSheet';
 import { CampaignSheet } from '../../../components/territories/CampaignSheet';
 import { PrintMapSheet } from '../../../components/territories/PrintMapSheet';
+import { WholeMapButton } from '../../../components/territories/WholeMapButton';
 import { ChecksLine, ChecksSheet } from '../../../components/territories/TerritoryChecks';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { buildS13Html } from '../../../lib/s13Pdf';
@@ -554,6 +555,24 @@ export default function TerritoriesScreen() {
                 </Text>
               </Pressable>
             ))}
+            {/* 17 November 2026: every territory on one sheet (S-12), and
+                the congregation's boundary — the branch's. */}
+            <WholeMapButton
+              rows={(listQ.data ?? []).filter((r) => r.category === cat)}
+              boundary={boundaryQ.data}
+              style={s.campaignBtn}
+              textStyle={s.campaignText}
+            />
+            {a.keeps ? (
+              <Pressable
+                onPress={() => router.push('/cart/territory-boundary' as never)}
+                style={s.campaignBtn}
+                accessibilityRole="link"
+              >
+                <Ionicons name="globe-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.boundary.title')}</Text>
+              </Pressable>
+            ) : null}
           </View>
           {a.keeps ? (
             // 12 November 2026: names on the S-13 are kept for this and the
@@ -682,6 +701,24 @@ export default function TerritoriesScreen() {
                 </Text>
               </Pressable>
             ))}
+            {/* 17 November 2026: every territory on one sheet (S-12), and
+                the congregation's boundary — the branch's. */}
+            <WholeMapButton
+              rows={(listQ.data ?? []).filter((r) => r.category === cat)}
+              boundary={boundaryQ.data}
+              style={s.campaignBtn}
+              textStyle={s.campaignText}
+            />
+            {a.keeps ? (
+              <Pressable
+                onPress={() => router.push('/cart/territory-boundary' as never)}
+                style={s.campaignBtn}
+                accessibilityRole="link"
+              >
+                <Ionicons name="globe-outline" size={17} color={BRAND} />
+                <Text style={s.campaignText}>{t('territories.boundary.title')}</Text>
+              </Pressable>
+            ) : null}
           </View>
           {a.keeps ? (
             // 12 November 2026: names on the S-13 are kept for this and the
