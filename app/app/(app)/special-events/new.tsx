@@ -64,6 +64,10 @@ export default function NewSpecialEventScreen() {
         coFirstName: form.coFirstName.trim() || undefined,
         coLastName: form.coLastName.trim() || undefined,
         coWifeName: form.coWifeName.trim() || undefined,
+        coWifeComes:
+          form.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
+            ? form.coWifeComes
+            : undefined,
         coRole:
           form.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form.coRole

@@ -3083,6 +3083,12 @@ export interface CoVisitItem {
   assigneeText: string | null;
   note: string | null;
   sortOrder: number;
+  /**
+   * A shepherding call read by someone who is not an elder: when it is, and
+   * nothing of who goes or to whom (18 November 2026). Absent from a server
+   * older than that.
+   */
+  restricted?: boolean;
 }
 
 /**
@@ -3296,6 +3302,11 @@ export interface CoVisitPublication {
     title: string | null;
     body: string | null;
   }[];
+  /**
+   * People left out of `rows` for a reader who is not an elder: all they
+   * hold is a shepherding call. Absent from an older server.
+   */
+  eldersOnly?: number;
   /** Lines with a name typed as text: nobody the app can reach. */
   textOnly: { date: string; time: string | null; kind: string; text: string }[];
 }
@@ -3386,6 +3397,33 @@ export const coVisitItemsApi = {
       input,
     );
     return data;
+  },
+  /** Is the reader an elder — who sees and plans shepherding calls? */
+  async reader(): Promise<{ elder: boolean }> {
+    const { data } = await api.get<{ elder: boolean }>("/co-visit-items/reader");
+    return data;
+  },
+  /** The overseer's wife does not come: clear her rows out of the week. */
+  async clearWife(
+    specialEventId: string,
+  ): Promise<{ removed: string[]; unjoined: string[] }> {
+    const { data } = await api.post<{ removed: string[]; unjoined: string[] }>(
+      "/co-visit-items/clear-wife",
+      { specialEventId },
+    );
+    return data;
+  },
+  /** Undo `clearWife`: exactly the rows it touched. */
+  async unclearWife(
+    specialEventId: string,
+    done: { removed: string[]; unjoined: string[] },
+  ): Promise<void> {
+    // Only the two lists: the server refuses any field it does not know.
+    await api.post("/co-visit-items/clear-wife/undo", {
+      specialEventId,
+      removed: done.removed,
+      unjoined: done.unjoined,
+    });
   },
   /** Put a removed item back — the same right as removing it. */
   async restore(id: string): Promise<void> {
@@ -4112,6 +4150,12 @@ export interface SpecialEvent {
   coFirstName: string | null;
   coLastName: string | null;
   coWifeName: string | null;
+  /**
+   * A circuit overseer's visit: his wife comes on THIS visit. Her outings
+   * and «together with his wife» exist only then (18 November 2026). Absent
+   * from a server older than that.
+   */
+  coWifeComes?: boolean;
   coRole: string | null;
   coAccommodationAddress: string | null;
   coAccommodationPublisherId: string | null;
@@ -4154,6 +4198,7 @@ export interface CreateSpecialEventInput {
   coFirstName?: string;
   coLastName?: string;
   coWifeName?: string | null;
+  coWifeComes?: boolean;
   coRole?: string | null;
   coAccommodationAddress?: string;
   coAccommodationPublisherId?: string | null;

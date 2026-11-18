@@ -2227,7 +2227,6 @@
     "docReviewTitle": "Dokumentenprüfung",
     "add": "Hinzufügen",
     "empty": "Nicht hinzugefügt",
-    "printButton": "PDF herunterladen",
     "visitTitle": "Besuch des Kreisaufsehers",
     "coScheduleTitle": "Dienstplan des Kreisaufsehers",
     "wifeScheduleTitle": "Dienstplan der Frau",
@@ -2328,8 +2327,25 @@
       "quiet_other": "Nichts Neues: {{count}} Personen",
       "nobodyReachable": "Die App erreicht niemanden der Eingeteilten – bitte selbst Bescheid geben, siehe unten.",
       "nobodyYet": "Noch niemand ist mit seiner Karte eingeteilt – niemand zu benachrichtigen.",
-      "done": "Plan veröffentlicht – die Eingeteilten werden benachrichtigt"
-    }
+      "done": "Plan veröffentlicht – die Eingeteilten werden benachrichtigt",
+      "eldersOnly_one": "{{count}} weiterer — nur ein Hirtenbesuch; ihn sehen die Ältesten",
+      "eldersOnly_other": "{{count}} weitere — nur Hirtenbesuche; sie sehen die Ältesten"
+    },
+    "callForElders": "Zeit belegt · nur für Älteste",
+    "wifeComes": "kommt mit",
+    "wifeStaysName": "{{name}} — kommt diesmal nicht",
+    "strayKick": "Seine Frau kommt diesmal nicht",
+    "strayOutings_one": "{{count}} Dienst von ihr steht noch im Plan",
+    "strayOutings_other": "{{count}} Dienste von ihr stehen noch im Plan",
+    "strayTogether_one": "{{count}} Dienst „mit seiner Frau“",
+    "strayTogether_other": "{{count}} Dienste „mit seiner Frau“",
+    "strayWhat": "Auf dem Bildschirm, in den Blättern und in den Benachrichtigungen fehlen sie schon. Räume sie weg: ihre Dienste werden entfernt, „mit seiner Frau“ wird sein eigener Dienst.",
+    "strayClear": "Wegräumen",
+    "strayCleared": "Einträge der Frau entfernt",
+    "sheetCongregation": "Blatt für die Versammlung",
+    "sheetCongregationSub": "Zusammenkünfte — wo und wann, ohne Namen",
+    "sheetDetail": "Ausführliches Blatt",
+    "sheetDetailSub": "Für den Kreisaufseher und die Ältesten: Partner, Mittagessen, Telefon"
   },
   "witnessing": {
     "recentlyWith": "kürzlich mit {{name}}",
@@ -2670,7 +2686,9 @@
       "auxTitle": "Hilfspioniere",
       "auxReduced": "Hilfspioniere können 15 Stunden wählen",
       "auxMonths": "Betroffene Monate: {{months}} — ein bereits gewähltes Ziel ändert sich nicht.",
-      "auxHint": "Wählen Sie die Tage der Kampagne – hier erscheinen dann die betroffenen Monate."
+      "auxHint": "Wählen Sie die Tage der Kampagne – hier erscheinen dann die betroffenen Monate.",
+      "wifeComes": "Kommt mit seiner Frau",
+      "wifeNameOptional": "Name der Frau (optional)"
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -4457,7 +4475,11 @@
       "template_from": "Vorlage vom Besuch am",
       "skipped": "nicht übernommen",
       "visitPublished": "Besuchsplan veröffentlicht",
-      "toldPeople": "Benachrichtigte Personen"
+      "toldPeople": "Benachrichtigte Personen",
+      "coWifeComes": "Kommt mit seiner Frau",
+      "wifeCleared": "Einträge der Frau entfernt",
+      "removed": "Entfernt",
+      "unjoined": "Wurden seine Dienste"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -6298,7 +6320,10 @@
       "FOLDER_ANSWERS_ERASED": "Der Besuch ist vorbei — die Antworten zu Seite 2 sind gelöscht.",
       "FOLDER_PAGE2_INCOMPLETE": "Bitte zuerst alle Fragen auf Seite 2 beantworten: {{answered}} von {{total}} beantwortet.",
       "CO_VISIT_TEMPLATE_NOT_EMPTY": "Diese Besuchswoche hat schon Einträge – eine Vorlage wird nur auf eine leere Woche gelegt.",
-      "CO_VISIT_TEMPLATE_NO_SOURCE": "Es gibt keinen früheren Besuch, mit dem man beginnen könnte."
+      "CO_VISIT_TEMPLATE_NO_SOURCE": "Es gibt keinen früheren Besuch, mit dem man beginnen könnte.",
+      "CO_VISIT_PASTORAL_ELDERS": "Hirtenbesuche planen nur Älteste.",
+      "CO_VISIT_NO_WIFE": "Die Frau des Kreisaufsehers kommt diesmal nicht — schalte „Kommt mit seiner Frau“ beim Besuch ein.",
+      "CO_VISIT_WIFE_COMES": "Die Frau des Kreisaufsehers kommt — ihre Einträge bleiben."
     }
   },
   "stage": {

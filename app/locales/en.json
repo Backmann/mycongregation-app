@@ -2227,7 +2227,6 @@
     "docReviewTitle": "Document review",
     "add": "Add",
     "empty": "Not added",
-    "printButton": "Download PDF",
     "visitTitle": "Circuit overseer visit",
     "coScheduleTitle": "Circuit overseer service schedule",
     "wifeScheduleTitle": "Wife's service schedule",
@@ -2328,8 +2327,25 @@
       "quiet_other": "Nothing new: {{count}} people",
       "nobodyReachable": "The app cannot reach anybody assigned — tell them yourself, see below.",
       "nobodyYet": "Nobody is assigned by their card yet — nobody to tell.",
-      "done": "Schedule published — the people assigned are being told"
-    }
+      "done": "Schedule published — the people assigned are being told",
+      "eldersOnly_one": "{{count}} more — only a shepherding call; elders see it",
+      "eldersOnly_other": "{{count}} more — only shepherding calls; elders see them"
+    },
+    "callForElders": "time taken · elders only",
+    "wifeComes": "comes",
+    "wifeStaysName": "{{name}} — not coming this time",
+    "strayKick": "His wife is not coming this time",
+    "strayOutings_one": "{{count}} outing of hers is still in the schedule",
+    "strayOutings_other": "{{count}} outings of hers are still in the schedule",
+    "strayTogether_one": "{{count}} outing «with his wife»",
+    "strayTogether_other": "{{count}} outings «with his wife»",
+    "strayWhat": "They are already left out of the screen, the sheets and the notifications. Clear them: her outings are removed and «with his wife» becomes his own outing.",
+    "strayClear": "Clear",
+    "strayCleared": "His wife's rows cleared",
+    "sheetCongregation": "Sheet for the congregation",
+    "sheetCongregationSub": "Meetings — where and when, no names",
+    "sheetDetail": "Detailed sheet",
+    "sheetDetailSub": "For the overseer and elders: partners, lunches, phones"
   },
   "witnessing": {
     "recentlyWith": "recently with {{name}}",
@@ -2670,7 +2686,9 @@
       "auxTitle": "Auxiliary pioneers",
       "auxReduced": "Auxiliary pioneers may take 15 hours",
       "auxMonths": "Months it touches: {{months}} — a goal already chosen does not change.",
-      "auxHint": "Choose the campaign's days — the months it touches will show here."
+      "auxHint": "Choose the campaign's days — the months it touches will show here.",
+      "wifeComes": "His wife comes too",
+      "wifeNameOptional": "Wife's name (optional)"
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -4457,7 +4475,11 @@
       "template_from": "template from the visit of",
       "skipped": "left out",
       "visitPublished": "Visit schedule published",
-      "toldPeople": "People told"
+      "toldPeople": "People told",
+      "coWifeComes": "His wife comes too",
+      "wifeCleared": "Wife's rows cleared",
+      "removed": "Removed",
+      "unjoined": "Became his outings"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -6298,7 +6320,10 @@
       "FOLDER_ANSWERS_ERASED": "The visit is over — the answers to page 2 have been erased.",
       "FOLDER_PAGE2_INCOMPLETE": "Answer every question on page 2 first: {{answered}} of {{total}} answered.",
       "CO_VISIT_TEMPLATE_NOT_EMPTY": "This visit week already has items — a template is only laid on an empty week.",
-      "CO_VISIT_TEMPLATE_NO_SOURCE": "There is no earlier visit to start from."
+      "CO_VISIT_TEMPLATE_NO_SOURCE": "There is no earlier visit to start from.",
+      "CO_VISIT_PASTORAL_ELDERS": "Shepherding calls are planned by elders only.",
+      "CO_VISIT_NO_WIFE": "The overseer's wife is not coming this time — turn on «His wife comes too» on the visit.",
+      "CO_VISIT_WIFE_COMES": "The overseer's wife is coming — her rows stay."
     }
   },
   "stage": {

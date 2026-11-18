@@ -91,6 +91,8 @@ export interface EventFormValue {
   coFirstName: string;
   coLastName: string;
   coWifeName: string;
+  /** His wife comes on this visit — what the week's own rows follow. */
+  coWifeComes: boolean;
   coRole: string;
   coAccommodationAddress: string;
   coMidweekDow: number;
@@ -120,6 +122,7 @@ export function emptyEventForm(): EventFormValue {
     coFirstName: '',
     coLastName: '',
     coWifeName: '',
+    coWifeComes: false,
     coRole: 'overseer',
     coAccommodationAddress: '',
     coMidweekDow: 2,
@@ -457,6 +460,7 @@ export function SpecialEventForm({
         coFirstName: primary.firstName ?? '',
         coLastName: primary.lastName ?? '',
         coWifeName: primary.wifeName ?? '',
+        coWifeComes: !!primary.wifeName?.trim(),
         coRole: primary.role,
       });
     }
@@ -483,6 +487,9 @@ export function SpecialEventForm({
       coFirstName: c.firstName,
       coLastName: c.lastName,
       coWifeName: c.wifeName ?? '',
+      // A married overseer usually comes with his wife; the switch below
+      // says when she does not.
+      coWifeComes: !!c.wifeName?.trim(),
       coRole: c.role,
     });
   };
@@ -761,6 +768,7 @@ export function SpecialEventForm({
                       coFirstName: '',
                       coLastName: '',
                       coWifeName: '',
+                      coWifeComes: false,
                       coRole: 'substitute',
                     });
                   }
@@ -788,15 +796,30 @@ export function SpecialEventForm({
                   placeholderTextColor="#94a3b8"
                 />
               </View>
-              <TextInput
-                style={styles.input}
-                value={value.coWifeName}
-                onChangeText={(x) => set({ coWifeName: x })}
-                placeholder={t('circuitOverseer.wifeName')}
-                autoCapitalize="words"
-                placeholderTextColor="#94a3b8"
-              />
             </View>
+          ) : null}
+          {/* Whether she comes is what the week follows — her outings,
+              «together», the lines she is part of (18 November 2026). Her
+              name is optional; it is asked only when she comes. */}
+          <View style={[styles.switchRow, { marginTop: 10 }]}>
+            <Text style={styles.switchLabel}>
+              {t('specialEvents.form.wifeComes')}
+            </Text>
+            <Switch
+              value={value.coWifeComes}
+              disabled={pastLocked}
+              onValueChange={(on) => set({ coWifeComes: on })}
+            />
+          </View>
+          {value.coWifeComes && (namesShown || !value.coWifeName.trim()) ? (
+            <TextInput
+              style={[styles.input, { marginTop: 8 }]}
+              value={value.coWifeName}
+              onChangeText={(x) => set({ coWifeName: x })}
+              placeholder={t('specialEvents.form.wifeNameOptional')}
+              autoCapitalize="words"
+              placeholderTextColor="#94a3b8"
+            />
           ) : null}
         </Section>
       ) : null}

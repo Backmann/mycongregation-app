@@ -22,7 +22,49 @@ export type WeekItem = {
   assigneeName: string | null;
   assigneeText: string | null;
   sortOrder: number;
+  /** A shepherding call a non-elder may not read: its time only. */
+  restricted?: boolean;
 };
+
+/**
+ * Does the overseer's wife come on this visit? The visit says so since
+ * 18 November 2026; from an older server, a name written down means she
+ * does — as the server's migration read it.
+ */
+export function wifeComesOf(visit: {
+  coWifeComes?: boolean | null;
+  coWifeName?: string | null;
+}): boolean {
+  if (typeof visit.coWifeComes === 'boolean') return visit.coWifeComes;
+  return !!visit.coWifeName?.trim();
+}
+
+/**
+ * The week as it stands: unchanged when she comes; without her rows and with
+ * no «together» when she does not — the server's own rule (co-visit-wife.ts),
+ * so the screen, the gaps and the print agree with what people are told.
+ */
+export function asVisited<T extends { forWife: boolean; withWife: boolean }>(
+  items: T[],
+  comes: boolean,
+): T[] {
+  if (comes) return items;
+  return items
+    .filter((i) => !i.forWife)
+    .map((i) => (i.withWife ? { ...i, withWife: false } : i));
+}
+
+/** Her rows left in a week she does not come to: what the planner clears. */
+export function wifeStray<T extends { forWife: boolean; withWife: boolean }>(
+  items: T[],
+  comes: boolean,
+): { outings: number; together: number } {
+  if (comes) return { outings: 0, together: 0 };
+  return {
+    outings: items.filter((i) => i.forWife).length,
+    together: items.filter((i) => !i.forWife && i.withWife).length,
+  };
+}
 
 export type WeekRow<T extends WeekItem> = {
   /** kind and hour: «field_service|10:00», «lunch_box|». */
@@ -144,7 +186,13 @@ export function weekGaps(
       })),
     pastoral: items
       .filter(
-        (i) => i.kind === 'pastoral' && !i.forWife && dayset.has(i.itemDate) && !named(i),
+        // A call he may not read is not his gap to fill (18 November 2026).
+        (i) =>
+          i.kind === 'pastoral' &&
+          !i.forWife &&
+          !i.restricted &&
+          dayset.has(i.itemDate) &&
+          !named(i),
       )
       .sort(byTime)
       .map(slot),
