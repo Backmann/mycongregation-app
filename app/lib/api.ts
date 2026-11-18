@@ -3280,6 +3280,22 @@ export const memorialApi = {
   },
 };
 
+export interface CoVisitTemplatePreview {
+  /** The week has no item yet — the only week a template is laid on. */
+  empty: boolean;
+  source: {
+    id: string;
+    date: string;
+    endDate: string | null;
+    coFirstName: string | null;
+    coLastName: string | null;
+  } | null;
+  total: number;
+  /** Items whose weekday the new visit does not have. */
+  skipped: number;
+  days: { date: string; count: number }[];
+}
+
 export const coVisitItemsApi = {
   /** Hosting rotation across all visits (lunches / lunch boxes). */
   async hostStats(): Promise<CoHostStat[]> {
@@ -3296,6 +3312,26 @@ export const coVisitItemsApi = {
   async fieldService(): Promise<CoVisitFieldServiceWeek[]> {
     const { data } = await api.get<CoVisitFieldServiceWeek[]>(
       "/co-visit-items/field-service",
+    );
+    return data;
+  },
+  /**
+   * What «start from the last visit» would create for an empty visit week:
+   * the source visit and how many items fall on each day (17 November 2026).
+   */
+  async templatePreview(specialEventId: string): Promise<CoVisitTemplatePreview> {
+    const { data } = await api.get<CoVisitTemplatePreview>("/co-visit-items/template", {
+      params: { specialEventId },
+    });
+    return data;
+  },
+  /** Fill the empty week from the last visit — the form of it, no person. */
+  async applyTemplate(
+    specialEventId: string,
+  ): Promise<{ created: number; skipped: number; sourceId: string }> {
+    const { data } = await api.post<{ created: number; skipped: number; sourceId: string }>(
+      "/co-visit-items/template",
+      { specialEventId },
     );
     return data;
   },

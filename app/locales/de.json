@@ -2289,7 +2289,19 @@
     "gapLunchOn": "Mittagessen:",
     "gapPartnerCo": "Begleiter des Kreisaufsehers:",
     "gapPartnerWife": "Begleiterin der Ehefrau:",
-    "gridMeetings": "Zusammenkünfte der Versammlung"
+    "gridMeetings": "Zusammenkünfte der Versammlung",
+    "tplTitle": "Die Woche ist noch leer",
+    "tplLead": "Mit der Woche des letzten Besuchs beginnen – {{who}}, {{when}}?",
+    "tplWhat": "Übernommen werden Art, Wochentag, Uhrzeit und Ort: Predigtdienst, Mittagessen, Lunchboxen, Zusammenkünfte. Keine Personen – die werden neu eingeteilt; der Hinweis zeigt, wer zuletzt dabei war.",
+    "tplItems_one": "{{count}} Eintrag",
+    "tplItems_other": "{{count}} Einträge",
+    "tplSkipped_one": "{{count}} Eintrag entfällt: diesen Wochentag hat der Besuch nicht",
+    "tplSkipped_other": "{{count}} Einträge entfallen: diese Wochentage hat der Besuch nicht",
+    "tplApply": "Vorlage anlegen",
+    "tplDone_one": "{{count}} Eintrag angelegt – jetzt Personen einteilen",
+    "tplDone_other": "{{count}} Einträge angelegt – jetzt Personen einteilen",
+    "tplPrevious": "der letzte Besuch",
+    "gapPastoral": "Hirtenbesuch ohne Ältesten:"
   },
   "witnessing": {
     "recentlyWith": "kürzlich mit {{name}}",
@@ -4413,7 +4425,9 @@
       "memberSince": "In unserer Versammlung seit",
       "mergedWith": "Zusammengeführt mit Karte",
       "equipmentAt": "Ausrüstung bei",
-      "permitUntil": "Genehmigung bis"
+      "permitUntil": "Genehmigung bis",
+      "template_from": "Vorlage vom Besuch am",
+      "skipped": "nicht übernommen"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -6252,7 +6266,9 @@
       "FOLDER_MARK_INVALID": "Diese Markierung passt nicht zu diesem Punkt.",
       "FOLDER_ANSWER_INVALID": "Diese Antwort passt nicht zu dieser Frage.",
       "FOLDER_ANSWERS_ERASED": "Der Besuch ist vorbei — die Antworten zu Seite 2 sind gelöscht.",
-      "FOLDER_PAGE2_INCOMPLETE": "Bitte zuerst alle Fragen auf Seite 2 beantworten: {{answered}} von {{total}} beantwortet."
+      "FOLDER_PAGE2_INCOMPLETE": "Bitte zuerst alle Fragen auf Seite 2 beantworten: {{answered}} von {{total}} beantwortet.",
+      "CO_VISIT_TEMPLATE_NOT_EMPTY": "Diese Besuchswoche hat schon Einträge – eine Vorlage wird nur auf eine leere Woche gelegt.",
+      "CO_VISIT_TEMPLATE_NO_SOURCE": "Es gibt keinen früheren Besuch, mit dem man beginnen könnte."
     }
   },
   "stage": {

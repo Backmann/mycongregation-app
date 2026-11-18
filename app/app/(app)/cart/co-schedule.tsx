@@ -321,6 +321,33 @@ export default function CoScheduleScreen() {
       setForm(null);
     },
   });
+  // An empty week: what starting from the last visit would create
+  // (17 November 2026). Asked only when the week has nothing yet — the
+  // server lays a template on an empty week alone.
+  const emptyWeek = !!visit && items !== undefined && items.length === 0;
+  const { data: template } = useQuery({
+    queryKey: ['co-visit-template', visit?.id],
+    queryFn: () => coVisitItemsApi.templatePreview(visit!.id),
+    // Not for a visit that is over: the card is never shown there (review,
+    // 18 November 2026).
+    enabled:
+      canEditCoSchedule &&
+      emptyWeek &&
+      (visit?.endDate ?? visit?.date ?? '') >= formatDateISO(new Date()),
+  });
+  const templateM = useMutation({
+    mutationFn: () => coVisitItemsApi.applyTemplate(visit!.id),
+    onSuccess: (r) => {
+      notify(t('coVisit.tplDone', { count: r.created }), undefined, 'success');
+    },
+    // Refused too: if another planner filled the week meanwhile, the screen
+    // must show his items, not a card that refuses again (review,
+    // 18 November 2026).
+    onSettled: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: ['co-visit-template', visit?.id] });
+    },
+  });
   // Runs a save routine that may touch both the overseer's row and the
   // wife's paired row, then refreshes once.
   const pairM = useMutation({
@@ -378,7 +405,10 @@ export default function CoScheduleScreen() {
     [items, days, visit],
   );
   const hasGaps =
-    gaps.accommodation || gaps.lunchDays.length > 0 || gaps.partners.length > 0;
+    gaps.accommodation ||
+    gaps.lunchDays.length > 0 ||
+    gaps.partners.length > 0 ||
+    gaps.pastoral.length > 0;
 
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
@@ -1211,6 +1241,16 @@ export default function CoScheduleScreen() {
             )}
           </View>
         ) : null}
+        {gaps.pastoral.length > 0 ? (
+          <View style={styles.gapLine}>
+            <Text style={styles.readinessBody}>{t('coVisit.gapPastoral')}</Text>
+            {gaps.pastoral.map((g) =>
+              chip(`s${g.id}`, g.time ? `${dayShort(g.date)} · ${g.time}` : dayShort(g.date), () =>
+                openGap(g.id, false),
+              ),
+            )}
+          </View>
+        ) : null}
         {wifePartners.length > 0 ? (
           <View style={styles.gapLine}>
             <Text style={styles.readinessBody}>{t('coVisit.gapPartnerWife')}</Text>
@@ -1221,6 +1261,59 @@ export default function CoScheduleScreen() {
             )}
           </View>
         ) : null}
+      </View>
+    );
+  };
+
+
+  /**
+   * An empty week starts from the last one (17 November 2026): the form of
+   * it — kind, weekday, hour, place — never a person. Shown only to those
+   * who plan, only on an empty week of a coming visit, only when an earlier
+   * visit has a week to give.
+   */
+  const renderTemplate = (): ReactNode => {
+    if (!canEditVisit || !emptyWeek || !template?.empty || !template.source || template.total === 0)
+      return null;
+    const src = template.source;
+    const who =
+      [src.coFirstName, src.coLastName].filter(Boolean).join(' ').trim() ||
+      t('coVisit.tplPrevious');
+    return (
+      <View style={styles.tplCard}>
+        <Text style={styles.tplKick}>{t('coVisit.tplTitle')}</Text>
+        <Text style={styles.tplLead}>
+          {t('coVisit.tplLead', { who, when: fmtVisitChip(src.date) })}
+        </Text>
+        <Text style={styles.tplWhat}>{t('coVisit.tplWhat')}</Text>
+        <View style={styles.tplDays}>
+          {template.days.map((d) => (
+            <View key={d.date} style={styles.tplDay}>
+              <Text style={styles.tplDayName}>{dayShort(d.date)}</Text>
+              <Text style={styles.tplDayCount}>{d.count}</Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.tplWhat}>
+          {t('coVisit.tplItems', { count: template.total })}
+          {template.skipped > 0 ? ` · ${t('coVisit.tplSkipped', { count: template.skipped })}` : ''}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          disabled={templateM.isPending}
+          onPress={() => templateM.mutate()}
+          style={({ pressed }) => [
+            styles.tplBtn,
+            (pressed || templateM.isPending) && styles.pressed,
+          ]}
+        >
+          {templateM.isPending ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Ionicons name="copy-outline" size={17} color="#ffffff" />
+          )}
+          <Text style={styles.tplBtnText}>{t('coVisit.tplApply')}</Text>
+        </Pressable>
       </View>
     );
   };
@@ -1643,6 +1736,8 @@ export default function CoScheduleScreen() {
           would be a list of other people's homework. */}
       {renderGaps()}
       </View>
+      {/* The empty week's one real next step, before anything else to fill. */}
+      {renderTemplate()}
 
       <View style={accStyles.card}>
         <View style={accStyles.head}>
@@ -2502,6 +2597,34 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pdfBtnText: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: BRAND },
+  tplCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: BRAND,
+    padding: 16,
+    gap: 8,
+    marginTop: 8,
+  },
+  tplKick: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12, letterSpacing: 0.6, color: BRAND, textTransform: 'uppercase' },
+  tplLead: { fontFamily: 'Manrope_700Bold', fontSize: 17, color: '#0f172a', lineHeight: 23 },
+  tplWhat: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#334155', lineHeight: 19 },
+  tplDays: { flexDirection: 'row', gap: 6 },
+  tplDay: { flex: 1, minWidth: 0, alignItems: 'center', backgroundColor: '#f0f8fa', borderRadius: 10, paddingVertical: 6 },
+  tplDayName: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: '#64748b' },
+  tplDayCount: { fontFamily: 'Manrope_800ExtraBold', fontSize: 17, color: BRAND },
+  tplBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: BRAND,
+    borderRadius: 12,
+    paddingVertical: 12,
+    minHeight: 44,
+    marginTop: 4,
+  },
+  tplBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#ffffff' },
   topRow: { flexDirection: 'row', gap: 12, alignItems: 'stretch' },
   topCol: { gap: 12 },
   topCell: { flex: 1, minWidth: 0 },
