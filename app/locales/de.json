@@ -2301,7 +2301,35 @@
     "tplDone_one": "{{count}} Eintrag angelegt – jetzt Personen einteilen",
     "tplDone_other": "{{count}} Einträge angelegt – jetzt Personen einteilen",
     "tplPrevious": "der letzte Besuch",
-    "gapPastoral": "Hirtenbesuch ohne Ältesten:"
+    "gapPastoral": "Hirtenbesuch ohne Ältesten:",
+    "pub": {
+      "draftTitle": "Entwurf – noch für niemanden sichtbar",
+      "draftSub": "Nicht auf der Startseite, im Kalender oder in Benachrichtigungen",
+      "publish": "Plan veröffentlichen",
+      "publishedTitle": "Veröffentlicht am {{when}}",
+      "liveSub": "Änderungen gehen von selbst an die Eingeteilten",
+      "dueSub": "Änderungen gehen um {{time}} an die Eingeteilten",
+      "whoGetsWhat": "Wer was erhält",
+      "sheetTitleDraft": "Besuchsplan veröffentlichen",
+      "sheetTitleLive": "Wer was erhält",
+      "publishNow": "Veröffentlichen",
+      "howItGoes": "Nach dem Veröffentlichen geht alles von selbst: eine Änderung geht zehn Minuten nach der letzten Bearbeitung an die betroffene Person, wer entfernt wurde, erfährt es; Erinnerungen eine Woche vorher und am Vorabend. Nachts stört nichts. Die Zusammenkünfte mit den Pionieren und den Ältesten erhalten nur Erinnerungen.",
+      "hearNow_one": "Erfährt es jetzt – {{count}} Person",
+      "hearNow_other": "Erfahren es jetzt – {{count}} Personen",
+      "hearSoon_one": "Erfährt es in 10 Minuten – {{count}} Person",
+      "hearSoon_other": "Erfahren es in 10 Minuten – {{count}} Personen",
+      "byLetter": "per E-Mail",
+      "nothingNew": "Für niemanden etwas Neues.",
+      "tellYourself": "Bitte selbst Bescheid geben",
+      "noLogin": "ohne Anmeldung",
+      "noDevice": "kein Gerät, keine E-Mail",
+      "typedAsText": "als Text eingetragen",
+      "quiet_one": "Nichts Neues: {{count}} Person",
+      "quiet_other": "Nichts Neues: {{count}} Personen",
+      "nobodyReachable": "Die App erreicht niemanden der Eingeteilten – bitte selbst Bescheid geben, siehe unten.",
+      "nobodyYet": "Noch niemand ist mit seiner Karte eingeteilt – niemand zu benachrichtigen.",
+      "done": "Plan veröffentlicht – die Eingeteilten werden benachrichtigt"
+    }
   },
   "witnessing": {
     "recentlyWith": "kürzlich mit {{name}}",
@@ -4427,7 +4455,9 @@
       "equipmentAt": "Ausrüstung bei",
       "permitUntil": "Genehmigung bis",
       "template_from": "Vorlage vom Besuch am",
-      "skipped": "nicht übernommen"
+      "skipped": "nicht übernommen",
+      "visitPublished": "Besuchsplan veröffentlicht",
+      "toldPeople": "Benachrichtigte Personen"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
