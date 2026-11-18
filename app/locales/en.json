@@ -2169,11 +2169,11 @@
     "locationsSubtitle": "Cart and stand addresses",
     "reports": "Reports",
     "reportsSubtitle": "Field service reports and activity",
-    "coSchedule": "Circuit overseer schedule",
-    "coScheduleSubtitle": "Circuit overseer visit"
+    "coSchedule": "Circuit overseer's visit schedule",
+    "coScheduleSubtitle": "Outings, lunches, lodging, S-61 folder"
   },
   "coVisit": {
-    "title": "Circuit overseer schedule",
+    "title": "Visit schedule",
     "noVisit": "No visit scheduled",
     "overseer": "Circuit overseer",
     "wife": "Wife",

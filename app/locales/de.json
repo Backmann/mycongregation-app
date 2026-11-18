@@ -2169,11 +2169,11 @@
     "locationsSubtitle": "Adressen für Trolleys und Stände",
     "reports": "Berichte",
     "reportsSubtitle": "Predigtdienstberichte und Aktivität",
-    "coSchedule": "Kreisaufseher-Plan",
-    "coScheduleSubtitle": "Besuch des Kreisaufsehers"
+    "coSchedule": "Besuchsplan des Kreisaufsehers",
+    "coScheduleSubtitle": "Predigtdienst, Mittagessen, Unterkunft, Ordner S-61"
   },
   "coVisit": {
-    "title": "Kreisaufseher-Plan",
+    "title": "Besuchsplan",
     "noVisit": "Kein Besuch geplant",
     "overseer": "Kreisaufseher",
     "wife": "Frau",

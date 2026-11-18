@@ -2225,8 +2225,8 @@
     "locationsSubtitle": "Адреса тележек и стендов",
     "reports": "Отчёты",
     "reportsSubtitle": "Отчёты о служении и активность",
-    "coSchedule": "График визита",
-    "coScheduleSubtitle": "Посещение районного старейшины"
+    "coSchedule": "График визита районного старейшины",
+    "coScheduleSubtitle": "Выходы, обеды, проживание, папка S-61"
   },
   "coVisit": {
     "title": "График визита",
