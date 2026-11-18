@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { SpecialEvent } from '../lib/api';
 import { formatDayRange } from '../lib/date-range';
+import { wifeComesOf } from '../lib/co-visit-week';
 
 /**
  * Shows the special events that fall within the currently displayed schedule
@@ -52,7 +53,7 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                 {coName ? (
                   <Text style={styles.coName}>
                     {coName}
-                    {e.coWifeName
+                    {wifeComesOf(e) && e.coWifeName
                       ? ` · ${t('specialEvents.coWife', { name: e.coWifeName })}`
                       : ''}
                   </Text>

@@ -50,7 +50,14 @@ import { failsScreen } from '../../../lib/screen-failure';
 import { formatDayRange } from '../../../lib/date-range';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 import { MEETING_INK } from '../../../lib/palette';
-import { WEEK_GRID_FROM, weekGaps, weekRows } from '../../../lib/co-visit-week';
+import {
+  WEEK_GRID_FROM,
+  asVisited,
+  weekGaps,
+  weekRows,
+  wifeComesOf,
+  wifeStray,
+} from '../../../lib/co-visit-week';
 
 /**
  * The app's own teal, the weekday meeting's ink (lib/palette.ts). This screen
@@ -241,11 +248,32 @@ export default function CoScheduleScreen() {
     };
   };
 
-  const { data: items } = useQuery({
+  const { data: rawItems } = useQuery({
     queryKey: ['co-visit-items', visit?.id],
     queryFn: () => coVisitItemsApi.list(visit!.id),
     enabled: canViewCoSchedule && !!visit,
   });
+  // Whether the overseer's wife comes on this visit decides the whole week
+  // (18 November 2026): when she does not, her rows are left out of the
+  // screen, the gaps and the print — as the server leaves them out of what
+  // people are told — and the planner is offered to clear them.
+  const wifeComes = visit ? wifeComesOf(visit) : false;
+  const items = useMemo(
+    () => (rawItems ? asVisited(rawItems, wifeComes) : rawItems),
+    [rawItems, wifeComes],
+  );
+  const stray = useMemo(
+    () => wifeStray(rawItems ?? [], wifeComes),
+    [rawItems, wifeComes],
+  );
+  // Shepherding calls are seen in full and planned by elders only.
+  const { data: reader } = useQuery({
+    queryKey: ['co-visit-reader'],
+    queryFn: () => coVisitItemsApi.reader(),
+    enabled: canViewCoSchedule,
+    staleTime: 10 * 60 * 1000,
+  });
+  const plansCalls = reader?.elder === true;
 
   const { data: locations } = useQuery({
     queryKey: ['cart-locations'],
@@ -326,7 +354,7 @@ export default function CoScheduleScreen() {
   // An empty week: what starting from the last visit would create
   // (17 November 2026). Asked only when the week has nothing yet — the
   // server lays a template on an empty week alone.
-  const emptyWeek = !!visit && items !== undefined && items.length === 0;
+  const emptyWeek = !!visit && rawItems !== undefined && rawItems.length === 0;
   const { data: template } = useQuery({
     queryKey: ['co-visit-template', visit?.id],
     queryFn: () => coVisitItemsApi.templatePreview(visit!.id),
@@ -375,6 +403,18 @@ export default function CoScheduleScreen() {
       qc.invalidateQueries({ queryKey: ['co-visit-publication', visit?.id] });
       qc.invalidateQueries({ queryKey: ['special-events'] });
     },
+  });
+  // Clearing the wife out of a week she does not come to — one step, and
+  // one step back (18 November 2026).
+  const [wifeUndo, setWifeUndo] = useState<{
+    visitId: string;
+    removed: string[];
+    unjoined: string[];
+  } | null>(null);
+  const clearWifeM = useMutation({
+    mutationFn: () => coVisitItemsApi.clearWife(visit!.id),
+    onSuccess: (done) => setWifeUndo({ visitId: visit!.id, ...done }),
+    onSettled: () => invalidate(),
   });
   // Runs a save routine that may touch both the overseer's row and the
   // wife's paired row, then refreshes once.
@@ -442,7 +482,8 @@ export default function CoScheduleScreen() {
 
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
-  const isSynced = (_it: CoVisitItem) => false;
+  // A call he may not read cannot be opened either (18 November 2026).
+  const isLocked = (it: CoVisitItem) => it.restricted === true;
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -652,6 +693,8 @@ export default function CoScheduleScreen() {
       wifePairId: null,
     });
   const openEdit = (it: CoVisitItem) => {
+    // A call he may not read is not his to open (18 November 2026).
+    if (it.restricted) return;
     const pair =
       !it.forWife && it.kind === 'field_service' ? wifePairOf(it) : null;
     setForm2(it, pair);
@@ -894,9 +937,12 @@ export default function CoScheduleScreen() {
     return out;
   };
 
-  const handlePrint = async () => {
+  // Two sheets, two files (18 November 2026): the one for the notice board
+  // can no longer carry the page with phones, homes and calls behind it.
+  const handlePrint = async (sheet: 'congregation' | 'detail') => {
     const meetings = await buildVisitMeetings();
     const html = buildCoScheduleHtml({
+      sheet,
       visit,
       items: items ?? [],
       locale: loc,
@@ -956,7 +1002,10 @@ export default function CoScheduleScreen() {
       },
     });
     const ok = await exportHtmlAsPdf(html, {
-      fileName: t('coVisit.visitTitle'),
+      fileName:
+        sheet === 'congregation'
+          ? t('coVisit.sheetCongregation')
+          : t('coVisit.sheetDetail'),
     });
     if (!ok.ok && ok.reason === 'popup_blocked') {
       notify(t('coVisit.printBlocked'));
@@ -1026,14 +1075,17 @@ export default function CoScheduleScreen() {
     }
   };
 
-  const addableKinds: ItemKind[] = [
-    'field_service',
-    'lunch',
-    'lunch_box',
-    'pastoral',
-    'pioneers',
-    'elders',
-  ];
+  // Shepherding calls are planned by elders only (18 November 2026).
+  const addableKinds: ItemKind[] = (
+    [
+      'field_service',
+      'lunch',
+      'lunch_box',
+      'pastoral',
+      'pioneers',
+      'elders',
+    ] as ItemKind[]
+  ).filter((k) => k !== 'pastoral' || plansCalls);
 
   // Per-item body, shared by the day view (mirrors the per-section renderers).
   const renderBody = (it: CoVisitItem): ReactNode => {
@@ -1122,7 +1174,7 @@ export default function CoScheduleScreen() {
                   fontFamily: 'Manrope_600SemiBold',
                 }}
               >
-                {isSynced(it) ? t('coVisit.coBadge') : t('coVisit.spouseBadge')}
+                {t('coVisit.spouseBadge')}
               </Text>
             </View>
           ) : null}
@@ -1151,6 +1203,9 @@ export default function CoScheduleScreen() {
           ) : null}
         </>
       );
+    }
+    if (it.kind === 'pastoral' && it.restricted) {
+      return <Text style={styles.itemPlace}>{t('coVisit.callForElders')}</Text>;
     }
     if (it.kind === 'pastoral') {
       return (
@@ -1192,12 +1247,12 @@ export default function CoScheduleScreen() {
             {stranded.map((it) => (
               <Pressable
                 key={it.id}
-                disabled={!canEditVisit}
+                disabled={!canEditVisit || isLocked(it)}
                 style={({ pressed }) => [
                   styles.strandedRow,
-                  pressed && canEditVisit && styles.pressed,
+                  pressed && canEditVisit && !isLocked(it) && styles.pressed,
                 ]}
-                onPress={() => canEditVisit && openEdit(it)}
+                onPress={() => canEditVisit && !isLocked(it) && openEdit(it)}
               >
                 <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
                 <Text style={styles.strandedWhat}>
@@ -1349,6 +1404,51 @@ export default function CoScheduleScreen() {
   };
 
 
+  /**
+   * The overseer's wife does not come, but her rows are still in the week —
+   * laid out from a visit when she came, or left from before the visit said
+   * so (18 November 2026). They are already left out of the screen, the
+   * print and what people are told; one tap clears them for good, and the
+   * same strip as any removal brings them back.
+   */
+  const renderWifeStray = (): ReactNode => {
+    if (!canEditVisit || stray.outings + stray.together === 0) return null;
+    return (
+      <View style={styles.tplCard}>
+        <Text style={styles.tplKick}>{t('coVisit.strayKick')}</Text>
+        <Text style={styles.tplLead}>
+          {[
+            stray.outings > 0
+              ? t('coVisit.strayOutings', { count: stray.outings })
+              : null,
+            stray.together > 0
+              ? t('coVisit.strayTogether', { count: stray.together })
+              : null,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </Text>
+        <Text style={styles.tplWhat}>{t('coVisit.strayWhat')}</Text>
+        <Pressable
+          accessibilityRole="button"
+          disabled={clearWifeM.isPending}
+          onPress={() => clearWifeM.mutate()}
+          style={({ pressed }) => [
+            styles.tplBtn,
+            (pressed || clearWifeM.isPending) && styles.pressed,
+          ]}
+        >
+          {clearWifeM.isPending ? (
+            <ActivityIndicator size="small" color="#ffffff" />
+          ) : (
+            <Ionicons name="trash-outline" size={17} color="#ffffff" />
+          )}
+          <Text style={styles.tplBtnText}>{t('coVisit.strayClear')}</Text>
+        </Pressable>
+      </View>
+    );
+  };
+
   /** «16:40» — the hour an edit goes out. */
   const clockOf = (iso: string) =>
     new Date(iso).toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' });
@@ -1483,6 +1583,11 @@ export default function CoScheduleScreen() {
           {!draft && quiet > 0 ? (
             <Text style={styles.pubNote}>{t('coVisit.pub.quiet', { count: quiet })}</Text>
           ) : null}
+          {(publication.eldersOnly ?? 0) > 0 ? (
+            <Text style={styles.pubNote}>
+              {t('coVisit.pub.eldersOnly', { count: publication.eldersOnly })}
+            </Text>
+          ) : null}
         </View>
       </Sheet>
     );
@@ -1524,6 +1629,8 @@ export default function CoScheduleScreen() {
     } else if (it.kind === 'pioneers' || it.kind === 'elders') {
       const where = [placeShort(it), it.note].filter(Boolean).join(' · ');
       lines.push({ text: where || '—', tone: where ? 'muted' : 'gap' });
+    } else if (it.restricted) {
+      lines.push({ text: t('coVisit.callForElders'), tone: 'muted' });
     } else {
       lines.push(who(it) ? { text: who(it)! } : { text: '—', tone: 'gap' });
       if (it.kind === 'lunch' && it.assigneeAddress)
@@ -1531,16 +1638,17 @@ export default function CoScheduleScreen() {
       if (it.note) lines.push({ text: it.note, tone: 'muted' });
     }
     const ink = kindColor(it.kind);
+    const opens = canEditVisit && !it.restricted;
     return (
       <Pressable
         key={it.id}
-        disabled={!canEditVisit}
-        accessibilityRole={canEditVisit ? 'button' : undefined}
-        onPress={() => canEditVisit && openEdit(it)}
+        disabled={!opens}
+        accessibilityRole={opens ? 'button' : undefined}
+        onPress={() => opens && openEdit(it)}
         style={({ pressed }) => [
           styles.gridItem,
           { backgroundColor: ink.bg, borderLeftColor: ink.fg },
-          pressed && canEditVisit && styles.pressed,
+          pressed && opens && styles.pressed,
         ]}
       >
         {lines.map((l, i) => (
@@ -1752,7 +1860,7 @@ export default function CoScheduleScreen() {
                 .map((it) => (
                   <Pressable
                     key={it.id}
-                    disabled={!canEditVisit || isSynced(it)}
+                    disabled={!canEditVisit || isLocked(it)}
                     style={({ pressed }) => [
                       styles.itemRow,
                       (it.kind === 'pioneers' || it.kind === 'elders') && [
@@ -1761,11 +1869,11 @@ export default function CoScheduleScreen() {
                       ],
                       pressed &&
                         canEditVisit &&
-                        !isSynced(it) &&
+                        !isLocked(it) &&
                         styles.pressed,
                     ]}
                     onPress={() =>
-                      canEditVisit && !isSynced(it) && openEdit(it)
+                      canEditVisit && !isLocked(it) && openEdit(it)
                     }
                   >
                     <Text style={styles.itemTime}>{it.startTime ?? '—'}</Text>
@@ -1788,7 +1896,7 @@ export default function CoScheduleScreen() {
                       </View>
                       {renderBody(it)}
                     </View>
-                    {canEditVisit && !isSynced(it) ? (
+                    {canEditVisit && !isLocked(it) ? (
                       <Ionicons
                         name="chevron-forward"
                         size={16}
@@ -1883,8 +1991,15 @@ export default function CoScheduleScreen() {
       <View style={wideGrid ? styles.topRow : styles.topCol}>
       <View style={[styles.card, wideGrid && styles.topCell]}>
         <Text style={styles.cardTitle}>{coName || t('coVisit.overseer')}</Text>
-        {visit.coWifeName ? (
-          <Kv label={t('coVisit.wife')} value={visit.coWifeName} />
+        {wifeComes || visit.coWifeName?.trim() ? (
+          <Kv
+            label={t('coVisit.wife')}
+            value={
+              wifeComes
+                ? visit.coWifeName?.trim() || t('coVisit.wifeComes')
+                : t('coVisit.wifeStaysName', { name: visit.coWifeName!.trim() })
+            }
+          />
         ) : null}
         <Kv label={t('coVisit.period')} value={period} />
         <Kv
@@ -1908,6 +2023,7 @@ export default function CoScheduleScreen() {
       </View>
       {/* The empty week's one real next step, before anything else to fill. */}
       {renderTemplate()}
+      {renderWifeStray()}
 
       <View style={accStyles.card}>
         <View style={accStyles.head}>
@@ -2045,11 +2161,26 @@ export default function CoScheduleScreen() {
       </Pressable>
 
       <Pressable
+        accessibilityRole="button"
         style={({ pressed }) => [styles.pdfBtn, wideGrid && styles.topCell, pressed && styles.pressed]}
-        onPress={handlePrint}
+        onPress={() => handlePrint('congregation')}
       >
         <Ionicons name="download-outline" size={18} color={BRAND} />
-        <Text style={styles.pdfBtnText}>{t('coVisit.printButton')}</Text>
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.pdfBtnText}>{t('coVisit.sheetCongregation')}</Text>
+          <Text style={styles.pdfBtnSub}>{t('coVisit.sheetCongregationSub')}</Text>
+        </View>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.pdfBtn, wideGrid && styles.topCell, pressed && styles.pressed]}
+        onPress={() => handlePrint('detail')}
+      >
+        <Ionicons name="lock-closed-outline" size={18} color={BRAND} />
+        <View style={{ flexShrink: 1 }}>
+          <Text style={styles.pdfBtnText}>{t('coVisit.sheetDetail')}</Text>
+          <Text style={styles.pdfBtnSub}>{t('coVisit.sheetDetailSub')}</Text>
+        </View>
       </Pressable>
       </View>
 
@@ -2338,14 +2469,14 @@ export default function CoScheduleScreen() {
 
                   {/* ——— Wife's section: her participation, and — when
                       she serves separately — HER partner and HER type. */}
-                  {!form.forWife && visit.coWifeName ? (
+                  {!form.forWife && wifeComes ? (
                     <View style={[styles.personBox, styles.personBoxWife]}>
                       <View style={styles.personHead}>
                         <View
                           style={[styles.pairDot, styles.pairDotWife]}
                         />
                         <Text style={styles.personName}>
-                          {visit.coWifeName}
+                          {visit.coWifeName || t('coVisit.wifeShort')}
                         </Text>
                         <Text style={styles.personRole}>
                           {t('coVisit.wife')}
@@ -2551,6 +2682,20 @@ export default function CoScheduleScreen() {
       </Sheet>
       </KeyboardScroll>
 
+      <UndoBar
+        visible={!!wifeUndo}
+        message={t('coVisit.strayCleared')}
+        onDismiss={() => setWifeUndo(null)}
+        onUndo={async () => {
+          if (!wifeUndo) return;
+          await coVisitItemsApi.unclearWife(wifeUndo.visitId, {
+            removed: wifeUndo.removed,
+            unjoined: wifeUndo.unjoined,
+          });
+          await qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+          await qc.invalidateQueries({ queryKey: ['co-visit-publication'] });
+        }}
+      />
       <UndoBar
         visible={!!undo}
         message={t('coVisit.deleted')}
@@ -2767,9 +2912,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: BRAND,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
   },
   pdfBtnText: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: BRAND },
+  pdfBtnSub: { fontSize: 12, fontFamily: 'Manrope_500Medium', color: '#64748b' },
   pubBar: {
     flexDirection: 'row',
     alignItems: 'center',

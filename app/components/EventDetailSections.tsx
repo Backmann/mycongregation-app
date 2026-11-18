@@ -23,6 +23,7 @@ import {
 } from '../lib/event-view';
 import { formatDay, formatDayRange } from '../lib/date-range';
 import { InvitedChip } from './InvitedChip';
+import { wifeComesOf } from '../lib/co-visit-week';
 
 /**
  * The event's page, by kind (27 September).
@@ -81,7 +82,7 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
         </View>
       </View>
       <Text style={styles.h1}>{title}</Text>
-      {isVisit && event.coWifeName ? (
+      {isVisit && wifeComesOf(event) && event.coWifeName ? (
         <Text style={styles.sub}>{t('specialEvents.page.withWife', { name: event.coWifeName })}</Text>
       ) : null}
       <Text style={styles.dateLine}>

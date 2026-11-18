@@ -2,6 +2,7 @@ import type { CoVisitItem, SpecialEvent } from './api';
 import { formatDateISO } from './dates';
 import { formatDay } from './date-range';
 import { formatDayRange } from './date-range';
+import { wifeComesOf } from './co-visit-week';
 
 /**
  * A congregation meeting during the visit (midweek or weekend), with the
@@ -204,6 +205,7 @@ function congregationPage(
  */
 function overseerPage(
   items: CoVisitItem[],
+  meetings: CoMeetingInfo[],
   locale: string,
   L: CoPdfLabels,
 ): string {
@@ -218,7 +220,10 @@ function overseerPage(
     (i) =>
       !i.forWife && i.kind !== 'document_review' && i.kind !== 'lunch_box',
   );
-  if (visible.length === 0) return '<p class="empty">—</p>';
+  // The congregation's own meetings stand in the day too: the overseer
+  // reads his whole day from one sheet (18 November 2026).
+  if (visible.length === 0 && meetings.length === 0)
+    return '<p class="empty">—</p>';
 
   const pairOf = (co: CoVisitItem): CoVisitItem | null =>
     items.find(
@@ -292,6 +297,8 @@ function overseerPage(
         return [[], who ? [who] : ['—']];
       }
       case 'pastoral': {
+        // Read by someone who is not an elder: the time only.
+        if (i.restricted) return [[], []];
         const who = esc(withPhone(i.assigneeName, i.assigneePhone));
         return [i.note ? [esc(i.note)] : [], who ? [who] : ['—']];
       }
@@ -304,25 +311,42 @@ function overseerPage(
   const cell = (lines: string[]): string =>
     lines.length === 0 ? '' : lines.join('<br/>');
 
-  const dates = Array.from(new Set(visible.map((i) => i.itemDate))).sort();
+  const dates = Array.from(
+    new Set([
+      ...visible.map((i) => i.itemDate),
+      ...meetings.map((m) => m.date),
+    ]),
+  ).sort();
+  const meetingRow = (m: CoMeetingInfo) => `<tr class="meeting-row">
+<td class="t">${esc(m.time || '—')}</td>
+<td class="k">${esc(m.kind === 'midweek' ? L.midweekMeeting : L.weekendMeeting)}</td>
+<td>${esc(m.place ?? '')}</td>
+<td>${m.talks.filter(Boolean).map(esc).join('<br/>')}</td>
+</tr>`;
   const dateCards = dates.map((day) => {
-      const rows = visible
-        .filter((i) => i.itemDate === day)
-        .sort(
-          (a, b) =>
-            (a.startTime ?? '99:99').localeCompare(b.startTime ?? '99:99') ||
-            a.sortOrder - b.sortOrder,
-        )
-        .map((i) => {
-          const [place, who] = cells(i);
-          const rowClass = i.kind === 'lunch' ? ' class="lunch-row"' : '';
-          return `<tr${rowClass}>
+      const rows = [
+        ...meetings
+          .filter((m) => m.date === day)
+          .map((m) => ({ time: m.time || '99:99', order: -1, html: meetingRow(m) })),
+        ...visible
+          .filter((i) => i.itemDate === day)
+          .map((i) => {
+            const [place, who] = cells(i);
+            const rowClass = i.kind === 'lunch' ? ' class="lunch-row"' : '';
+            return {
+              time: (i.startTime ?? '99:99').slice(0, 5),
+              order: i.sortOrder,
+              html: `<tr${rowClass}>
 <td class="t">${esc(i.startTime ?? '—')}</td>
 <td class="k">${esc(kindTitle(i.kind, L))}</td>
 <td>${cell(place)}</td>
 <td>${cell(who)}</td>
-</tr>`;
-        })
+</tr>`,
+            };
+          }),
+      ]
+        .sort((a, b) => a.time.localeCompare(b.time) || a.order - b.order)
+        .map((r) => r.html)
         .join('\n');
       return `<div class="daycard">
   <div class="dayhead">${esc(dayLabel(day, locale))}</div>
@@ -339,6 +363,12 @@ function overseerPage(
 }
 
 export function buildCoScheduleHtml(opts: {
+  /**
+   * Which sheet (18 November 2026): the congregation's — the meetings, no
+   * names — or the detailed one for the overseer and the elders. Two files,
+   * so the notice board never gets the page with phones and homes behind it.
+   */
+  sheet: 'congregation' | 'detail';
   visit: SpecialEvent;
   items: CoVisitItem[];
   locale: string;
@@ -370,7 +400,8 @@ export function buildCoScheduleHtml(opts: {
   const metaChips = (opts2: { withAccommodation: boolean }) =>
     [
       coName ? `<span class="chip chip-name">${esc(coName)}</span>` : '',
-      visit.coWifeName
+      // Named only when she comes on this visit (review, 18 November 2026).
+      wifeComesOf(visit) && visit.coWifeName
         ? `<span class="chip">${esc(L.wife)}: ${esc(visit.coWifeName)}</span>`
         : '',
       `<span class="chip">${esc(period)}</span>`,
@@ -411,7 +442,7 @@ export function buildCoScheduleHtml(opts: {
 
   const page2 = `<section class="page page-second">
   ${pageHead(L.pageForOverseerTitle, L.coScheduleTitle, true)}
-  ${overseerPage(items, locale, L)}
+  ${overseerPage(items, meetings, locale, L)}
   <div class="foot"><span>mycongregation.org</span><span>${esc(
     formatDay(formatDateISO(new Date()), locale, { year: 'always' }),
   )}</span></div>
@@ -460,6 +491,8 @@ export function buildCoScheduleHtml(opts: {
   /* Premium soft fill for lunch rows so they read as a distinct block. */
   .lunch-row td { background: #fff7ed; }
   .lunch-row td.k { color: #c2660c; }
+  .meeting-row td { background: #f0f9ff; }
+  .meeting-row td.k { color: #0c4a6e; }
   /* Day cards — clearly separated blocks */
   .daycard {
     border: 1px solid #e2e8f0;
@@ -514,16 +547,14 @@ export function buildCoScheduleHtml(opts: {
     margin-top: 12px; padding-top: 7px; border-top: 1px solid #eef2f6;
     font-size: 9.5px; color: #94a3b8; display: flex; justify-content: space-between;
   }
-  /* Page 1 (congregation) is portrait; page 2 (overseer) is landscape so long
-     German addresses and names fit on one line and the whole day list fits one
-     sheet. */
+  /* One sheet per file since 18 November 2026: the congregation's, or the
+     detailed one — never both in one document. */
   .page-portrait { page: p1; }
-  .page-second { page: p2; page-break-before: always; }
+  .page-second { page: p2; }
   @page p1 { size: A4 portrait; margin: 12mm; }
   @page p2 { size: A4 portrait; margin: 10mm; }
 </style></head>
 <body>
-  ${page1}
-  ${page2}
+  ${opts.sheet === 'congregation' ? page1 : page2}
 </body></html>`;
 }

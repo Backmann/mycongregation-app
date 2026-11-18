@@ -44,6 +44,7 @@ import { mondayOfISO } from '../../../lib/event-view';
 import { weekRules } from '../../../lib/week-rules';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
 import { InvitedChip } from '../../../components/InvitedChip';
+import { wifeComesOf } from '../../../lib/co-visit-week';
 
 /**
  * The congregation's events (27 September) — what is coming and what it
@@ -334,7 +335,7 @@ function useItemText(item: EventListItem, talkHour: string | null) {
   const coNames = [e.coFirstName, e.coLastName].filter(Boolean).join(' ');
   const title =
     kind === 'circuit_overseer_visit' && coNames
-      ? e.coWifeName
+      ? wifeComesOf(e) && e.coWifeName
         ? t('specialEvents.list.coWithWife', { name: coNames, wife: e.coWifeName })
         : coNames
       : e.title;

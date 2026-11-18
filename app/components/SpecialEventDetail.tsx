@@ -70,6 +70,8 @@ function toForm(e: SpecialEvent): EventFormValue {
     coFirstName: e.coFirstName ?? '',
     coLastName: e.coLastName ?? '',
     coWifeName: e.coWifeName ?? '',
+    // A server older than the switch: a name written down means she comes.
+    coWifeComes: e.coWifeComes ?? !!e.coWifeName?.trim(),
     coRole: e.coRole ?? 'overseer',
     coAccommodationAddress: e.coAccommodationAddress ?? '',
     coMidweekDow: visitMidweekDowOf(e),
@@ -130,6 +132,10 @@ export function SpecialEventDetail({
         coFirstName: form!.coFirstName.trim() || null,
         coLastName: form!.coLastName.trim() || null,
         coWifeName: form!.coWifeName.trim() || null,
+        coWifeComes:
+          form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
+            ? form!.coWifeComes
+            : undefined,
         coRole:
           form!.type.trim() === CIRCUIT_OVERSEER_VISIT_TYPE
             ? form!.coRole
@@ -191,6 +197,8 @@ export function SpecialEventDetail({
         coFirstName: c.firstName,
         coLastName: c.lastName,
         coWifeName: c.wifeName ?? null,
+        // Another overseer: his own wife decides (review, 18 November 2026).
+        coWifeComes: !!c.wifeName?.trim(),
         coRole: c.role,
       }),
     onSuccess: () => invalidateAfterEventChange(qc),

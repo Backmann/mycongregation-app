@@ -8,6 +8,10 @@
  *   dashes in a row.
  * - The screen builds the visit's meetings from the version of each visit
  *   WEEK, never from today's: with no version in force today it showed none.
+ * - Two sheets, two files (18 November 2026): the congregation's sheet holds
+ *   the meetings and no name; the detailed one holds everything, the
+ *   congregation's meetings included, and a shepherding call read by
+ *   someone who is not an elder shows its time only.
  */
 import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -37,6 +41,7 @@ const emit = (rel, as) => {
 try {
   emit('dates.ts', 'dates.mjs');
   emit('date-range.ts', 'date-range.mjs');
+  emit('co-visit-week.ts', 'co-visit-week.mjs');
   emit('coSchedulePdf.ts', 'pdf.mjs');
   const { buildCoScheduleHtml } = await import(pathToFileURL(join(out, 'pdf.mjs')));
   const L = new Proxy({}, { get: (_, k) => (k === 'noPartner' ? 'напарник не назначен' : String(k)) });
@@ -53,9 +58,35 @@ try {
     { ...base, id: 'd', kind: 'lunch_box', itemDate: '2027-02-24', assigneeName: 'BoxMaker' },
   ];
   const visit = { id: 'v', type: 'circuit_overseer_visit', date: '2027-02-23', endDate: '2027-02-28', coFirstName: 'A', coLastName: 'B', coWifeName: null, coMidweekDow: 3 };
-  const html = buildCoScheduleHtml({ visit, items, locale: 'ru', meetings: [], labels: L });
+  const html = buildCoScheduleHtml({ sheet: 'detail', visit, items, locale: 'ru', meetings: [], labels: L });
   const page2 = html.slice(html.indexOf('pageForOverseerTitle'));
   check('page 2 exists', html.includes('pageForOverseerTitle'));
+  check('the detailed sheet is a file of its own', !html.includes('pageForCongregationTitle'));
+  const meetings = [
+    { kind: 'midweek', date: '2027-02-23', time: '19:00', place: 'HallPlace', talks: ['ServiceTalk'] },
+    { kind: 'weekend', date: '2027-02-28', time: '10:00', place: 'HallPlace', talks: ['PublicTalk'] },
+  ];
+  const calls = [
+    { ...base, id: 'p', kind: 'pastoral', itemDate: '2027-02-24', startTime: '16:00', assigneeName: 'ElderName', note: 'FamilyName', placeKind: null, placeText: null },
+    { ...base, id: 'q', kind: 'pastoral', itemDate: '2027-02-25', startTime: '16:00', restricted: true, placeKind: null, placeText: null },
+  ];
+  const board = buildCoScheduleHtml({ sheet: 'congregation', visit, items: [...items, ...calls], locale: 'ru', meetings, labels: L });
+  check('the congregation sheet is a file of its own', board.includes('pageForCongregationTitle') && !board.includes('pageForOverseerTitle'));
+  for (const name of ['TuesdayPartner', 'SundayHost', 'BoxMaker', 'ElderName', 'FamilyName'])
+    check(`no ${name} on the congregation sheet`, !board.includes(name));
+  check('the congregation sheet names the meetings', board.includes('midweekMeeting') && board.includes('ServiceTalk') && board.includes('PublicTalk'));
+  const detail = buildCoScheduleHtml({ sheet: 'detail', visit, items: [...items, ...calls], locale: 'ru', meetings, labels: L });
+  check('the detailed sheet has the meetings of the day', detail.includes('ServiceTalk') && detail.includes('PublicTalk') && detail.includes('weekendMeeting'));
+  check('the detailed sheet has the call for an elder', detail.includes('ElderName') && detail.includes('FamilyName'));
+  const tue = detail.slice(detail.indexOf('TuesdayPartner') - 600, detail.indexOf('TuesdayPartner'));
+  check('a meeting stands in its day by its hour', detail.indexOf('ServiceTalk') > detail.indexOf('TuesdayPartner') && !tue.includes('ServiceTalk'));
+  const restricted = detail.slice(detail.indexOf('2027') >= 0 ? 0 : 0);
+  check('a restricted call shows no dash for a missing elder', !/<td class="k">pastoral<\/td>\s*<td><\/td>\s*<td>—<\/td>/.test(restricted));
+  const alone = { ...visit, coWifeName: 'WifeName', coWifeComes: false };
+  for (const sheet of ['congregation', 'detail'])
+    check(`${sheet}: no wife named when she stays at home`, !buildCoScheduleHtml({ sheet, visit: alone, items, locale: 'ru', meetings, labels: L }).includes('WifeName'));
+  check('the wife named when she comes', buildCoScheduleHtml({ sheet: 'detail', visit: { ...alone, coWifeComes: true }, items, locale: 'ru', meetings, labels: L }).includes('WifeName'));
+  check('no page break before the only sheet', !/page-break-before:\s*always/.test(detail));
   check('Tuesday outing with its partner on the overseer page', page2.includes('TuesdayPartner'));
   check('Sunday lunch with its host on the overseer page', page2.includes('SundayHost'));
   check('no double dash for a missing partner', !/—\s*—/.test(html), (html.match(/.{40}—\s*—.{40}/) || [''])[0]);
