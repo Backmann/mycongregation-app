@@ -222,6 +222,7 @@ export function MetaLine({
   struck?: boolean;
   column?: boolean;
 }) {
+  const { t } = useTranslation();
   if (!place && !length && !sourceUrl) return null;
   return (
     <View style={[styles.meta, column && styles.metaColumn]}>
@@ -233,8 +234,13 @@ export function MetaLine({
       ) : null}
       {length ? (
         <View style={styles.metaItem}>
-          <Ionicons name="time-outline" size={13} color={MUTED} />
-          <Text style={styles.metaText}>{length}</Text>
+          {/* The material's own length — said as a video's, with a play
+              mark: beside a clock, «2:09» read as an hour of the day
+              (Lionel, 18 November 2026). */}
+          <Ionicons name="play-circle-outline" size={13} color={MUTED} />
+          <Text style={styles.metaText}>
+            {t('fieldService.videoLength', { length })}
+          </Text>
         </View>
       ) : null}
       <SourceLink url={sourceUrl} />

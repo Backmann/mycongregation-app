@@ -598,6 +598,29 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   );
 }
 
+// 18 November 2026 (Lionel's phone): a weekday row was titled by its first
+// talk and his own part stood under it as «2.» in orange — nobody could
+// tell what was his. Now: a weekday is titled by what it is, never by a
+// part; his own stands only in one block, each line under words that say
+// whose it is; a video's length is said as one, not beside a clock.
+{
+  const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  check('22а будни не берут заголовок из первой речи', /agenda\[0\]\.text/.test(home), false);
+  check('22б своё — блоком с подписью', /<MineBlock entry=\{en\} title=\{title\} \/>/.test(home), true);
+  check('22в подпись словами у каждой строки', /t\("home\.mine\.youHelp"\) : t\("home\.mine\.you"\)/.test(home), true);
+  check('22г уборка группы — в том же блоке', /home\.mine\.yourGroup/.test(home), true);
+  const meta = readFileSync(join(ROOT, 'components', 'FieldMeetingBlock.tsx'), 'utf8');
+  check('22д длина видео — со словом «видео», не у часов', /fieldService\.videoLength/.test(meta) && !/time-outline/.test(meta), true);
+  const moved = readFileSync(join(ROOT, 'components', 'MovedMark.tsx'), 'utf8');
+  check('22е «перенесена» не оранжевая', /#c2410c|#fff7ed|#9a3412/.test(moved), false);
+  for (const lang of ['ru', 'de', 'en']) {
+    const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
+    for (const k of ['you', 'youHelp', 'wholeMeeting', 'yourGroup', 'afterMeeting', 'cleaning', 'with'])
+      check(`22ж ${lang}: home.mine.${k}`, !!d.home.mine?.[k], true);
+    check(`22ж ${lang}: fieldService.videoLength`, !!d.fieldService.videoLength, true);
+  }
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);
