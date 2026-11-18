@@ -3621,7 +3621,16 @@
         "takeOff": "Remove only the brother",
         "takeOffHint": "The trip stays, marked “brother needed”. The coordinators are told now and reminded 14 and 7 days before if nobody is assigned.",
         "cancelled": "Trip called off",
-        "cancelledHint": "The congregation has been told; no speaker from us is needed. The entry stays in the history as not held."
+        "cancelledHint": "The congregation has been told; no speaker from us is needed. The entry stays in the history as not held.",
+        "move": "Moved to another day",
+        "moveSub": "The brother, talk and congregation stay; only the day changes. The brother is told the new day.",
+        "moveTitle": "Which day was the trip moved to?",
+        "movePick": "Choose a day",
+        "moveTo": "Move to {{day}}",
+        "moveHint": "The brother's absence moves with the trip.",
+        "erase": "Delete the entry entirely — entered by mistake",
+        "eraseTitle": "Delete the trip entirely?",
+        "eraseBody": "{{host}} may be expecting a speaker from us. The brother is told there is no trip, and the other coordinators that the entry was deleted."
       }
     },
     "swap": {

@@ -133,6 +133,22 @@ eq('номер с плюсом', whatsappNumber('+49 151 2345 6789'), '491512345
 eq('номер с 00', whatsappNumber('0049 151 2345 6789'), '4915123456789');
 eq('пустой номер', whatsappNumber('  '), null);
 
+// Deleting a standing trip «от нас» (18 November 2026): besides «only the
+// brother» and «called off» the window offers «moved to another day» (the
+// same entry, a new day) and «delete entirely» with its own question —
+// a trip moved by a new entry left the old one behind as «not held».
+{
+  const log = readFileSync(join(ROOT, 'app', '(app)', 'talk-coordinator', 'log.tsx'), 'utf8');
+  eq('поездку можно перенести той же записью', /input: \{ date: outMove \}/.test(log), true);
+  eq('перенос — первым ответом', log.indexOf("outChoice.move\")") < log.indexOf("outChoice.takeOff\")"), true);
+  eq('удалить совсем — со своим вопросом', /outChoice\.eraseTitle[\s\S]{0,600}removeMutation\.mutateAsync\(editing\.id\)/.test(log), true);
+  for (const lang of ['ru', 'de', 'en']) {
+    const o = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).talkCoordinator.log.outChoice;
+    for (const k of ['move', 'moveSub', 'moveTitle', 'movePick', 'moveTo', 'moveHint', 'erase', 'eraseTitle', 'eraseBody'])
+      eq(`${lang}: outChoice.${k}`, !!o[k], true);
+  }
+}
+
 if (failed) {
   console.error(`✗ ${failed} проверок готовых сообщений не прошли`);
   process.exit(1);

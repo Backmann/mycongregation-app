@@ -57,6 +57,7 @@ import {
   formatRelativeDay,
 } from "../../../lib/relative-time";
 import { PublisherSelector } from "../../../components/PublisherSelector";
+import { DateField } from "../../../components/DateField";
 import { PublicTalkSelector } from "../../../components/PublicTalkSelector";
 import { startOfWeekMonday, addDays, formatDateISO } from "../../../lib/dates";
 import { effectiveVersionFor } from "../../../lib/meeting-schedule";
@@ -918,6 +919,12 @@ export default function TalkExchangeYearScreen() {
    * not as a window on top of it.
    */
   const [outChoice, setOutChoice] = useState(false);
+  /**
+   * «Перенесли на другую дату» (18 November 2026): the trip keeps its
+   * brother, talk and congregation, only the day changes — instead of a new
+   * entry and the old one deleted. Holds the new day while it is chosen.
+   */
+  const [outMove, setOutMove] = useState<string | null>(null);
   const pending =
     createMutation.isPending ||
     updateMutation.isPending ||
@@ -1063,6 +1070,7 @@ export default function TalkExchangeYearScreen() {
   ) => {
     setWeek(w);
     setOutChoice(false);
+    setOutMove(null);
     setEditing(entry ?? null);
     setDirection(dir);
     setDate(entry?.date ?? w.date);
@@ -2616,7 +2624,63 @@ export default function TalkExchangeYearScreen() {
         onClose={() => setOpen(false)}
         closeLabel={t("common.cancel")}
         footer={
-          msg ? undefined : outChoice && editing ? (
+          msg ? undefined : outChoice && editing && outMove !== null ? (
+            <View style={styles.outChoice}>
+              <Text style={styles.outChoiceTitle}>
+                {t("talkCoordinator.log.outChoice.moveTitle")}
+              </Text>
+              <DateField
+                value={outMove || undefined}
+                onChange={(v) => setOutMove(v)}
+                placeholder={t("talkCoordinator.log.outChoice.movePick")}
+              />
+              <Pressable
+                accessibilityRole="button"
+                style={[
+                  styles.outChoiceBtn,
+                  styles.outChoiceBtnMain,
+                  (!outMove ||
+                    outMove < todayISO ||
+                    outMove === editing.date.slice(0, 10)) && { opacity: 0.5 },
+                ]}
+                disabled={
+                  pending ||
+                  !outMove ||
+                  outMove < todayISO ||
+                  outMove === editing.date.slice(0, 10)
+                }
+                onPress={async () => {
+                  await updateMutation.mutateAsync({
+                    id: editing.id,
+                    input: { date: outMove },
+                  });
+                  setOutMove(null);
+                  setOpen(false);
+                }}
+              >
+                <Text style={styles.outChoiceMainText}>
+                  {outMove && outMove >= todayISO
+                    ? t("talkCoordinator.log.outChoice.moveTo", {
+                        day: dayjs(outMove)
+                          .locale(i18n.language)
+                          .format("D MMMM YYYY"),
+                      })
+                    : t("talkCoordinator.log.outChoice.movePick")}
+                </Text>
+                <Text style={styles.outChoiceSub}>
+                  {t("talkCoordinator.log.outChoice.moveHint")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.outChoiceBack}
+                onPress={() => setOutMove(null)}
+              >
+                <Text style={styles.outChoiceBackText}>
+                  {t("common.back")}
+                </Text>
+              </Pressable>
+            </View>
+          ) : outChoice && editing ? (
             <View style={styles.outChoice}>
               <Text style={styles.outChoiceTitle}>
                 {t("talkCoordinator.log.outChoice.title", {
@@ -2626,7 +2690,20 @@ export default function TalkExchangeYearScreen() {
                 })}
               </Text>
               <Pressable
+                accessibilityRole="button"
                 style={[styles.outChoiceBtn, styles.outChoiceBtnMain]}
+                disabled={pending}
+                onPress={() => setOutMove("")}
+              >
+                <Text style={styles.outChoiceMainText}>
+                  {t("talkCoordinator.log.outChoice.move")}
+                </Text>
+                <Text style={styles.outChoiceSub}>
+                  {t("talkCoordinator.log.outChoice.moveSub")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.outChoiceBtn}
                 disabled={pending}
                 onPress={async () => {
                   await updateMutation.mutateAsync({
@@ -2636,7 +2713,7 @@ export default function TalkExchangeYearScreen() {
                   setOpen(false);
                 }}
               >
-                <Text style={styles.outChoiceMainText}>
+                <Text style={styles.outChoiceText}>
                   {t("talkCoordinator.log.outChoice.takeOff")}
                 </Text>
                 <Text style={styles.outChoiceSub}>
@@ -2661,6 +2738,36 @@ export default function TalkExchangeYearScreen() {
                   {t("talkCoordinator.log.outChoice.cancelledHint")}
                 </Text>
               </Pressable>
+              {/* Entered by mistake: the record goes for good, with its own
+                  question; the others who answer for the exchange are told
+                  by the server (18 November 2026). */}
+              <Pressable
+                accessibilityRole="button"
+                style={styles.outChoiceErase}
+                disabled={pending}
+                onPress={async () => {
+                  if (
+                    await confirm({
+                      title: t("talkCoordinator.log.outChoice.eraseTitle"),
+                      body: t("talkCoordinator.log.outChoice.eraseBody", {
+                        host:
+                          congById.get(editing.hostCongregationId ?? "")
+                            ?.name ??
+                          t("talkCoordinator.log.outChoice.otherCongregation"),
+                      }),
+                      confirmLabel: t("common.delete"),
+                      danger: true,
+                    })
+                  ) {
+                    await removeMutation.mutateAsync(editing.id);
+                    setOpen(false);
+                  }
+                }}
+              >
+                <Text style={styles.outChoiceEraseText}>
+                  {t("talkCoordinator.log.outChoice.erase")}
+                </Text>
+              </Pressable>
               <Pressable
                 style={styles.outChoiceBack}
                 onPress={() => setOutChoice(false)}
@@ -2677,6 +2784,8 @@ export default function TalkExchangeYearScreen() {
                 style={styles.deleteBtn}
                 onPress={del}
                 disabled={pending}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.delete")}
               >
                 <Ionicons name="trash-outline" size={18} color="#dc2626" />
               </Pressable>
@@ -3929,6 +4038,14 @@ const styles = StyleSheet.create({
   },
   outChoiceBtnMain: { borderColor: "#0e7490", borderWidth: 1.5, backgroundColor: "#ecfeff" },
   outChoiceMainText: { fontFamily: "Manrope_800ExtraBold", fontSize: 15, color: "#0e7490" },
+  outChoiceText: { fontFamily: "Manrope_800ExtraBold", fontSize: 15, color: "#0f172a" },
+  outChoiceErase: { alignItems: "center", paddingVertical: 8, minHeight: 40, justifyContent: "center" },
+  outChoiceEraseText: {
+    fontFamily: "Manrope_600SemiBold",
+    fontSize: 13.5,
+    color: "#b91c1c",
+    textDecorationLine: "underline",
+  },
   outChoiceDangerText: { fontFamily: "Manrope_800ExtraBold", fontSize: 15, color: "#b91c1c" },
   outChoiceSub: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#475569" },
   outChoiceBack: { alignItems: "center", paddingVertical: 10, minHeight: 44, justifyContent: "center" },

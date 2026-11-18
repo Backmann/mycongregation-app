@@ -3621,7 +3621,16 @@
         "takeOff": "Nur den Bruder austragen",
         "takeOffHint": "Die Reise bleibt mit dem Hinweis „Bruder gesucht“. Die Koordinatoren werden benachrichtigt und 14 und 7 Tage vorher erinnert, falls kein Ersatz gefunden ist.",
         "cancelled": "Reise abgesagt",
-        "cancelledHint": "Die Versammlung ist informiert, ein Redner von uns wird nicht gebraucht. Der Eintrag bleibt im Verlauf als nicht stattgefunden."
+        "cancelledHint": "Die Versammlung ist informiert, ein Redner von uns wird nicht gebraucht. Der Eintrag bleibt im Verlauf als nicht stattgefunden.",
+        "move": "Auf einen anderen Tag verlegt",
+        "moveSub": "Bruder, Vortrag und Versammlung bleiben, nur der Tag ändert sich. Der Bruder erfährt den neuen Tag.",
+        "moveTitle": "Auf welchen Tag wurde die Reise verlegt?",
+        "movePick": "Tag wählen",
+        "moveTo": "Auf {{day}} verlegen",
+        "moveHint": "Die Abwesenheit des Bruders wandert mit der Reise.",
+        "erase": "Eintrag ganz löschen — versehentlich angelegt",
+        "eraseTitle": "Reise ganz löschen?",
+        "eraseBody": "{{host}} erwartet vielleicht einen Redner von uns. Der Bruder erfährt, dass die Reise entfällt, die anderen Koordinatoren, dass der Eintrag gelöscht wurde."
       }
     },
     "swap": {
