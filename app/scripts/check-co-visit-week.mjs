@@ -94,12 +94,23 @@ try {
   check('the empty-week template is asked only for an empty week of a coming visit', /canEditCoSchedule &&\n\s*emptyWeek &&\n\s*\(visit\?\.endDate/.test(screen));
   check('the template card is for those who plan, on a coming visit', /if \(!canEditVisit \|\| !emptyWeek \|\| !template\?\.empty/.test(screen));
   check('the template card comes right after the visit and its gaps', /\{renderGaps\(\)\}\n\s*<\/View>\n[^\n]*\n\s*\{renderTemplate\(\)\}/.test(screen));
+  // Publishing (18 November 2026): a bar above the week for the planners, a
+  // window that names who hears and who must be told by voice.
+  check('the publish bar stands above the week', /\{renderPublishBar\(\)\}\n\s*\{wideGrid \? renderWeekGrid\(\) : renderDayView\(\)\}/.test(screen));
+  check('the publish bar is for those who plan it', /const renderPublishBar[\s\S]{0,120}if \(!canEditVisit \|\| !publication\) return null;/.test(screen));
+  check('every save and undo refreshes the bar', (screen.match(/invalidateQueries\(\{ queryKey: \['co-visit-publication'/g) || []).length >= 4);
+  check('no head count in the published toast (unreached people inside)', !/pub\.done', \{ count/.test(screen));
+  for (const f of [join(ROOT, 'lib', 'push-notifications.ts'), join(ROOT, 'public', 'service-worker.js')])
+    check(`${f.split('/').slice(-2).join('/')}: co_visit opens Home`, /case 'co_visit':\n\s*return \{ path: '\/home'/.test(readFileSync(f, 'utf8')));
+  const sheet = readFileSync(join(ROOT, 'components', 'Sheet.tsx'), 'utf8');
+  check('a centred window without fills fits its content', /const cardHeight = fills\n/.test(sheet));
   const width = readFileSync(join(ROOT, 'lib', 'screen-width.ts'), 'utf8');
   check('the visit schedule is an overview screen', width.includes("'/cart/co-schedule',"));
   for (const lang of ['ru', 'de', 'en']) {
     const c = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).coVisit;
     const jn = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).journal.fieldNames;
     for (const k of ['template_from', 'skipped', 'created']) check(`${lang}: journal.fieldNames.${k}`, !!jn?.[k]);
+    for (const k of ['draftTitle', 'publish', 'publishedTitle', 'liveSub', 'dueSub', 'howItGoes', 'tellYourself', 'done', 'nobodyReachable', 'nobodyYet']) check(`${lang}: coVisit.pub.${k}`, !!c?.pub?.[k]);
     for (const k of ['gapLunchOn', 'gapPartnerCo', 'gapPartnerWife', 'gapPastoral', 'gridMeetings', 'tplTitle', 'tplLead', 'tplWhat', 'tplApply', 'tplPrevious'])
       check(`${lang}: coVisit.${k}`, !!c?.[k]);
   }

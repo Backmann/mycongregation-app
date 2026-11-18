@@ -137,10 +137,14 @@ export function Sheet({
    * Height, not maxHeight: a maximum is a ceiling to grow up to, and there is
    * nothing to grow from.
    */
-  const cardHeight =
-    fills || variant === "centered"
-      ? Math.round(screenH * (variant === "centered" ? 0.85 : 0.9))
-      : undefined;
+  //
+  // A centred window WITHOUT `fills` fits its content, up to the same ceiling
+  // as a bottom sheet: with a fixed height a short window floated its footer
+  // halfway down an empty card (the visit's «Опубликовать», 18 November
+  // 2026). Only a caller that brings its own scroller needs the real height.
+  const cardHeight = fills
+    ? Math.round(screenH * (variant === "centered" ? 0.85 : 0.9))
+    : undefined;
 
   if (variant === "centered" || variant === "bottom") {
     return (

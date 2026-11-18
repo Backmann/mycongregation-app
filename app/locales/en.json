@@ -2301,7 +2301,35 @@
     "tplDone_one": "{{count}} item created — now assign the people",
     "tplDone_other": "{{count}} items created — now assign the people",
     "tplPrevious": "the last visit",
-    "gapPastoral": "shepherding call without an elder:"
+    "gapPastoral": "shepherding call without an elder:",
+    "pub": {
+      "draftTitle": "Draft — the people assigned do not see it yet",
+      "draftSub": "Not on Home, in the calendar or in notifications",
+      "publish": "Publish the schedule",
+      "publishedTitle": "Published {{when}}",
+      "liveSub": "Changes go to the people assigned by themselves",
+      "dueSub": "Changes go to the people assigned at {{time}}",
+      "whoGetsWhat": "Who gets what",
+      "sheetTitleDraft": "Publish the visit schedule",
+      "sheetTitleLive": "Who gets what",
+      "publishNow": "Publish",
+      "howItGoes": "After publishing everything goes by itself: a changed line goes to its person ten minutes after the last edit, a removed one says «no longer assigned»; reminders a week before and the evening before. Nobody is disturbed at night. The meetings with the pioneers and with the elders get reminders only.",
+      "hearNow_one": "Hear now — {{count}} person",
+      "hearNow_other": "Hear now — {{count}} people",
+      "hearSoon_one": "Hears within 10 minutes — {{count}} person",
+      "hearSoon_other": "Hear within 10 minutes — {{count}} people",
+      "byLetter": "by email",
+      "nothingNew": "Nothing new for anybody — everyone knows theirs.",
+      "tellYourself": "Tell them yourself",
+      "noLogin": "no login",
+      "noDevice": "no device or email",
+      "typedAsText": "typed as text",
+      "quiet_one": "Nothing new: {{count}} person",
+      "quiet_other": "Nothing new: {{count}} people",
+      "nobodyReachable": "The app cannot reach anybody assigned — tell them yourself, see below.",
+      "nobodyYet": "Nobody is assigned by their card yet — nobody to tell.",
+      "done": "Schedule published — the people assigned are being told"
+    }
   },
   "witnessing": {
     "recentlyWith": "recently with {{name}}",
@@ -4427,7 +4455,9 @@
       "equipmentAt": "Equipment kept at",
       "permitUntil": "Permit until",
       "template_from": "template from the visit of",
-      "skipped": "left out"
+      "skipped": "left out",
+      "visitPublished": "Visit schedule published",
+      "toldPeople": "People told"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

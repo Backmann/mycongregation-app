@@ -3280,6 +3280,26 @@ export const memorialApi = {
   },
 };
 
+/** How a person would hear of his lines of a visit. */
+export type CoReach = "device" | "email" | "none" | "no_login";
+
+export interface CoVisitPublication {
+  publishedAt: string | null;
+  noticedAt: string | null;
+  /** An edit not yet told: when it goes. */
+  dueAt: string | null;
+  rows: {
+    publisherId: string;
+    name: string;
+    reach: CoReach;
+    /** What he would get now; null — nothing new for him. */
+    title: string | null;
+    body: string | null;
+  }[];
+  /** Lines with a name typed as text: nobody the app can reach. */
+  textOnly: { date: string; time: string | null; kind: string; text: string }[];
+}
+
 export interface CoVisitTemplatePreview {
   /** The week has no item yet — the only week a template is laid on. */
   empty: boolean;
@@ -3312,6 +3332,21 @@ export const coVisitItemsApi = {
   async fieldService(): Promise<CoVisitFieldServiceWeek[]> {
     const { data } = await api.get<CoVisitFieldServiceWeek[]>(
       "/co-visit-items/field-service",
+    );
+    return data;
+  },
+  /** Where the visit's publishing stands, and who would hear what now. */
+  async publication(specialEventId: string): Promise<CoVisitPublication> {
+    const { data } = await api.get<CoVisitPublication>("/co-visit-items/publication", {
+      params: { specialEventId },
+    });
+    return data;
+  },
+  /** Publish the week: from now on it is seen and speaks for itself. */
+  async publish(specialEventId: string): Promise<{ publishedAt: string; told: number }> {
+    const { data } = await api.post<{ publishedAt: string; told: number }>(
+      "/co-visit-items/publish",
+      { specialEventId },
     );
     return data;
   },
@@ -4096,6 +4131,8 @@ export interface SpecialEvent {
   meetingAddress?: string | null;
   /** The Memorial's programme is out (null — still a draft). */
   memorialPublishedAt?: string | null;
+  /** A circuit overseer's visit: null while its week is a draft. */
+  coPublishedAt?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

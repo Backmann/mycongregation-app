@@ -301,8 +301,10 @@ export default function CoScheduleScreen() {
     hallOptions[0]?.address ??
     null;
 
-  const invalidate = () =>
+  const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['co-visit-items', visit?.id] });
+    qc.invalidateQueries({ queryKey: ['co-visit-publication', visit?.id] });
+  };
   const createM = useMutation({
     mutationFn: (input: Parameters<typeof coVisitItemsApi.create>[0]) =>
       coVisitItemsApi.create(input),
@@ -348,12 +350,40 @@ export default function CoScheduleScreen() {
       qc.invalidateQueries({ queryKey: ['co-visit-template', visit?.id] });
     },
   });
+  // Publishing (18 November 2026): a draft is the planner's alone; once
+  // published the week speaks for itself — see the server's co-visit-notice.
+  const { data: publication } = useQuery({
+    queryKey: ['co-visit-publication', visit?.id],
+    queryFn: () => coVisitItemsApi.publication(visit!.id),
+    // While a change waits to go out, ask again: «уйдут в 16:40» must turn
+    // into «уходят сами» once it has gone (review, 18 November 2026).
+    refetchInterval: (q) => (q.state.data?.dueAt ? 60_000 : false),
+    enabled:
+      canEditCoSchedule &&
+      !!visit &&
+      (visit.endDate ?? visit.date) >= formatDateISO(new Date()),
+  });
+  const [pubOpen, setPubOpen] = useState(false);
+  const publishM = useMutation({
+    mutationFn: () => coVisitItemsApi.publish(visit!.id),
+    onSuccess: () => {
+      setPubOpen(false);
+      // No count: «ушло двоим» would include those no device reaches.
+      notify(t('coVisit.pub.done'), undefined, 'success');
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ['co-visit-publication', visit?.id] });
+      qc.invalidateQueries({ queryKey: ['special-events'] });
+    },
+  });
   // Runs a save routine that may touch both the overseer's row and the
   // wife's paired row, then refreshes once.
   const pairM = useMutation({
     mutationFn: (run: () => Promise<void>) => run(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+      // The bar above the week says when the change goes out (review).
+      qc.invalidateQueries({ queryKey: ['co-visit-publication'] });
       setForm(null);
     },
   });
@@ -1318,6 +1348,146 @@ export default function CoScheduleScreen() {
     );
   };
 
+
+  /** «16:40» — the hour an edit goes out. */
+  const clockOf = (iso: string) =>
+    new Date(iso).toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' });
+  /** «12 февр.» */
+  const dayMonthOf = (iso: string) =>
+    new Date(iso).toLocaleDateString(loc, { day: 'numeric', month: 'short' });
+
+  /**
+   * The line above the week (18 November 2026): a draft nobody sees yet, or
+   * a published week that speaks for itself. Only for those who plan it.
+   */
+  const renderPublishBar = (): ReactNode => {
+    if (!canEditVisit || !publication) return null;
+    const draft = !publication.publishedAt;
+    const dot = draft ? '#94a3b8' : publication.dueAt ? '#f59e0b' : '#15803d';
+    return (
+      <View style={styles.pubBar}>
+        <View style={[styles.pubDot, { backgroundColor: dot }]} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={styles.pubTitle}>
+            {draft
+              ? t('coVisit.pub.draftTitle')
+              : t('coVisit.pub.publishedTitle', { when: dayMonthOf(publication.publishedAt!) })}
+          </Text>
+          <Text style={styles.pubSub}>
+            {draft
+              ? t('coVisit.pub.draftSub')
+              : publication.dueAt
+                ? t('coVisit.pub.dueSub', { time: clockOf(publication.dueAt) })
+                : t('coVisit.pub.liveSub')}
+          </Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setPubOpen(true)}
+          style={({ pressed }) => [
+            draft ? styles.pubBtn : styles.pubBtnGhost,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={draft ? styles.pubBtnText : styles.pubBtnGhostText}>
+            {draft ? t('coVisit.pub.publish') : t('coVisit.pub.whoGetsWhat')}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  /** The window before publishing — and, once published, who hears what now. */
+  const renderPublishSheet = (): ReactNode => {
+    if (!publication) return null;
+    const draft = !publication.publishedAt;
+    const news = publication.rows.filter((r) => r.title);
+    const reach = news.filter((r) => r.reach === 'device' || r.reach === 'email');
+    const tellYourself = news.filter((r) => r.reach === 'none' || r.reach === 'no_login');
+    const quiet = publication.rows.filter((r) => !r.title).length;
+    const person = (r: (typeof news)[number], tag?: string) => (
+      <View key={r.publisherId} style={styles.pubRow}>
+        <View style={styles.pubRowHead}>
+          <Text style={styles.pubName}>{r.name}</Text>
+          {tag ? <Text style={styles.pubTag}>{tag}</Text> : null}
+        </View>
+        {(r.body ?? '').split('\n').map((line, i) => (
+          <Text key={i} style={styles.pubLine}>{line}</Text>
+        ))}
+      </View>
+    );
+    return (
+      <Sheet
+        visible={pubOpen}
+        variant={windowW >= WEEK_GRID_FROM ? 'centered' : 'bottom'}
+        title={draft ? t('coVisit.pub.sheetTitleDraft') : t('coVisit.pub.sheetTitleLive')}
+        onClose={() => setPubOpen(false)}
+        closeLabel={t('coVisit.cancel')}
+        footer={
+          draft ? (
+            <View style={styles.modalActions}>
+              <View style={{ flex: 1 }} />
+              <Pressable
+                accessibilityRole="button"
+                disabled={publishM.isPending}
+                onPress={() => publishM.mutate()}
+                style={({ pressed }) => [
+                  styles.saveBtn,
+                  (pressed || publishM.isPending) && styles.pressed,
+                ]}
+              >
+                <Text style={styles.saveText}>{t('coVisit.pub.publishNow')}</Text>
+              </Pressable>
+            </View>
+          ) : undefined
+        }
+      >
+        <View style={{ gap: 14 }}>
+          <Text style={styles.pubNote}>{t('coVisit.pub.howItGoes')}</Text>
+          {reach.length > 0 ? (
+            <View>
+              <Text style={styles.pubSection}>
+                {draft
+                  ? t('coVisit.pub.hearNow', { count: reach.length })
+                  : t('coVisit.pub.hearSoon', { count: reach.length })}
+              </Text>
+              {reach.map((r) => person(r, r.reach === 'email' ? t('coVisit.pub.byLetter') : undefined))}
+            </View>
+          ) : (
+            <Text style={styles.pubNote}>
+              {news.length > 0
+                ? t('coVisit.pub.nobodyReachable')
+                : draft
+                  ? t('coVisit.pub.nobodyYet')
+                  : t('coVisit.pub.nothingNew')}
+            </Text>
+          )}
+          {tellYourself.length + publication.textOnly.length > 0 ? (
+            <View>
+              <Text style={[styles.pubSection, { color: '#b91c1c' }]}>
+                {t('coVisit.pub.tellYourself')}
+              </Text>
+              {tellYourself.map((r) =>
+                person(r, r.reach === 'no_login' ? t('coVisit.pub.noLogin') : t('coVisit.pub.noDevice')),
+              )}
+              {publication.textOnly.map((x, i) => (
+                <View key={`t${i}`} style={styles.pubRow}>
+                  <Text style={styles.pubName}>{x.text}</Text>
+                  <Text style={styles.pubLine}>
+                    {`${dayShort(x.date)}${x.time ? ` · ${x.time}` : ''} — ${kindShort(x.kind)} · ${t('coVisit.pub.typedAsText')}`}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {!draft && quiet > 0 ? (
+            <Text style={styles.pubNote}>{t('coVisit.pub.quiet', { count: quiet })}</Text>
+          ) : null}
+        </View>
+      </Sheet>
+    );
+  };
+
   /** The place of an outing in a few words, for a table cell. */
   const placeShort = (it: CoVisitItem) => {
     if (it.placeKind === 'cart_location') return it.cartLocationName ?? t('coVisit.cartLocation');
@@ -1884,7 +2054,9 @@ export default function CoScheduleScreen() {
       </View>
 
 
+      {renderPublishBar()}
       {wideGrid ? renderWeekGrid() : renderDayView()}
+      {renderPublishSheet()}
 
       <Dialog
         visible={!!kindPickerDay}
@@ -2388,6 +2560,7 @@ export default function CoScheduleScreen() {
             await coVisitItemsApi.restore(id);
           }
           await qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+          await qc.invalidateQueries({ queryKey: ['co-visit-publication'] });
         }}
       />
     </View>
@@ -2597,6 +2770,33 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   pdfBtnText: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: BRAND },
+  pubBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 8,
+    flexWrap: 'wrap',
+  },
+  pubDot: { width: 10, height: 10, borderRadius: 5 },
+  pubTitle: { fontFamily: 'Manrope_700Bold', fontSize: 14.5, color: '#0f172a' },
+  pubSub: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 2 },
+  pubBtn: { backgroundColor: BRAND, borderRadius: 12, paddingHorizontal: 16, minHeight: 44, justifyContent: 'center' },
+  pubBtnText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#ffffff' },
+  pubBtnGhost: { borderWidth: 1.5, borderColor: BRAND, borderRadius: 12, paddingHorizontal: 14, minHeight: 44, justifyContent: 'center' },
+  pubBtnGhostText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: BRAND },
+  pubNote: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#334155', lineHeight: 19 },
+  pubSection: { fontFamily: 'Manrope_800ExtraBold', fontSize: 12, letterSpacing: 0.6, color: BRAND, textTransform: 'uppercase', marginBottom: 4 },
+  pubRow: { paddingVertical: 9, borderTopWidth: 1, borderTopColor: '#eef0f3', gap: 2 },
+  pubRowHead: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  pubName: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#0f172a' },
+  pubTag: { fontFamily: 'Manrope_700Bold', fontSize: 11, color: '#64748b', backgroundColor: '#f1f5f9', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
+  pubLine: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#334155', lineHeight: 18 },
   tplCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
