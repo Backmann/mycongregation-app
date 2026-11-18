@@ -2269,9 +2269,6 @@
     "strandedHint": "Diese Punkte liegen an Tagen, die der Besuch nicht mehr umfasst — der Zeitraum wurde gekürzt. Sie erscheinen im PDF, sind im Plan aber unsichtbar. Öffnen Sie sie zum Verschieben oder Löschen.",
     "readinessTitle": "Noch offen",
     "gapAccommodation": "Unterkunft",
-    "gapLunches_one": "{{count}} Tag ohne Mittagessen",
-    "gapLunches_other": "{{count}} Tage ohne Mittagessen",
-    "gapPartners": "Einsätze ohne Partner: {{count}}",
     "never": {
       "lunch": "noch nie bewirtet",
       "lunch_box": "noch nie vorbereitet",
@@ -2288,7 +2285,11 @@
     },
     "deleted": "Punkt gelöscht",
     "accHallLabel": "Oder im Königreichssaal",
-    "pastReadOnly": "Der Besuch ist vorbei — das Programm ist schreibgeschützt"
+    "pastReadOnly": "Der Besuch ist vorbei — das Programm ist schreibgeschützt",
+    "gapLunchOn": "Mittagessen:",
+    "gapPartnerCo": "Begleiter des Kreisaufsehers:",
+    "gapPartnerWife": "Begleiterin der Ehefrau:",
+    "gridMeetings": "Zusammenkünfte der Versammlung"
   },
   "witnessing": {
     "recentlyWith": "kürzlich mit {{name}}",

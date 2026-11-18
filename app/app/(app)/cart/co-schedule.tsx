@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -48,6 +49,16 @@ import { useAllPublishers } from '../../../lib/useAllPublishers';
 import { failsScreen } from '../../../lib/screen-failure';
 import { formatDayRange } from '../../../lib/date-range';
 import { useMeetingMoves } from '../../../lib/useMeetingMoves';
+import { MEETING_INK } from '../../../lib/palette';
+import { WEEK_GRID_FROM, weekGaps, weekRows } from '../../../lib/co-visit-week';
+
+/**
+ * The app's own teal, the weekday meeting's ink (lib/palette.ts). This screen
+ * used to be the one place in sky blue — audit, 17 November 2026.
+ */
+const BRAND = MEETING_INK.midweek;
+/** Slots that come back every day of a visit: an empty one is worth a «+». */
+const REPEATING = new Set(['field_service', 'lunch', 'lunch_box']);
 
 const WEEKDAY_ANCHOR = [
   '2024-01-01',
@@ -150,6 +161,11 @@ export default function CoScheduleScreen() {
   const loc = i18n.language;
 
   const [form, setForm] = useState<FormState | null>(null);
+  // The table needs room the window alone does not tell: the side menu takes
+  // part of it. Measured from the scroller itself.
+  const [contentW, setContentW] = useState(0);
+  const wideGrid = contentW >= WEEK_GRID_FROM;
+  const windowW = useWindowDimensions().width;
   const [kindPickerDay, setKindPickerDay] = useState<string | null>(null);
   /** What was just removed and can still be brought back with one tap. */
   const [undo, setUndo] = useState<{ ids: string[] } | null>(null);
@@ -351,43 +367,18 @@ export default function CoScheduleScreen() {
    * Only facts, and only the ones this screen owns: nothing here scolds, and a
    * visit with nothing outstanding says nothing at all.
    */
-  const readiness = useMemo(() => {
-    const list = items ?? [];
-    const gaps: string[] = [];
-
-    const accommodationSet =
-      !!visit?.coAccommodationPublisherId ||
-      !!visit?.coAccommodationAddress?.trim();
-    if (!accommodationSet) gaps.push(t('coVisit.gapAccommodation'));
-
-    const lunchDays = new Set(
-      list
-        .filter((i) => i.kind === 'lunch' || i.kind === 'lunch_box')
-        .map((i) => i.itemDate),
-    );
-    const daysWithoutLunch = days.filter((d) => !lunchDays.has(d));
-    if (days.length > 0 && daysWithoutLunch.length > 0) {
-      gaps.push(
-        t('coVisit.gapLunches', { count: daysWithoutLunch.length }),
-      );
-    }
-
-    // Going out together, husband and wife ARE each other's company — asking
-    // for a third name would invent a gap that does not exist. That is what
-    // withWife records, and it is why this line reported one missing partner
-    // for an outing that was fully arranged.
-    const withoutPartner = list.filter(
-      (i) =>
-        i.kind === 'field_service' &&
-        !i.withWife &&
-        !(i.assigneeName ?? i.assigneeText ?? '').trim(),
-    ).length;
-    if (withoutPartner > 0) {
-      gaps.push(t('coVisit.gapPartners', { count: withoutPartner }));
-    }
-
-    return gaps;
-  }, [items, days, visit, t]);
+  const gaps = useMemo(
+    () =>
+      weekGaps(
+        items ?? [],
+        days,
+        !!visit?.coAccommodationPublisherId ||
+          !!visit?.coAccommodationAddress?.trim(),
+      ),
+    [items, days, visit],
+  );
+  const hasGaps =
+    gaps.accommodation || gaps.lunchDays.length > 0 || gaps.partners.length > 0;
 
   // The wife's schedule mirrors the overseer's joint field-service day, so
   // that day shows on both sides from a single source of truth (no dupes).
@@ -395,7 +386,7 @@ export default function CoScheduleScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
+        <ActivityIndicator size="large" color={BRAND} />
       </View>
     );
   }
@@ -580,12 +571,12 @@ export default function CoScheduleScreen() {
   const visitIsOver = (visit.endDate ?? visit.date) < todayISO;
   const canEditVisit = canEditCoSchedule && !visitIsOver;
 
-  const openCreate = (kind: ItemKind, day?: string) =>
+  const openCreate = (kind: ItemKind, day?: string, time?: string | null) =>
     setForm({
       id: null,
       kind,
       itemDate: day ?? days[0] ?? visit.date,
-      startTime: '',
+      startTime: time ?? '',
       placeKind: 'kingdom_hall',
       cartLocationId: null,
       placeText: '',
@@ -971,7 +962,7 @@ export default function CoScheduleScreen() {
       case 'pioneers':
         return { bg: '#ccfbf1', fg: '#0f766e' };
       default:
-        return { bg: '#e0f2fe', fg: '#0369a1' };
+        return { bg: '#eef0ff', fg: '#3730a3' };
     }
   };
 
@@ -1126,6 +1117,290 @@ export default function CoScheduleScreen() {
     );
   };
 
+  // Items on days the visit no longer has — shared by the list and the table.
+  const renderStranded = (stranded: CoVisitItem[]): ReactNode => (
+    <>
+      {stranded.length > 0 ? (
+          <View style={styles.strandedCard}>
+            <View style={styles.strandedHead}>
+              <Ionicons name="alert-circle-outline" size={15} color="#b45309" />
+              <Text style={styles.strandedTitle}>
+                {t('coVisit.strandedTitle')}
+              </Text>
+            </View>
+            <Text style={styles.strandedHint}>{t('coVisit.strandedHint')}</Text>
+            {stranded.map((it) => (
+              <Pressable
+                key={it.id}
+                disabled={!canEditVisit}
+                style={({ pressed }) => [
+                  styles.strandedRow,
+                  pressed && canEditVisit && styles.pressed,
+                ]}
+                onPress={() => canEditVisit && openEdit(it)}
+              >
+                <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
+                <Text style={styles.strandedWhat}>
+                  {t(`coVisit.short${it.kind === 'field_service' ? 'FieldService' : it.kind === 'lunch' ? 'Lunch' : it.kind === 'lunch_box' ? 'LunchBox' : it.kind === 'pastoral' ? 'Pastoral' : it.kind === 'pioneers' ? 'Pioneers' : it.kind === 'elders' ? 'Elders' : 'Docs'}`)}
+                  {it.startTime ? ` · ${it.startTime}` : ''}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+    </>
+  );
+
+
+  /** «вт 23» — the day as the table's head and the gaps name it. */
+  const dayShort = (iso: string) => {
+    const d = new Date(`${iso}T00:00:00`);
+    return `${d.toLocaleDateString(loc, { weekday: 'short' }).replace('.', '')} ${d.getDate()}`;
+  };
+
+  /**
+   * «Ещё не назначено», each gap with its day (audit, 17 November 2026):
+   * «обед не назначен на 1 день» left the planner searching the week. A day
+   * or an outing is a button that opens exactly what is missing.
+   */
+  const renderGaps = (): ReactNode => {
+    if (!canEditVisit || !hasGaps) return null;
+    const chip = (key: string, label: string, onPress: () => void) => (
+      <Pressable
+        key={key}
+        accessibilityRole="button"
+        onPress={onPress}
+        style={({ pressed }) => [styles.gapChip, pressed && styles.pressed]}
+      >
+        <Text style={styles.gapChipText}>{label}</Text>
+      </Pressable>
+    );
+    const coOf = (wifeId: string) =>
+      (items ?? []).find((c) => !c.forWife && wifePairOf(c)?.id === wifeId);
+    const coPartners = gaps.partners.filter((g) => !g.wife);
+    const wifePartners = gaps.partners.filter((g) => g.wife);
+    const openGap = (id: string, wife: boolean) => {
+      const it = (items ?? []).find((x) => x.id === id);
+      if (!it) return;
+      openEdit(wife ? (coOf(id) ?? it) : it);
+    };
+    return (
+      <View style={[styles.readinessCard, wideGrid && styles.topCell]}>
+        <View style={styles.readinessHead}>
+          <Ionicons name="list-outline" size={15} color="#92400e" />
+          <Text style={styles.readinessTitle}>{t('coVisit.readinessTitle')}</Text>
+        </View>
+        {gaps.accommodation ? (
+          <Text style={styles.readinessBody}>{t('coVisit.gapAccommodation')}</Text>
+        ) : null}
+        {gaps.lunchDays.length > 0 ? (
+          <View style={styles.gapLine}>
+            <Text style={styles.readinessBody}>{t('coVisit.gapLunchOn')}</Text>
+            {gaps.lunchDays.map((d) =>
+              chip(`l${d}`, dayShort(d), () => openCreate('lunch', d)),
+            )}
+          </View>
+        ) : null}
+        {coPartners.length > 0 ? (
+          <View style={styles.gapLine}>
+            <Text style={styles.readinessBody}>{t('coVisit.gapPartnerCo')}</Text>
+            {coPartners.map((g) =>
+              chip(`p${g.id}`, g.time ? `${dayShort(g.date)} · ${g.time}` : dayShort(g.date), () =>
+                openGap(g.id, false),
+              ),
+            )}
+          </View>
+        ) : null}
+        {wifePartners.length > 0 ? (
+          <View style={styles.gapLine}>
+            <Text style={styles.readinessBody}>{t('coVisit.gapPartnerWife')}</Text>
+            {wifePartners.map((g) =>
+              chip(`w${g.id}`, g.time ? `${dayShort(g.date)} · ${g.time}` : dayShort(g.date), () =>
+                openGap(g.id, true),
+              ),
+            )}
+          </View>
+        ) : null}
+      </View>
+    );
+  };
+
+  /** The place of an outing in a few words, for a table cell. */
+  const placeShort = (it: CoVisitItem) => {
+    if (it.placeKind === 'cart_location') return it.cartLocationName ?? t('coVisit.cartLocation');
+    if (it.placeKind === 'custom') return it.placeText ?? '';
+    if (it.placeKind === 'kingdom_hall') return t('coVisit.kingdomHall');
+    return '';
+  };
+
+  /** One item in a cell of the table: who, then where or what. */
+  const renderCell = (it: CoVisitItem): ReactNode => {
+    const who = (x: CoVisitItem) => x.assigneeName ?? x.assigneeText ?? null;
+    const lines: { text: string; tone?: 'gap' | 'muted' }[] = [];
+    if (it.kind === 'field_service') {
+      const pair = !it.forWife && !it.withWife ? wifePairOf(it) : null;
+      if (it.withWife) {
+        lines.push({ text: t('coVisit.spouseBadge') });
+        if (who(it)) lines.push({ text: who(it)! });
+      } else {
+        const lead = it.forWife ? t('coVisit.wifeShort') : t('coVisit.coShort');
+        lines.push(
+          who(it)
+            ? { text: `${lead}: ${who(it)}` }
+            : { text: `${lead}: ${t('coVisit.noPartner')}`, tone: 'gap' },
+        );
+        if (pair)
+          lines.push(
+            who(pair)
+              ? { text: `${t('coVisit.wifeShort')}: ${who(pair)}` }
+              : { text: `${t('coVisit.wifeShort')}: ${t('coVisit.noPartner')}`, tone: 'gap' },
+          );
+      }
+      const where = [placeShort(it), it.note].filter(Boolean).join(' · ');
+      if (where) lines.push({ text: where, tone: 'muted' });
+    } else if (it.kind === 'pioneers' || it.kind === 'elders') {
+      const where = [placeShort(it), it.note].filter(Boolean).join(' · ');
+      lines.push({ text: where || '—', tone: where ? 'muted' : 'gap' });
+    } else {
+      lines.push(who(it) ? { text: who(it)! } : { text: '—', tone: 'gap' });
+      if (it.kind === 'lunch' && it.assigneeAddress)
+        lines.push({ text: it.assigneeAddress, tone: 'muted' });
+      if (it.note) lines.push({ text: it.note, tone: 'muted' });
+    }
+    const ink = kindColor(it.kind);
+    return (
+      <Pressable
+        key={it.id}
+        disabled={!canEditVisit}
+        accessibilityRole={canEditVisit ? 'button' : undefined}
+        onPress={() => canEditVisit && openEdit(it)}
+        style={({ pressed }) => [
+          styles.gridItem,
+          { backgroundColor: ink.bg, borderLeftColor: ink.fg },
+          pressed && canEditVisit && styles.pressed,
+        ]}
+      >
+        {lines.map((l, i) => (
+          <Text
+            key={i}
+            style={[
+              i === 0 ? styles.gridLead : styles.gridLine,
+              l.tone === 'muted' && styles.gridMuted,
+              l.tone === 'gap' && styles.gridGap,
+            ]}
+          >
+            {l.text}
+          </Text>
+        ))}
+      </Pressable>
+    );
+  };
+
+  /**
+   * The week as a table, on a wide screen (audit, 17 November 2026): slots
+   * down the side, days across. The meetings stay read-only, as in the list;
+   * an empty cell adds an item of that slot on that day; a day without any
+   * lunch shows its lunch cells in amber.
+   */
+  const renderWeekGrid = (): ReactNode => {
+    const all = (items ?? []).filter(visibleInMode);
+    const rows = weekRows(all, days);
+    const dayset = new Set(days);
+    const stranded = all.filter((i) => !dayset.has(i.itemDate));
+    const noLunch = new Set(gaps.lunchDays);
+    const meetingsOn = (d: string) => visitMeetings.filter((m) => m.date === d);
+    const hasMeetings = days.some((d) => meetingsOn(d).length > 0);
+    const slotName = (kind: string, time: string | null) =>
+      time ? `${kindShort(kind)}\n${time}` : kindShort(kind);
+    return (
+      <View style={styles.section}>
+        <View style={styles.gridCard}>
+          <View style={styles.gridRow}>
+            <View style={styles.gridSide} />
+            {days.map((d) => (
+              <View key={d} style={styles.gridHead}>
+                <Text style={styles.gridHeadDay}>{dayShort(d)}</Text>
+                {canEditVisit ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`${t('coVisit.add')} · ${fmt(d)}`}
+                    onPress={() => setKindPickerDay(d)}
+                    style={({ pressed }) => [styles.gridHeadAdd, pressed && styles.pressed]}
+                  >
+                    <Ionicons name="add" size={16} color={BRAND} />
+                  </Pressable>
+                ) : null}
+              </View>
+            ))}
+          </View>
+          {hasMeetings ? (
+            <View style={styles.gridRow}>
+              <View style={styles.gridSide}>
+                <Text style={styles.gridSideText}>{t('coVisit.gridMeetings')}</Text>
+              </View>
+              {days.map((d) => (
+                <View key={d} style={styles.gridCell}>
+                  {meetingsOn(d).map((m) => (
+                    <View key={m.kind} style={styles.gridMeeting}>
+                      <Text style={styles.gridLead}>
+                        {m.kind === 'midweek' ? t('coVisit.midweekMeeting') : t('coVisit.weekendMeeting')}
+                      </Text>
+                      {m.time ? <Text style={styles.gridLine}>{m.time}</Text> : null}
+                      {m.talks.length > 0 ? (
+                        <Text style={[styles.gridLine, styles.gridMuted]}>{m.talks.join(' · ')}</Text>
+                      ) : null}
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {rows.map((row) => (
+            <View key={row.key} style={styles.gridRow}>
+              <View style={styles.gridSide}>
+                <View style={[styles.gridDot, { backgroundColor: kindColor(row.kind).fg }]} />
+                <Text style={styles.gridSideText}>{slotName(row.kind, row.time)}</Text>
+              </View>
+              {row.cells.map((c) => {
+                const lunchGap =
+                  (row.kind === 'lunch' || row.kind === 'lunch_box') && noLunch.has(c.date);
+                return (
+                  <View key={c.date} style={styles.gridCell}>
+                    {c.items.map(renderCell)}
+                    {c.items.length === 0 ? (
+                      // A «+» only in the slots that repeat day after day —
+                      // outings and lunches. A meeting with the pioneers or a
+                      // shepherding call happens once: six dashed boxes beside
+                      // it were noise, and the day's own «+» adds it anywhere.
+                      canEditVisit && REPEATING.has(row.kind) ? (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`${t('coVisit.add')}: ${kindShort(row.kind)} · ${fmt(c.date)}${row.time ? ` · ${row.time}` : ''}`}
+                          onPress={() => openCreate(row.kind as ItemKind, c.date, row.time)}
+                          style={({ pressed }) => [
+                            styles.gridEmpty,
+                            lunchGap && styles.gridEmptyGap,
+                            pressed && styles.pressed,
+                          ]}
+                        >
+                          <Ionicons name="add" size={14} color={lunchGap ? '#b45309' : '#94a3b8'} />
+                        </Pressable>
+                      ) : REPEATING.has(row.kind) ? (
+                        <View style={[styles.gridEmpty, lunchGap && styles.gridEmptyGap]} />
+                      ) : null
+                    ) : null}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+          {rows.length === 0 ? <Text style={styles.muted}>{t('coVisit.empty')}</Text> : null}
+        </View>
+        {renderStranded(stranded)}
+      </View>
+    );
+  };
+
   // Chronological view: every event of a day, in time order, across all types.
   const renderDayView = () => {
     const all = (items ?? [])
@@ -1178,7 +1453,7 @@ export default function CoScheduleScreen() {
                     ]}
                     onPress={() => setKindPickerDay(day)}
                   >
-                    <Ionicons name="add" size={18} color="#0ea5e9" />
+                    <Ionicons name="add" size={18} color={BRAND} />
                     <Text style={styles.addText}>{t('coVisit.add')}</Text>
                   </Pressable>
                 ) : null}
@@ -1192,7 +1467,7 @@ export default function CoScheduleScreen() {
                     <Ionicons
                       name="people-outline"
                       size={15}
-                      color="#0369a1"
+                      color={BRAND}
                     />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.meetingTitle}>
@@ -1262,34 +1537,7 @@ export default function CoScheduleScreen() {
             </View>
           ))
         )}
-        {stranded.length > 0 ? (
-          <View style={styles.strandedCard}>
-            <View style={styles.strandedHead}>
-              <Ionicons name="alert-circle-outline" size={15} color="#b45309" />
-              <Text style={styles.strandedTitle}>
-                {t('coVisit.strandedTitle')}
-              </Text>
-            </View>
-            <Text style={styles.strandedHint}>{t('coVisit.strandedHint')}</Text>
-            {stranded.map((it) => (
-              <Pressable
-                key={it.id}
-                disabled={!canEditVisit}
-                style={({ pressed }) => [
-                  styles.strandedRow,
-                  pressed && canEditVisit && styles.pressed,
-                ]}
-                onPress={() => canEditVisit && openEdit(it)}
-              >
-                <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
-                <Text style={styles.strandedWhat}>
-                  {t(`coVisit.short${it.kind === 'field_service' ? 'FieldService' : it.kind === 'lunch' ? 'Lunch' : it.kind === 'lunch_box' ? 'LunchBox' : it.kind === 'pastoral' ? 'Pastoral' : it.kind === 'pioneers' ? 'Pioneers' : it.kind === 'elders' ? 'Elders' : 'Docs'}`)}
-                  {it.startTime ? ` · ${it.startTime}` : ''}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
+        {renderStranded(stranded)}
       </View>
     );
   };
@@ -1366,8 +1614,11 @@ export default function CoScheduleScreen() {
       <KeyboardScroll
         style={styles.container}
         contentContainerStyle={styles.content}
+        onLayout={(e) => setContentW(e.nativeEvent.layout.width)}
       >
-      <View style={styles.card}>
+      {/* On a wide screen the visit and its gaps stand side by side. */}
+      <View style={wideGrid ? styles.topRow : styles.topCol}>
+      <View style={[styles.card, wideGrid && styles.topCell]}>
         <Text style={styles.cardTitle}>{coName || t('coVisit.overseer')}</Text>
         {visit.coWifeName ? (
           <Kv label={t('coVisit.wife')} value={visit.coWifeName} />
@@ -1390,17 +1641,8 @@ export default function CoScheduleScreen() {
 
       {/* Only for those who can actually close the gaps; for everyone else it
           would be a list of other people's homework. */}
-      {canEditVisit && readiness.length > 0 ? (
-        <View style={styles.readinessCard}>
-          <View style={styles.readinessHead}>
-            <Ionicons name="list-outline" size={15} color="#92400e" />
-            <Text style={styles.readinessTitle}>
-              {t('coVisit.readinessTitle')}
-            </Text>
-          </View>
-          <Text style={styles.readinessBody}>{readiness.join(' · ')}</Text>
-        </View>
-      ) : null}
+      {renderGaps()}
+      </View>
 
       <View style={accStyles.card}>
         <View style={accStyles.head}>
@@ -1527,25 +1769,27 @@ export default function CoScheduleScreen() {
         )}
       </View>
 
+      <View style={wideGrid ? styles.topRow : styles.topCol}>
       <Pressable
-        style={({ pressed }) => [styles.linkBtn, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.linkBtn, wideGrid && styles.topCell, pressed && styles.pressed]}
         onPress={() => router.push(`/schedule?week=${weekMonday}` as never)}
       >
-        <Ionicons name="calendar-outline" size={20} color="#0ea5e9" />
+        <Ionicons name="calendar-outline" size={20} color={BRAND} />
         <Text style={styles.linkText}>{t('coVisit.openMeetingProgram')}</Text>
         <Ionicons name="chevron-forward" size={18} color="#cbd5e1" />
       </Pressable>
 
       <Pressable
-        style={({ pressed }) => [styles.pdfBtn, pressed && styles.pressed]}
+        style={({ pressed }) => [styles.pdfBtn, wideGrid && styles.topCell, pressed && styles.pressed]}
         onPress={handlePrint}
       >
-        <Ionicons name="download-outline" size={18} color="#ffffff" />
+        <Ionicons name="download-outline" size={18} color={BRAND} />
         <Text style={styles.pdfBtnText}>{t('coVisit.printButton')}</Text>
       </Pressable>
+      </View>
 
 
-      {renderDayView()}
+      {wideGrid ? renderWeekGrid() : renderDayView()}
 
       <Dialog
         visible={!!kindPickerDay}
@@ -1576,7 +1820,10 @@ export default function CoScheduleScreen() {
 
       <Sheet
         visible={!!form}
-        variant="bottom"
+        // On a wide screen the form floats in the middle instead of
+        // stretching across the whole window over the side menu (audit,
+        // 17 November 2026).
+        variant={windowW >= WEEK_GRID_FROM ? 'centered' : 'bottom'}
         title={formTitle}
         onClose={() => setForm(null)}
         closeLabel={t('coVisit.cancel')}
@@ -2070,6 +2317,58 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
+  gapLine: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 6, marginTop: 6 },
+  gapChip: {
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#f59e0b',
+    backgroundColor: '#fffbeb',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  gapChipText: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: '#92400e' },
+  gridCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 12,
+    gap: 6,
+  },
+  gridRow: { flexDirection: 'row', gap: 6, alignItems: 'stretch' },
+  gridSide: { width: 116, paddingTop: 8, flexDirection: 'row', gap: 6, alignItems: 'flex-start' },
+  gridSideText: { flex: 1, fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: '#334155', lineHeight: 17 },
+  gridDot: { width: 8, height: 8, borderRadius: 4, marginTop: 4 },
+  gridHead: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 10,
+    paddingLeft: 10,
+    minHeight: 40,
+  },
+  gridHeadDay: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: '#0f172a' },
+  gridHeadAdd: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  gridCell: { flex: 1, minWidth: 0, gap: 4 },
+  gridItem: { borderRadius: 10, borderLeftWidth: 3, paddingHorizontal: 8, paddingVertical: 6 },
+  gridMeeting: { borderRadius: 10, backgroundColor: '#e0f1f5', paddingHorizontal: 8, paddingVertical: 6 },
+  gridLead: { fontFamily: 'Manrope_700Bold', fontSize: 12.5, color: '#0f172a', lineHeight: 17 },
+  gridLine: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: '#334155', lineHeight: 16 },
+  gridMuted: { color: '#64748b' },
+  gridGap: { color: '#b45309', fontFamily: 'Manrope_700Bold' },
+  gridEmpty: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gridEmptyGap: { borderColor: '#f59e0b', backgroundColor: '#fffbeb' },
   readinessBody: { fontFamily: 'Manrope_400Regular', fontSize: 13.5, color: '#78350f', lineHeight: 19 },
   meetingRow: {
     flexDirection: 'row',
@@ -2078,7 +2377,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: '#f0f9ff',
+    backgroundColor: '#f0f8fa',
     marginBottom: 6,
   },
   meetingTitle: {
@@ -2086,7 +2385,7 @@ const styles = StyleSheet.create({
     color: '#0c4a6e',
     fontFamily: 'Manrope_600SemiBold',
   },
-  meetingTalks: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#0369a1', marginTop: 1 },
+  meetingTalks: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: BRAND, marginTop: 1 },
   strandedCard: {
     marginTop: 12,
     padding: 12,
@@ -2129,7 +2428,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   visitBarInner: { paddingHorizontal: 12, paddingVertical: 8, gap: 6 },
-  visitChipCurrent: { backgroundColor: '#0ea5e9' },
+  visitChipCurrent: { backgroundColor: BRAND },
   visitChip: {
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -2189,16 +2488,23 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.6 },
   linkText: { flex: 1, fontSize: 16, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
+  // An outline: printing is one action among several, not the brightest
+  // thing on the screen (audit, 17 November 2026).
   pdfBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#0ea5e9',
+    backgroundColor: '#ffffff',
+    borderWidth: 1.5,
+    borderColor: BRAND,
     borderRadius: 12,
     paddingVertical: 12,
   },
-  pdfBtnText: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: '#ffffff' },
+  pdfBtnText: { fontSize: 15, fontFamily: 'Manrope_700Bold', color: BRAND },
+  topRow: { flexDirection: 'row', gap: 12, alignItems: 'stretch' },
+  topCol: { gap: 12 },
+  topCell: { flex: 1, minWidth: 0 },
   section: { gap: 8, marginTop: 8 },
   sectionHeader: {
     flexDirection: 'row',
@@ -2207,7 +2513,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 16, fontFamily: 'Manrope_700Bold', color: '#0f172a' },
   addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  addText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: '#0ea5e9' },
+  addText: { fontSize: 14, fontFamily: 'Manrope_600SemiBold', color: BRAND },
   dayBlock: { gap: 6 },
   dayCard: {
     gap: 6,
@@ -2223,7 +2529,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: '#0ea5e9',
+    backgroundColor: BRAND,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -2255,7 +2561,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 14,
   },
-  personBoxCo: { borderColor: '#bae6fd', backgroundColor: '#f8fcff' },
+  personBoxCo: { borderColor: '#a9d6e0', backgroundColor: '#f7fbfc' },
   personBoxWife: { borderColor: '#ddd6fe', backgroundColor: '#fdfcff' },
   personHead: {
     flexDirection: 'row',
@@ -2273,7 +2579,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   pairDot: { width: 8, height: 8, borderRadius: 4 },
-  pairDotCo: { backgroundColor: '#0ea5e9' },
+  pairDotCo: { backgroundColor: BRAND },
   pairDotWife: { backgroundColor: '#8b5cf6' },
   pairCard: {
     borderLeftWidth: 3,
@@ -2281,7 +2587,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
-  pairCardCo: { borderLeftColor: '#0ea5e9', backgroundColor: '#f0f9ff' },
+  pairCardCo: { borderLeftColor: BRAND, backgroundColor: '#f0f8fa' },
   pairCardWife: { borderLeftColor: '#8b5cf6', backgroundColor: '#faf5ff' },
   pairName: { fontSize: 13, fontFamily: 'Manrope_800ExtraBold', color: '#0f172a' },
   pairLine: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#0f172a', marginTop: 1 },
@@ -2319,7 +2625,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     marginTop: 2,
   },
-  itemTime: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: '#0ea5e9', width: 48 },
+  itemTime: { fontSize: 14, fontFamily: 'Manrope_700Bold', color: BRAND, width: 48 },
   itemBody: { flex: 1 },
   itemPlace: { fontSize: 15, color: '#0f172a', fontFamily: 'Manrope_600SemiBold',},
   itemAssignee: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', marginTop: 2 },
@@ -2367,7 +2673,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  modeChipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  modeChipActive: { backgroundColor: BRAND, borderColor: BRAND },
   modeChipText: {
     fontSize: 13.5,
     fontFamily: 'Manrope_600SemiBold',
@@ -2384,7 +2690,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  chipActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
+  chipActive: { backgroundColor: BRAND, borderColor: BRAND },
   chipText: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#334155' },
   chipTextActive: { color: '#ffffff', fontFamily: 'Manrope_600SemiBold',},
   input: {
@@ -2407,7 +2713,7 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.5 },
   deleteText: { color: '#dc2626', fontFamily: 'Manrope_600SemiBold', fontSize: 15 },
   saveBtn: {
-    backgroundColor: '#0ea5e9',
+    backgroundColor: BRAND,
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 20,
