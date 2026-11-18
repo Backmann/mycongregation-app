@@ -79,6 +79,8 @@ try {
   check('going out with his wife is no gap', !g.partners.some((p) => p.date === '2027-02-26'));
   check('a lunch without a name does not cover its day (Saturday has a named lunch box)', !g.lunchDays.includes('2027-02-27'));
   check('a lunch laid by the template, no host yet, is still a gap', weekGaps([it('lunch', 0, '12:15', null)], [days[0]], true).lunchDays.length === 1);
+  check('an old wife copy of a shepherding call is no gap', weekGaps([it('pastoral', 1, '16:00', null, { forWife: true })], days, true).pastoral.length === 0);
+  check('a refused template refreshes the week too', /onSettled: \(\) => \{\n\s*invalidate\(\);/.test(readFileSync(join(ROOT, 'app', '(app)', 'cart', 'co-schedule.tsx'), 'utf8')));
   check('a shepherding call without an elder is named', JSON.stringify(g.pastoral.map((p) => [p.date, p.time])) === JSON.stringify([['2027-02-25', '16:00']]), JSON.stringify(g.pastoral));
   check('accommodation set — no gap', weekGaps(items, days, true).accommodation === false);
   check('the table begins at 900 px of content', WEEK_GRID_FROM === 900);
@@ -89,13 +91,15 @@ try {
   check('the form floats in the middle on a wide screen', /variant=\{windowW >= WEEK_GRID_FROM \? 'centered' : 'bottom'\}/.test(screen));
   check('no sky blue left on the screen', !/#0ea5e9/i.test(screen));
   check('no counted gap without its day', !/gapLunches|gapPartners'/.test(screen));
-  check('the empty-week template is asked only for an empty week', /enabled: canEditCoSchedule && emptyWeek/.test(screen));
+  check('the empty-week template is asked only for an empty week of a coming visit', /canEditCoSchedule &&\n\s*emptyWeek &&\n\s*\(visit\?\.endDate/.test(screen));
   check('the template card is for those who plan, on a coming visit', /if \(!canEditVisit \|\| !emptyWeek \|\| !template\?\.empty/.test(screen));
   check('the template card comes right after the visit and its gaps', /\{renderGaps\(\)\}\n\s*<\/View>\n[^\n]*\n\s*\{renderTemplate\(\)\}/.test(screen));
   const width = readFileSync(join(ROOT, 'lib', 'screen-width.ts'), 'utf8');
   check('the visit schedule is an overview screen', width.includes("'/cart/co-schedule',"));
   for (const lang of ['ru', 'de', 'en']) {
     const c = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).coVisit;
+    const jn = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).journal.fieldNames;
+    for (const k of ['template_from', 'skipped', 'created']) check(`${lang}: journal.fieldNames.${k}`, !!jn?.[k]);
     for (const k of ['gapLunchOn', 'gapPartnerCo', 'gapPartnerWife', 'gapPastoral', 'gridMeetings', 'tplTitle', 'tplLead', 'tplWhat', 'tplApply', 'tplPrevious'])
       check(`${lang}: coVisit.${k}`, !!c?.[k]);
   }

@@ -4425,7 +4425,9 @@
       "memberSince": "In unserer Versammlung seit",
       "mergedWith": "Zusammengeführt mit Karte",
       "equipmentAt": "Ausrüstung bei",
-      "permitUntil": "Genehmigung bis"
+      "permitUntil": "Genehmigung bis",
+      "template_from": "Vorlage vom Besuch am",
+      "skipped": "nicht übernommen"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

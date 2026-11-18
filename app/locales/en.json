@@ -4425,7 +4425,9 @@
       "memberSince": "In our congregation since",
       "mergedWith": "Merged with card",
       "equipmentAt": "Equipment kept at",
-      "permitUntil": "Permit until"
+      "permitUntil": "Permit until",
+      "template_from": "template from the visit of",
+      "skipped": "left out"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

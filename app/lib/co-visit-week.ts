@@ -143,7 +143,9 @@ export function weekGaps(
         wife: i.forWife,
       })),
     pastoral: items
-      .filter((i) => i.kind === 'pastoral' && dayset.has(i.itemDate) && !named(i))
+      .filter(
+        (i) => i.kind === 'pastoral' && !i.forWife && dayset.has(i.itemDate) && !named(i),
+      )
       .sort(byTime)
       .map(slot),
   };

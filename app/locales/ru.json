@@ -4583,7 +4583,9 @@
       "memberSince": "В нашем собрании с",
       "mergedWith": "Объединена с карточкой",
       "equipmentAt": "Где оборудование",
-      "permitUntil": "Разрешение до"
+      "permitUntil": "Разрешение до",
+      "template_from": "заготовка по визиту от",
+      "skipped": "не перенесено"
     },
     "noValue": "пусто",
     "changedNoValues": "изменено (значения не сохраняются)",

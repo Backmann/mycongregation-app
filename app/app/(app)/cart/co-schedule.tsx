@@ -328,14 +328,24 @@ export default function CoScheduleScreen() {
   const { data: template } = useQuery({
     queryKey: ['co-visit-template', visit?.id],
     queryFn: () => coVisitItemsApi.templatePreview(visit!.id),
-    enabled: canEditCoSchedule && emptyWeek,
+    // Not for a visit that is over: the card is never shown there (review,
+    // 18 November 2026).
+    enabled:
+      canEditCoSchedule &&
+      emptyWeek &&
+      (visit?.endDate ?? visit?.date ?? '') >= formatDateISO(new Date()),
   });
   const templateM = useMutation({
     mutationFn: () => coVisitItemsApi.applyTemplate(visit!.id),
     onSuccess: (r) => {
+      notify(t('coVisit.tplDone', { count: r.created }), undefined, 'success');
+    },
+    // Refused too: if another planner filled the week meanwhile, the screen
+    // must show his items, not a card that refuses again (review,
+    // 18 November 2026).
+    onSettled: () => {
       invalidate();
       qc.invalidateQueries({ queryKey: ['co-visit-template', visit?.id] });
-      notify(t('coVisit.tplDone', { count: r.created }), undefined, 'success');
     },
   });
   // Runs a save routine that may touch both the overseer's row and the
