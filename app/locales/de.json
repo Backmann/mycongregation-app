@@ -1998,7 +1998,8 @@
       "beforePublish_other": "{{count}} Zusammenkünfte müssen korrigiert werden:",
       "draftLine_one": "Eine Zusammenkunft muss korrigiert werden – öffnen",
       "draftLine_other": "{{count}} Zusammenkünfte müssen korrigiert werden – erste öffnen"
-    }
+    },
+    "videoLength": "Video {{length}}"
   },
   "cleaning": {
     "title": "Reinigung",
@@ -3190,6 +3191,15 @@
       "by": "Leitung: {{name}}",
       "byTwo": "Leitung: {{a}} und {{b}}",
       "with": "gemeinsam mit {{name}}"
+    },
+    "mine": {
+      "you": "Sie",
+      "youHelp": "Sie — Partner",
+      "wholeMeeting": "ganze Zusammenkunft",
+      "yourGroup": "Ihre Gruppe",
+      "afterMeeting": "nach der Zusammenkunft",
+      "cleaning": "Saalreinigung",
+      "with": "mit {{name}}"
     }
   },
   "halls": {

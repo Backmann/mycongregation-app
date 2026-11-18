@@ -1998,7 +1998,8 @@
       "beforePublish_other": "{{count}} meetings need fixing:",
       "draftLine_one": "One meeting needs fixing — open",
       "draftLine_other": "{{count}} meetings need fixing — open the first"
-    }
+    },
+    "videoLength": "video {{length}}"
   },
   "cleaning": {
     "title": "Cleaning",
@@ -3190,6 +3191,15 @@
       "by": "conducted by {{name}}",
       "byTwo": "conducted by {{a}} and {{b}}",
       "with": "together with {{name}}"
+    },
+    "mine": {
+      "you": "You",
+      "youHelp": "You — assistant",
+      "wholeMeeting": "whole meeting",
+      "yourGroup": "Your group",
+      "afterMeeting": "after the meeting",
+      "cleaning": "Cleaning the hall",
+      "with": "with {{name}}"
     }
   },
   "halls": {
