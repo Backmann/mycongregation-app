@@ -3037,7 +3037,8 @@
       "auxApplication": "Auxiliary pioneer application: {{name}}",
       "territory": "Territory {{number}} · return by {{date}}",
       "territoryNoDate": "Territory {{number}}",
-      "territoryReview": "«Do not call» addresses to review: {{count}}"
+      "territoryReview": "«Do not call» addresses to review: {{count}}",
+      "territoryOverdue": "Territory {{number}} · was due back {{date}}"
     },
     "weekOf": "Week of {{date}}",
     "kinds": {
@@ -3158,7 +3159,9 @@
       "partial": "Not everything loaded — pull down to refresh.",
       "kindCleaning": "Cleaning",
       "watchtower": "Watchtower: {{title}}",
-      "until": "until {{date}}"
+      "until": "until {{date}}",
+      "weekOf": "week {{range}}",
+      "weekTile": "WK"
     },
     "soon": {
       "title": "Coming up",
@@ -3197,9 +3200,7 @@
       "youHelp": "You — assistant",
       "wholeMeeting": "whole meeting",
       "yourGroup": "Your group",
-      "afterMeeting": "after the meeting",
-      "cleaning": "Cleaning the hall",
-      "with": "with {{name}}"
+      "cleaning": "Cleaning after the meeting"
     }
   },
   "halls": {

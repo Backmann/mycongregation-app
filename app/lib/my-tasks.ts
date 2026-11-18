@@ -14,6 +14,7 @@ import { addDays, formatDateISO, startOfWeekMonday } from './dates';
 import { getPartLabel, resolveSubsection, SUBSECTIONS } from './parts';
 import { readerTitle } from './reader-titles';
 import { weekRules } from './week-rules';
+import { groupInSentence } from './group-name';
 
 type TFunc = (key: string, options?: any) => string;
 
@@ -415,7 +416,7 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     // brother — neither should have to be asked of somebody else.
     const parts = [base];
     if (item.groupName) {
-      parts.push(t('home.fieldService.forGroup', { name: item.groupName }));
+      parts.push(t('home.fieldService.forGroup', { name: groupInSentence(item.groupName) }));
     }
     if (item.visitWithName) {
       parts.push(t('home.fieldService.withWhom', { name: item.visitWithName }));

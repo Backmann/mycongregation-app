@@ -559,8 +559,9 @@ function eventCoversDay(e: SpecialEvent, dayISO: string): boolean {
  * the collapsed «Дальше» zone groups items by exactly the same date.
  */
 export function taskPlacementDate(r: RefinedTask, todayISO: string): string {
+  // Any cleaning with a chosen day — not only «thorough»: its hour was taken
+  // from the chosen day while it sat on the Monday (review, 18 November 2026).
   return r.item.kind === 'cleaning' &&
-    r.item.label === 'thorough' &&
     r.item.thoroughPlannedAt
     ? // The server sends an instant (UTC); the day is the one on this
       // clock — cut from the string, a cleaning planned for 00:30 fell on
@@ -781,9 +782,14 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // on the parking, with nothing on the home screen at all.
       const myEventType = memorial ? 'memorial' : kind;
       const about = memorial ? null : meetingTitles?.get(`${weekISO}|${kind}`);
+      // A meeting another event replaces is not held: a part still standing
+      // on it is not his to prepare, and must not make the row his — it
+      // reached «Ваше ближайшее» (review, 18 November 2026). «Нужно
+      // сделать» says such a leftover where it can be fixed.
       const myParts: MyPartLine[] = myItems
         .filter(
           (it) =>
+            !(replacedBy && !memorial) &&
             (it.kind === 'meeting' || it.kind === 'duty') &&
             it.weekStartDate === weekISO &&
             it.eventType === myEventType,
@@ -1271,6 +1277,19 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       const first = rs[0];
       const kind: MeetingKind =
         first.item.eventType === 'midweek' ? 'midweek' : 'weekend';
+      // The Memorial further out is the Memorial, not «a weekend meeting»
+      // (review, 18 November 2026): its event, found by the same rule as the
+      // near weeks use (lib/week-rules.ts — type and date in the week).
+      const wk = first.item.weekStartDate ?? null;
+      const farMemorial =
+        first.item.eventType === 'memorial' && wk
+          ? (events.find(
+              (e) =>
+                e.type === 'memorial' &&
+                e.date >= wk &&
+                e.date <= formatDateISO(addDays(new Date(`${wk}T00:00:00`), 6)),
+            ) ?? null)
+          : null;
       farEntries.push({
         type: 'meeting',
         key: `far-${k}`,
@@ -1285,6 +1304,7 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         topic: null,
         sourceUrl: null,
         replacedBy: null,
+        memorial: farMemorial,
         myParts: rs
           .map((r) => r.item)
           .sort(byProgramme)
@@ -1295,6 +1315,35 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
           .filter((x): x is string => !!x),
         isGeneral: false,
       });
+    }
+  }
+
+  // ---- The cleaning after the meetings, beyond the two weeks ----
+  // Near, it is spoken inside the week's meeting rows (Р-21); further out it
+  // stood alone on the Monday, read as «Monday is cleaning day» (review,
+  // 18 November 2026). Where his own meeting rows of that week exist, it
+  // goes into them — the weekday and the weekend alike, as near (Lionel,
+  // 18 November 2026); where none, it stays a row of the week.
+  {
+    const farWeeks = new Set(
+      farEntries
+        .filter((m): m is MeetingEntry => m.type === 'meeting' && m.kind !== 'field_service')
+        .map((m) => m.weekStartISO ?? ''),
+    );
+    for (let i = farEntries.length - 1; i >= 0; i--) {
+      const en = farEntries[i];
+      if (
+        en.type !== 'task' ||
+        en.task.item.kind !== 'cleaning' ||
+        en.task.item.label !== 'after_meeting'
+      )
+        continue;
+      const wk = en.task.item.weekStartDate ?? '';
+      if (!wk || !farWeeks.has(wk)) continue;
+      farEntries.splice(i, 1);
+      for (const m of farEntries)
+        if (m.type === 'meeting' && m.kind !== 'field_service' && m.weekStartISO === wk)
+          m.weeklyCleaning = true;
     }
   }
 

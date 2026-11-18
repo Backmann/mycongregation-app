@@ -3037,7 +3037,8 @@
       "auxApplication": "Bewerbung als Hilfspionier: {{name}}",
       "territory": "Gebiet {{number}} · zurück bis {{date}}",
       "territoryNoDate": "Gebiet {{number}}",
-      "territoryReview": "«Nicht besuchen»-Adressen zur Prüfung: {{count}}"
+      "territoryReview": "«Nicht besuchen»-Adressen zur Prüfung: {{count}}",
+      "territoryOverdue": "Gebiet {{number}} · Rückgabe war fällig am {{date}}"
     },
     "weekOf": "Woche ab {{date}}",
     "kinds": {
@@ -3158,7 +3159,9 @@
       "partial": "Nicht alles wurde geladen — zum Aktualisieren nach unten ziehen.",
       "kindCleaning": "Reinigung",
       "watchtower": "Wachtturm: {{title}}",
-      "until": "bis {{date}}"
+      "until": "bis {{date}}",
+      "weekOf": "Woche {{range}}",
+      "weekTile": "WO."
     },
     "soon": {
       "title": "Demnächst",
@@ -3197,9 +3200,7 @@
       "youHelp": "Sie — Partner",
       "wholeMeeting": "ganze Zusammenkunft",
       "yourGroup": "Ihre Gruppe",
-      "afterMeeting": "nach der Zusammenkunft",
-      "cleaning": "Saalreinigung",
-      "with": "mit {{name}}"
+      "cleaning": "Reinigung nach der Zusammenkunft"
     }
   },
   "halls": {
