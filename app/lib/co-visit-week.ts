@@ -80,13 +80,18 @@ export function weekRows<T extends WeekItem>(items: T[], days: string[]): WeekRo
 
 export type WeekGaps = {
   accommodation: boolean;
-  /** Visit days with neither a lunch nor a lunch box. */
+  /**
+   * Visit days with no lunch or lunch box that has someone's name — an empty
+   * lunch laid by the template is still a gap.
+   */
   lunchDays: string[];
   /**
    * Outings without a partner — his, or his wife's on her own. Going out
    * together, husband and wife are each other's company: no gap.
    */
   partners: { id: string; date: string; time: string | null; wife: boolean }[];
+  /** Shepherding calls without the elder who goes along. */
+  pastoral: { id: string; date: string; time: string | null }[];
 };
 
 /**
@@ -99,10 +104,21 @@ export function weekGaps(
   days: string[],
   accommodationSet: boolean,
 ): WeekGaps {
+  const named = (i: WeekItem) => !!(i.assigneeName ?? i.assigneeText ?? '').trim();
   const lunch = new Set(
-    items.filter((i) => i.kind === 'lunch' || i.kind === 'lunch_box').map((i) => i.itemDate),
+    items
+      .filter((i) => (i.kind === 'lunch' || i.kind === 'lunch_box') && named(i))
+      .map((i) => i.itemDate),
   );
   const dayset = new Set(days);
+  const slot = (i: WeekItem) => ({
+    id: i.id,
+    date: i.itemDate,
+    time: i.startTime ? i.startTime.slice(0, 5) : null,
+  });
+  const byTime = (a: WeekItem, b: WeekItem) =>
+    a.itemDate.localeCompare(b.itemDate) ||
+    (a.startTime ?? '99').localeCompare(b.startTime ?? '99');
   return {
     accommodation: !accommodationSet,
     lunchDays: days.filter((d) => !lunch.has(d)),
@@ -112,7 +128,7 @@ export function weekGaps(
           i.kind === 'field_service' &&
           !i.withWife &&
           dayset.has(i.itemDate) &&
-          !(i.assigneeName ?? i.assigneeText ?? '').trim(),
+          !named(i),
       )
       .sort(
         (a, b) =>
@@ -126,6 +142,10 @@ export function weekGaps(
         time: i.startTime ? i.startTime.slice(0, 5) : null,
         wife: i.forWife,
       })),
+    pastoral: items
+      .filter((i) => i.kind === 'pastoral' && dayset.has(i.itemDate) && !named(i))
+      .sort(byTime)
+      .map(slot),
   };
 }
 

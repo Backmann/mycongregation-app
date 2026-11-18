@@ -2289,7 +2289,19 @@
     "gapLunchOn": "lunch:",
     "gapPartnerCo": "overseer's partner:",
     "gapPartnerWife": "wife's partner:",
-    "gridMeetings": "Congregation meetings"
+    "gridMeetings": "Congregation meetings",
+    "tplTitle": "The week is still empty",
+    "tplLead": "Start from the week of the last visit — {{who}}, {{when}}?",
+    "tplWhat": "We carry over the kind, weekday, time and place: outings, lunches, lunch boxes, meetings. No people — you assign them again, and the hint shows who was there last time.",
+    "tplItems_one": "{{count}} item",
+    "tplItems_other": "{{count}} items",
+    "tplSkipped_one": "{{count}} item is left out: this visit has no such weekday",
+    "tplSkipped_other": "{{count}} items are left out: this visit has no such weekdays",
+    "tplApply": "Create the template",
+    "tplDone_one": "{{count}} item created — now assign the people",
+    "tplDone_other": "{{count}} items created — now assign the people",
+    "tplPrevious": "the last visit",
+    "gapPastoral": "shepherding call without an elder:"
   },
   "witnessing": {
     "recentlyWith": "recently with {{name}}",
@@ -6252,7 +6264,9 @@
       "FOLDER_MARK_INVALID": "This mark does not fit this item.",
       "FOLDER_ANSWER_INVALID": "This answer does not fit this question.",
       "FOLDER_ANSWERS_ERASED": "The visit is over — the answers to page 2 have been erased.",
-      "FOLDER_PAGE2_INCOMPLETE": "Answer every question on page 2 first: {{answered}} of {{total}} answered."
+      "FOLDER_PAGE2_INCOMPLETE": "Answer every question on page 2 first: {{answered}} of {{total}} answered.",
+      "CO_VISIT_TEMPLATE_NOT_EMPTY": "This visit week already has items — a template is only laid on an empty week.",
+      "CO_VISIT_TEMPLATE_NO_SOURCE": "There is no earlier visit to start from."
     }
   },
   "stage": {
