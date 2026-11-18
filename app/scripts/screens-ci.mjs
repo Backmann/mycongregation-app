@@ -110,6 +110,10 @@ const SCREENS = [
   ['desk', '/cart/desk', 'admin'],
   // The draft of re-cutting (15 November 2026): the overview and one cut.
   ['recut', '/cart/recut', 'admin'],
+  // The circuit overseer's visit schedule (17 November 2026): it showed none
+  // of the congregation's meetings when no settings version was in force
+  // today, and no frame ever opened it.
+  ['co-schedule', '/cart/co-schedule', 'admin'],
   ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
   // Its lines moved on the map (16 November 2026, step 3b).
   ...(RECUT ? [['recut-lines', `/cart/recut/lines/${RECUT}`, 'admin']] : []),
