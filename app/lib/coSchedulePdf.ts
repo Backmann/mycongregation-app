@@ -2,6 +2,7 @@ import type { CoVisitItem, SpecialEvent } from './api';
 import { formatDateISO } from './dates';
 import { formatDay } from './date-range';
 import { formatDayRange } from './date-range';
+import { wifeComesOf } from './co-visit-week';
 
 /**
  * A congregation meeting during the visit (midweek or weekend), with the
@@ -399,7 +400,8 @@ export function buildCoScheduleHtml(opts: {
   const metaChips = (opts2: { withAccommodation: boolean }) =>
     [
       coName ? `<span class="chip chip-name">${esc(coName)}</span>` : '',
-      visit.coWifeName
+      // Named only when she comes on this visit (review, 18 November 2026).
+      wifeComesOf(visit) && visit.coWifeName
         ? `<span class="chip">${esc(L.wife)}: ${esc(visit.coWifeName)}</span>`
         : '',
       `<span class="chip">${esc(period)}</span>`,

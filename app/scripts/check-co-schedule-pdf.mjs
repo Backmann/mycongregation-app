@@ -41,6 +41,7 @@ const emit = (rel, as) => {
 try {
   emit('dates.ts', 'dates.mjs');
   emit('date-range.ts', 'date-range.mjs');
+  emit('co-visit-week.ts', 'co-visit-week.mjs');
   emit('coSchedulePdf.ts', 'pdf.mjs');
   const { buildCoScheduleHtml } = await import(pathToFileURL(join(out, 'pdf.mjs')));
   const L = new Proxy({}, { get: (_, k) => (k === 'noPartner' ? 'напарник не назначен' : String(k)) });
@@ -81,6 +82,10 @@ try {
   check('a meeting stands in its day by its hour', detail.indexOf('ServiceTalk') > detail.indexOf('TuesdayPartner') && !tue.includes('ServiceTalk'));
   const restricted = detail.slice(detail.indexOf('2027') >= 0 ? 0 : 0);
   check('a restricted call shows no dash for a missing elder', !/<td class="k">pastoral<\/td>\s*<td><\/td>\s*<td>—<\/td>/.test(restricted));
+  const alone = { ...visit, coWifeName: 'WifeName', coWifeComes: false };
+  for (const sheet of ['congregation', 'detail'])
+    check(`${sheet}: no wife named when she stays at home`, !buildCoScheduleHtml({ sheet, visit: alone, items, locale: 'ru', meetings, labels: L }).includes('WifeName'));
+  check('the wife named when she comes', buildCoScheduleHtml({ sheet: 'detail', visit: { ...alone, coWifeComes: true }, items, locale: 'ru', meetings, labels: L }).includes('WifeName'));
   check('no page break before the only sheet', !/page-break-before:\s*always/.test(detail));
   check('Tuesday outing with its partner on the overseer page', page2.includes('TuesdayPartner'));
   check('Sunday lunch with its host on the overseer page', page2.includes('SundayHost'));

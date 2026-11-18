@@ -1174,7 +1174,7 @@ export default function CoScheduleScreen() {
                   fontFamily: 'Manrope_600SemiBold',
                 }}
               >
-                {isLocked(it) ? t('coVisit.coBadge') : t('coVisit.spouseBadge')}
+                {t('coVisit.spouseBadge')}
               </Text>
             </View>
           ) : null}
@@ -1247,12 +1247,12 @@ export default function CoScheduleScreen() {
             {stranded.map((it) => (
               <Pressable
                 key={it.id}
-                disabled={!canEditVisit}
+                disabled={!canEditVisit || isLocked(it)}
                 style={({ pressed }) => [
                   styles.strandedRow,
-                  pressed && canEditVisit && styles.pressed,
+                  pressed && canEditVisit && !isLocked(it) && styles.pressed,
                 ]}
-                onPress={() => canEditVisit && openEdit(it)}
+                onPress={() => canEditVisit && !isLocked(it) && openEdit(it)}
               >
                 <Text style={styles.strandedDate}>{fmt(it.itemDate)}</Text>
                 <Text style={styles.strandedWhat}>
