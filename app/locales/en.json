@@ -2269,9 +2269,6 @@
     "strandedHint": "These items fall on days no longer included in the visit — the period was shortened. They still appear in the PDF but not on the schedule. Open one to move or delete it.",
     "readinessTitle": "Still to arrange",
     "gapAccommodation": "accommodation",
-    "gapLunches_one": "lunch not arranged for {{count}} day",
-    "gapLunches_other": "lunch not arranged for {{count}} days",
-    "gapPartners": "service slots without a partner: {{count}}",
     "never": {
       "lunch": "has not hosted a lunch yet",
       "lunch_box": "has not prepared one yet",
@@ -2288,7 +2285,11 @@
     },
     "deleted": "Item removed",
     "accHallLabel": "Or at a Kingdom Hall",
-    "pastReadOnly": "The visit is over — its program is read-only"
+    "pastReadOnly": "The visit is over — its program is read-only",
+    "gapLunchOn": "lunch:",
+    "gapPartnerCo": "overseer's partner:",
+    "gapPartnerWife": "wife's partner:",
+    "gridMeetings": "Congregation meetings"
   },
   "witnessing": {
     "recentlyWith": "recently with {{name}}",

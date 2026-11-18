@@ -30,6 +30,8 @@ const OVERVIEW = new Set<string>([
   '/publishers',
   '/cart',
   '/cart/field-service',
+  // The visit week as a table: six days beside the slot names (17 November 2026).
+  '/cart/co-schedule',
   '/service-reports/group',
   '/service-reports/summary',
   '/service-reports/attendance',
