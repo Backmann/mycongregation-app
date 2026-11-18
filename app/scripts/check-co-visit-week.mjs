@@ -98,6 +98,7 @@ try {
   // window that names who hears and who must be told by voice.
   check('the publish bar stands above the week', /\{renderPublishBar\(\)\}\n\s*\{wideGrid \? renderWeekGrid\(\) : renderDayView\(\)\}/.test(screen));
   check('the publish bar is for those who plan it', /const renderPublishBar[\s\S]{0,120}if \(!canEditVisit \|\| !publication\) return null;/.test(screen));
+  check('every save and undo refreshes the bar', (screen.match(/invalidateQueries\(\{ queryKey: \['co-visit-publication'/g) || []).length >= 4);
   check('no head count in the published toast (unreached people inside)', !/pub\.done', \{ count/.test(screen));
   for (const f of [join(ROOT, 'lib', 'push-notifications.ts'), join(ROOT, 'public', 'service-worker.js')])
     check(`${f.split('/').slice(-2).join('/')}: co_visit opens Home`, /case 'co_visit':\n\s*return \{ path: '\/home'/.test(readFileSync(f, 'utf8')));

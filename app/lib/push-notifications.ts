@@ -302,12 +302,12 @@ export function routeForNotification(
       return data.role === 'c' && data.meetingId
         ? { path: '/service-reports/pioneer-meeting', params: { id: data.meetingId } }
         : { path: '/home', params: {} };
-    // The folder for the circuit overseer (S-61): the S-62, open items, the
-    // files to delete — the folder of that visit.
     // What is his at a circuit overseer's visit — assigned, changed, taken
     // away: Home, where his lines of the visit stand (18 November 2026).
     case 'co_visit':
       return { path: '/home', params: {} };
+    // The folder for the circuit overseer (S-61): the S-62, open items, the
+    // files to delete — the folder of that visit.
     case 'co_visit_folder':
       return data.eventId
         ? { path: `/special-events/folder/${data.eventId}`, params: {} }

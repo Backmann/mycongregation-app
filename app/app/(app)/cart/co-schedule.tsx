@@ -355,6 +355,9 @@ export default function CoScheduleScreen() {
   const { data: publication } = useQuery({
     queryKey: ['co-visit-publication', visit?.id],
     queryFn: () => coVisitItemsApi.publication(visit!.id),
+    // While a change waits to go out, ask again: «уйдут в 16:40» must turn
+    // into «уходят сами» once it has gone (review, 18 November 2026).
+    refetchInterval: (q) => (q.state.data?.dueAt ? 60_000 : false),
     enabled:
       canEditCoSchedule &&
       !!visit &&
@@ -379,6 +382,8 @@ export default function CoScheduleScreen() {
     mutationFn: (run: () => Promise<void>) => run(),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+      // The bar above the week says when the change goes out (review).
+      qc.invalidateQueries({ queryKey: ['co-visit-publication'] });
       setForm(null);
     },
   });
@@ -2555,6 +2560,7 @@ export default function CoScheduleScreen() {
             await coVisitItemsApi.restore(id);
           }
           await qc.invalidateQueries({ queryKey: ['co-visit-items'] });
+          await qc.invalidateQueries({ queryKey: ['co-visit-publication'] });
         }}
       />
     </View>

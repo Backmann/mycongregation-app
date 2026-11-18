@@ -2303,7 +2303,7 @@
     "tplPrevious": "der letzte Besuch",
     "gapPastoral": "Hirtenbesuch ohne Ältesten:",
     "pub": {
-      "draftTitle": "Entwurf – noch für niemanden sichtbar",
+      "draftTitle": "Entwurf – für die Eingeteilten noch nicht sichtbar",
       "draftSub": "Nicht auf der Startseite, im Kalender oder in Benachrichtigungen",
       "publish": "Plan veröffentlichen",
       "publishedTitle": "Veröffentlicht am {{when}}",

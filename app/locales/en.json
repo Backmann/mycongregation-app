@@ -2303,7 +2303,7 @@
     "tplPrevious": "the last visit",
     "gapPastoral": "shepherding call without an elder:",
     "pub": {
-      "draftTitle": "Draft — people do not see it yet",
+      "draftTitle": "Draft — the people assigned do not see it yet",
       "draftSub": "Not on Home, in the calendar or in notifications",
       "publish": "Publish the schedule",
       "publishedTitle": "Published {{when}}",
