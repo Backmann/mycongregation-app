@@ -197,6 +197,8 @@ export function SpecialEventDetail({
         coFirstName: c.firstName,
         coLastName: c.lastName,
         coWifeName: c.wifeName ?? null,
+        // Another overseer: his own wife decides (review, 18 November 2026).
+        coWifeComes: !!c.wifeName?.trim(),
         coRole: c.role,
       }),
     onSuccess: () => invalidateAfterEventChange(qc),

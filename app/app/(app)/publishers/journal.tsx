@@ -738,7 +738,14 @@ function Row({
         // These are already spoken in the tail above; saying them twice reads
         // as a stutter.
         if (HANDLED_DETAIL.has(key)) continue;
-        const shown = readValue(value, names, t, language, {
+        // Clearing the overseer's wife out of a week keeps the ids of the
+        // rows, to find them again; a reader is told how many (18 November
+        // 2026).
+        const told =
+          (key === 'removed' || key === 'unjoined') && Array.isArray(value)
+            ? value.length
+            : value;
+        const shown = readValue(told, names, t, language, {
           entityType: entry.entityType,
           field: key,
         });

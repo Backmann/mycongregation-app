@@ -4478,7 +4478,8 @@
       "coWifeComes": "Kommt mit seiner Frau",
       "wifeCleared": "Einträge der Frau entfernt",
       "removed": "Entfernt",
-      "unjoined": "Wurden seine Dienste"
+      "unjoined": "Wurden seine Dienste",
+      "wifeRestored": "Einträge der Frau zurückgeholt"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

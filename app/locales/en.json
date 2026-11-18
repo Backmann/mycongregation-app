@@ -4478,7 +4478,8 @@
       "coWifeComes": "His wife comes too",
       "wifeCleared": "Wife's rows cleared",
       "removed": "Removed",
-      "unjoined": "Became his outings"
+      "unjoined": "Became his outings",
+      "wifeRestored": "Wife's rows put back"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

@@ -148,7 +148,8 @@ try {
       check(`${lang}: coVisit.${k}`, !!se.coVisit[k]);
     check(`${lang}: coVisit.pub.eldersOnly_one`, !!se.coVisit.pub.eldersOnly_one);
     for (const k of ['CO_VISIT_PASTORAL_ELDERS', 'CO_VISIT_NO_WIFE', 'CO_VISIT_WIFE_COMES']) check(`${lang}: serverError.codes.${k}`, !!se.serverError.codes[k]);
-    check(`${lang}: journal.fieldNames.coWifeComes`, !!se.journal.fieldNames.coWifeComes);
+    for (const k of ['coWifeComes', 'wifeCleared', 'wifeRestored', 'removed', 'unjoined'])
+      check(`${lang}: journal.fieldNames.${k}`, !!se.journal.fieldNames[k]);
   }
   for (const lang of ['ru', 'de', 'en']) {
     const c = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8')).coVisit;
