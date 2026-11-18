@@ -1553,6 +1553,65 @@ function MineLine({ text }: { text: string }) {
 }
 
 /**
+ * What of a meeting is the person's own, on Home (18 November 2026): one
+ * block, each line under words that say whose it is — «ВЫ · 19:14»,
+ * «ВЫ — ПОМОЩНИК», «ВЫ · вся встреча», «ВАША ГРУППА · после встречи» —
+ * then the part's name, its topic or what the workbook says, and with whom.
+ * Colour and a programme number alone did not say it: «2.» in orange under a
+ * talk's theme read as anything but «this is yours».
+ */
+function MineBlock({
+  entry,
+  title,
+}: {
+  entry: Extract<TimelineEntry, { type: "meeting" }>;
+  title: string | null;
+}) {
+  const { t, i18n } = useTranslation();
+  const up = (x: string) => x.toLocaleUpperCase(i18n.language);
+  const lines = entry.myParts;
+  if (!lines.length && !entry.weeklyCleaning) return null;
+  return (
+    <View style={s.mineBlock}>
+      {lines.map((p, i) => {
+        const at =
+          !p.isDuty && p.offsetMin != null
+            ? clockPlus(entry.time, p.offsetMin)
+            : null;
+        const who = p.asAssistant ? t("home.mine.youHelp") : t("home.mine.you");
+        const when = p.isDuty ? t("home.mine.wholeMeeting") : at;
+        const name = p.label ?? p.title;
+        // The theme of his own public talk is the row's title already.
+        const topic = p.topic && p.topic !== title ? p.topic : null;
+        return (
+          <View key={`p${i}`} style={s.mineItem}>
+            <Text style={s.mineLabel}>
+              {up([who, when].filter(Boolean).join(" · "))}
+            </Text>
+            <Text style={s.mineName}>{name}</Text>
+            {topic ? <Text style={s.mineSub}>«{topic}»</Text> : null}
+            {p.note ? <Text style={s.mineSub}>{p.note}</Text> : null}
+            {p.partnerName && !p.isDuty ? (
+              <Text style={s.mineSub}>
+                {t("home.mine.with", { name: p.partnerName })}
+              </Text>
+            ) : null}
+          </View>
+        );
+      })}
+      {entry.weeklyCleaning ? (
+        <View style={[s.mineItem, s.mineGroup]}>
+          <Text style={[s.mineLabel, s.mineLabelGroup]}>
+            {up(`${t("home.mine.yourGroup")} · ${t("home.mine.afterMeeting")}`)}
+          </Text>
+          <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+/**
  * The announcement under a meeting: its numbered parts, the person's own lit
  * where it stands instead of being said again below (27 September).
  */
@@ -1735,20 +1794,16 @@ function EntryBody({
     // first talk is part 1 of the list below (28 September), and the kind
     // and hour are already said above. Without a programme the kind stands
     // in, so the row is never only an overline.
+    // Compact (Home, 18 November 2026): a weekday is titled by what it is —
+    // «Встреча в будний день» — never by its first talk, which read as the
+    // evening's name or as his own part. A weekend keeps its public talk.
+    // What is his stands only in the block below, under words that say so.
     const title = en.memorial
       ? en.memorial.title
       : (en.title ??
         en.occasion?.title ??
-        // Compact: the weekday's first talk names the evening.
-        (compact && agenda.length ? agenda[0].text : null) ??
-        (agenda.length ? null : t(`home.eventTypes.${en.kind}`)));
-    // Compact: only the person's own lines, never the one already the title;
-    // nothing at all on the row the card on top is about — it points up.
-    const shownAgenda = compact
-      ? isNext
-        ? []
-        : agenda.filter((l) => l.mine && !(title === agenda[0]?.text && l === agenda[0]))
-      : agenda;
+        (compact || !agenda.length ? t(`home.eventTypes.${en.kind}`) : null));
+    const shownAgenda = compact ? [] : agenda;
     const lower = (x: string | null) => (x ? lowerFirst(x, loc) : x);
     return (
       <>
@@ -1776,19 +1831,12 @@ function EntryBody({
           ) : null}
         </Text>
         {title ? (
-          <Text
-            style={[
-              s.rowTitle,
-              (en.titleIsMine ||
-                (compact && agenda[0]?.mine && title === agenda[0]?.text)) &&
-                s.titleMine,
-            ]}
-          >
+          <Text style={[s.rowTitle, !compact && en.titleIsMine && s.titleMine]}>
             {title}
           </Text>
         ) : null}
         {en.speaker ? (
-          <Text style={[s.rowSub, en.speakerIsMine && s.titleMine]}>
+          <Text style={[s.rowSub, !compact && en.speakerIsMine && s.titleMine]}>
             {en.speaker}
           </Text>
         ) : null}
@@ -1811,12 +1859,15 @@ function EntryBody({
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
         ) : null}
-        <AgendaList lines={shownAgenda} named={compact} />
-        {mine ? <MineLine text={mine} /> : null}
+        <AgendaList lines={shownAgenda} />
+        {compact && !isNext ? (
+          <MineBlock entry={en} title={title} />
+        ) : null}
+        {!compact && mine ? <MineLine text={mine} /> : null}
         {compact && isNext ? (
           <Text style={s.upNext}>{t("home.list.upNext")}</Text>
         ) : null}
-        {en.weeklyCleaning && !isNext ? (
+        {!compact && en.weeklyCleaning && !isNext ? (
           <CleaningLine text={t("home.timeline.cleaningAfterMeeting")} />
         ) : null}
         {/* A part of his on a day he is away (22 October 2026). The top card
@@ -3317,6 +3368,24 @@ const s = StyleSheet.create({
     color: "#c2410c",
   },
   dot: { width: 7, height: 7, borderRadius: 4 },
+  mineBlock: { marginTop: 8, gap: 10 },
+  mineItem: {
+    borderLeftWidth: 3,
+    borderLeftColor: "#f97316",
+    paddingLeft: 10,
+    paddingVertical: 1,
+    gap: 2,
+  },
+  mineGroup: { borderLeftColor: "#14b8a6" },
+  mineLabel: {
+    fontFamily: "Manrope_800ExtraBold",
+    fontSize: 12,
+    letterSpacing: 0.4,
+    color: "#c2410c",
+  },
+  mineLabelGroup: { color: "#0f766e" },
+  mineName: { fontFamily: "Manrope_700Bold", fontSize: 15.5, color: "#0f172a", lineHeight: 21 },
+  mineSub: { fontFamily: "Manrope_500Medium", fontSize: 14, color: "#475569", lineHeight: 20 },
   dateDot: { backgroundColor: "#f97316", marginTop: 5 },
   agenda: { gap: 2, marginTop: 3 },
   agendaLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },
