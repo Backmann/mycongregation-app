@@ -12,7 +12,7 @@
  * Called directly from the gate, like the other checks — the app has no test
  * runner, and a new npm script would move the Expo fingerprint.
  */
-import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
+import { readdirSync, readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -920,7 +920,28 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('28к экран события: адрес — ссылка на маршрут', /<AddressRow/.test(detail) && /routeLink\(address, mapUrl\)/.test(detail), true);
   // е. The new name, in Russian.
   const ru = JSON.parse(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8'));
-  check('28л название школы', [ru.specialEvents.types.kingdom_ministry_school_elders, ru.specialEvents.types.kingdom_ministry_school_servants], ['Школа Священного Служения для старейшин', 'Школа Священного Служения для служебных помощников']);
+  check('28л название школы', [ru.specialEvents.types.kingdom_ministry_school_elders, ru.specialEvents.types.kingdom_ministry_school_servants], ['Школа Священного Служения для старейшин', 'Школа Священного Служения для помощников собрания']);
+  // All three words in capitals, in every text of the app (19 November 2026).
+  {
+    const texts = [];
+    const walkJson = (o) => { for (const v of Object.values(o)) typeof v === 'object' && v ? walkJson(v) : texts.push(String(v)); };
+    walkJson(ru);
+    for (const dir of ['app', 'components', 'lib']) {
+      const stack = [join(ROOT, dir)];
+      while (stack.length) {
+        const d = stack.pop();
+        for (const f of readdirSync(d, { withFileTypes: true })) {
+          const p = join(d, f.name);
+          if (f.isDirectory()) stack.push(p);
+          else if (/\.(tsx?|mjs)$/.test(f.name)) texts.push(readFileSync(p, 'utf8'));
+        }
+      }
+    }
+    const wrong = texts.flatMap((x) => x.match(/школ[а-яё]*\s+священн[а-яё]*\s+служени[а-яё]*/gi) ?? [])
+      .filter((m) => !/^Школ[а-яё]*\s+Священн[а-яё]*\s+Служени[а-яё]*$/.test(m));
+    check('28п «Школа Священного Служения» — все три слова с большой буквы', wrong, []);
+    check('28р «для служебных помощников» в названии школы нет', /Служения для служебных помощников/.test(JSON.stringify(ru)), false);
+  }
   check('28м старого названия нигде нет', /царственного служения/i.test(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8')), false);
 }
 
