@@ -108,7 +108,7 @@ import {
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
-import { formatDayRange } from "../../../lib/date-range";
+import { formatDayList, formatDayRange } from "../../../lib/date-range";
 import { groupInSentence } from "../../../lib/group-name";
 import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
@@ -1432,6 +1432,30 @@ function NextBody({
       </View>
     );
   }
+  // His day at the pioneer school on the card: the school and all his days
+  // over it, the duties, the hall (19 November 2026).
+  if (entry.type === "task" && entry.task.item.kind === "pioneer_school") {
+    const it = entry.task.item;
+    const days = entry.schoolDays ?? [entry.dateISO];
+    return (
+      <View style={{ gap: 6 }}>
+        <Text style={s.nextOverline}>
+          {[
+            it.label || t("home.pioneerSchool.title"),
+            days.length > 1
+              ? t("home.pioneerSchool.yourDays", {
+                  days: formatDayList(days, i18n.language),
+                })
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Text>
+        <Text style={s.nextMain}>{taskTitle(it, t)}</Text>
+        {it.location ? <Text style={s.nextPlace}>{hallPlace(it.location)}</Text> : null}
+      </View>
+    );
+  }
   if (entry.type === "task") {
     const it = entry.task.item;
     const windows =
@@ -2014,6 +2038,48 @@ function EntryBody({
       </>
     );
   }
+  // A day at the pioneer school (19 November 2026): his first day there in
+  // full — the school, his days, his duties, the hall; his other days in one
+  // line with that day's duties. Each day keeps its own row and change mark.
+  if (en.type === "task" && en.task.item.kind === "pioneer_school") {
+    const it = en.task.item;
+    const days = en.schoolDays ?? [en.dateISO];
+    if (en.schoolFirst === false) {
+      return (
+        <View style={s.slimLine}>
+          <Text style={s.slimName}>
+            {`${t("home.pioneerSchool.short")} · ${taskTitle(it, t)}`}
+          </Text>
+          {entryTime(en) ? <Text style={s.slimTime}>{entryTime(en)}</Text> : null}
+        </View>
+      );
+    }
+    const consecutive = days.every(
+      (d, i) =>
+        i === 0 ||
+        formatDateISO(addDays(new Date(`${days[i - 1]}T00:00:00`), 1)) === d,
+    );
+    const daysText =
+      days.length < 2
+        ? null
+        : t("home.pioneerSchool.yourDays", {
+            days: consecutive
+              ? formatDayRange(days[0], days[days.length - 1], i18n.language)
+              : formatDayList(days, i18n.language),
+          });
+    return (
+      <>
+        <KindLine
+          text={[it.label || t("home.pioneerSchool.title"), daysText, days.length < 2 ? dayWord : null]
+            .filter(Boolean)
+            .join(" · ")}
+          time={entryTime(en)}
+        />
+        <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
+        {it.location ? <Text style={s.rowSub}>{hallPlace(it.location)}</Text> : null}
+      </>
+    );
+  }
   if (en.type === "task") {
     const it = en.task.item;
     const v = taskVisual(it);
@@ -2027,9 +2093,7 @@ function EntryBody({
                 ? capitalizeFirst(t("home.kinds.cart"))
                 : it.kind === "field_service"
                   ? t("home.slim.field")
-                  : it.kind === "pioneer_school"
-                    ? it.label || t("home.pioneerSchool.title")
-                    : null),
+                  : null),
             dayWord,
           ]
             .filter(Boolean)
@@ -2037,9 +2101,6 @@ function EntryBody({
           time={entryTime(en)}
         />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
-        {it.kind === "pioneer_school" && it.location ? (
-          <Text style={s.rowSub}>{it.location}</Text>
-        ) : null}
         {/* A visit to another group: what else the congregation has that
             day, each with its hour (10 November 2026). */}
         {en.alsoThatDay?.length ? (
@@ -2193,6 +2254,17 @@ function EntryBody({
   );
 }
 
+/**
+ * A hall and its address as the school gives them: «Ahlen, Bunsenstr. 46,
+ * 59229 Ahlen» says the town twice — the hall's name goes when the address
+ * already holds it (19 November 2026).
+ */
+function hallPlace(place: string): string {
+  const [name, ...rest] = place.split(", ");
+  const address = rest.join(", ");
+  return rest.length && address.includes(name) ? address : place;
+}
+
 /** The grey line over a row, its hour on the right (variant A). */
 function KindLine({ text, time }: { text: string; time: string | null }) {
   return (
@@ -2263,6 +2335,10 @@ function SlimDay({
   const field = meetings.filter((m) => m.kind === "field_service");
   const others = meetings.filter((m) => m.kind !== "field_service");
   const fieldNext = field.find((m) => m.key === nextKey);
+  // The card's own row of another kind, in one line with its mark.
+  const cardOther = group.entries.find(
+    (en) => en.key === nextKey && en.type !== "meeting",
+  );
   const lines: {
     key: string;
     name: string;
@@ -2294,6 +2370,21 @@ function SlimDay({
             next: !!fieldNext,
             // The one of his, if one is: the line opens that meeting.
             en: (fieldNext ?? field[0]) as TimelineEntry,
+          },
+        ]
+      : []),
+    ...(cardOther
+      ? [
+          {
+            key: cardOther.key,
+            name:
+              cardOther.type === "task" && cardOther.task.item.kind === "pioneer_school"
+                ? `${t("home.pioneerSchool.short")} · ${taskTitle(cardOther.task.item, t)}`
+                : capitalizeFirst(shortWhat(cardOther, t)),
+            time: entryTime(cardOther) ?? "",
+            past: isOver(cardOther, todayISO, nowHM),
+            next: true,
+            en: cardOther,
           },
         ]
       : []),

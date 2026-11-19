@@ -3211,7 +3211,9 @@
       "field": "Field service meeting"
     },
     "pioneerSchool": {
-      "title": "Pioneer Service School"
+      "title": "Pioneer Service School",
+      "short": "Pioneer Service School",
+      "yourDays": "your days: {{days}}"
     }
   },
   "halls": {

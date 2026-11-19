@@ -367,6 +367,13 @@ export interface TaskEntry {
    * (10 November 2026: «они тоже должны внятно и чётко отображаться»).
    */
   alsoThatDay?: AlsoThatDay[];
+  /**
+   * Pioneer school (19 November 2026): every day this person serves at the
+   * same school, and whether this row is the first of them — said in full
+   * there, in one line on his other days.
+   */
+  schoolDays?: string[];
+  schoolFirst?: boolean;
 }
 
 /** One field-service meeting of a visit day, for the visit's row. */
@@ -1451,6 +1458,28 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
     }
     return groups;
   };
+
+  // ---- Pioneer school: his days at one school, said in full once ----
+  // The school sends a row per day he serves (agenda id
+  // pioneer_school:<school>:<day>); six identical rows filled the screen
+  // (Lionel's phone, 19 November 2026). Each day keeps its row — and its
+  // change mark — but only the first says it all.
+  {
+    const bySchool = new Map<string, TaskEntry[]>();
+    for (const en of [...entries, ...farEntries]) {
+      if (en.type !== 'task' || en.task.item.kind !== 'pioneer_school') continue;
+      const school = (en.task.item.agendaId ?? '').split(':')[1] ?? '';
+      bySchool.set(school, [...(bySchool.get(school) ?? []), en]);
+    }
+    for (const list of bySchool.values()) {
+      list.sort((a, b) => a.dateISO.localeCompare(b.dateISO));
+      const days = list.map((en) => en.dateISO);
+      list.forEach((en, i) => {
+        en.schoolDays = days;
+        en.schoolFirst = i === 0;
+      });
+    }
+  }
 
   return { near: byDay(entries), far: byDay(farEntries) };
 }

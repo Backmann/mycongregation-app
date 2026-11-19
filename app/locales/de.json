@@ -3211,7 +3211,9 @@
       "field": "Zusammenkunft für den Predigtdienst"
     },
     "pioneerSchool": {
-      "title": "Pionierdienstschule"
+      "title": "Pionierdienstschule",
+      "short": "Pionierdienstschule",
+      "yourDays": "Ihre Tage: {{days}}"
     }
   },
   "halls": {

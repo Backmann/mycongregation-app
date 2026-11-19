@@ -37,6 +37,7 @@ const MODULES = [
   'invitations',
   'group-name',
   'home-changes',
+  'date-range',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -745,7 +746,10 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     [{ memorial: { id: 'x' } }, { movedFrom: '2026-01-01' }, { notice: 'n' }, { occasion: { id: 'e' } }].map((x) =>
       isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine, ...x })] }, 'a')),
     [false, false, false, false]);
-  check('25д не встреча (уборка, тележка) — полной строкой', isSlimDay({ dateISO: 'd', entries: [{ type: 'task', key: 't', dateISO: 'd', task: { item: { kind: 'cart' } } }] }, 't'), false);
+  // The card's own row of another kind is one line too (19 November 2026);
+  // one that is not on the card is said in full.
+  check('25д своё не-встреча на карточке — одной строкой', isSlimDay({ dateISO: 'd', entries: [{ type: 'task', key: 't', dateISO: 'd', task: { item: { kind: 'cart' } } }] }, 't'), true);
+  check('25д′ своё не-встреча не на карточке — полной строкой', isSlimDay({ dateISO: 'd', entries: [{ type: 'task', key: 't', dateISO: 'd', task: { item: { kind: 'cart' } } }] }, null), false);
   // б. The away band: covers its days, hides plain field service, never his own.
   const ab = (id, startDate, endDate, dateISO) => ({ type: 'absence', key: `abs-${id}`, dateISO, absence: { id, startDate, endDate } });
   const groups = [
@@ -840,6 +844,38 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
     check(`26и ${lang}: строка проповеди названа встречей`, d.home.slim.field !== d.feed.kindField, true);
   }
+}
+
+// --- 27. The phone, 19 November 2026 -----------------------------------------
+{
+  // а. A brother at the pioneer school on some days only: each of his days
+  // keeps its row; the first says it all.
+  const school = (date, duty) => ({ kind: 'pioneer_school', sortDate: date, date, label: 'Школа', agendaId: `pioneer_school:S1:${date}`, schoolDuties: [{ type: duty }] });
+  const tl = buildTimeline({
+    versions: VERSIONS, fieldServiceMeetings: SATURDAY, publishersById: people, groupNameById: groups,
+    myServiceGroupId: AHLEN, myPublisherId: BERGMAN, events: [], moves: [], absences: [],
+    todayISO: TODAY, youConductLabel: 'conduct', youVisitLabels: { overseer: 'overseer', assistant: 'assistant' },
+    resolvePart, nearDays: 14,
+    myItems: [school('2026-09-28', 'av'), school('2026-09-30', 'av'), school('2026-10-02', 'ventilation')],
+  });
+  const rows = [...tl.near, ...tl.far].flatMap((g) => g.entries).filter((e) => e.type === 'task' && e.task.item.kind === 'pioneer_school');
+  check('27а каждый его день Школы — своя строка', rows.map((e) => e.dateISO), ['2026-09-28', '2026-09-30', '2026-10-02']);
+  check('27б подробно только первая', rows.map((e) => e.schoolFirst), [true, false, false]);
+  check('27в все знают его дни', rows[2]?.schoolDays, ['2026-09-28', '2026-09-30', '2026-10-02']);
+  // б. Dates on a phone without formatRange: short within a month.
+  const { formatDayRange, formatDayList } = await import(pathToFileURL(join(out, 'date-range.mjs')));
+  const keep = Intl.DateTimeFormat.prototype.formatRange;
+  delete Intl.DateTimeFormat.prototype.formatRange;
+  try {
+    check('27г неделя на телефоне — «7–13 декабря»', formatDayRange('2026-12-07', '2026-12-13', 'ru', { year: 'never' }), '7–13 декабря');
+    check('27д немецкая — с точкой', formatDayRange('2026-12-07', '2026-12-13', 'de', { year: 'never' }), '7.–13. Dezember');
+    check('27е его дни Школы — «23, 25, 27 ноября»', formatDayList(['2026-11-27', '2026-11-23', '2026-11-25'], 'ru').replace(/ \d{4} г\.$/, ''), '23, 25, 27 ноября');
+  } finally {
+    Intl.DateTimeFormat.prototype.formatRange = keep;
+  }
+  // в. The hall's name is not said twice.
+  const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  check('27ж адрес без повтора названия зала', /function hallPlace/.test(home) && /hallPlace\(it\.location\)/.test(home), true);
 }
 
 if (failures) {
