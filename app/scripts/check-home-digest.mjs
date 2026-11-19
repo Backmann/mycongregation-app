@@ -777,8 +777,10 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   // no «Следом», no agreeing on preparing on Home — that is in «Мои назначения».
   const homeSrc = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
   check('25и на Главной нет подготовки с напарником', /PairPrep|pickThen|ThenBlock/.test(homeSrc), false);
-  const prep = readFileSync(join(ROOT, 'components', 'PairPrep.tsx'), 'utf8');
-  check('25к у подготовки нет ответа «не получится»', /answer\([^)]*'decline'\)/.test(prep), false);
+  // Agreeing on preparing is gone from the app (19 November 2026): unused,
+  // and «не получится» under a part read as refusing it.
+  const { existsSync } = await import('node:fs');
+  check('25к в приложении нет «договориться о подготовке»', existsSync(join(ROOT, 'components', 'PairPrep.tsx')) || /pairPrepApi/.test(readFileSync(join(ROOT, 'lib', 'api.ts'), 'utf8')), false);
 }
 
 if (failures) {

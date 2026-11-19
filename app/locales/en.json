@@ -7374,61 +7374,6 @@
       "screen": "screen"
     }
   },
-  "pairPrep": {
-    "button": "Arrange preparation",
-    "noApp": "{{name}} does not use the app — arrange your preparation in person.",
-    "sent": "Suggestion sent",
-    "nextTomorrow": "A new suggestion can be made tomorrow.",
-    "waiting": "waiting for an answer",
-    "remindInPerson": "No answer yet? Remind each other in person.",
-    "change": "Change",
-    "takeBack": "Take back",
-    "changeAgreed": "Change the arrangement",
-    "proposeOther": "Suggest another time",
-    "agree": "That works",
-    "otherTime": "Another time",
-    "send": "Send suggestion",
-    "sendNote": "Your partner gets a notification and sees the suggestion in the app. Phone numbers are never shown. At night the notification waits until 8:00.",
-    "whenCaption": "When suits you",
-    "notOffered": "Not offered: {{day}} — {{reason}}.",
-    "mine": {
-      "self": "You suggested arranging your preparation",
-      "moment": "You suggested: {{moment}}"
-    },
-    "theirs": {
-      "self": "{{name}} suggests arranging your preparation",
-      "moment": "{{name}} suggests: {{moment}}"
-    },
-    "agreed": {
-      "self": "Arranged: you will pick the time yourselves",
-      "moment": "Arranged: {{moment}}"
-    },
-    "declined": {
-      "theirs": "{{name}}: let’s arrange it in person",
-      "mine": "You chose to arrange it in person",
-      "inPerson": "For example, at the next meeting."
-    },
-    "moment": {
-      "after": {
-        "midweek": "after the midweek meeting",
-        "weekend": "after the weekend meeting"
-      },
-      "before": "before the meeting — a last check",
-      "service": "at the meeting for field service",
-      "self": "we will arrange it ourselves",
-      "selfHint": "just let your partner know it is time to prepare"
-    },
-    "when": {
-      "meeting": "{{day}} · starts at {{time}}",
-      "service": "{{day}}, {{time}} · if you are both there"
-    },
-    "hiddenReason": {
-      "my_duty": "you have a duty at this meeting",
-      "partner_duty": "your partner has a duty at this meeting",
-      "cleaning": "cleaning after this meeting",
-      "away": "one of you is away"
-    }
-  },
   "territories": {
     "kicker": "Ministry · territories",
     "title": "Territories",
