@@ -1617,53 +1617,54 @@ function MineBlock({
   entry: Extract<TimelineEntry, { type: "meeting" }>;
   title: string | null;
 }) {
-  const { t, i18n } = useTranslation();
-  const up = (x: string) => x.toLocaleUpperCase(i18n.language);
+  const { t } = useTranslation();
   const lines = entry.myParts;
   if (!lines.length && !entry.weeklyCleaning) return null;
-  // Parts at the same minute under one label: «ВЫ · 13:00» said twice in a
-  // row for the chairman and the opening prayer (review, 18 November 2026).
-  const groups: { label: string; parts: typeof lines }[] = [];
-  for (const p of lines) {
-    const at =
-      !p.isDuty && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
-    const who = p.asAssistant ? t("home.mine.youHelp") : t("home.mine.you");
-    const when = p.isDuty ? t("home.mine.wholeMeeting") : at;
-    const label = up([who, when].filter(Boolean).join(" · "));
-    const last = groups[groups.length - 1];
-    if (last && last.label === label) last.parts.push(p);
-    else groups.push({ label, parts: [p] });
-  }
+  // One anatomy for everything of his own (variant A, 19 November 2026): a
+  // bar in the colour of what it is, the name, his hour on the right, and
+  // under it in grey what it is or with whom — no capital labels.
   return (
     <View style={s.mineBlock}>
-      {groups.map((g, gi) => (
-        <View key={`g${gi}`} style={s.mineItem}>
-          <Text style={s.mineLabel}>{g.label}</Text>
-          {g.parts.map((p, i) => {
-            const name = p.label ?? p.title;
-            // The theme of his own public talk is the row's title already.
-            const topic = p.topic && p.topic !== title ? p.topic : null;
-            return (
-              <View key={`p${i}`} style={{ gap: 2 }}>
+      {lines.map((p, i) => {
+        const at =
+          !p.isDuty && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
+        const name = p.label ?? p.title;
+        // The theme of his own public talk is the row's title already.
+        const topic = p.topic && p.topic !== title ? `«${p.topic}»` : null;
+        const detail = [
+          p.isDuty ? t("home.mine.duty") : null,
+          p.asAssistant ? t("home.mine.helper") : null,
+          p.partnerName && !p.isDuty ? t("home.next.pair", { name: p.partnerName }) : null,
+          topic,
+          p.note ?? null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return (
+          <View key={`p${i}`} style={s.mineRow}>
+            <View
+              style={[
+                s.mineBar,
+                { backgroundColor: p.isDuty ? SECTION_COLORS.duty.color : SECTION_COLORS.meeting.color },
+              ]}
+            />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <View style={s.mineHead}>
                 <Text style={s.mineName}>{name}</Text>
-                {topic ? <Text style={s.mineSub}>«{topic}»</Text> : null}
-                {p.note ? <Text style={s.mineSub}>{p.note}</Text> : null}
-                {p.partnerName && !p.isDuty ? (
-                  <Text style={s.mineSub}>
-                    {t("home.next.pair", { name: p.partnerName })}
-                  </Text>
-                ) : null}
+                {at ? <Text style={s.mineTime}>{at}</Text> : null}
               </View>
-            );
-          })}
-        </View>
-      ))}
+              {detail ? <Text style={s.mineSub}>{detail}</Text> : null}
+            </View>
+          </View>
+        );
+      })}
       {entry.weeklyCleaning ? (
-        <View style={[s.mineItem, s.mineGroup]}>
-          <Text style={[s.mineLabel, s.mineLabelGroup]}>
-            {up(t("home.mine.yourGroup"))}
-          </Text>
-          <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
+        <View style={s.mineRow}>
+          <View style={[s.mineBar, { backgroundColor: SECTION_COLORS.cleaning.color }]} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
+            <Text style={s.mineSub}>{t("home.mine.yourGroup")}</Text>
+          </View>
         </View>
       ) : null}
     </View>
@@ -1781,10 +1782,15 @@ function EntryBody({
       : en.dateISO === tomorrow
         ? t("home.timeline.tomorrow").toLowerCase()
         : null;
-  const overline = (kindName: string, color: string, time: string | null) => (
-    <Text style={[s.rowKind, { color }]}>
-      {[kindName, time, dayWord].filter(Boolean).join(" · ")}
-    </Text>
+  // The colour of a meeting is its date tile's; the line above the title is
+  // grey, the hour stands on the right in one column (variant A).
+  const overline = (kindName: string, _color: string, time: string | null) => (
+    <View style={s.rowKindLine}>
+      <Text style={s.rowKindNeutral}>
+        {[kindName, dayWord].filter(Boolean).join(" · ")}
+      </Text>
+      {time ? <Text style={s.rowKindTime}>{time}</Text> : null}
+    </View>
   );
 
   // The old day of a meeting moved for this week: its kind and hour crossed
@@ -1792,7 +1798,7 @@ function EntryBody({
   if (en.type === "meeting" && en.kind !== "field_service" && en.movedTo) {
     return (
       <>
-        <Text style={[s.rowKind, s.rowKindStruck, { color: KIND_COLOR[en.kind] }]}>
+        <Text style={[s.rowKind, s.rowKindStruck, { color: "#475569" }]}>
           {[
             t(en.kind === "midweek" ? "feed.kindMidweek" : "feed.kindWeekend"),
             en.time || null,
@@ -1866,29 +1872,26 @@ function EntryBody({
     const lower = (x: string | null) => (x ? lowerFirst(x, loc) : x);
     return (
       <>
-        <Text
-          style={[
-            s.rowKind,
-            { color: en.memorial ? KIND_COLOR.memorial : KIND_COLOR[en.kind] },
-          ]}
-        >
-          {[
-            en.memorial
-              ? t("home.eventTypes.memorial")
-              : t(
-                  en.kind === "midweek"
-                    ? "feed.kindMidweek"
-                    : "feed.kindWeekend",
-                ),
-            en.time || null,
-            dayWord,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-          {occasion ? (
-            <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
-          ) : null}
-        </Text>
+        <View style={s.rowKindLine}>
+          <Text style={s.rowKindNeutral}>
+            {[
+              en.memorial
+                ? t("home.eventTypes.memorial")
+                : t(
+                    en.kind === "midweek"
+                      ? "feed.kindMidweek"
+                      : "feed.kindWeekend",
+                  ),
+              dayWord,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+            {occasion ? (
+              <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
+            ) : null}
+          </Text>
+          {en.time ? <Text style={s.rowKindTime}>{en.time}</Text> : null}
+        </View>
         {title ? (
           <Text style={[s.rowTitle, !compact && en.titleIsMine && s.titleMine]}>
             {title}
@@ -1995,7 +1998,7 @@ function EntryBody({
       it.label === "thorough" && it.windows?.length ? it.windows : null;
     return (
       <>
-        <Text style={[s.rowKind, { color: v.color }]}>
+        <Text style={[s.rowKind, { color: "#475569" }]}>
           {[
             t("home.list.kindCleaning"),
             // A chore for the whole week says the week, not the Monday it is
@@ -2046,7 +2049,7 @@ function EntryBody({
     const v = taskVisual(it);
     return (
       <>
-        <Text style={[s.rowKind, { color: v.color }]}>
+        <Text style={[s.rowKind, { color: "#475569" }]}>
           {[
             taskSubsectionLabel(it, t) ??
               // A cart shift said what it is: the row's title is only the place.
@@ -2190,7 +2193,7 @@ function EntryBody({
   const multiDay = !!e.endDate && e.endDate !== e.date;
   return (
     <>
-      <Text style={[s.rowKind, { color: KIND_COLOR.event }]}>
+      <Text style={[s.rowKind, { color: "#475569" }]}>
         {[
           e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
@@ -3610,6 +3613,13 @@ const s = StyleSheet.create({
     marginRight: 6,
   },
   rowKind: { fontSize: 12.5, fontFamily: "Manrope_700Bold" },
+  rowKindLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  rowKindNeutral: { flex: 1, fontSize: 12.5, fontFamily: "Manrope_700Bold", color: "#475569" },
+  rowKindTime: { fontSize: 14, fontFamily: "Manrope_700Bold", color: "#334155", fontVariant: ["tabular-nums"] },
+  mineRow: { flexDirection: "row", gap: 10 },
+  mineBar: { width: 3, borderRadius: 2 },
+  mineHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  mineTime: { fontSize: 14, fontFamily: "Manrope_800ExtraBold", color: "#b45309", fontVariant: ["tabular-nums"] },
   rowKindStruck: { textDecorationLine: "line-through", opacity: 0.55 },
   rowTitle: {
     fontSize: 15,
@@ -3648,24 +3658,9 @@ const s = StyleSheet.create({
     color: "#c2410c",
   },
   dot: { width: 7, height: 7, borderRadius: 4 },
-  mineBlock: { marginTop: 8, gap: 10 },
-  mineItem: {
-    borderLeftWidth: 3,
-    borderLeftColor: "#f97316",
-    paddingLeft: 10,
-    paddingVertical: 1,
-    gap: 2,
-  },
-  mineGroup: { borderLeftColor: "#14b8a6" },
-  mineLabel: {
-    fontFamily: "Manrope_800ExtraBold",
-    fontSize: 12,
-    letterSpacing: 0.4,
-    color: "#c2410c",
-  },
-  mineLabelGroup: { color: "#0f766e" },
-  mineName: { fontFamily: "Manrope_700Bold", fontSize: 15.5, color: "#0f172a", lineHeight: 21 },
-  mineSub: { fontFamily: "Manrope_500Medium", fontSize: 14, color: "#475569", lineHeight: 20 },
+  mineBlock: { marginTop: 8, gap: 8 },
+  mineName: { flex: 1, fontFamily: "Manrope_700Bold", fontSize: 15, color: "#0f172a", lineHeight: 20 },
+  mineSub: { fontFamily: "Manrope_600SemiBold", fontSize: 13, color: "#475569", lineHeight: 18 },
   dateDot: { backgroundColor: "#f97316", marginTop: 5 },
   agenda: { gap: 2, marginTop: 3 },
   agendaLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },

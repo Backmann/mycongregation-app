@@ -614,7 +614,9 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
   check('22а будни не берут заголовок из первой речи', /agenda\[0\]\.text/.test(home), false);
   check('22б своё — блоком с подписью', /<MineBlock entry=\{en\} title=\{title\} \/>/.test(home), true);
-  check('22в подпись словами у каждой строки', /t\("home\.mine\.youHelp"\) : t\("home\.mine\.you"\)/.test(home), true);
+  // Variant A (19 November 2026): no capital «ВЫ»; what it is, in words, under
+  // the name — duty, assistant, partner.
+  check('22в что это — словами под названием', /t\("home\.mine\.duty"\)/.test(home) && /t\("home\.mine\.helper"\)/.test(home), true);
   check('22г уборка группы — в том же блоке', /home\.mine\.yourGroup/.test(home), true);
   const meta = readFileSync(join(ROOT, 'components', 'FieldMeetingBlock.tsx'), 'utf8');
   check('22д длина видео — со словом «видео», не у часов', /fieldService\.videoLength/.test(meta) && !/time-outline/.test(meta), true);
@@ -622,7 +624,7 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('22е «перенесена» не оранжевая', /#c2410c|#fff7ed|#9a3412/.test(moved), false);
   for (const lang of ['ru', 'de', 'en']) {
     const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
-    for (const k of ['you', 'youHelp', 'wholeMeeting', 'yourGroup', 'cleaning'])
+    for (const k of ['duty', 'helper', 'yourGroup', 'cleaning'])
       check(`22ж ${lang}: home.mine.${k}`, !!d.home.mine?.[k], true);
     check(`22ж ${lang}: fieldService.videoLength`, !!d.fieldService.videoLength, true);
   }
@@ -695,7 +697,7 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     check('23е′ Главная не вставляет имя группы как есть', /group: (en|x|en\.fieldNote)\.groupName\b|name: en\.groupName\b/.test(home), false);
     // ж. Dates beyond this year carry the year; same-hour lines share a label.
     check('23ж даты другого года — с годом', (home.match(/year: "numeric"|year: ['"]auto['"]/g) ?? []).length >= 5, true);
-    check('23з одна подпись на строки одного часа', /last && last\.label === label\) last\.parts\.push/.test(home), true);
+    check('23з у каждой своей строки — своё время справа, без заглавных подписей', /s\.mineTime/.test(home) && !/home\.mine\.you\b/.test(home), true);
   }
 }
 

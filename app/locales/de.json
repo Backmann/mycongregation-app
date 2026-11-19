@@ -3200,11 +3200,10 @@
       "with": "gemeinsam mit {{name}}"
     },
     "mine": {
-      "you": "Sie",
-      "youHelp": "Sie — Partner",
-      "wholeMeeting": "ganze Zusammenkunft",
       "yourGroup": "Ihre Gruppe",
-      "cleaning": "Reinigung nach der Zusammenkunft"
+      "cleaning": "Reinigung nach der Zusammenkunft",
+      "duty": "Aufgabe",
+      "helper": "Helfer"
     },
     "slim": {
       "midweek": "Unter der Woche",

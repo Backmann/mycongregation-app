@@ -3200,11 +3200,10 @@
       "with": "together with {{name}}"
     },
     "mine": {
-      "you": "You",
-      "youHelp": "You — assistant",
-      "wholeMeeting": "whole meeting",
       "yourGroup": "Your group",
-      "cleaning": "Cleaning after the meeting"
+      "cleaning": "Cleaning after the meeting",
+      "duty": "Duty",
+      "helper": "Assistant"
     },
     "slim": {
       "midweek": "Midweek",
