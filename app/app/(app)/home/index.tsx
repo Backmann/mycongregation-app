@@ -1352,38 +1352,39 @@ function NextBody({
       .join(" · ");
     return (
       <>
-        <View style={{ gap: 6 }}>
-          {lines.map((p, i) => (
-            <View key={i} style={timed ? s.timedLine : { gap: 2 }}>
-              {timed ? (
-                <Text style={[s.partClock, { color: darker(ownKind(entry)) }]}>
-                  {p.offsetMin != null
-                    ? (clockPlus(entry.time, p.offsetMin) ?? "")
-                    : ""}
-                </Text>
-              ) : null}
-              <View style={timed ? { flex: 1, gap: 2 } : { gap: 2 }}>
-                <View style={s.partLine}>
-                  <Text
-                    style={
-                      lines.length > 1
-                        ? s.nextEqual
-                        : i === 0
-                          ? s.nextMain
-                          : s.nextSecond
-                    }
-                  >
-                    {partText(p, t)}
-                  </Text>
-                  {p.partnerName ? (
-                    <Chip
-                      tone="blue"
-                      text={t("home.next.pair", { name: p.partnerName })}
-                    />
-                  ) : null}
+        <View style={{ gap: 10 }}>
+          {/* The same anatomy as his lines in the list (variant A, 19
+              November 2026): bar, name, his hour on the right, what it is
+              or with whom under it. */}
+          {lines.map((p, i) => {
+            const at =
+              timed && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
+            const detail = [
+              p.isDuty ? t("home.mine.duty") : null,
+              p.asAssistant ? t("home.mine.helper") : null,
+              p.partnerName && !p.isDuty ? t("home.next.pair", { name: p.partnerName }) : null,
+              p.topic ? `«${p.topic}»` : null,
+              p.note ?? null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <View key={i} style={{ gap: 6 }}>
+                <View style={s.mineRow}>
+                  <View
+                    style={[
+                      s.mineBar,
+                      { backgroundColor: p.isDuty ? SECTION_COLORS.duty.color : SECTION_COLORS.meeting.color },
+                    ]}
+                  />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <View style={s.mineHead}>
+                      <Text style={s.nextMineName}>{p.label ?? p.title}</Text>
+                      {at ? <Text style={s.mineTime}>{at}</Text> : null}
+                    </View>
+                    {detail ? <Text style={s.mineSub}>{detail}</Text> : null}
+                  </View>
                 </View>
-                {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
-                {p.note ? <Text style={s.nextNote}>{p.note}</Text> : null}
                 {p.partnerName && !p.isDuty ? (
                   <PairPrep
                     agendaId={p.agendaId}
@@ -1392,12 +1393,16 @@ function NextBody({
                   />
                 ) : null}
               </View>
-            </View>
-          ))}
+            );
+          })}
           {entry.weeklyCleaning ? (
-            <Text style={lines.length ? s.nextSecond : s.nextMain}>
-              {t("home.timeline.cleaningAfterMeeting")}
-            </Text>
+            <View style={s.mineRow}>
+              <View style={[s.mineBar, { backgroundColor: SECTION_COLORS.cleaning.color }]} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.nextMineName}>{t("home.mine.cleaning")}</Text>
+                <Text style={s.mineSub}>{t("home.mine.yourGroup")}</Text>
+              </View>
+            </View>
           ) : null}
           {!entry.atHall && entry.address ? (
             <Text style={s.nextPlace}>{entry.address}</Text>
@@ -1998,8 +2003,8 @@ function EntryBody({
       it.label === "thorough" && it.windows?.length ? it.windows : null;
     return (
       <>
-        <Text style={[s.rowKind, { color: "#475569" }]}>
-          {[
+        <KindLine
+          text={[
             t("home.list.kindCleaning"),
             // A chore for the whole week says the week, not the Monday it is
             // filed under (review, 18 November 2026).
@@ -2012,12 +2017,13 @@ function EntryBody({
                     { year: "auto" },
                   ),
                 })
-              : entryTime(en),
+              : null,
             isWeekChore(en) ? null : dayWord,
           ]
             .filter(Boolean)
             .join(" · ")}
-        </Text>
+          time={isWeekChore(en) ? null : entryTime(en)}
+        />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
         <Text style={s.rowSub}>
           {capitalizeFirst(
@@ -2049,8 +2055,8 @@ function EntryBody({
     const v = taskVisual(it);
     return (
       <>
-        <Text style={[s.rowKind, { color: "#475569" }]}>
-          {[
+        <KindLine
+          text={[
             taskSubsectionLabel(it, t) ??
               // A cart shift said what it is: the row's title is only the place.
               (it.kind === "cart"
@@ -2058,12 +2064,12 @@ function EntryBody({
                 : it.kind === "field_service"
                   ? t("feed.kindField")
                   : null),
-            entryTime(en),
             dayWord,
           ]
             .filter(Boolean)
             .join(" · ")}
-        </Text>
+          time={entryTime(en)}
+        />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
         {/* A visit to another group: what else the congregation has that
             day, each with its hour (10 November 2026). */}
@@ -2133,13 +2139,12 @@ function EntryBody({
     const it = en.item;
     return (
       <>
-        {overline(
-          coVisitKindLabel(it.kind, t),
-          "#0e7490",
-          it.startTime ?? null,
-        )}
+        {/* What it is stands as the title, the visit over it: a row with
+            only «Ланч-бокс» in grey had no title at all (19 November 2026). */}
+        {overline(t("coVisit.mineTitle"), "#0e7490", it.startTime ?? null)}
+        <Text style={s.rowTitle}>{coVisitKindLabel(it.kind, t)}</Text>
         {coVisitWithLabel(it, t) ? (
-          <Text style={s.rowTitle}>{coVisitWithLabel(it, t)}</Text>
+          <Text style={s.rowSub}>{coVisitWithLabel(it, t)}</Text>
         ) : null}
         {coVisitPlace(it) ? (
           <Text style={s.rowSub}>{coVisitPlace(it)}</Text>
@@ -2193,12 +2198,11 @@ function EntryBody({
   const multiDay = !!e.endDate && e.endDate !== e.date;
   return (
     <>
-      <Text style={[s.rowKind, { color: "#475569" }]}>
-        {[
+      <KindLine
+        text={[
           e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
             : t("feed.kindSpecial"),
-          e.time ?? null,
           multiDay
             ? e.date < en.dateISO
               ? t("home.list.until", {
@@ -2209,10 +2213,21 @@ function EntryBody({
         ]
           .filter(Boolean)
           .join(" · ")}
-      </Text>
+        time={e.time ?? null}
+      />
       <Text style={s.rowTitle}>{e.title}</Text>
       {e.address ? <Text style={s.rowSub}>{e.address}</Text> : null}
     </>
+  );
+}
+
+/** The grey line over a row, its hour on the right (variant A). */
+function KindLine({ text, time }: { text: string; time: string | null }) {
+  return (
+    <View style={s.rowKindLine}>
+      <Text style={s.rowKindNeutral}>{text}</Text>
+      {time ? <Text style={s.rowKindTime}>{time}</Text> : null}
+    </View>
   );
 }
 
@@ -3619,6 +3634,7 @@ const s = StyleSheet.create({
   mineRow: { flexDirection: "row", gap: 10 },
   mineBar: { width: 3, borderRadius: 2 },
   mineHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  nextMineName: { flex: 1, fontFamily: "Manrope_800ExtraBold", fontSize: 17, color: "#0f172a", lineHeight: 23 },
   mineTime: { fontSize: 14, fontFamily: "Manrope_800ExtraBold", color: "#b45309", fontVariant: ["tabular-nums"] },
   rowKindStruck: { textDecorationLine: "line-through", opacity: 0.55 },
   rowTitle: {

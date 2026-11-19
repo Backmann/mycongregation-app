@@ -36,6 +36,7 @@ const MODULES = [
   'field-moves',
   'invitations',
   'group-name',
+  'home-changes',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -699,6 +700,34 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     check('23ж даты другого года — с годом', (home.match(/year: "numeric"|year: ['"]auto['"]/g) ?? []).length >= 5, true);
     check('23з у каждой своей строки — своё время справа, без заглавных подписей', /s\.mineTime/.test(home) && !/home\.mine\.you\b/.test(home), true);
   }
+}
+
+// --- 24. Variant A, the rest (19 November 2026) -------------------------------
+{
+  const { entryAgendaIds } = await import(pathToFileURL(join(out, 'home-changes.mjs')));
+  const base = {
+    versions: VERSIONS, fieldServiceMeetings: SATURDAY, publishersById: people, groupNameById: groups,
+    myServiceGroupId: AHLEN, myPublisherId: BERGMAN, events: [], moves: [], absences: [],
+    todayISO: TODAY, youConductLabel: 'conduct', youVisitLabels: { overseer: 'overseer', assistant: 'assistant' },
+    resolvePart, nearDays: 14,
+  };
+  // а. A lunch of the visit comes once: the visit item, not the copy from
+  // /me/assignments; «Изменено» finds it by the same id.
+  const lunch = { id: 'lunch-1', kind: 'lunch_box', itemDate: '2026-10-01', startTime: null, assigneePublisherId: BERGMAN };
+  const tl = buildTimeline({
+    ...base,
+    coVisits: [{ visit: { id: 'v1', title: 'visit', date: '2026-09-29', endDate: '2026-10-04' }, items: [lunch] }],
+    myItems: [{ kind: 'co_lunch', sortDate: '2026-10-01', date: '2026-10-01', label: 'lunch_box', agendaId: 'co_visit:lunch-1' }],
+  });
+  const rows = [...tl.near, ...tl.far].flatMap((g) => g.entries).filter((e) => (e.type === 'task' && e.task.item.kind === 'co_lunch') || e.type === 'co_visit');
+  check('24а ланч визита — одна строка', rows.map((e) => e.type), ['co_visit']);
+  check('24а′ «Изменено» находит её по тому же номеру', rows[0] ? entryAgendaIds(rows[0]) : null, ['co_visit:lunch-1']);
+  // б. A far part carries its hour where the week's programme is loaded.
+  const titles = new Map([['2026-11-02|midweek', { title: null, speaker: null, partStarts: { bible_reading: 21 } }]]);
+  const tl2 = buildTimeline({ ...base, meetingTitles: titles, myItems: [part('2026-11-02', 'midweek', 'bible_reading', 5, { agendaId: 'part:far2' })] });
+  const far = tl2.far.flatMap((g) => g.entries).find((e) => e.type === 'meeting');
+  check('24б дальняя часть знает своё время', far?.myParts?.[0]?.offsetMin ?? null, 21);
+  check('24б′ и свой номер для «Изменено»', far?.myParts?.[0]?.agendaId ?? null, 'part:far2');
 }
 
 if (failures) {

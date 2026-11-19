@@ -649,8 +649,20 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
   // actually moved to, rather than on the weekday the settings name.
   // A part of a meeting that is not held stays out of Home, as before; «Мои
   // назначения» shows it muted with the reason.
+  // A lunch of the circuit overseer's visit comes twice: as an item of
+  // /me/assignments (`co_lunch`, agenda id `co_visit:<id>`) and as the
+  // person's own visit item. The visit item says more (the visit, the place,
+  // the hour), so it is the one shown; «Изменено» finds it by the same id
+  // (lib/home-changes.ts). Two rows «Ланч-бокс» on one day (review, 19
+  // November 2026).
+  const visitItemIds = new Set(
+    coVisits.flatMap((v) => v.items).map((it) => `co_visit:${it.id}`),
+  );
   const refined = refineMyTasks(myItems, versions, todayISO, events, moves).filter(
-    (r) => !droppedByCongress(r) && r.notHeldBy === undefined,
+    (r) =>
+      !droppedByCongress(r) &&
+      r.notHeldBy === undefined &&
+      !(r.item.kind === 'co_lunch' && !!r.item.agendaId && visitItemIds.has(r.item.agendaId)),
   );
 
   const taskPlacement = (r: RefinedTask): string =>
@@ -1305,10 +1317,20 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         sourceUrl: null,
         replacedBy: null,
         memorial: farMemorial,
+        // His hour further out as near, where the week's programme is loaded
+        // (eight weeks); beyond it the part has no hour (19 November 2026).
         myParts: rs
           .map((r) => r.item)
           .sort(byProgramme)
-          .map((it) => ({ ...resolvePart(it), isDuty: it.kind === 'duty' })),
+          .map((it) => ({
+            ...resolvePart(it),
+            agendaId: it.agendaId,
+            isDuty: it.kind === 'duty',
+            offsetMin:
+              it.kind === 'duty' || !it.partKey || farMemorial
+                ? null
+                : (meetingTitles?.get(`${wk}|${kind}`)?.partStarts?.[it.partKey] ?? null),
+          })),
         weeklyCleaning: false,
         agendaIds: rs
           .map((r) => r.item.agendaId)
