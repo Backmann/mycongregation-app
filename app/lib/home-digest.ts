@@ -237,6 +237,9 @@ export function isPlainMeeting(en: TimelineEntry, allowOwn = false): boolean {
 export function isSlimDay(g: DayGroup, nextKey: string | null): boolean {
   return (
     g.entries.length > 0 &&
+    // Several field-service meetings on one day are said in full, as usual
+    // (Lionel, 19 November 2026): which to go to is the point of the day.
+    g.entries.filter((en) => en.type === 'meeting' && en.kind === 'field_service').length <= 1 &&
     g.entries.every(
       (en) => isPlainMeeting(en) || (en.key === nextKey && isPlainMeeting(en, true)),
     )
