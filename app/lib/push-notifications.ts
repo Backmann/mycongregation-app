@@ -336,7 +336,8 @@ export function routeForNotification(
     // A new kind of failure met in the app — the administrator's journal.
     case 'client_error':
       return { path: '/publishers/crashes', params: {} };
-    // The two people of a part arranging its preparation: the part's card.
+    // An old notice of arranging preparation (removed 19 November 2026):
+    // still opens the part's card.
     case 'pair_prep':
       return { path: '/home/my-assignments', params: {} };
     // A territory given to him or due in two weeks: his territories; for the
@@ -444,11 +445,6 @@ export function usePushNotifications() {
       const data = response.notification.request.content.data as
         | NotificationData
         | undefined;
-      // The partner answered: the screen it opens may already be mounted and
-      // would show the old state (10 November 2026).
-      if ((data as { type?: string } | undefined)?.type === 'pair_prep') {
-        void queryClient.invalidateQueries({ queryKey: ['pair-prep'] });
-      }
 
       const route = routeForNotification(data ?? {});
       if (route) {

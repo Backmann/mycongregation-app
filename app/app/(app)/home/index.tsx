@@ -1,4 +1,3 @@
-import { PairPrep } from "../../../components/PairPrep";
 import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { HoursCard } from "../../../components/hours/HoursCard";
 import { useLogUndo } from "../../../components/hours/useLogUndo";
@@ -89,7 +88,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime, isOwnEntry, isWeekChore, splitHome } from "../../../lib/home-digest";
+import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isSlimDay, isWeekChore, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -150,7 +149,7 @@ import { entryAgendaIds, unshownCount } from "../../../lib/home-changes";
  * names the role and puts the topic under it.
  */
 /** Two columns from this width; the content never grows past MAX_WIDTH. */
-const WIDE_FROM = 900;
+const WIDE_CONTENT = 760;
 const MAX_WIDTH = 1000;
 const NEAR_DAYS = 14;
 
@@ -1321,52 +1320,53 @@ function NextBody({
       .join(" · ");
     return (
       <>
-        <View style={{ gap: 6 }}>
-          {lines.map((p, i) => (
-            <View key={i} style={timed ? s.timedLine : { gap: 2 }}>
-              {timed ? (
-                <Text style={[s.partClock, { color: darker(ownKind(entry)) }]}>
-                  {p.offsetMin != null
-                    ? (clockPlus(entry.time, p.offsetMin) ?? "")
-                    : ""}
-                </Text>
-              ) : null}
-              <View style={timed ? { flex: 1, gap: 2 } : { gap: 2 }}>
-                <View style={s.partLine}>
-                  <Text
-                    style={
-                      lines.length > 1
-                        ? s.nextEqual
-                        : i === 0
-                          ? s.nextMain
-                          : s.nextSecond
-                    }
-                  >
-                    {partText(p, t)}
-                  </Text>
-                  {p.partnerName ? (
-                    <Chip
-                      tone="blue"
-                      text={t("home.next.pair", { name: p.partnerName })}
-                    />
-                  ) : null}
-                </View>
-                {p.topic ? <Text style={s.nextTopic}>«{p.topic}»</Text> : null}
-                {p.note ? <Text style={s.nextNote}>{p.note}</Text> : null}
-                {p.partnerName && !p.isDuty ? (
-                  <PairPrep
-                    agendaId={p.agendaId}
-                    partName={p.label ?? p.title}
-                    compact
+        <View style={{ gap: 10 }}>
+          {/* The same anatomy as his lines in the list (variant A, 19
+              November 2026): bar, name, his hour on the right, what it is
+              or with whom under it. */}
+          {lines.map((p, i) => {
+            const at =
+              timed && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
+            const detail = [
+              p.isDuty ? t("home.mine.duty") : null,
+              p.asAssistant ? t("home.mine.helper") : null,
+              p.partnerName && !p.isDuty ? t("home.next.pair", { name: p.partnerName }) : null,
+              p.topic ? `«${p.topic}»` : null,
+              p.note ?? null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <View key={i} style={{ gap: 6 }}>
+                <View style={s.mineRow}>
+                  <View
+                    style={[
+                      s.mineBar,
+                      { backgroundColor: p.isDuty ? SECTION_COLORS.duty.color : SECTION_COLORS.meeting.color },
+                    ]}
                   />
-                ) : null}
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <View style={s.mineHead}>
+                      <Text style={s.nextMineName}>{p.label ?? p.title}</Text>
+                      {at ? <Text style={s.mineTime}>{at}</Text> : null}
+                    </View>
+                    {detail ? <Text style={s.mineSub}>{detail}</Text> : null}
+                  </View>
+                </View>
+                {/* Home says the part as a fact — with whom; agreeing on
+                    preparing lives in «Мои назначения» (Lionel, 19
+                    November 2026). */}
+              </View>
+            );
+          })}
+          {entry.weeklyCleaning ? (
+            <View style={s.mineRow}>
+              <View style={[s.mineBar, { backgroundColor: SECTION_COLORS.cleaning.color }]} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={s.nextMineName}>{t("home.mine.cleaning")}</Text>
+                <Text style={s.mineSub}>{t("home.mine.yourGroup")}</Text>
               </View>
             </View>
-          ))}
-          {entry.weeklyCleaning ? (
-            <Text style={lines.length ? s.nextSecond : s.nextMain}>
-              {t("home.timeline.cleaningAfterMeeting")}
-            </Text>
           ) : null}
           {!entry.atHall && entry.address ? (
             <Text style={s.nextPlace}>{entry.address}</Text>
@@ -1586,53 +1586,54 @@ function MineBlock({
   entry: Extract<TimelineEntry, { type: "meeting" }>;
   title: string | null;
 }) {
-  const { t, i18n } = useTranslation();
-  const up = (x: string) => x.toLocaleUpperCase(i18n.language);
+  const { t } = useTranslation();
   const lines = entry.myParts;
   if (!lines.length && !entry.weeklyCleaning) return null;
-  // Parts at the same minute under one label: «ВЫ · 13:00» said twice in a
-  // row for the chairman and the opening prayer (review, 18 November 2026).
-  const groups: { label: string; parts: typeof lines }[] = [];
-  for (const p of lines) {
-    const at =
-      !p.isDuty && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
-    const who = p.asAssistant ? t("home.mine.youHelp") : t("home.mine.you");
-    const when = p.isDuty ? t("home.mine.wholeMeeting") : at;
-    const label = up([who, when].filter(Boolean).join(" · "));
-    const last = groups[groups.length - 1];
-    if (last && last.label === label) last.parts.push(p);
-    else groups.push({ label, parts: [p] });
-  }
+  // One anatomy for everything of his own (variant A, 19 November 2026): a
+  // bar in the colour of what it is, the name, his hour on the right, and
+  // under it in grey what it is or with whom — no capital labels.
   return (
     <View style={s.mineBlock}>
-      {groups.map((g, gi) => (
-        <View key={`g${gi}`} style={s.mineItem}>
-          <Text style={s.mineLabel}>{g.label}</Text>
-          {g.parts.map((p, i) => {
-            const name = p.label ?? p.title;
-            // The theme of his own public talk is the row's title already.
-            const topic = p.topic && p.topic !== title ? p.topic : null;
-            return (
-              <View key={`p${i}`} style={{ gap: 2 }}>
+      {lines.map((p, i) => {
+        const at =
+          !p.isDuty && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
+        const name = p.label ?? p.title;
+        // The theme of his own public talk is the row's title already.
+        const topic = p.topic && p.topic !== title ? `«${p.topic}»` : null;
+        const detail = [
+          p.isDuty ? t("home.mine.duty") : null,
+          p.asAssistant ? t("home.mine.helper") : null,
+          p.partnerName && !p.isDuty ? t("home.next.pair", { name: p.partnerName }) : null,
+          topic,
+          p.note ?? null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        return (
+          <View key={`p${i}`} style={s.mineRow}>
+            <View
+              style={[
+                s.mineBar,
+                { backgroundColor: p.isDuty ? SECTION_COLORS.duty.color : SECTION_COLORS.meeting.color },
+              ]}
+            />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <View style={s.mineHead}>
                 <Text style={s.mineName}>{name}</Text>
-                {topic ? <Text style={s.mineSub}>«{topic}»</Text> : null}
-                {p.note ? <Text style={s.mineSub}>{p.note}</Text> : null}
-                {p.partnerName && !p.isDuty ? (
-                  <Text style={s.mineSub}>
-                    {t("home.next.pair", { name: p.partnerName })}
-                  </Text>
-                ) : null}
+                {at ? <Text style={s.mineTime}>{at}</Text> : null}
               </View>
-            );
-          })}
-        </View>
-      ))}
+              {detail ? <Text style={s.mineSub}>{detail}</Text> : null}
+            </View>
+          </View>
+        );
+      })}
       {entry.weeklyCleaning ? (
-        <View style={[s.mineItem, s.mineGroup]}>
-          <Text style={[s.mineLabel, s.mineLabelGroup]}>
-            {up(t("home.mine.yourGroup"))}
-          </Text>
-          <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
+        <View style={s.mineRow}>
+          <View style={[s.mineBar, { backgroundColor: SECTION_COLORS.cleaning.color }]} />
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
+            <Text style={s.mineSub}>{t("home.mine.yourGroup")}</Text>
+          </View>
         </View>
       ) : null}
     </View>
@@ -1750,10 +1751,15 @@ function EntryBody({
       : en.dateISO === tomorrow
         ? t("home.timeline.tomorrow").toLowerCase()
         : null;
-  const overline = (kindName: string, color: string, time: string | null) => (
-    <Text style={[s.rowKind, { color }]}>
-      {[kindName, time, dayWord].filter(Boolean).join(" · ")}
-    </Text>
+  // The colour of a meeting is its date tile's; the line above the title is
+  // grey, the hour stands on the right in one column (variant A).
+  const overline = (kindName: string, _color: string, time: string | null) => (
+    <View style={s.rowKindLine}>
+      <Text style={s.rowKindNeutral}>
+        {[kindName, dayWord].filter(Boolean).join(" · ")}
+      </Text>
+      {time ? <Text style={s.rowKindTime}>{time}</Text> : null}
+    </View>
   );
 
   // The old day of a meeting moved for this week: its kind and hour crossed
@@ -1761,7 +1767,7 @@ function EntryBody({
   if (en.type === "meeting" && en.kind !== "field_service" && en.movedTo) {
     return (
       <>
-        <Text style={[s.rowKind, s.rowKindStruck, { color: KIND_COLOR[en.kind] }]}>
+        <Text style={[s.rowKind, s.rowKindStruck, { color: "#475569" }]}>
           {[
             t(en.kind === "midweek" ? "feed.kindMidweek" : "feed.kindWeekend"),
             en.time || null,
@@ -1835,29 +1841,26 @@ function EntryBody({
     const lower = (x: string | null) => (x ? lowerFirst(x, loc) : x);
     return (
       <>
-        <Text
-          style={[
-            s.rowKind,
-            { color: en.memorial ? KIND_COLOR.memorial : KIND_COLOR[en.kind] },
-          ]}
-        >
-          {[
-            en.memorial
-              ? t("home.eventTypes.memorial")
-              : t(
-                  en.kind === "midweek"
-                    ? "feed.kindMidweek"
-                    : "feed.kindWeekend",
-                ),
-            en.time || null,
-            dayWord,
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-          {occasion ? (
-            <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
-          ) : null}
-        </Text>
+        <View style={s.rowKindLine}>
+          <Text style={s.rowKindNeutral}>
+            {[
+              en.memorial
+                ? t("home.eventTypes.memorial")
+                : t(
+                    en.kind === "midweek"
+                      ? "feed.kindMidweek"
+                      : "feed.kindWeekend",
+                  ),
+              dayWord,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+            {occasion ? (
+              <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
+            ) : null}
+          </Text>
+          {en.time ? <Text style={s.rowKindTime}>{en.time}</Text> : null}
+        </View>
         {title ? (
           <Text style={[s.rowTitle, !compact && en.titleIsMine && s.titleMine]}>
             {title}
@@ -1964,8 +1967,8 @@ function EntryBody({
       it.label === "thorough" && it.windows?.length ? it.windows : null;
     return (
       <>
-        <Text style={[s.rowKind, { color: v.color }]}>
-          {[
+        <KindLine
+          text={[
             t("home.list.kindCleaning"),
             // A chore for the whole week says the week, not the Monday it is
             // filed under (review, 18 November 2026).
@@ -1978,12 +1981,13 @@ function EntryBody({
                     { year: "auto" },
                   ),
                 })
-              : entryTime(en),
+              : null,
             isWeekChore(en) ? null : dayWord,
           ]
             .filter(Boolean)
             .join(" · ")}
-        </Text>
+          time={isWeekChore(en) ? null : entryTime(en)}
+        />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
         <Text style={s.rowSub}>
           {capitalizeFirst(
@@ -2015,8 +2019,8 @@ function EntryBody({
     const v = taskVisual(it);
     return (
       <>
-        <Text style={[s.rowKind, { color: v.color }]}>
-          {[
+        <KindLine
+          text={[
             taskSubsectionLabel(it, t) ??
               // A cart shift said what it is: the row's title is only the place.
               (it.kind === "cart"
@@ -2024,12 +2028,12 @@ function EntryBody({
                 : it.kind === "field_service"
                   ? t("feed.kindField")
                   : null),
-            entryTime(en),
             dayWord,
           ]
             .filter(Boolean)
             .join(" · ")}
-        </Text>
+          time={entryTime(en)}
+        />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
         {/* A visit to another group: what else the congregation has that
             day, each with its hour (10 November 2026). */}
@@ -2099,17 +2103,19 @@ function EntryBody({
     const it = en.item;
     return (
       <>
-        {overline(
-          coVisitKindLabel(it.kind, t),
-          "#0e7490",
-          it.startTime ?? null,
-        )}
+        {/* What it is stands as the title, the visit over it: a row with
+            only «Ланч-бокс» in grey had no title at all (19 November 2026). */}
+        {overline(t("coVisit.mineTitle"), "#0e7490", it.startTime ?? null)}
+        <Text style={s.rowTitle}>{coVisitKindLabel(it.kind, t)}</Text>
         {coVisitWithLabel(it, t) ? (
-          <Text style={s.rowTitle}>{coVisitWithLabel(it, t)}</Text>
+          <Text style={s.rowSub}>{coVisitWithLabel(it, t)}</Text>
         ) : null}
         {coVisitPlace(it) ? (
           <Text style={s.rowSub}>{coVisitPlace(it)}</Text>
         ) : null}
+        {/* The instruction for it, as the lunch row of «Мои назначения»
+            said it — that row is no longer drawn twice (19 November 2026). */}
+        {it.note ? <Text style={s.rowSub}>{it.note}</Text> : null}
       </>
     );
   }
@@ -2159,12 +2165,11 @@ function EntryBody({
   const multiDay = !!e.endDate && e.endDate !== e.date;
   return (
     <>
-      <Text style={[s.rowKind, { color: KIND_COLOR.event }]}>
-        {[
+      <KindLine
+        text={[
           e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
             : t("feed.kindSpecial"),
-          e.time ?? null,
           multiDay
             ? e.date < en.dateISO
               ? t("home.list.until", {
@@ -2175,10 +2180,21 @@ function EntryBody({
         ]
           .filter(Boolean)
           .join(" · ")}
-      </Text>
+        time={e.time ?? null}
+      />
       <Text style={s.rowTitle}>{e.title}</Text>
       {e.address ? <Text style={s.rowSub}>{e.address}</Text> : null}
     </>
+  );
+}
+
+/** The grey line over a row, its hour on the right (variant A). */
+function KindLine({ text, time }: { text: string; time: string | null }) {
+  return (
+    <View style={s.rowKindLine}>
+      <Text style={s.rowKindNeutral}>{text}</Text>
+      {time ? <Text style={s.rowKindTime}>{time}</Text> : null}
+    </View>
   );
 }
 
@@ -2207,6 +2223,106 @@ function toneOf(en: TimelineEntry | undefined): MeetingTone {
   if (en.memorial) return "memorial";
   if (en.replacedBy) return "event";
   return en.kind;
+}
+
+/**
+ * A day of the two weeks with nothing of the person's own (variant A, 19
+ * November 2026): each meeting one line — its name and hour; field service
+ * one line with all its hours. The day of «Ваше ближайшее» is said the same
+ * way with a mark: its own rows are on the card above.
+ */
+function SlimDay({
+  group,
+  todayISO,
+  nowHM,
+  nextKey,
+  dim = false,
+}: {
+  group: DayGroup;
+  todayISO: string;
+  nowHM: string;
+  nextKey: string | null;
+  dim?: boolean;
+}) {
+  const { t, i18n } = useTranslation();
+  const d = new Date(`${group.dateISO}T00:00:00`);
+  const weekday = d
+    .toLocaleDateString(i18n.language, { weekday: "short" })
+    .replace(".", "")
+    .toUpperCase();
+  const meetings = group.entries.filter(
+    (en): en is MeetingEntry => en.type === "meeting",
+  );
+  const field = meetings.filter((m) => m.kind === "field_service");
+  const others = meetings.filter((m) => m.kind !== "field_service");
+  const fieldNext = field.find((m) => m.key === nextKey);
+  const lines: { key: string; name: string; time: string; past: boolean; next: boolean; en: TimelineEntry }[] = [
+    ...others.map((m) => ({
+      key: m.key,
+      name: t(m.kind === "midweek" ? "home.slim.midweek" : "home.slim.weekend"),
+      time: m.time,
+      past: isOver(m, todayISO, nowHM),
+      next: m.key === nextKey,
+      en: m as TimelineEntry,
+    })),
+    ...(field.length
+      ? [
+          {
+            key: field[0].key,
+            name: t("home.slim.field"),
+            time: field.map((m) => m.time).join(" · "),
+            past: field.every((m) => isOver(m, todayISO, nowHM)),
+            next: !!fieldNext,
+            // The one of his, if one is: the line opens that meeting.
+            en: (fieldNext ?? field[0]) as TimelineEntry,
+          },
+        ]
+      : []),
+  ];
+  const dayLabel = d.toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
+  const tone = toneOf(group.entries[0]);
+  const ink = MEETING_INK[tone];
+  return (
+    <View style={[s.slimDay, dim && { opacity: 0.55 }]}>
+      <View
+        style={[
+          s.slimTile,
+          { backgroundColor: MEETING_TILE[tone] },
+        ]}
+      >
+        <Text style={[s.slimTileDay, { color: ink }]}>{d.getDate()}</Text>
+        <Text style={[s.slimTileDow, { color: ink }]}>{weekday}</Text>
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
+        {lines.map((l) => (
+          <Pressable
+            key={l.key}
+            onPress={() => openEntry(l.en)}
+            style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+            accessibilityRole="button"
+            accessibilityLabel={[
+              dayLabel,
+              l.name,
+              l.time,
+              l.past ? t("home.list.pillPast") : l.next ? t("home.list.pillNext") : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
+          >
+            <View style={s.slimLine}>
+              <Text style={[s.slimName, l.past && s.slimPast]}>{l.name}</Text>
+              <Text style={[s.slimTime, l.past && s.slimPast]}>{l.time}</Text>
+            </View>
+            {l.past ? (
+              <Text style={[s.pill, s.pillPast]}>{t("home.list.pillPast")}</Text>
+            ) : l.next ? (
+              <Text style={[s.pill, s.pillNext]}>{t("home.list.pillNext")}</Text>
+            ) : null}
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
 }
 
 function DayRow({
@@ -2700,8 +2816,10 @@ export default function HomeScreen() {
   const now = useNow();
   const todayISO = formatDateISO(now);
   const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  const { width } = useWindowDimensions();
-  const wide = width >= WIDE_FROM;
+  const { width, fontScale } = useWindowDimensions();
+  // Two columns when each gets a phone's width (variant A, 19 November
+  // 2026): 380 + 24 + at least 356; one column with a large system font.
+  const wide = width - 32 >= WIDE_CONTENT && fontScale < 1.3;
   const [refreshing, setRefreshing] = useState(false);
   const [windows, setWindows] = useState<number[] | null>(null);
 
@@ -2784,6 +2902,14 @@ export default function HomeScreen() {
       .map((p) => p.value)
       .join(" ");
   };
+  // «Декабрь», «Январь 2027» — the month as a heading names it.
+  const monthName = (iso: string) =>
+    capitalizeFirst(
+      new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+        month: "long",
+        ...(iso.slice(0, 4) !== todayISO.slice(0, 4) ? { year: "numeric" } : {}),
+      }).replace(/\s?г\.$/, ""),
+    );
   // Changes on rows Home does not show (beyond the first few of «Дальше у
   // вас»): counted where the full list opens, which marks them too.
   const hiddenChanges = unshownCount(changes.data, [
@@ -2806,9 +2932,12 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={s.listCard}>
-        {aheadShown.map((en) => (
+        {aheadShown.map((en, i) => (
+          <Fragment key={en.key}>
+          {i === 0 || aheadShown[i - 1].dateISO.slice(0, 7) !== en.dateISO.slice(0, 7) ? (
+            <Text style={s.monthLabel} accessibilityRole="header">{monthName(en.dateISO)}</Text>
+          ) : null}
           <DayRow
-            key={en.key}
             group={{ dateISO: en.dateISO, entries: [en] }}
             nextKey={null}
             todayISO={todayISO}
@@ -2817,6 +2946,7 @@ export default function HomeScreen() {
             onWindows={setWindows}
             compact
           />
+          </Fragment>
         ))}
       <Pressable
         onPress={() => router.push("/home/my-assignments" as never)}
@@ -2840,11 +2970,16 @@ export default function HomeScreen() {
     </View>
   );
 
+  // An away-period is one band over its days (variant A): lib/home-digest.ts
+  // awaySegments.
+  const listSegments = awaySegments(meetingsNear);
+  const nk = digest.next && !digest.nextIsFar ? digest.next.key : null;
+
   const list = (
     <View style={s.section}>
       <View style={s.listHead}>
         <Text style={s.sectionLabel} accessibilityRole="header">
-          {t("home.list.meetings")}
+          {t("home.list.twoWeeks")}
         </Text>
         <Text style={s.listRange}>
           {fmtDay(todayISO)} – {fmtDay(nearTo)}
@@ -2868,36 +3003,47 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={s.listCard}>
-        {meetingsNear.map((g, i) => {
-          const month = g.dateISO.slice(0, 7);
-          const prev =
-            i === 0
-              ? todayISO.slice(0, 7)
-              : meetingsNear[i - 1].dateISO.slice(0, 7);
-          return (
-            <View key={g.dateISO}>
-              {month !== prev ? (
-                <Text style={s.monthLabel}>
-                  {capitalizeFirst(
-                    new Date(`${g.dateISO}T00:00:00`).toLocaleDateString(
-                      i18n.language,
-                      { month: "long" },
-                    ),
-                  )}
-                </Text>
-              ) : null}
-              <DayRow
-                group={g}
-                nextKey={
-                  digest.next && !digest.nextIsFar ? digest.next.key : null
-                }
-                todayISO={todayISO}
-                myGroupName={data.myGroupName}
-                myName={data.myName}
-                onWindows={setWindows}
-                compact
-              />
+        {listSegments.map((seg) => {
+          const rows = seg.groups
+            .filter((g) => g.entries.length > 0)
+            .map((g) =>
+              isSlimDay(g, nk) ? (
+                <SlimDay
+                  key={g.dateISO}
+                  group={g}
+                  todayISO={todayISO}
+                  nowHM={nowHM}
+                  nextKey={nk}
+                  dim={seg.away.length > 0}
+                />
+              ) : (
+                <DayRow
+                  key={g.dateISO}
+                  group={g}
+                  nextKey={nk}
+                  todayISO={todayISO}
+                  myGroupName={data.myGroupName}
+                  myName={data.myName}
+                  onWindows={setWindows}
+                  compact
+                />
+              ),
+            );
+          const segKey = `${seg.groups[0]?.dateISO ?? ""}|${seg.away.map((a) => a.id).join(",")}`;
+          return seg.away.length ? (
+            <View key={segKey} style={s.awayBand}>
+              {seg.away.map((a) => (
+                <View key={a.id} style={s.awayHead}>
+                  <Text style={s.awayTitle} accessibilityRole="header">
+                    {[t("home.list.away"), absenceNote(a, t)].filter(Boolean).join(" · ")}
+                  </Text>
+                  <Text style={s.awayRange}>{absenceRange(a, i18n.language)}</Text>
+                </View>
+              ))}
+              {rows}
             </View>
+          ) : (
+            <Fragment key={segKey}>{rows}</Fragment>
           );
         })}
         <Pressable
@@ -2992,11 +3138,11 @@ export default function HomeScreen() {
                 {removedBlock}
                 <HoursCard onSaved={logUndo.saved} />
                 <TodoSection />
-                {ahead}
+                {soon}
               </View>
               <View style={s.colRight}>
                 {list}
-                {soon}
+                {ahead}
               </View>
             </>
           ) : (
@@ -3010,8 +3156,8 @@ export default function HomeScreen() {
               {removedBlock}
               <HoursCard onSaved={logUndo.saved} />
               <TodoSection />
-              {ahead}
               {list}
+              {ahead}
               {soon}
             </>
           )}
@@ -3045,8 +3191,8 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, alignItems: "center" },
   frame: { width: "100%", maxWidth: MAX_WIDTH, gap: 22 },
-  frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 40 },
-  colLeft: { width: 400, gap: 22 },
+  frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 24 },
+  colLeft: { width: 380, gap: 22 },
   colRight: { flex: 1, minWidth: 0, gap: 22 },
   section: { gap: 8 },
   sectionLabel: {
@@ -3286,6 +3432,45 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
   nextInner: { padding: 16, paddingTop: 12, gap: 12 },
+  slimDay: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingVertical: 9,
+    paddingHorizontal: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eef2f6",
+  },
+  slimTile: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  slimTileDay: { fontSize: 15, lineHeight: 17, fontFamily: "Manrope_800ExtraBold" },
+  slimTileDow: { fontSize: 9.5, lineHeight: 12, fontFamily: "Manrope_800ExtraBold" },
+  slimLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  slimName: { flex: 1, fontSize: 14.5, lineHeight: 20, fontFamily: "Manrope_600SemiBold", color: "#334155" },
+  slimTime: { fontSize: 14, fontFamily: "Manrope_700Bold", color: "#334155", fontVariant: ["tabular-nums"] },
+  slimPast: { color: "#64748b" },
+  pill: {
+    alignSelf: "flex-start",
+    marginTop: 3,
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Manrope_700Bold",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    overflow: "hidden",
+  },
+  pillNext: { backgroundColor: "#fef3c7", color: "#92400e" },
+  pillPast: { backgroundColor: "#e2e8f0", color: "#334155" },
+  awayBand: {
+    backgroundColor: "#f8fafc",
+    borderLeftWidth: 4,
+    borderLeftColor: "#94a3b8",
+    marginHorizontal: -12,
+    paddingLeft: 12,
+    paddingRight: 12,
+  },
+  awayHead: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8, paddingTop: 10 },
+  awayTitle: { fontSize: 13, fontFamily: "Manrope_800ExtraBold", color: "#334155" },
+  awayRange: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#475569" },
   listCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
@@ -3320,9 +3505,10 @@ const s = StyleSheet.create({
 
   listHead: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "baseline",
     justifyContent: "space-between",
-    gap: 8,
+    columnGap: 8,
   },
   listTitle: {
     fontSize: 18,
@@ -3378,6 +3564,14 @@ const s = StyleSheet.create({
     marginRight: 6,
   },
   rowKind: { fontSize: 12.5, fontFamily: "Manrope_700Bold" },
+  rowKindLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  rowKindNeutral: { flex: 1, fontSize: 12.5, fontFamily: "Manrope_700Bold", color: "#475569" },
+  rowKindTime: { fontSize: 14, fontFamily: "Manrope_700Bold", color: "#334155", fontVariant: ["tabular-nums"] },
+  mineRow: { flexDirection: "row", gap: 10 },
+  mineBar: { width: 3, borderRadius: 2 },
+  mineHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  nextMineName: { flex: 1, fontFamily: "Manrope_800ExtraBold", fontSize: 17, color: "#0f172a", lineHeight: 23 },
+  mineTime: { fontSize: 14, fontFamily: "Manrope_800ExtraBold", color: "#b45309", fontVariant: ["tabular-nums"] },
   rowKindStruck: { textDecorationLine: "line-through", opacity: 0.55 },
   rowTitle: {
     fontSize: 15,
@@ -3416,24 +3610,9 @@ const s = StyleSheet.create({
     color: "#c2410c",
   },
   dot: { width: 7, height: 7, borderRadius: 4 },
-  mineBlock: { marginTop: 8, gap: 10 },
-  mineItem: {
-    borderLeftWidth: 3,
-    borderLeftColor: "#f97316",
-    paddingLeft: 10,
-    paddingVertical: 1,
-    gap: 2,
-  },
-  mineGroup: { borderLeftColor: "#14b8a6" },
-  mineLabel: {
-    fontFamily: "Manrope_800ExtraBold",
-    fontSize: 12,
-    letterSpacing: 0.4,
-    color: "#c2410c",
-  },
-  mineLabelGroup: { color: "#0f766e" },
-  mineName: { fontFamily: "Manrope_700Bold", fontSize: 15.5, color: "#0f172a", lineHeight: 21 },
-  mineSub: { fontFamily: "Manrope_500Medium", fontSize: 14, color: "#475569", lineHeight: 20 },
+  mineBlock: { marginTop: 8, gap: 8 },
+  mineName: { flex: 1, fontFamily: "Manrope_700Bold", fontSize: 15, color: "#0f172a", lineHeight: 20 },
+  mineSub: { fontFamily: "Manrope_600SemiBold", fontSize: 13, color: "#475569", lineHeight: 18 },
   dateDot: { backgroundColor: "#f97316", marginTop: 5 },
   agenda: { gap: 2, marginTop: 3 },
   agendaLine: { flexDirection: "row", alignItems: "flex-start", gap: 6 },

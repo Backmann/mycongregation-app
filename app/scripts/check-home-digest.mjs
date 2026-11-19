@@ -36,6 +36,7 @@ const MODULES = [
   'field-moves',
   'invitations',
   'group-name',
+  'home-changes',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -534,11 +535,12 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   };
   const keys = (xs) => xs.map((e) => e.key);
   const sp = splitHome(timeline, 'cart-10');
-  check('19а «Встречи собрания» — встречи и события, без своих строк другого рода',
+  // Variant A (19 November 2026): the two weeks are one list, his own rows
+  // of any kind in their own day; «Дальше у вас» is only beyond them.
+  check('19а «Ближайшие две недели» — все дни, своё в своём дне',
     sp.meetings.map((g) => [g.dateISO, keys(g.entries)]),
-    [['2026-11-11', ['old-11']], ['2026-11-12', ['new-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
-  check('19б «Дальше у вас» — свои строки другого рода, потом всё своё после двух недель, без карточки',
-    keys(sp.ahead), ['cart-12', 'mw-25']);
+    [['2026-11-10', ['cart-10']], ['2026-11-11', ['old-11']], ['2026-11-12', ['new-12', 'cart-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
+  check('19б «Дальше у вас» — только своё после двух недель', keys(sp.ahead), ['mw-25']);
   // «Важно» is no longer a list of its own (10 November 2026): a meeting
   // that is different says it in its own row, which stays where it is.
   check('19в нет отдельного «Важно»: перемены говорит сама строка встречи',
@@ -546,7 +548,12 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const sp2 = splitHome(timeline, 'new-12');
   check('19г перенесённая встреча с карточки остаётся строкой в «Встречах собрания»',
     sp2.meetings.some((g) => keys(g.entries).includes('new-12')), true);
-  check('19д карточка не повторяется в «Дальше у вас»', keys(sp2.ahead), ['cart-10', 'cart-12', 'mw-25']);
+  check('19д карточка не повторяется в «Дальше у вас»', keys(splitHome({ near: [], far: timeline.far }, 'mw-25').ahead), []);
+  const { isPlainMeeting } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  check('19е одной строкой — только встреча без своего и без перемен',
+    ['old-11', 'new-12', 'fs-14', 'we-15'].map((k) => isPlainMeeting(timeline.near.flatMap((g) => g.entries).find((e) => e.key === k))),
+    [false, false, false, false]);
+  check('19ж обычная встреча без своего — одной строкой', isPlainMeeting(mtg('plain', '2026-11-18')), true);
 }
 
 // --- 20. «Изменено» finds its row: each row lists its own agenda ids --------
@@ -608,7 +615,9 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
   check('22а будни не берут заголовок из первой речи', /agenda\[0\]\.text/.test(home), false);
   check('22б своё — блоком с подписью', /<MineBlock entry=\{en\} title=\{title\} \/>/.test(home), true);
-  check('22в подпись словами у каждой строки', /t\("home\.mine\.youHelp"\) : t\("home\.mine\.you"\)/.test(home), true);
+  // Variant A (19 November 2026): no capital «ВЫ»; what it is, in words, under
+  // the name — duty, assistant, partner.
+  check('22в что это — словами под названием', /t\("home\.mine\.duty"\)/.test(home) && /t\("home\.mine\.helper"\)/.test(home), true);
   check('22г уборка группы — в том же блоке', /home\.mine\.yourGroup/.test(home), true);
   const meta = readFileSync(join(ROOT, 'components', 'FieldMeetingBlock.tsx'), 'utf8');
   check('22д длина видео — со словом «видео», не у часов', /fieldService\.videoLength/.test(meta) && !/time-outline/.test(meta), true);
@@ -616,7 +625,7 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('22е «перенесена» не оранжевая', /#c2410c|#fff7ed|#9a3412/.test(moved), false);
   for (const lang of ['ru', 'de', 'en']) {
     const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
-    for (const k of ['you', 'youHelp', 'wholeMeeting', 'yourGroup', 'cleaning'])
+    for (const k of ['duty', 'helper', 'yourGroup', 'cleaning'])
       check(`22ж ${lang}: home.mine.${k}`, !!d.home.mine?.[k], true);
     check(`22ж ${lang}: fieldService.videoLength`, !!d.fieldService.videoLength, true);
   }
@@ -689,8 +698,89 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     check('23е′ Главная не вставляет имя группы как есть', /group: (en|x|en\.fieldNote)\.groupName\b|name: en\.groupName\b/.test(home), false);
     // ж. Dates beyond this year carry the year; same-hour lines share a label.
     check('23ж даты другого года — с годом', (home.match(/year: "numeric"|year: ['"]auto['"]/g) ?? []).length >= 5, true);
-    check('23з одна подпись на строки одного часа', /last && last\.label === label\) last\.parts\.push/.test(home), true);
+    check('23з у каждой своей строки — своё время справа, без заглавных подписей', /s\.mineTime/.test(home) && !/home\.mine\.you\b/.test(home), true);
   }
+}
+
+// --- 24. Variant A, the rest (19 November 2026) -------------------------------
+{
+  const { entryAgendaIds } = await import(pathToFileURL(join(out, 'home-changes.mjs')));
+  const base = {
+    versions: VERSIONS, fieldServiceMeetings: SATURDAY, publishersById: people, groupNameById: groups,
+    myServiceGroupId: AHLEN, myPublisherId: BERGMAN, events: [], moves: [], absences: [],
+    todayISO: TODAY, youConductLabel: 'conduct', youVisitLabels: { overseer: 'overseer', assistant: 'assistant' },
+    resolvePart, nearDays: 14,
+  };
+  // а. A lunch of the visit comes once: the visit item, not the copy from
+  // /me/assignments; «Изменено» finds it by the same id.
+  const lunch = { id: 'lunch-1', kind: 'lunch_box', itemDate: '2026-10-01', startTime: null, assigneePublisherId: BERGMAN };
+  const tl = buildTimeline({
+    ...base,
+    coVisits: [{ visit: { id: 'v1', title: 'visit', date: '2026-09-29', endDate: '2026-10-04' }, items: [lunch] }],
+    myItems: [{ kind: 'co_lunch', sortDate: '2026-10-01', date: '2026-10-01', label: 'lunch_box', agendaId: 'co_visit:lunch-1' }],
+  });
+  const rows = [...tl.near, ...tl.far].flatMap((g) => g.entries).filter((e) => (e.type === 'task' && e.task.item.kind === 'co_lunch') || e.type === 'co_visit');
+  check('24а ланч визита — одна строка', rows.map((e) => e.type), ['co_visit']);
+  check('24а′ «Изменено» находит её по тому же номеру', rows[0] ? entryAgendaIds(rows[0]) : null, ['co_visit:lunch-1']);
+  // б. A far part carries its hour where the week's programme is loaded.
+  const titles = new Map([['2026-11-02|midweek', { title: null, speaker: null, partStarts: { bible_reading: 21 } }]]);
+  const tl2 = buildTimeline({ ...base, meetingTitles: titles, myItems: [part('2026-11-02', 'midweek', 'bible_reading', 5, { agendaId: 'part:far2' })] });
+  const far = tl2.far.flatMap((g) => g.entries).find((e) => e.type === 'meeting');
+  check('24б дальняя часть знает своё время', far?.myParts?.[0]?.offsetMin ?? null, 21);
+  check('24б′ и свой номер для «Изменено»', far?.myParts?.[0]?.agendaId ?? null, 'part:far2');
+}
+
+// --- 25. Variant A: one line, the away band, «Следом» (19 November 2026) ----
+{
+  const { isSlimDay, awaySegments } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  const m = (key, dateISO, extra = {}) => ({ type: 'meeting', key, dateISO, kind: 'midweek', time: '19:00', myParts: [], weeklyCleaning: false, ...extra });
+  const fs = (key, dateISO, extra = {}) => m(key, dateISO, { kind: 'field_service', time: '10:00', ...extra });
+  const mine = [{ label: 'x', partKey: 'x' }];
+  // а. One line only when nothing is his but the card, and nothing different.
+  check('25а день без своего — одной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd'), fs('b', 'd')] }, null), true);
+  check('25б своё не на карточке — полной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine })] }, null), false);
+  check('25в своё на карточке — одной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine })] }, 'a'), true);
+  check('25г карточка с переменой (Вечеря, перенос) — полной строкой',
+    [{ memorial: { id: 'x' } }, { movedFrom: '2026-01-01' }, { notice: 'n' }, { occasion: { id: 'e' } }].map((x) =>
+      isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine, ...x })] }, 'a')),
+    [false, false, false, false]);
+  check('25д не встреча (уборка, тележка) — полной строкой', isSlimDay({ dateISO: 'd', entries: [{ type: 'task', key: 't', dateISO: 'd', task: { item: { kind: 'cart' } } }] }, 't'), false);
+  // б. The away band: covers its days, hides plain field service, never his own.
+  const ab = (id, startDate, endDate, dateISO) => ({ type: 'absence', key: `abs-${id}`, dateISO, absence: { id, startDate, endDate } });
+  const groups = [
+    { dateISO: '2026-11-19', entries: [ab('A', '2026-11-10', '2026-11-20', '2026-11-19'), fs('f1', '2026-11-19')] },
+    { dateISO: '2026-11-20', entries: [fs('f2', '2026-11-20', { myParts: mine })] },
+    { dateISO: '2026-11-21', entries: [fs('f3', '2026-11-21')] },
+    { dateISO: '2026-11-25', entries: [ab('B', '2026-11-25', null, '2026-11-25')] },
+    { dateISO: '2026-11-26', entries: [m('w', '2026-11-26')] },
+  ];
+  const seg = awaySegments(groups);
+  const shape = seg.map((sg) => [sg.away.map((a) => a.id).join('+'), sg.groups.map((g) => [g.dateISO, g.entries.map((e) => e.key)])]);
+  check('25е полосы: уехал до сегодня, вернулся; отсутствие без конца — один день',
+    shape,
+    [
+      ['A', [['2026-11-19', []], ['2026-11-20', ['f2']]]],
+      ['', [['2026-11-21', ['f3']]]],
+      ['B', [['2026-11-25', []]]],
+      ['', [['2026-11-26', ['w']]]],
+    ]);
+  // Nothing that carries «Изменено» is ever left out: Home marks changes seen.
+  const kept = new Set(seg.flatMap((sg) => sg.groups.flatMap((g) => g.entries.map((e) => e.key))));
+  const dropped = groups.flatMap((g) => g.entries).filter((e) => e.type !== 'absence' && !kept.has(e.key));
+  check('25ж из полосы уходит только чужая проповедь', dropped.map((e) => [e.key, e.myParts.length]), [['f1', 0]]);
+  const two = awaySegments([
+    { dateISO: '2026-11-19', entries: [ab('A', '2026-11-19', '2026-11-22', '2026-11-19'), ab('C', '2026-11-19', '2026-11-19', '2026-11-19')] },
+    { dateISO: '2026-11-20', entries: [m('w2', '2026-11-20')] },
+  ]);
+  check('25з два отсутствия в один день — оба в голове полосы', two.map((sg) => sg.away.map((a) => a.id)), [['A', 'C'], ['A']]);
+  // в. Home says a part with a partner as a fact (Lionel, 19 November 2026):
+  // no «Следом», no agreeing on preparing on Home — that is in «Мои назначения».
+  const homeSrc = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  check('25и на Главной нет подготовки с напарником', /PairPrep|pickThen|ThenBlock/.test(homeSrc), false);
+  // Agreeing on preparing is gone from the app (19 November 2026): unused,
+  // and «не получится» under a part read as refusing it.
+  const { existsSync } = await import('node:fs');
+  check('25к в приложении нет «договориться о подготовке»', existsSync(join(ROOT, 'components', 'PairPrep.tsx')) || /pairPrepApi/.test(readFileSync(join(ROOT, 'lib', 'api.ts'), 'utf8')), false);
 }
 
 if (failures) {

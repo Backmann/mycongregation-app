@@ -128,6 +128,8 @@ export function entryAgendaIds(en: TimelineEntry): string[] {
         ? [en.task.item.agendaId]
         : en.type === 'outgoing_talk'
           ? en.talks.map((r) => r.item.agendaId)
-          : [];
+          : en.type === 'co_visit'
+            ? [`co_visit:${en.item.id}`]
+            : [];
   return ids.filter((x): x is string => !!x);
 }
