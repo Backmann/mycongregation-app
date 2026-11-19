@@ -3208,10 +3208,12 @@
     "slim": {
       "midweek": "Unter der Woche",
       "weekend": "Wochenende",
-      "field": "Predigtdienst"
+      "field": "Zusammenkunft für den Predigtdienst"
     },
     "pioneerSchool": {
-      "title": "Pionierdienstschule"
+      "title": "Pionierdienstschule",
+      "short": "Pionierdienstschule",
+      "yourDays": "Ihre Tage: {{days}}"
     }
   },
   "halls": {

@@ -60,7 +60,83 @@ export function formatDayRange(
   if (typeof ranged.formatRange === 'function') {
     return ranged.formatRange(from, to);
   }
-  return `${fmt.format(from)} – ${fmt.format(to)}`;
+  // Hermes on a phone has no formatRange (Lionel's phone, 19 November 2026:
+  // «7 декабря - 13 декабря»). Within one month the language's own date of
+  // the last day is kept and only its day becomes the span — «7–13 декабря»,
+  // «December 7–13», «7.–13. Dezember», as lib/week-range.ts does for weeks.
+  if (
+    !opts.weekday &&
+    from.getFullYear() === to.getFullYear() &&
+    from.getMonth() === to.getMonth()
+  ) {
+    const joined = joinDays([from.getDate()], to, fmt, '–');
+    if (joined) return joined;
+  }
+  // Across months: the first date says its year only where it differs from
+  // this one — «28 декабря – 3 января 2027 г.», not the year twice.
+  const first =
+    showYear && from.getFullYear() === thisYear && to.getFullYear() !== thisYear
+      ? new Intl.DateTimeFormat(intlLang(lang), {
+          day: 'numeric',
+          month: opts.month ?? 'long',
+          ...(opts.weekday ? { weekday: opts.weekday } : {}),
+        }).format(from)
+      : fmt.format(from);
+  return `${first} – ${fmt.format(to)}`;
+}
+
+/**
+ * The last date written by the language, its day replaced by «a, b<sep>c»:
+ * the order of day and month, and German's dot, stay the language's own.
+ * Null where the engine cannot say the parts of a date.
+ */
+function joinDays(
+  earlier: number[],
+  last: Date,
+  fmt: Intl.DateTimeFormat,
+  sep: string,
+): string | null {
+  if (typeof fmt.formatToParts !== 'function') return null;
+  const parts = fmt.formatToParts(last);
+  const dayPart = parts.find((p) => p.type === 'day');
+  if (!dayPart) return null;
+  const dotted = parts[parts.indexOf(dayPart) + 1]?.value.startsWith('.');
+  const d = (n: number) => `${n}${dotted ? '.' : ''}`;
+  const head = earlier.map(d).join(', ');
+  return parts
+    .map((p) => (p === dayPart ? `${head}${sep}${p.value}` : p.value))
+    .join('');
+}
+
+/**
+ * Several single days: «23, 25, 27 ноября», «November 23, 25, 27»,
+ * «23., 25., 27. November»; days of different months each in full. For the
+ * days a brother serves at the pioneer school (19 November 2026).
+ */
+export function formatDayList(isos: string[], lang: string): string {
+  const days = [...new Set(isos)].sort().map(day);
+  if (days.length === 0) return '';
+  const thisYear = new Date().getFullYear();
+  const last = days[days.length - 1];
+  const fmt = new Intl.DateTimeFormat(intlLang(lang), {
+    day: 'numeric',
+    month: 'long',
+    ...(last.getFullYear() !== thisYear ? { year: 'numeric' as const } : {}),
+  });
+  if (days.length === 1) return fmt.format(last);
+  const oneMonth = days.every(
+    (x) => x.getMonth() === last.getMonth() && x.getFullYear() === last.getFullYear(),
+  );
+  if (oneMonth) {
+    const joined = joinDays(
+      days.slice(0, -1).map((x) => x.getDate()),
+      last,
+      fmt,
+      ', ',
+    );
+    if (joined) return joined;
+  }
+  return days.map((x) => fmt.format(x)).join(', ');
 }
 
 /** One day, the same way: «20. November», «November 20», «20 ноября». */

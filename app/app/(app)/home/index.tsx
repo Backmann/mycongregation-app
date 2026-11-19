@@ -108,7 +108,7 @@ import {
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
-import { formatDayRange } from "../../../lib/date-range";
+import { formatDayList, formatDayRange } from "../../../lib/date-range";
 import { groupInSentence } from "../../../lib/group-name";
 import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
@@ -1432,6 +1432,30 @@ function NextBody({
       </View>
     );
   }
+  // His day at the pioneer school on the card: the school and all his days
+  // over it, the duties, the hall (19 November 2026).
+  if (entry.type === "task" && entry.task.item.kind === "pioneer_school") {
+    const it = entry.task.item;
+    const days = entry.schoolDays ?? [entry.dateISO];
+    return (
+      <View style={{ gap: 6 }}>
+        <Text style={s.nextOverline}>
+          {[
+            it.label || t("home.pioneerSchool.title"),
+            days.length > 1
+              ? t("home.pioneerSchool.yourDays", {
+                  days: formatDayList(days, i18n.language),
+                })
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" · ")}
+        </Text>
+        <Text style={s.nextMain}>{taskTitle(it, t)}</Text>
+        {it.location ? <Text style={s.nextPlace}>{hallPlace(it.location)}</Text> : null}
+      </View>
+    );
+  }
   if (entry.type === "task") {
     const it = entry.task.item;
     const windows =
@@ -1919,7 +1943,7 @@ function EntryBody({
     return (
       <>
         {overline(
-          t("feed.kindField"),
+          t("home.slim.field"),
           KIND_COLOR.field_service,
           en.time || null,
         )}
@@ -2014,6 +2038,48 @@ function EntryBody({
       </>
     );
   }
+  // A day at the pioneer school (19 November 2026): his first day there in
+  // full — the school, his days, his duties, the hall; his other days in one
+  // line with that day's duties. Each day keeps its own row and change mark.
+  if (en.type === "task" && en.task.item.kind === "pioneer_school") {
+    const it = en.task.item;
+    const days = en.schoolDays ?? [en.dateISO];
+    if (en.schoolFirst === false) {
+      return (
+        <View style={s.slimLine}>
+          <Text style={s.slimName}>
+            {`${t("home.pioneerSchool.short")} · ${taskTitle(it, t)}`}
+          </Text>
+          {entryTime(en) ? <Text style={s.slimTime}>{entryTime(en)}</Text> : null}
+        </View>
+      );
+    }
+    const consecutive = days.every(
+      (d, i) =>
+        i === 0 ||
+        formatDateISO(addDays(new Date(`${days[i - 1]}T00:00:00`), 1)) === d,
+    );
+    const daysText =
+      days.length < 2
+        ? null
+        : t("home.pioneerSchool.yourDays", {
+            days: consecutive
+              ? formatDayRange(days[0], days[days.length - 1], i18n.language)
+              : formatDayList(days, i18n.language),
+          });
+    return (
+      <>
+        <KindLine
+          text={[it.label || t("home.pioneerSchool.title"), daysText, days.length < 2 ? dayWord : null]
+            .filter(Boolean)
+            .join(" · ")}
+          time={entryTime(en)}
+        />
+        <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
+        {it.location ? <Text style={s.rowSub}>{hallPlace(it.location)}</Text> : null}
+      </>
+    );
+  }
   if (en.type === "task") {
     const it = en.task.item;
     const v = taskVisual(it);
@@ -2026,10 +2092,8 @@ function EntryBody({
               (it.kind === "cart"
                 ? capitalizeFirst(t("home.kinds.cart"))
                 : it.kind === "field_service"
-                  ? t("feed.kindField")
-                  : it.kind === "pioneer_school"
-                    ? it.label || t("home.pioneerSchool.title")
-                    : null),
+                  ? t("home.slim.field")
+                  : null),
             dayWord,
           ]
             .filter(Boolean)
@@ -2037,9 +2101,6 @@ function EntryBody({
           time={entryTime(en)}
         />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
-        {it.kind === "pioneer_school" && it.location ? (
-          <Text style={s.rowSub}>{it.location}</Text>
-        ) : null}
         {/* A visit to another group: what else the congregation has that
             day, each with its hour (10 November 2026). */}
         {en.alsoThatDay?.length ? (
@@ -2193,6 +2254,17 @@ function EntryBody({
   );
 }
 
+/**
+ * A hall and its address as the school gives them: «Ahlen, Bunsenstr. 46,
+ * 59229 Ahlen» says the town twice — the hall's name goes when the address
+ * already holds it (19 November 2026).
+ */
+function hallPlace(place: string): string {
+  const [name, ...rest] = place.split(", ");
+  const address = rest.join(", ");
+  return rest.length && address.includes(name) ? address : place;
+}
+
 /** The grey line over a row, its hour on the right (variant A). */
 function KindLine({ text, time }: { text: string; time: string | null }) {
   return (
@@ -2241,12 +2313,14 @@ function SlimDay({
   todayISO,
   nowHM,
   nextKey,
+  myGroupName,
   dim = false,
 }: {
   group: DayGroup;
   todayISO: string;
   nowHM: string;
   nextKey: string | null;
+  myGroupName: string | null;
   dim?: boolean;
 }) {
   const { t, i18n } = useTranslation();
@@ -2261,7 +2335,21 @@ function SlimDay({
   const field = meetings.filter((m) => m.kind === "field_service");
   const others = meetings.filter((m) => m.kind !== "field_service");
   const fieldNext = field.find((m) => m.key === nextKey);
-  const lines: { key: string; name: string; time: string; past: boolean; next: boolean; en: TimelineEntry }[] = [
+  // The card's own row of another kind, in one line with its mark.
+  const cardOther = group.entries.find(
+    (en) => en.key === nextKey && en.type !== "meeting",
+  );
+  const lines: {
+    key: string;
+    name: string;
+    time: string;
+    past: boolean;
+    next: boolean;
+    en: TimelineEntry;
+    /** Field service: whose meeting it is, and its topic (19 November 2026). */
+    sub?: string | null;
+    topic?: string | null;
+  }[] = [
     ...others.map((m) => ({
       key: m.key,
       name: t(m.kind === "midweek" ? "home.slim.midweek" : "home.slim.weekend"),
@@ -2276,10 +2364,27 @@ function SlimDay({
             key: field[0].key,
             name: t("home.slim.field"),
             time: field.map((m) => m.time).join(" · "),
+            sub: fieldTitle(field[0], myGroupName, t),
+            topic: field[0].topic ?? null,
             past: field.every((m) => isOver(m, todayISO, nowHM)),
             next: !!fieldNext,
             // The one of his, if one is: the line opens that meeting.
             en: (fieldNext ?? field[0]) as TimelineEntry,
+          },
+        ]
+      : []),
+    ...(cardOther
+      ? [
+          {
+            key: cardOther.key,
+            name:
+              cardOther.type === "task" && cardOther.task.item.kind === "pioneer_school"
+                ? `${t("home.pioneerSchool.short")} · ${taskTitle(cardOther.task.item, t)}`
+                : capitalizeFirst(shortWhat(cardOther, t)),
+            time: entryTime(cardOther) ?? "",
+            past: isOver(cardOther, todayISO, nowHM),
+            next: true,
+            en: cardOther,
           },
         ]
       : []),
@@ -2309,6 +2414,8 @@ function SlimDay({
               dayLabel,
               l.name,
               l.time,
+              l.sub,
+              l.topic,
               l.past ? t("home.list.pillPast") : l.next ? t("home.list.pillNext") : null,
             ]
               .filter(Boolean)
@@ -2318,6 +2425,8 @@ function SlimDay({
               <Text style={[s.slimName, l.past && s.slimPast]}>{l.name}</Text>
               <Text style={[s.slimTime, l.past && s.slimPast]}>{l.time}</Text>
             </View>
+            {l.sub ? <Text style={s.slimSub}>{l.sub}</Text> : null}
+            {l.topic ? <Text style={s.slimTopic}>{l.topic}</Text> : null}
             {l.past ? (
               <Text style={[s.pill, s.pillPast]}>{t("home.list.pillPast")}</Text>
             ) : l.next ? (
@@ -2403,7 +2512,12 @@ function DayRow({
         {group.entries.map((en) => {
           // In a day of his own, someone else's plain meeting is one line too
           // — its name and hour (19 November 2026).
-          if (nowHM !== undefined && en.type === "meeting" && isPlainMeeting(en)) {
+          if (
+            nowHM !== undefined &&
+            en.type === "meeting" &&
+            en.kind !== "field_service" &&
+            isPlainMeeting(en)
+          ) {
             return (
               <Pressable
                 key={en.key}
@@ -2412,13 +2526,7 @@ function DayRow({
                 accessibilityRole="button"
               >
                 <Text style={s.slimName}>
-                  {t(
-                    en.kind === "midweek"
-                      ? "home.slim.midweek"
-                      : en.kind === "weekend"
-                        ? "home.slim.weekend"
-                        : "home.slim.field",
-                  )}
+                  {t(en.kind === "midweek" ? "home.slim.midweek" : "home.slim.weekend")}
                 </Text>
                 <Text style={s.slimTime}>{en.time}</Text>
               </Pressable>
@@ -3057,6 +3165,7 @@ export default function HomeScreen() {
                   todayISO={todayISO}
                   nowHM={nowHM}
                   nextKey={nk}
+                  myGroupName={data.myGroupName}
                   dim={seg.away.length > 0}
                 />
               ) : (
@@ -3496,6 +3605,8 @@ const s = StyleSheet.create({
   slimName: { flex: 1, fontSize: 14.5, lineHeight: 20, fontFamily: "Manrope_600SemiBold", color: "#334155" },
   slimTime: { fontSize: 14, fontFamily: "Manrope_700Bold", color: "#334155", fontVariant: ["tabular-nums"] },
   slimPast: { color: "#64748b" },
+  slimSub: { fontSize: 13, lineHeight: 18, fontFamily: "Manrope_600SemiBold", color: "#475569", marginTop: 2 },
+  slimTopic: { fontSize: 14.5, lineHeight: 20, fontFamily: "Manrope_700Bold", color: "#0f172a", marginTop: 1 },
   pill: {
     alignSelf: "flex-start",
     marginTop: 3,
