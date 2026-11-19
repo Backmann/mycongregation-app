@@ -828,7 +828,18 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('26г сегодняшняя прошедшая строка — с пометкой', /isOver\(en, todayISO, nowHM\)/.test(home), true);
   // д. In a day of his own only someone else's PLAIN meeting goes into one
   // line — never his own row, which may carry «Изменено».
-  check('26д одной строкой в своём дне — только чужая обычная встреча', /en\.type === "meeting" && isPlainMeeting\(en\)\) \{/.test(home), true);
+  check('26д одной строкой в своём дне — только чужая обычная встреча собрания', /en\.kind !== "field_service" &&\s*isPlainMeeting\(en\)/.test(home), true);
+  // е. Field service (Lionel, 19 November 2026): named «Встреча для проповеди»
+  // with whose it is and its topic; several on one day — in full, as usual.
+  const { isSlimDay: slimDay } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  const fsm = (key, extra = {}) => ({ type: 'meeting', key, dateISO: 'd', kind: 'field_service', time: '10:00', myParts: [], weeklyCleaning: false, ...extra });
+  check('26е одна встреча для проповеди — одной строкой', slimDay({ dateISO: 'd', entries: [fsm('a')] }, null), true);
+  check('26ж две встречи для проповеди в день — подробно', slimDay({ dateISO: 'd', entries: [fsm('a'), fsm('b', { time: '11:00' })] }, null), false);
+  check('26з подпись, вид и тема у строки проповеди', /sub: fieldTitle\(field\[0\], myGroupName, t\)/.test(home) && /topic: field\[0\]\.topic/.test(home), true);
+  for (const lang of ['ru', 'en', 'de']) {
+    const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
+    check(`26и ${lang}: строка проповеди названа встречей`, d.home.slim.field !== d.feed.kindField, true);
+  }
 }
 
 if (failures) {
