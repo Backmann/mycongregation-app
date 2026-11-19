@@ -35,6 +35,7 @@ const MODULES = [
   'event-meeting',
   'field-moves',
   'invitations',
+  'group-name',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -64,7 +65,7 @@ export const readerTitleOrNull = (x) => x ?? null;\n`,
 );
 
 const { buildTimeline, clockPlus } = await import(pathToFileURL(join(out, 'home-timeline.mjs')));
-const { digestHome, isOver, entryTime, splitHome } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+const { digestHome, isOver, entryTime, splitHome, isWeekChore } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
 
 let failures = 0;
 let passed = 0;
@@ -615,9 +616,80 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('22е «перенесена» не оранжевая', /#c2410c|#fff7ed|#9a3412/.test(moved), false);
   for (const lang of ['ru', 'de', 'en']) {
     const d = JSON.parse(readFileSync(join(ROOT, 'locales', `${lang}.json`), 'utf8'));
-    for (const k of ['you', 'youHelp', 'wholeMeeting', 'yourGroup', 'afterMeeting', 'cleaning', 'with'])
+    for (const k of ['you', 'youHelp', 'wholeMeeting', 'yourGroup', 'cleaning'])
       check(`22ж ${lang}: home.mine.${k}`, !!d.home.mine?.[k], true);
     check(`22ж ${lang}: fieldService.videoLength`, !!d.fieldService.videoLength, true);
+  }
+}
+
+// --- 23. Step 1 of the Home review (18 November 2026) ------------------------
+{
+  const allOf = (tl) => [...tl.near, ...tl.far].flatMap((g) => g.entries);
+  // а. A meeting another event replaces is not held: his leftover part on it
+  // must not make it «Ваше ближайшее».
+  {
+    const items = [
+      part('2026-09-28', 'midweek', 'bible_reading', 5),
+      part('2026-09-28', 'weekend', 'weekend_chairman', 1),
+    ];
+    const events = [{ id: 'ev-talk', type: 'special_talk', date: '2026-09-30', replacesMeeting: true }];
+    const { digest } = run({ me: BERGMAN, group: AHLEN, items, events });
+    check('23а заменённая встреча не «ближайшее»', digest.next?.dateISO, '2026-10-04');
+  }
+  // б. A chore for the whole week (no day, no hour) does not take the card.
+  {
+    const items = [
+      { kind: 'cleaning', sortDate: '2026-09-28', weekStartDate: '2026-09-28', label: 'general' },
+      part('2026-09-28', 'midweek', 'bible_reading', 5),
+    ];
+    const { timeline, digest } = run({ me: BERGMAN, group: AHLEN, items });
+    check('23б уборка на всю неделю не «ближайшее»', [digest.next?.type, digest.next?.dateISO], ['meeting', '2026-09-30']);
+    const chore = allOf(timeline).find((e) => e.type === 'task' && e.task.item.kind === 'cleaning');
+    check('23б′ это дело недели', !!chore && isWeekChore(chore), true);
+  }
+  // в. A cleaning with a chosen day sits on that day, whatever its label.
+  {
+    const items = [
+      { kind: 'cleaning', sortDate: '2026-09-28', weekStartDate: '2026-09-28', label: 'general', thoroughPlannedAt: '2026-10-01T12:00:00Z' },
+    ];
+    const { timeline } = run({ me: BERGMAN, group: AHLEN, items });
+    const day = timeline.near.find((g) => g.entries.some((e) => e.type === 'task'));
+    check('23в уборка с выбранным днём — в этот день', day?.dateISO, '2026-10-01');
+  }
+  // г. The Memorial further out is the Memorial.
+  {
+    const items = [part('2027-03-22', 'memorial', 'memorial_prayer', 1)];
+    const events = [{ id: 'mem-27', type: 'memorial', date: '2027-03-23' }];
+    const { timeline } = run({ me: BERGMAN, group: AHLEN, items, events });
+    const far = timeline.far.flatMap((g) => g.entries).find((e) => e.type === 'meeting');
+    check('23г дальняя Вечеря знает своё событие', far?.memorial?.id ?? null, 'mem-27');
+  }
+  // д. The cleaning after the meetings further out goes into his meeting rows
+  // of that week; a week with no row of his keeps its own row.
+  {
+    const clean = (w) => ({ kind: 'cleaning', sortDate: w, weekStartDate: w, label: 'after_meeting' });
+    const items = [
+      part('2026-11-02', 'midweek', 'bible_reading', 5),
+      clean('2026-11-02'),
+      clean('2026-11-09'),
+    ];
+    const { timeline } = run({ me: BERGMAN, group: AHLEN, items });
+    const far = timeline.far.flatMap((g) => g.entries);
+    const cleaningWeeks = far.filter((e) => e.type === 'task' && e.task.item.kind === 'cleaning').map((e) => e.task.item.weekStartDate);
+    check('23д дальняя уборка недели со встречей — внутри строки', cleaningWeeks, ['2026-11-09']);
+    check('23д′ строка встречи несёт уборку', far.some((e) => e.type === 'meeting' && e.weekStartISO === '2026-11-02' && e.weeklyCleaning), true);
+  }
+  // е. Group names inside a sentence: «Ваша группа 2», not «группа Группа 2».
+  {
+    const { groupInSentence } = await import(pathToFileURL(join(out, 'group-name.mjs')));
+    check('23е «Группа 2» в предложении', ['Группа 2', 'Group 3', 'Gruppe Nord', 'Группа', 'Ahlen'].map(groupInSentence), ['2', '3', 'Nord', 'Группа', 'Ahlen']);
+    const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+    const tasks = readFileSync(join(ROOT, 'lib', 'my-tasks.ts'), 'utf8');
+    check('23е″ строка посещения тоже', /forGroup', \{ name: item\.groupName/.test(tasks), false);
+    check('23е′ Главная не вставляет имя группы как есть', /group: (en|x|en\.fieldNote)\.groupName\b|name: en\.groupName\b/.test(home), false);
+    // ж. Dates beyond this year carry the year; same-hour lines share a label.
+    check('23ж даты другого года — с годом', (home.match(/year: "numeric"|year: ['"]auto['"]/g) ?? []).length >= 5, true);
+    check('23з одна подпись на строки одного часа', /last && last\.label === label\) last\.parts\.push/.test(home), true);
   }
 }
 

@@ -89,7 +89,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime, isOwnEntry, splitHome } from "../../../lib/home-digest";
+import { digestHome, entryTime, isOwnEntry, isWeekChore, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -110,6 +110,7 @@ import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard } from "../../../components/ConductEntry";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 import { formatDayRange } from "../../../lib/date-range";
+import { groupInSentence } from "../../../lib/group-name";
 import { absenceNote } from "../../../lib/absence-note";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MovedMark } from "../../../components/MovedMark";
@@ -533,10 +534,15 @@ function TodoSection() {
   )
     return null;
 
+  // The year when it is not this one (review, 18 November 2026): «вернуть
+  // до 2 июля» could not be told from a July long past.
   const dayMonth = (iso: string) =>
     new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
       day: "numeric",
       month: "long",
+      ...(iso.slice(0, 4) !== String(new Date().getFullYear())
+        ? { year: "numeric" }
+        : {}),
     });
 
   // What the person's duties in the congregation ask of them, the nearest
@@ -699,10 +705,15 @@ function TodoSection() {
               tone={soon ? "due" : "plain"}
               text={
                 item.dueOn
-                  ? t("home.pending.territory", {
-                      number: item.title ?? "",
-                      date: dayMonth(item.dueOn),
-                    })
+                  ? t(
+                      item.overdue
+                        ? "home.pending.territoryOverdue"
+                        : "home.pending.territory",
+                      {
+                        number: item.title ?? "",
+                        date: dayMonth(item.dueOn),
+                      },
+                    )
                   : t("home.pending.territoryNoDate", { number: item.title ?? "" })
               }
               onPress={() => router.push("/cart/my-territories" as never)}
@@ -887,6 +898,10 @@ function whenLabel(
       weekday: "long",
       day: "numeric",
       month: "long",
+      // Another year is said (review, 18 November 2026).
+      ...(dateISO.slice(0, 4) !== String(new Date().getFullYear())
+        ? { year: "numeric" }
+        : {}),
     }),
   );
   return time ? `${day} · ${time}` : day;
@@ -1000,11 +1015,11 @@ function coVisitPlace(it: MyCoVisitItem): string {
  */
 function fieldTitle(en: MeetingEntry, myGroupName: string | null, t: TFunction): string {
   if (en.serviceOverseerVisit)
-    return en.groupName ? t("feed.fieldVisit", { group: en.groupName }) : t("feed.fieldVisitTitle");
+    return en.groupName ? t("feed.fieldVisit", { group: groupInSentence(en.groupName) }) : t("feed.fieldVisitTitle");
   if (en.groupName)
     return en.groupName === myGroupName
-      ? t("home.list.yourGroup", { name: en.groupName })
-      : t("feed.fieldGroup", { group: en.groupName });
+      ? t("home.list.yourGroup", { name: groupInSentence(en.groupName) })
+      : t("feed.fieldGroup", { group: groupInSentence(en.groupName) });
   if (en.isGeneral) return t("feed.fieldGeneral");
   return t("feed.fieldOpen");
 }
@@ -1226,6 +1241,10 @@ function shortDay(dateISO: string, loc: string): string {
     weekday: "long",
     day: "numeric",
     month: "long",
+    // Another year is said (review, 18 November 2026).
+    ...(dateISO.slice(0, 4) !== String(new Date().getFullYear())
+      ? { year: "numeric" }
+      : {}),
   });
 }
 
@@ -1571,38 +1590,47 @@ function MineBlock({
   const up = (x: string) => x.toLocaleUpperCase(i18n.language);
   const lines = entry.myParts;
   if (!lines.length && !entry.weeklyCleaning) return null;
+  // Parts at the same minute under one label: «ВЫ · 13:00» said twice in a
+  // row for the chairman and the opening prayer (review, 18 November 2026).
+  const groups: { label: string; parts: typeof lines }[] = [];
+  for (const p of lines) {
+    const at =
+      !p.isDuty && p.offsetMin != null ? clockPlus(entry.time, p.offsetMin) : null;
+    const who = p.asAssistant ? t("home.mine.youHelp") : t("home.mine.you");
+    const when = p.isDuty ? t("home.mine.wholeMeeting") : at;
+    const label = up([who, when].filter(Boolean).join(" · "));
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.parts.push(p);
+    else groups.push({ label, parts: [p] });
+  }
   return (
     <View style={s.mineBlock}>
-      {lines.map((p, i) => {
-        const at =
-          !p.isDuty && p.offsetMin != null
-            ? clockPlus(entry.time, p.offsetMin)
-            : null;
-        const who = p.asAssistant ? t("home.mine.youHelp") : t("home.mine.you");
-        const when = p.isDuty ? t("home.mine.wholeMeeting") : at;
-        const name = p.label ?? p.title;
-        // The theme of his own public talk is the row's title already.
-        const topic = p.topic && p.topic !== title ? p.topic : null;
-        return (
-          <View key={`p${i}`} style={s.mineItem}>
-            <Text style={s.mineLabel}>
-              {up([who, when].filter(Boolean).join(" · "))}
-            </Text>
-            <Text style={s.mineName}>{name}</Text>
-            {topic ? <Text style={s.mineSub}>«{topic}»</Text> : null}
-            {p.note ? <Text style={s.mineSub}>{p.note}</Text> : null}
-            {p.partnerName && !p.isDuty ? (
-              <Text style={s.mineSub}>
-                {t("home.mine.with", { name: p.partnerName })}
-              </Text>
-            ) : null}
-          </View>
-        );
-      })}
+      {groups.map((g, gi) => (
+        <View key={`g${gi}`} style={s.mineItem}>
+          <Text style={s.mineLabel}>{g.label}</Text>
+          {g.parts.map((p, i) => {
+            const name = p.label ?? p.title;
+            // The theme of his own public talk is the row's title already.
+            const topic = p.topic && p.topic !== title ? p.topic : null;
+            return (
+              <View key={`p${i}`} style={{ gap: 2 }}>
+                <Text style={s.mineName}>{name}</Text>
+                {topic ? <Text style={s.mineSub}>«{topic}»</Text> : null}
+                {p.note ? <Text style={s.mineSub}>{p.note}</Text> : null}
+                {p.partnerName && !p.isDuty ? (
+                  <Text style={s.mineSub}>
+                    {t("home.next.pair", { name: p.partnerName })}
+                  </Text>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+      ))}
       {entry.weeklyCleaning ? (
         <View style={[s.mineItem, s.mineGroup]}>
           <Text style={[s.mineLabel, s.mineLabelGroup]}>
-            {up(`${t("home.mine.yourGroup")} · ${t("home.mine.afterMeeting")}`)}
+            {up(t("home.mine.yourGroup"))}
           </Text>
           <Text style={s.mineName}>{t("home.mine.cleaning")}</Text>
         </View>
@@ -1907,17 +1935,17 @@ function EntryBody({
           sourceUrl={en.sourceUrl}
           note={
             en.fieldNote?.kind === "onlyFor"
-              ? t("feed.fieldOnlyFor", { group: en.fieldNote.groupName })
+              ? t("feed.fieldOnlyFor", { group: groupInSentence(en.fieldNote.groupName) })
               : // He goes to another group's visit that day: this meeting is
                 // shown whole, with the hour of his visit beside it, and he
                 // sees for himself whether the two clash (10 November 2026).
                 en.fieldNote?.kind === "awayOnVisit"
                 ? en.fieldNote.visitTime
                   ? t("home.list.awayOnVisitAt", {
-                      group: en.fieldNote.groupName,
+                      group: groupInSentence(en.fieldNote.groupName),
                       time: en.fieldNote.visitTime,
                     })
-                  : t("feed.fieldAwayOnVisit", { group: en.fieldNote.groupName })
+                  : t("feed.fieldAwayOnVisit", { group: groupInSentence(en.fieldNote.groupName) })
                 : null
           }
         />
@@ -1937,7 +1965,22 @@ function EntryBody({
     return (
       <>
         <Text style={[s.rowKind, { color: v.color }]}>
-          {[t("home.list.kindCleaning"), entryTime(en), dayWord]
+          {[
+            t("home.list.kindCleaning"),
+            // A chore for the whole week says the week, not the Monday it is
+            // filed under (review, 18 November 2026).
+            isWeekChore(en) && it.weekStartDate
+              ? t("home.list.weekOf", {
+                  range: formatDayRange(
+                    it.weekStartDate,
+                    formatDateISO(addDays(new Date(`${it.weekStartDate}T00:00:00`), 6)),
+                    i18n.language,
+                    { year: "auto" },
+                  ),
+                })
+              : entryTime(en),
+            isWeekChore(en) ? null : dayWord,
+          ]
             .filter(Boolean)
             .join(" · ")}
         </Text>
@@ -2000,7 +2043,7 @@ function EntryBody({
                 {(x.audience === "general"
                   ? t("feed.fieldGeneral")
                   : x.audience === "group"
-                    ? t("feed.fieldGroup", { group: x.groupName })
+                    ? t("feed.fieldGroup", { group: groupInSentence(x.groupName) })
                     : t("feed.fieldOpen")) + (x.own ? ` ${t("feed.fieldYours")}` : "")}
               </Text>
             ))}
@@ -2148,7 +2191,9 @@ function shortDate(iso: string, loc: string): string {
 
 function eventRange(e: SpecialEvent, loc: string): string {
   // «November 20 – 22», not «November 20 – November 22» (walk, 23 October).
-  return formatDayRange(e.date, e.endDate, loc, { year: 'never' });
+  // The year only when it is another one: «Скоро» can reach into next year
+  // (review, 18 November 2026).
+  return formatDayRange(e.date, e.endDate, loc, { year: 'auto' });
 }
 
 /** Which meeting a day of «Встречи собрания» is, for its date tile. */
@@ -2194,6 +2239,9 @@ function DayRow({
   // A day that holds something of the person's own carries the mark under
   // its date — the one sign in the list, instead of «Ваше — выше».
   const hasOwn = group.entries.some(isOwnEntry);
+  // A day that holds only chores for the whole week reads «неделя», not a
+  // weekday (review, 18 November 2026).
+  const weekTile = group.entries.length > 0 && group.entries.every(isWeekChore);
   const tone = toneOf(group.entries[0]);
   return (
     <View style={[s.dayRow, compact && s.dayRowCard, last && { borderBottomWidth: 0 }]}>
@@ -2211,7 +2259,7 @@ function DayRow({
             {d.getDate()}
           </Text>
           <Text style={[s.tileDow, { color: tone === "memorial" ? "#ffffff" : MEETING_INK[tone] }]}>
-            {weekday}
+            {weekTile ? t("home.list.weekTile") : weekday}
           </Text>
         </View>
         {hasOwn ? (

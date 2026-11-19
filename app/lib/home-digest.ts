@@ -61,6 +61,11 @@ export function isOwnEntry(en: TimelineEntry): boolean {
   }
 }
 
+/** A task for a whole week — no day of its own (a cleaning not yet planned). */
+export function isWeekChore(en: TimelineEntry): boolean {
+  return en.type === 'task' && !!en.task.weekOnly && !entryTime(en);
+}
+
 /** The hour a row starts at, or null when it has none. */
 export function entryTime(en: TimelineEntry): string | null {
   switch (en.type) {
@@ -118,7 +123,11 @@ export function digestHome(input: {
     (en) =>
       !isOver(en, todayISO, nowHM) &&
       // A meeting called off is not what comes next (13 October 2026).
-      !(en.type === 'meeting' && en.cancelled),
+      !(en.type === 'meeting' && en.cancelled) &&
+      // Nor a chore for the whole week with no day of its own: it sat on
+      // «today» every day of the week and pushed the real next thing out of
+      // the card (review, 18 November 2026). It stays in the list.
+      !isWeekChore(en),
   );
 
   const next = own[0] ?? null;

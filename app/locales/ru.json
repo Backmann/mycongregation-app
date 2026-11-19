@@ -3159,7 +3159,8 @@
       "auxApplication": "Заявление на подсобное служение: {{name}}",
       "territory": "Участок {{number}} · вернуть до {{date}}",
       "territoryNoDate": "Участок {{number}}",
-      "territoryReview": "Адреса «не посещать» на пересмотр: {{count}}"
+      "territoryReview": "Адреса «не посещать» на пересмотр: {{count}}",
+      "territoryOverdue": "Участок {{number}} · вернуть надо было до {{date}}"
     },
     "weekOf": "Неделя с {{date}}",
     "kinds": {
@@ -3290,7 +3291,9 @@
       "partial": "Не всё загрузилось — потяните вниз, чтобы обновить.",
       "kindCleaning": "Уборка",
       "watchtower": "«Сторожевая башня»: {{title}}",
-      "until": "до {{date}}"
+      "until": "до {{date}}",
+      "weekOf": "неделя {{range}}",
+      "weekTile": "НЕД."
     },
     "soon": {
       "title": "Скоро",
@@ -3339,9 +3342,7 @@
       "youHelp": "Вы — помощник",
       "wholeMeeting": "вся встреча",
       "yourGroup": "Ваша группа",
-      "afterMeeting": "после встречи",
-      "cleaning": "Уборка зала",
-      "with": "вместе с {{name}}"
+      "cleaning": "Уборка после встречи"
     }
   },
   "halls": {
