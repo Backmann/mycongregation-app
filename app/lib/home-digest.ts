@@ -210,7 +210,9 @@ export function splitHome(timeline: Timeline, nextKey: string | null): HomeSplit
 export function isPlainMeeting(en: TimelineEntry, allowOwn = false): boolean {
   return (
     en.type === 'meeting' &&
-    (allowOwn || !isOwnEntry(en)) &&
+    // Nothing of his — and, belt to the braces, no agenda id a change mark
+    // could stand on (Home marks changes seen once shown).
+    (allowOwn || (!isOwnEntry(en) && !(en.agendaIds?.length))) &&
     !en.cancelled &&
     !en.movedFrom &&
     !en.movedTo &&

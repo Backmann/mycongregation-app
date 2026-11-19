@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -494,8 +495,9 @@ export function FieldServiceForm({
       );
     }
   }
+  // Every sentence here says «группа» already (19 November 2026).
   const groupNameOf = (id: string | null) =>
-    groups.find((g) => g.id === id)?.name ?? '';
+    groupInSentence(groups.find((g) => g.id === id)?.name ?? '');
   const sameDayNote = (() => {
     if (!isGeneral && !!serviceGroupId && overseerVisit) {
       const rest = sameDay.filter((m) => !m.serviceGroupId);

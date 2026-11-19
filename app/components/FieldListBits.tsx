@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -44,8 +45,8 @@ export function FieldNoteLine({
       {note.kind === 'notForYourGroup'
         ? t('feed.fieldNotForYourGroup')
         : note.kind === 'awayOnVisit'
-          ? t('feed.fieldAwayOnVisit', { group: groupName(note.groupId) })
-          : t('feed.fieldOnlyFor', { group: groupName(note.groupId) })}
+          ? t('feed.fieldAwayOnVisit', { group: groupInSentence(groupName(note.groupId)) })
+          : t('feed.fieldOnlyFor', { group: groupInSentence(groupName(note.groupId)) })}
     </Text>
   );
 }

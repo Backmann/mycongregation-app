@@ -88,7 +88,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isSlimDay, isWeekChore, splitHome } from "../../../lib/home-digest";
+import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isPlainMeeting, isSlimDay, isWeekChore, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -2027,7 +2027,9 @@ function EntryBody({
                 ? capitalizeFirst(t("home.kinds.cart"))
                 : it.kind === "field_service"
                   ? t("feed.kindField")
-                  : null),
+                  : it.kind === "pioneer_school"
+                    ? it.label || t("home.pioneerSchool.title")
+                    : null),
             dayWord,
           ]
             .filter(Boolean)
@@ -2035,6 +2037,9 @@ function EntryBody({
           time={entryTime(en)}
         />
         <Text style={s.rowTitle}>{taskTitle(it, t)}</Text>
+        {it.kind === "pioneer_school" && it.location ? (
+          <Text style={s.rowSub}>{it.location}</Text>
+        ) : null}
         {/* A visit to another group: what else the congregation has that
             day, each with its hour (10 November 2026). */}
         {en.alsoThatDay?.length ? (
@@ -2334,8 +2339,11 @@ function DayRow({
   onWindows,
   compact = false,
   last = false,
+  nowHM,
 }: {
   compact?: boolean;
+  /** The clock now: today's rows that are over say so (variant A). */
+  nowHM?: string;
   /** The last row of its card: no rule under it. */
   last?: boolean;
   group: DayGroup;
@@ -2393,6 +2401,29 @@ function DayRow({
       )}
       <View style={s.dayEntries}>
         {group.entries.map((en) => {
+          // In a day of his own, someone else's plain meeting is one line too
+          // — its name and hour (19 November 2026).
+          if (nowHM !== undefined && en.type === "meeting" && isPlainMeeting(en)) {
+            return (
+              <Pressable
+                key={en.key}
+                onPress={() => openEntry(en)}
+                style={({ pressed }) => [s.slimLine, pressed && { opacity: 0.6 }]}
+                accessibilityRole="button"
+              >
+                <Text style={s.slimName}>
+                  {t(
+                    en.kind === "midweek"
+                      ? "home.slim.midweek"
+                      : en.kind === "weekend"
+                        ? "home.slim.weekend"
+                        : "home.slim.field",
+                  )}
+                </Text>
+                <Text style={s.slimTime}>{en.time}</Text>
+              </Pressable>
+            );
+          }
           const body = (
             <EntryBody
               en={en}
@@ -2405,6 +2436,18 @@ function DayRow({
             />
           );
           const mark = <ChangeMark ids={entryAgendaIds(en)} />;
+          // Today's row that is over — the meeting, his shift — says so and
+          // steps back (review, 18 November 2026).
+          const over =
+            !!nowHM && group.dateISO === todayISO && isOver(en, todayISO, nowHM);
+          const shown = over ? (
+            <>
+              <View style={{ opacity: 0.6 }}>{body}</View>
+              <Text style={[s.pill, s.pillPast]}>{t("home.list.pillPast")}</Text>
+            </>
+          ) : (
+            body
+          );
           return canOpen(en) ? (
             <Pressable
               key={en.key}
@@ -2412,12 +2455,12 @@ function DayRow({
               style={({ pressed }) => [s.entry, pressed && { opacity: 0.6 }]}
               accessibilityRole="button"
             >
-              {body}
+              {shown}
               {mark}
             </Pressable>
           ) : (
             <View key={en.key} style={s.entry}>
-              {body}
+              {shown}
               {mark}
             </View>
           );
@@ -3021,6 +3064,7 @@ export default function HomeScreen() {
                   key={g.dateISO}
                   group={g}
                   nextKey={nk}
+                  nowHM={nowHM}
                   todayISO={todayISO}
                   myGroupName={data.myGroupName}
                   myName={data.myName}
@@ -3100,6 +3144,10 @@ export default function HomeScreen() {
               <Text style={[s.bannerTitle, congress && { color: "#92400e" }]}>
                 {title}
               </Text>
+              {/* An event for the invited is his invitation (variant A). */}
+              {inviteesOf(e.type) ? (
+                <Text style={[s.pill, s.pillInvited]}>{t("home.soon.invited")}</Text>
+              ) : null}
               <Text style={[s.bannerSub, congress && { color: "#b45309" }]}>
                 {eventRange(e, i18n.language)} ·{" "}
                 {t("home.soon.inWeeks", { count: weeks })}
@@ -3196,9 +3244,9 @@ const s = StyleSheet.create({
   colRight: { flex: 1, minWidth: 0, gap: 22 },
   section: { gap: 8 },
   sectionLabel: {
-    fontSize: 12,
-    fontFamily: "Manrope_700Bold",
-    color: "#64748b",
+    fontSize: 13,
+    fontFamily: "Manrope_800ExtraBold",
+    color: "#475569",
     letterSpacing: 0.6,
     textTransform: "uppercase",
   },
@@ -3460,6 +3508,7 @@ const s = StyleSheet.create({
   },
   pillNext: { backgroundColor: "#fef3c7", color: "#92400e" },
   pillPast: { backgroundColor: "#e2e8f0", color: "#334155" },
+  pillInvited: { backgroundColor: "#f3e8ff", color: "#6b21a8" },
   awayBand: {
     backgroundColor: "#f8fafc",
     borderLeftWidth: 4,
@@ -3515,7 +3564,7 @@ const s = StyleSheet.create({
     fontFamily: "Manrope_800ExtraBold",
     color: "#0f172a",
   },
-  listRange: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  listRange: { fontFamily: "Manrope_600SemiBold", fontSize: 13, color: "#475569" },
   partial: { fontFamily: "Manrope_400Regular", fontSize: 12.5, color: "#b45309" },
   monthLabel: {
     fontSize: 12,

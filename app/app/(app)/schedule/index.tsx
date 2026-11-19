@@ -1,3 +1,4 @@
+import { groupInSentence } from "../../../lib/group-name";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
@@ -2364,7 +2365,9 @@ function FieldDay({
   const { t, i18n } = useTranslation();
   const [showOthers, setShowOthers] = useState(false);
   const day = arrangeFieldDay(item.meetings, myGroupId, me);
-  const group = (m: FieldServiceMeeting) => (m.serviceGroupId ? groupName.get(m.serviceGroupId) ?? "" : "");
+  // In a sentence that says «группа» already (19 November 2026).
+  const group = (m: FieldServiceMeeting) =>
+    groupInSentence(m.serviceGroupId ? groupName.get(m.serviceGroupId) ?? "" : "");
   const labelOf = (p: FieldPlace) => {
     const base =
       p.audience === "visit"
@@ -2379,7 +2382,7 @@ function FieldDay({
   const noteOf = (p: FieldPlace) => {
     const n = noteForPlace(p, myGroupId);
     if (!n) return null;
-    const g = n.kind === "notForYourGroup" ? "" : groupName.get(n.groupId) ?? "";
+    const g = n.kind === "notForYourGroup" ? "" : groupInSentence(groupName.get(n.groupId) ?? "");
     return n.kind === "notForYourGroup"
       ? t("feed.fieldNotForYourGroup")
       : n.kind === "awayOnVisit"
