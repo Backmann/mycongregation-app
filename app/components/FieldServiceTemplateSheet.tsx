@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -129,7 +130,7 @@ export function FieldServiceTemplateSheet({
   };
   const whoseText = (r: RuleDraft) =>
     r.serviceGroupId
-      ? t('fieldService.row.group', { group: groupName(r.serviceGroupId) })
+      ? t('fieldService.row.group', { group: groupInSentence(groupName(r.serviceGroupId)) })
       : r.isGeneral === false
         ? t('fieldService.row.byGroups')
         : t('fieldService.generalBadge');

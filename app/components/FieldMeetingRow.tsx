@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,7 +65,7 @@ export function FieldMeetingRow({
   const movedFrom = movedFromShown(m, formatDateISO(new Date()));
   const RowWrap = isMine && !off ? MyGlowRow : View;
   const title = m.serviceGroupId
-    ? t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
+    ? t('fieldService.row.group', { group: groupInSentence(groupName(m.serviceGroupId)) })
     : m.isGeneral
       ? t('fieldService.generalBadge')
       : t('fieldService.row.byGroups');
@@ -116,8 +117,8 @@ export function FieldMeetingRow({
       : note.kind === 'notForYourGroup'
         ? t('feed.fieldNotForYourGroup')
         : note.kind === 'awayOnVisit'
-          ? t('feed.fieldAwayOnVisit', { group: groupName(note.groupId) })
-          : t('feed.fieldOnlyFor', { group: groupName(note.groupId) });
+          ? t('feed.fieldAwayOnVisit', { group: groupInSentence(groupName(note.groupId)) })
+          : t('feed.fieldOnlyFor', { group: groupInSentence(groupName(note.groupId)) });
 
   const body = (
     <FieldMeetingBlock

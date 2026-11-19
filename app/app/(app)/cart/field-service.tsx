@@ -1,3 +1,4 @@
+import { groupInSentence } from '../../../lib/group-name';
 import { useBottomRoom } from '../../../components/Sheet';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { useEffect, useRef, useState } from 'react';
@@ -698,7 +699,7 @@ export default function FieldServiceMeetingsScreen() {
               }),
               time: m.startTime,
               kind: m.serviceGroupId
-                ? t('fieldService.row.group', { group: groupName(m.serviceGroupId) })
+                ? t('fieldService.row.group', { group: groupInSentence(groupName(m.serviceGroupId)) })
                 : m.isGeneral
                   ? t('fieldService.generalBadge')
                   : t('fieldService.row.byGroups'),

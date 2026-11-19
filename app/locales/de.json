@@ -2997,7 +2997,7 @@
       "moreChanged_other": "noch {{count}} geändert"
     },
     "ahead": {
-      "title": "Als Nächstes bei Ihnen",
+      "title": "Später bei Ihnen",
       "none": "Noch keine weiteren Aufgaben.",
       "more_one": "noch {{count}} · bis {{until}}",
       "more_other": "noch {{count}} · bis {{until}}"
@@ -3169,7 +3169,8 @@
     "soon": {
       "title": "Demnächst",
       "inWeeks_one": "in {{count}} Woche",
-      "inWeeks_other": "in {{count}} Wochen"
+      "inWeeks_other": "in {{count}} Wochen",
+      "invited": "Sie sind eingeladen"
     },
     "parts": {
       "cbsReader": "Leser beim Versammlungsbibelstudium",
@@ -3208,6 +3209,9 @@
       "midweek": "Unter der Woche",
       "weekend": "Wochenende",
       "field": "Predigtdienst"
+    },
+    "pioneerSchool": {
+      "title": "Pionierdienstschule"
     }
   },
   "halls": {

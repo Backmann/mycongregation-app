@@ -3303,7 +3303,8 @@
       "inWeeks_one": "через {{count}} неделю",
       "inWeeks_few": "через {{count}} недели",
       "inWeeks_many": "через {{count}} недель",
-      "inWeeks_other": "через {{count}} недели"
+      "inWeeks_other": "через {{count}} недели",
+      "invited": "вы приглашены"
     },
     "parts": {
       "cbsReader": "Чтец на изучении Библии в собрании",
@@ -3350,6 +3351,9 @@
       "midweek": "Будний день",
       "weekend": "Выходной день",
       "field": "Проповедь"
+    },
+    "pioneerSchool": {
+      "title": "Школа пионерского служения"
     }
   },
   "halls": {

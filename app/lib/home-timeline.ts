@@ -524,6 +524,8 @@ const OWN_ROW_TASK_KINDS = new Set<MyAssignmentItem['kind']>([
   'guest_lunch',
   // The annual meeting with the pioneers — invited, or conducting it.
   'pioneer_meeting',
+  // A day he serves at the pioneer school (19 November 2026).
+  'pioneer_school',
   // A field-service meeting speaks inside its own background row — but that
   // row exists only for the three weeks the home screen loads. Beyond them a
   // meeting the person is recorded in fell between two rules: no background
@@ -1223,6 +1225,18 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         ? { alsoThatDay: alsoOn(dateISO) }
         : {}),
     });
+  }
+
+  // ---- The pioneer school's own absence: the school row says it ----
+  // The school writes an absence for each day a brother serves there, so
+  // pickers see him busy. On Home it read «В отъезде» while he was at the
+  // school; his school row says that day (19 November 2026).
+  {
+    const schoolDays = new Set(
+      refined.filter((r) => r.item.kind === 'pioneer_school').map((r) => r.dateISO),
+    );
+    for (const a of absences)
+      if (a.pioneerSchoolDutyId && schoolDays.has(a.startDate)) consumedAbsenceIds.add(a.id);
   }
 
   // ---- A part of mine on a day I am away ----

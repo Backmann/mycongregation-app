@@ -269,6 +269,9 @@ export function taskVisual(
     case 'pioneer_meeting':
       // The pioneers' own colour — the cyan of their hours and their year.
       return { color: '#0e7490', bg: '#ecfeff', icon: 'people-circle-outline' };
+    case 'pioneer_school':
+      // A duty at the pioneers' school: a duty's red, as at a meeting.
+      return { color: SECTION_COLORS.duty.color, bg: SECTION_COLORS.duty.soft, icon: 'school-outline' };
     default:
       return {
         color: meeting.color,
@@ -423,6 +426,18 @@ export function taskTitle(item: MyAssignmentItem, t: TFunc): string {
     }
     return parts.join(' · ');
   }
+  // A day at the pioneer school: his duties are the title, as a duty at a
+  // meeting is (19 November 2026).
+  if (item.kind === 'pioneer_school') {
+    const names = (item.schoolDuties ?? []).map((d) =>
+      d.label
+        ? d.label
+        : d.type === 'microphone'
+          ? t('pioneerSchool.roles.microphone', { number: d.slot ?? '' }).trim()
+          : t(`pioneerSchool.roles.${d.type}`, { defaultValue: d.type }),
+    );
+    return names.length ? [...new Set(names)].join(', ') : t('home.pioneerSchool.title');
+  }
   // The annual meeting with the pioneers: his part in it is the title.
   if (item.kind === 'pioneer_meeting') {
     return item.label === 'conduct'
@@ -482,6 +497,10 @@ export function taskMeta(r: RefinedTask, t: TFunc, locale: string): string {
       r.item.eventType === 'memorial')
   ) {
     bits.push(t(`home.eventTypes.${r.item.eventType}`));
+  } else if (r.item.kind === 'pioneer_school') {
+    // Which school, and where.
+    bits.push(r.item.label || t('home.pioneerSchool.title'));
+    if (r.item.location) bits.push(r.item.location);
   } else if (r.item.kind === 'pioneer_meeting') {
     // Where, and — for the invited — who conducts it.
     if (r.item.location) bits.push(r.item.location);

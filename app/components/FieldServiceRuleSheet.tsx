@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -117,7 +118,7 @@ export function FieldServiceRuleSheet({
     hints.push(t('fieldService.form.hintAddress'));
 
   const whoseName = group
-    ? t('fieldService.row.group', { group: group.name })
+    ? t('fieldService.row.group', { group: groupInSentence(group.name) })
     : isGeneral
       ? t('fieldService.sheet.general')
       : t('fieldService.sheet.byGroups');

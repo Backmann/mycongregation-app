@@ -1,3 +1,4 @@
+import { groupInSentence } from '../../../../../lib/group-name';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -317,7 +318,7 @@ export default function OutlineScreen() {
     if (!holder || !holderWillHear(r)) return null;
     // A group's territory has no one person to tell; a holder brought over
     // without a card (the import) has no app to tell him.
-    if (holder.forGroupName) return t('territories.outline.heldGroup', { group: holder.forGroupName });
+    if (holder.forGroupName) return t('territories.outline.heldGroup', { group: groupInSentence(holder.forGroupName) });
     if (!holder.publisherId) return t('territories.outline.heldNoCard', { name: holder.name });
     return t('territories.outline.heldTold', { name: holder.name });
   };

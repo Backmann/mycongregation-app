@@ -3169,7 +3169,8 @@
     "soon": {
       "title": "Coming up",
       "inWeeks_one": "in {{count}} week",
-      "inWeeks_other": "in {{count}} weeks"
+      "inWeeks_other": "in {{count}} weeks",
+      "invited": "you are invited"
     },
     "parts": {
       "cbsReader": "Reader, Congregation Bible Study",
@@ -3208,6 +3209,9 @@
       "midweek": "Midweek",
       "weekend": "Weekend",
       "field": "Field service"
+    },
+    "pioneerSchool": {
+      "title": "Pioneer Service School"
     }
   },
   "halls": {

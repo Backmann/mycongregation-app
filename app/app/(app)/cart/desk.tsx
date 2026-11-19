@@ -1,3 +1,4 @@
+import { groupInSentence } from '../../../lib/group-name';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -646,7 +647,7 @@ function Person({
                   <Text style={s.number}>{o.number}</Text>
                   <Text style={s.sub}>
                     {[
-                      o.forGroupName ? t('territories.desk.forGroup', { group: o.forGroupName }) : o.locality,
+                      o.forGroupName ? t('territories.desk.forGroup', { group: groupInSentence(o.forGroupName) }) : o.locality,
                       t('territories.desk.since', { date: formatDayShort(o.assignedOn, lang) }),
                       o.dueOn
                         ? t(late ? 'territories.desk.wasDue' : 'territories.desk.due', {
@@ -899,7 +900,7 @@ function Give({
               accessibilityState={{ checked: forGroup }}
             >
               <Ionicons name={forGroup ? 'checkbox' : 'square-outline'} size={20} color={forGroup ? BRAND : '#94a3b8'} />
-              <Text style={s.groupText}>{t('territories.desk.forGroupToggle', { group: led.name })}</Text>
+              <Text style={s.groupText}>{t('territories.desk.forGroupToggle', { group: groupInSentence(led.name) })}</Text>
             </Pressable>
           ) : null}
           {error ? <Text style={s.error}>{error}</Text> : null}

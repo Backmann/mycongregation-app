@@ -1,3 +1,4 @@
+import { groupInSentence } from '../lib/group-name';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -104,7 +105,7 @@ export function FieldServicePrepareSheet({
 
   const whose = (r: FieldServicePlannedRow) =>
     r.groupName
-      ? t('fieldService.row.group', { group: r.groupName })
+      ? t('fieldService.row.group', { group: groupInSentence(r.groupName) })
       : r.isGeneral === false
         ? t('fieldService.row.byGroups')
         : t('fieldService.generalBadge');
@@ -146,7 +147,7 @@ export function FieldServicePrepareSheet({
       case 'past':
         return t('fieldService.prepare.skipPast');
       case 'group_removed':
-        return t('fieldService.prepare.skipGroupRemoved', { group: r.because ?? '' });
+        return t('fieldService.prepare.skipGroupRemoved', { group: groupInSentence(r.because ?? '') });
       case 'removed':
         return t('fieldService.prepare.skipRemoved');
       case 'differs':

@@ -783,6 +783,53 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('25к в приложении нет «договориться о подготовке»', existsSync(join(ROOT, 'components', 'PairPrep.tsx')) || /pairPrepApi/.test(readFileSync(join(ROOT, 'lib', 'api.ts'), 'utf8')), false);
 }
 
+// --- 26. Closing the review (19 November 2026) --------------------------------
+{
+  // а. A day he serves at the pioneer school is his row; the school's own
+  // absence for that day is not «В отъезде».
+  const tl = buildTimeline({
+    versions: VERSIONS, fieldServiceMeetings: SATURDAY, publishersById: people, groupNameById: groups,
+    myServiceGroupId: AHLEN, myPublisherId: BERGMAN, events: [], moves: [],
+    absences: [{ id: 'sch-abs', startDate: '2026-09-30', endDate: '2026-09-30', pioneerSchoolDutyId: 'duty-1' }],
+    todayISO: TODAY, youConductLabel: 'conduct', youVisitLabels: { overseer: 'overseer', assistant: 'assistant' },
+    resolvePart, nearDays: 14,
+    myItems: [{ kind: 'pioneer_school', sortDate: '2026-09-30', date: '2026-09-30', time: '09:30', label: 'Школа', agendaId: 'pioneer_school:s:2026-09-30', schoolDuties: [{ type: 'av' }] }],
+  });
+  const all = [...tl.near, ...tl.far].flatMap((g) => g.entries);
+  check('26а день на Школе — своя строка', all.filter((e) => e.type === 'task' && e.task.item.kind === 'pioneer_school').map((e) => e.dateISO), ['2026-09-30']);
+  check('26б отсутствие от Школы — не «В отъезде»', all.filter((e) => e.type === 'absence').length, 0);
+  // в. Every sentence that says «группа» before a group's name takes the
+  // name through groupInSentence — «группа Группа 2» on any screen.
+  const ru = JSON.parse(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8'));
+  const tpl = (k) => k.split('.').reduce((o, p) => (o && typeof o === 'object' ? o[p] : undefined), ru);
+  const { readdirSync, statSync } = await import('node:fs');
+  const walk = (d) => readdirSync(d).flatMap((f) => {
+    const p = join(d, f);
+    return statSync(p).isDirectory() ? (f === 'node_modules' ? [] : walk(p)) : /\.tsx?$/.test(f) ? [p] : [];
+  });
+  const bad = [];
+  for (const file of ['app', 'components', 'lib'].flatMap((d) => walk(join(ROOT, d)))) {
+    const src = readFileSync(file, 'utf8');
+    for (const m of src.matchAll(/t\(\s*["']([a-zA-Z.]+)["'],\s*\{[^}]*?\bgroup:\s*([^,}]+)/g)) {
+      const text = tpl(m[1]);
+      const expr = m[2].trim();
+      const ident = (/^([A-Za-z_]\w*)/.exec(expr) ?? [])[1];
+      // A helper or a variable defined through groupInSentence counts.
+      const viaHelper =
+        !!ident && new RegExp(`(const|let)\\s+${ident}\\s*=[^;]*?groupInSentence`, 's').test(src);
+      if (typeof text === 'string' && /(груп\S*|group|grupp\S*)\s*\{\{group\}\}/i.test(text) && !/groupInSentence/.test(expr) && !viaHelper)
+        bad.push(`${file.slice(ROOT.length + 1)}: ${m[1]}`);
+    }
+  }
+  check('26в «группа» + имя группы — через groupInSentence', bad, []);
+  // г. Today's row of his that is over says so.
+  const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  check('26г сегодняшняя прошедшая строка — с пометкой', /isOver\(en, todayISO, nowHM\)/.test(home), true);
+  // д. In a day of his own only someone else's PLAIN meeting goes into one
+  // line — never his own row, which may carry «Изменено».
+  check('26д одной строкой в своём дне — только чужая обычная встреча', /en\.type === "meeting" && isPlainMeeting\(en\)\) \{/.test(home), true);
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

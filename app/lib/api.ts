@@ -4307,7 +4307,12 @@ export type MyAssignmentKind =
    * The annual meeting of the elders with the pioneers (30 October 2026):
    * `label` «invited» or «conduct»; `partnerName` — who conducts it.
    */
-  | "pioneer_meeting";
+  | "pioneer_meeting"
+  /**
+   * A day he serves at the pioneer school (19 November 2026): `label` the
+   * school's title, `schoolDuties` his duties of the day.
+   */
+  | "pioneer_school";
 
 export interface MyAssignmentItem {
   kind: MyAssignmentKind;
@@ -4354,6 +4359,8 @@ export interface MyAssignmentItem {
   note?: string;
   partKey?: string;
   partOrder?: number;
+  /** Pioneer school: his duties of the day (`slot` 1-based where numbered). */
+  schoolDuties?: { type: string; slot?: number; label?: string }[];
 }
 
 export interface MyAssignmentsResponse {
