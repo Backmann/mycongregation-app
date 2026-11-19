@@ -3135,8 +3135,7 @@
       "pair": "zusammen mit {{name}}",
       "fieldConduct": "Sie leiten die Zusammenkunft für den Predigtdienst",
       "onPlan": "im Plan",
-      "talkNamed": "Ansprache „{{title}}“",
-      "then": "Danach · {{when}}"
+      "talkNamed": "Ansprache „{{title}}“"
     },
     "todo": {
       "yours": "Für Sie",
@@ -7388,7 +7387,6 @@
     "proposeOther": "Andere Zeit vorschlagen",
     "agree": "Passt",
     "otherTime": "Andere Zeit",
-    "decline": "Geht nicht",
     "send": "Vorschlag senden",
     "sendNote": "Die andere Person erhält eine Benachrichtigung und sieht den Vorschlag in der App. Telefonnummern werden nie angezeigt. Nachts kommt die Benachrichtigung um 8:00.",
     "whenCaption": "Wann passt es Ihnen",
@@ -7406,9 +7404,9 @@
       "moment": "Abgesprochen: {{moment}}"
     },
     "declined": {
-      "theirs": "{{name}}: an diesen Tagen geht es nicht",
-      "mine": "Ihre Antwort: geht nicht",
-      "inPerson": "Bitte die Vorbereitung persönlich absprechen — zum Beispiel bei der nächsten Zusammenkunft."
+      "theirs": "{{name}}: lieber persönlich absprechen",
+      "mine": "Sie sprechen es persönlich ab",
+      "inPerson": "Zum Beispiel bei der nächsten Zusammenkunft."
     },
     "moment": {
       "after": {

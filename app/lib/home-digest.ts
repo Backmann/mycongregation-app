@@ -21,7 +21,7 @@
  */
 import type { Absence, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
-import type { DayGroup, MeetingEntry, Timeline, TimelineEntry } from './home-timeline';
+import type { DayGroup, Timeline, TimelineEntry } from './home-timeline';
 import { isCongressEvent } from './week-rules';
 import { inviteesOf } from './invitations';
 
@@ -289,23 +289,3 @@ export function awaySegments(groups: DayGroup[]): ListSegment[] {
   return out.filter((sg) => sg.away.length > 0 || sg.groups.some((g) => g.entries.length > 0));
 }
 
-/**
- * «Следом» (variant A): the nearest own meeting after the card, within the
- * two weeks, that holds a part with a partner — the one reason to look past
- * the nearest thing: agreeing on preparing takes days.
- */
-export function pickThen(
-  near: DayGroup[],
-  next: TimelineEntry | null,
-  nextIsFar: boolean,
-): MeetingEntry | null {
-  if (!next || nextIsFar) return null;
-  const nextTime = entryTime(next) ?? '';
-  for (const en of flat(near)) {
-    if (en.type !== 'meeting' || en.key === next.key) continue;
-    const after =
-      en.dateISO > next.dateISO || (en.dateISO === next.dateISO && (en.time || '') > nextTime);
-    if (after && en.myParts.some((p) => !!p.partnerName && !p.isDuty)) return en;
-  }
-  return null;
-}

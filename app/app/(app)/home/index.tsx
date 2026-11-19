@@ -1,4 +1,3 @@
-import { PairPrep } from "../../../components/PairPrep";
 import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { HoursCard } from "../../../components/hours/HoursCard";
 import { useLogUndo } from "../../../components/hours/useLogUndo";
@@ -89,7 +88,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isSlimDay, isWeekChore, pickThen, splitHome } from "../../../lib/home-digest";
+import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isSlimDay, isWeekChore, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -1115,7 +1114,6 @@ function CalendarLine() {
 function NextCard({
   entry,
   following,
-  thenEntry = null,
   awayDuring,
   isFar,
   now,
@@ -1126,8 +1124,6 @@ function NextCard({
 }: {
   entry: TimelineEntry;
   following: TimelineEntry | null;
-  /** «Следом»: the nearest own part with a partner after `entry` (variant A). */
-  thenEntry?: MeetingEntry | null;
   awayDuring: Absence | null;
   isFar: boolean;
   now: Date;
@@ -1214,7 +1210,6 @@ function NextCard({
               </View>
             ) : null}
             <CalendarLine />
-            {thenEntry ? <ThenBlock entry={thenEntry} /> : null}
           </View>
         </View>
       </Pressable>
@@ -1227,36 +1222,6 @@ function NextCard({
         </Text>
       ) : null}
     </View>
-  );
-}
-
-/**
- * «Следом» (variant A, 19 November 2026): a part to prepare with a partner,
- * within the two weeks, said under the next card with the button to agree
- * on preparing — the one reason to look past the nearest thing.
- */
-function ThenBlock({ entry }: { entry: MeetingEntry }) {
-  const { t, i18n } = useTranslation();
-  const p = entry.myParts.find((x) => x.partnerName && !x.isDuty);
-  if (!p) return null;
-  return (
-    <Pressable
-      onPress={() => openEntry(entry)}
-      style={({ pressed }) => [s.thenBox, pressed && { opacity: 0.7 }]}
-      accessibilityRole="button"
-    >
-      <Text style={s.thenLabel}>
-        {t("home.next.then", { when: shortDay(entry.dateISO, i18n.language) })}
-      </Text>
-      <View style={s.thenLine}>
-        <Text style={s.thenName}>{p.label ?? p.title}</Text>
-        {p.offsetMin != null && clockPlus(entry.time, p.offsetMin) ? (
-          <Text style={s.thenTime}>{clockPlus(entry.time, p.offsetMin)}</Text>
-        ) : null}
-      </View>
-      <Text style={s.thenSub}>{t("home.next.pair", { name: p.partnerName })}</Text>
-      <PairPrep agendaId={p.agendaId} partName={p.label ?? p.title} compact />
-    </Pressable>
   );
 }
 
@@ -1388,13 +1353,9 @@ function NextBody({
                     {detail ? <Text style={s.mineSub}>{detail}</Text> : null}
                   </View>
                 </View>
-                {p.partnerName && !p.isDuty ? (
-                  <PairPrep
-                    agendaId={p.agendaId}
-                    partName={p.label ?? p.title}
-                    compact
-                  />
-                ) : null}
+                {/* Home says the part as a fact — with whom; agreeing on
+                    preparing lives in «Мои назначения» (Lionel, 19
+                    November 2026). */}
               </View>
             );
           })}
@@ -2897,8 +2858,6 @@ export default function HomeScreen() {
       month: "long",
     });
 
-  // «Следом» (variant A): lib/home-digest.ts pickThen.
-  const thenEntry = pickThen(data.timeline.near, digest.next, digest.nextIsFar);
   const next = data.loading ? (
     <View style={s.section}>
       <SectionLabel>{t("home.next.title")}</SectionLabel>
@@ -2908,7 +2867,6 @@ export default function HomeScreen() {
     <NextCard
       entry={digest.next}
       following={null}
-      thenEntry={thenEntry}
       awayDuring={digest.awayDuring}
       isFar={digest.nextIsFar}
       now={now}
@@ -3513,12 +3471,6 @@ const s = StyleSheet.create({
   awayHead: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8, paddingTop: 10 },
   awayTitle: { fontSize: 13, fontFamily: "Manrope_800ExtraBold", color: "#334155" },
   awayRange: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#475569" },
-  thenBox: { borderTopWidth: 1, borderTopColor: "#e2e8f0", paddingTop: 10, gap: 3 },
-  thenLabel: { fontSize: 13, fontFamily: "Manrope_800ExtraBold", color: "#475569" },
-  thenLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
-  thenName: { flex: 1, fontSize: 15, lineHeight: 20, fontFamily: "Manrope_700Bold", color: "#0f172a" },
-  thenTime: { fontSize: 14, fontFamily: "Manrope_800ExtraBold", color: "#b45309", fontVariant: ["tabular-nums"] },
-  thenSub: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#475569" },
   listCard: {
     backgroundColor: "#fff",
     borderRadius: 18,

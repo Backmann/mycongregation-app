@@ -3135,8 +3135,7 @@
       "pair": "paired with {{name}}",
       "fieldConduct": "You are conducting the field service meeting",
       "onPlan": "on the plan",
-      "talkNamed": "talk “{{title}}”",
-      "then": "Then · {{when}}"
+      "talkNamed": "talk “{{title}}”"
     },
     "todo": {
       "yours": "For you",
@@ -7388,7 +7387,6 @@
     "proposeOther": "Suggest another time",
     "agree": "That works",
     "otherTime": "Another time",
-    "decline": "Not possible",
     "send": "Send suggestion",
     "sendNote": "Your partner gets a notification and sees the suggestion in the app. Phone numbers are never shown. At night the notification waits until 8:00.",
     "whenCaption": "When suits you",
@@ -7406,9 +7404,9 @@
       "moment": "Arranged: {{moment}}"
     },
     "declined": {
-      "theirs": "{{name}}: not possible on those days",
-      "mine": "You answered: not possible",
-      "inPerson": "Arrange your preparation in person — for example at the next meeting."
+      "theirs": "{{name}}: let’s arrange it in person",
+      "mine": "You chose to arrange it in person",
+      "inPerson": "For example, at the next meeting."
     },
     "moment": {
       "after": {

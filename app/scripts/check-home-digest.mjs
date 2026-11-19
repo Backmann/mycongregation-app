@@ -732,7 +732,7 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
 
 // --- 25. Variant A: one line, the away band, «Следом» (19 November 2026) ----
 {
-  const { isSlimDay, awaySegments, pickThen } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  const { isSlimDay, awaySegments } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
   const m = (key, dateISO, extra = {}) => ({ type: 'meeting', key, dateISO, kind: 'midweek', time: '19:00', myParts: [], weeklyCleaning: false, ...extra });
   const fs = (key, dateISO, extra = {}) => m(key, dateISO, { kind: 'field_service', time: '10:00', ...extra });
   const mine = [{ label: 'x', partKey: 'x' }];
@@ -773,15 +773,12 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     { dateISO: '2026-11-20', entries: [m('w2', '2026-11-20')] },
   ]);
   check('25з два отсутствия в один день — оба в голове полосы', two.map((sg) => sg.away.map((a) => a.id)), [['A', 'C'], ['A']]);
-  // в. «Следом» — after the card, a part with a partner.
-  const pair = [{ label: 'p', partnerName: 'N', partKey: 'p' }];
-  const near = [
-    { dateISO: '2026-11-25', entries: [m('same-earlier', '2026-11-25', { time: '18:00', myParts: pair }), m('card', '2026-11-25', { myParts: mine })] },
-    { dateISO: '2026-12-02', entries: [m('later', '2026-12-02', { myParts: pair })] },
-  ];
-  const card = near[0].entries[1];
-  check('25и «Следом» — не раньше карточки', pickThen(near, card, false)?.key ?? null, 'later');
-  check('25к карточка дальше двух недель — без «Следом»', pickThen(near, card, true), null);
+  // в. Home says a part with a partner as a fact (Lionel, 19 November 2026):
+  // no «Следом», no agreeing on preparing on Home — that is in «Мои назначения».
+  const homeSrc = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  check('25и на Главной нет подготовки с напарником', /PairPrep|pickThen|ThenBlock/.test(homeSrc), false);
+  const prep = readFileSync(join(ROOT, 'components', 'PairPrep.tsx'), 'utf8');
+  check('25к у подготовки нет ответа «не получится»', /answer\([^)]*'decline'\)/.test(prep), false);
 }
 
 if (failures) {

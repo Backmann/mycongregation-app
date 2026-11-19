@@ -182,24 +182,17 @@ export function PairPrep({
               {busy ? <ActivityIndicator color="#ffffff" /> : null}
               <Text style={s.btnSolidText}>{t('pairPrep.agree')}</Text>
             </Pressable>
-            <View style={s.answerRow}>
-              <Pressable
-                onPress={() => setChoosing(true)}
-                disabled={busy}
-                style={({ pressed }) => [s.btnOutline, s.half, pressed && s.pressed]}
-                accessibilityRole="button"
-              >
-                <Text style={s.btnOutlineText}>{t('pairPrep.otherTime')}</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => run(() => pairPrepApi.answer(item.assignmentId, 'decline'))}
-                disabled={busy}
-                style={({ pressed }) => [s.btnGrey, s.half, pressed && s.pressed]}
-                accessibilityRole="button"
-              >
-                <Text style={s.btnGreyText}>{t('pairPrep.decline')}</Text>
-              </Pressable>
-            </View>
+            {/* No «Не получится» (Lionel, 19 November 2026): under a part it
+                read as refusing the part, and a part is settled only with
+                the brother responsible. Another time is the other answer. */}
+            <Pressable
+              onPress={() => setChoosing(true)}
+              disabled={busy}
+              style={({ pressed }) => [s.btnOutline, pressed && s.pressed]}
+              accessibilityRole="button"
+            >
+              <Text style={s.btnOutlineText}>{t('pairPrep.otherTime')}</Text>
+            </Pressable>
           </View>
         ) : null}
         {chooser}
