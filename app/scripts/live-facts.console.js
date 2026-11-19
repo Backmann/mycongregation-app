@@ -308,6 +308,47 @@
     }
   });
 
+  // ─── Главная, вариант А: заранее ли назначают части с напарником ────────
+  // 19 ноября 2026: строка «Следом» показывает часть с напарником, если до
+  // неё меньше 14 дней. Раздел считает, за сколько дней до встречи такие части
+  // появляются в программе, и сколько встреч для проповеди в ближайшие две
+  // недели — только числа.
+  await section('ГЛАВНАЯ, ВАРИАНТ А', async () => {
+    const iso = (d) => d.toISOString().slice(0, 10);
+    const day = 86400000;
+    const now = new Date();
+    const from = new Date(now.getTime() - 182 * day);
+    const monday = (d) => { const x = new Date(d); x.setUTCDate(x.getUTCDate() - ((x.getUTCDay() + 6) % 7)); return x; };
+    const parts = [];
+    for (let offset = 0; offset < 5000; offset += 500) {
+      const r = await get(`/assignments?weekStart=${iso(monday(from))}&weekEnd=${iso(new Date(monday(now).getTime() + 56 * day))}&limit=500&offset=${offset}`);
+      parts.push(...(r.data ?? []));
+      if (!r.data || r.data.length < 500) break;
+    }
+    const paired = parts.filter((a) => a.assistantPublisherId && a.createdAt && a.weekStartDate);
+    const lead = paired
+      .map((a) => Math.round((new Date(`${a.weekStartDate}T00:00:00Z`).getTime() - new Date(a.createdAt).getTime()) / day))
+      .sort((a, b) => a - b);
+    const q = (p) => (lead.length ? lead[Math.min(lead.length - 1, Math.floor(p * lead.length))] : w('нет данных'));
+    fact('частей с напарником: полгода назад – 8 недель вперёд', lead.length);
+    fact('  дней от записи до недели встречи: четверть раньше', q(0.25));
+    fact('  медиана', q(0.5));
+    fact('  четверть позже', q(0.75));
+    fact('  записаны меньше чем за 14 дней', lead.filter((x) => x < 14).length);
+    const end = new Date(monday(now).getTime() + 21 * day);
+    const fs = await get(`/field-service-meetings?weekStart=${iso(monday(now))}&weekEnd=${iso(end)}`);
+    const today = iso(now);
+    const limit = iso(new Date(now.getTime() + 14 * day));
+    const byDay = {};
+    for (const m of fs ?? []) {
+      const d = iso(new Date(new Date(`${m.weekStartDate}T00:00:00Z`).getTime() + (m.dayOfWeek - 1) * day));
+      if (d >= today && d <= limit) byDay[d] = (byDay[d] ?? 0) + 1;
+    }
+    fact('встреч для проповеди в ближайшие 14 дней', Object.values(byDay).reduce((a, b) => a + b, 0));
+    fact('  дней, в которые они есть', Object.keys(byDay).length);
+    fact('  больше всего в один день', Math.max(0, ...Object.values(byDay)));
+  });
+
   // ─── итог ───────────────────────────────────────────────────────────────
   lines.push('', failed === 0 ? 'ИТОГ: все проверки прошли' : `ИТОГ: не прошло проверок — ${failed}`);
   const text = ['──── факты ────', ...lines, '──── конец ────'].join('\n');
