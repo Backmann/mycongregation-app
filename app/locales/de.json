@@ -3135,7 +3135,8 @@
       "pair": "zusammen mit {{name}}",
       "fieldConduct": "Sie leiten die Zusammenkunft für den Predigtdienst",
       "onPlan": "im Plan",
-      "talkNamed": "Ansprache „{{title}}“"
+      "talkNamed": "Ansprache „{{title}}“",
+      "then": "Danach · {{when}}"
     },
     "todo": {
       "yours": "Für Sie",
@@ -3148,7 +3149,6 @@
       "report": "Bericht für {{month}} abgeben"
     },
     "list": {
-      "meetings": "Zusammenkünfte der Versammlung",
       "wholeProgramme": "Ganzes Programm",
       "upNext": "↑ Ihr Nächstes",
       "yourGroup": "Ihre Gruppe {{name}}",
@@ -3161,7 +3161,11 @@
       "watchtower": "Wachtturm: {{title}}",
       "until": "bis {{date}}",
       "weekOf": "Woche {{range}}",
-      "weekTile": "WO."
+      "weekTile": "WO.",
+      "twoWeeks": "Die nächsten zwei Wochen",
+      "pillNext": "Ihr Nächstes",
+      "pillPast": "vorbei",
+      "away": "Abwesend"
     },
     "soon": {
       "title": "Demnächst",
@@ -3201,6 +3205,11 @@
       "wholeMeeting": "ganze Zusammenkunft",
       "yourGroup": "Ihre Gruppe",
       "cleaning": "Reinigung nach der Zusammenkunft"
+    },
+    "slim": {
+      "midweek": "Unter der Woche",
+      "weekend": "Wochenende",
+      "field": "Predigtdienst"
     }
   },
   "halls": {

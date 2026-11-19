@@ -200,12 +200,32 @@ export function isOwnElsewhere(en: TimelineEntry): boolean {
 }
 
 export function splitHome(timeline: Timeline, nextKey: string | null): HomeSplit {
-  const meetings = timeline.near
-    .map((g) => ({ ...g, entries: g.entries.filter((en) => !isOwnElsewhere(en)) }))
-    .filter((g) => g.entries.length > 0);
-  const ahead = [
-    ...flat(timeline.near).filter(isOwnElsewhere),
-    ...flat(timeline.far).filter(isOwnEntry),
-  ].filter((en) => en.key !== nextKey);
+  // Variant A (draft, 19 November 2026): the two weeks are ONE list, the
+  // person's own rows in their own day; «Дальше у вас» is only what lies
+  // beyond them.
+  const meetings = timeline.near.filter((g) => g.entries.length > 0);
+  const ahead = flat(timeline.far)
+    .filter(isOwnEntry)
+    .filter((en) => en.key !== nextKey);
   return { meetings, ahead };
+}
+
+/**
+ * A meeting row with nothing of the person's own and nothing different about
+ * it (no move, no notice, no visit, not replaced, not the Memorial): it can be
+ * said in one line — its name and its hour.
+ */
+export function isPlainMeeting(en: TimelineEntry): boolean {
+  return (
+    en.type === 'meeting' &&
+    !isOwnEntry(en) &&
+    !en.cancelled &&
+    !en.movedFrom &&
+    !en.movedTo &&
+    !en.replacedBy &&
+    !en.memorial &&
+    !en.notice &&
+    !en.fieldNote &&
+    !en.serviceOverseerVisit
+  );
 }

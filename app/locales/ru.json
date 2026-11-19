@@ -3263,7 +3263,8 @@
       "pair": "в паре: {{name}}",
       "fieldConduct": "Вы ведёте встречу для проповеди",
       "onPlan": "на плане",
-      "talkNamed": "речь «{{title}}»"
+      "talkNamed": "речь «{{title}}»",
+      "then": "Следом · {{when}}"
     },
     "todo": {
       "yours": "Вам лично",
@@ -3280,7 +3281,6 @@
       "report": "Сдать отчёт за {{month}}"
     },
     "list": {
-      "meetings": "Встречи собрания",
       "wholeProgramme": "Вся программа",
       "upNext": "↑ ваше ближайшее",
       "yourGroup": "Ваша группа {{name}}",
@@ -3293,7 +3293,11 @@
       "watchtower": "«Сторожевая башня»: {{title}}",
       "until": "до {{date}}",
       "weekOf": "неделя {{range}}",
-      "weekTile": "НЕД."
+      "weekTile": "НЕД.",
+      "twoWeeks": "Ближайшие две недели",
+      "pillNext": "ваше ближайшее",
+      "pillPast": "прошла",
+      "away": "В отъезде"
     },
     "soon": {
       "title": "Скоро",
@@ -3343,6 +3347,11 @@
       "wholeMeeting": "вся встреча",
       "yourGroup": "Ваша группа",
       "cleaning": "Уборка после встречи"
+    },
+    "slim": {
+      "midweek": "Будний день",
+      "weekend": "Выходной день",
+      "field": "Проповедь"
     }
   },
   "halls": {

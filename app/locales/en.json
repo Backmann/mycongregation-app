@@ -3135,7 +3135,8 @@
       "pair": "paired with {{name}}",
       "fieldConduct": "You are conducting the field service meeting",
       "onPlan": "on the plan",
-      "talkNamed": "talk “{{title}}”"
+      "talkNamed": "talk “{{title}}”",
+      "then": "Then · {{when}}"
     },
     "todo": {
       "yours": "For you",
@@ -3148,7 +3149,6 @@
       "report": "Submit the report for {{month}}"
     },
     "list": {
-      "meetings": "Congregation meetings",
       "wholeProgramme": "Whole program",
       "upNext": "↑ your next",
       "yourGroup": "Your group {{name}}",
@@ -3161,7 +3161,11 @@
       "watchtower": "Watchtower: {{title}}",
       "until": "until {{date}}",
       "weekOf": "week {{range}}",
-      "weekTile": "WK"
+      "weekTile": "WK",
+      "twoWeeks": "The next two weeks",
+      "pillNext": "your next",
+      "pillPast": "over",
+      "away": "Away"
     },
     "soon": {
       "title": "Coming up",
@@ -3201,6 +3205,11 @@
       "wholeMeeting": "whole meeting",
       "yourGroup": "Your group",
       "cleaning": "Cleaning after the meeting"
+    },
+    "slim": {
+      "midweek": "Midweek",
+      "weekend": "Weekend",
+      "field": "Field service"
     }
   },
   "halls": {

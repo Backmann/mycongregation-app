@@ -534,11 +534,12 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   };
   const keys = (xs) => xs.map((e) => e.key);
   const sp = splitHome(timeline, 'cart-10');
-  check('19а «Встречи собрания» — встречи и события, без своих строк другого рода',
+  // Variant A (19 November 2026): the two weeks are one list, his own rows
+  // of any kind in their own day; «Дальше у вас» is only beyond them.
+  check('19а «Ближайшие две недели» — все дни, своё в своём дне',
     sp.meetings.map((g) => [g.dateISO, keys(g.entries)]),
-    [['2026-11-11', ['old-11']], ['2026-11-12', ['new-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
-  check('19б «Дальше у вас» — свои строки другого рода, потом всё своё после двух недель, без карточки',
-    keys(sp.ahead), ['cart-12', 'mw-25']);
+    [['2026-11-10', ['cart-10']], ['2026-11-11', ['old-11']], ['2026-11-12', ['new-12', 'cart-12']], ['2026-11-14', ['fs-14']], ['2026-11-15', ['we-15']], ['2026-11-20', ['congress']]]);
+  check('19б «Дальше у вас» — только своё после двух недель', keys(sp.ahead), ['mw-25']);
   // «Важно» is no longer a list of its own (10 November 2026): a meeting
   // that is different says it in its own row, which stays where it is.
   check('19в нет отдельного «Важно»: перемены говорит сама строка встречи',
@@ -546,7 +547,12 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   const sp2 = splitHome(timeline, 'new-12');
   check('19г перенесённая встреча с карточки остаётся строкой в «Встречах собрания»',
     sp2.meetings.some((g) => keys(g.entries).includes('new-12')), true);
-  check('19д карточка не повторяется в «Дальше у вас»', keys(sp2.ahead), ['cart-10', 'cart-12', 'mw-25']);
+  check('19д карточка не повторяется в «Дальше у вас»', keys(splitHome({ near: [], far: timeline.far }, 'mw-25').ahead), []);
+  const { isPlainMeeting } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  check('19е одной строкой — только встреча без своего и без перемен',
+    ['old-11', 'new-12', 'fs-14', 'we-15'].map((k) => isPlainMeeting(timeline.near.flatMap((g) => g.entries).find((e) => e.key === k))),
+    [false, false, false, false]);
+  check('19ж обычная встреча без своего — одной строкой', isPlainMeeting(mtg('plain', '2026-11-18')), true);
 }
 
 // --- 20. «Изменено» finds its row: each row lists its own agenda ids --------

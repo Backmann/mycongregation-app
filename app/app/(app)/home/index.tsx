@@ -89,7 +89,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime, isOwnEntry, isWeekChore, splitHome } from "../../../lib/home-digest";
+import { digestHome, entryTime, isOver, isOwnEntry, isPlainMeeting, isWeekChore, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -151,6 +151,7 @@ import { entryAgendaIds, unshownCount } from "../../../lib/home-changes";
  */
 /** Two columns from this width; the content never grows past MAX_WIDTH. */
 const WIDE_FROM = 900;
+const WIDE_CONTENT = 760;
 const MAX_WIDTH = 1000;
 const NEAR_DAYS = 14;
 
@@ -1115,6 +1116,7 @@ function CalendarLine() {
 function NextCard({
   entry,
   following,
+  thenEntry = null,
   awayDuring,
   isFar,
   now,
@@ -1125,6 +1127,8 @@ function NextCard({
 }: {
   entry: TimelineEntry;
   following: TimelineEntry | null;
+  /** «Следом»: the nearest own part with a partner after `entry` (variant A). */
+  thenEntry?: MeetingEntry | null;
   awayDuring: Absence | null;
   isFar: boolean;
   now: Date;
@@ -1211,6 +1215,7 @@ function NextCard({
               </View>
             ) : null}
             <CalendarLine />
+            {thenEntry ? <ThenBlock entry={thenEntry} /> : null}
           </View>
         </View>
       </Pressable>
@@ -1222,6 +1227,32 @@ function NextCard({
           })}
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+/**
+ * «Следом» (variant A, 19 November 2026): a part to prepare with a partner,
+ * within the two weeks, said under the next card with the button to agree
+ * on preparing — the one reason to look past the nearest thing.
+ */
+function ThenBlock({ entry }: { entry: MeetingEntry }) {
+  const { t, i18n } = useTranslation();
+  const p = entry.myParts.find((x) => x.partnerName && !x.isDuty);
+  if (!p) return null;
+  return (
+    <View style={s.thenBox}>
+      <Text style={s.thenLabel}>
+        {t("home.next.then", { when: shortDay(entry.dateISO, i18n.language) })}
+      </Text>
+      <View style={s.thenLine}>
+        <Text style={s.thenName}>{partText(p, t)}</Text>
+        {p.offsetMin != null && clockPlus(entry.time, p.offsetMin) ? (
+          <Text style={s.thenTime}>{clockPlus(entry.time, p.offsetMin)}</Text>
+        ) : null}
+      </View>
+      <Text style={s.thenSub}>{t("home.next.pair", { name: p.partnerName })}</Text>
+      <PairPrep agendaId={p.agendaId} partName={p.label ?? p.title} compact />
     </View>
   );
 }
@@ -2209,6 +2240,95 @@ function toneOf(en: TimelineEntry | undefined): MeetingTone {
   return en.kind;
 }
 
+/**
+ * A day of the two weeks with nothing of the person's own (variant A, 19
+ * November 2026): each meeting one line — its name and hour; field service
+ * one line with all its hours. The day of «Ваше ближайшее» is said the same
+ * way with a mark: its own rows are on the card above.
+ */
+function SlimDay({
+  group,
+  todayISO,
+  nowHM,
+  isNextDay,
+  dim = false,
+}: {
+  group: DayGroup;
+  todayISO: string;
+  nowHM: string;
+  isNextDay: boolean;
+  dim?: boolean;
+}) {
+  const { t, i18n } = useTranslation();
+  const d = new Date(`${group.dateISO}T00:00:00`);
+  const weekday = d
+    .toLocaleDateString(i18n.language, { weekday: "short" })
+    .replace(".", "")
+    .toUpperCase();
+  const meetings = group.entries.filter(
+    (en): en is MeetingEntry => en.type === "meeting",
+  );
+  const field = meetings.filter((m) => m.kind === "field_service");
+  const others = meetings.filter((m) => m.kind !== "field_service");
+  const lines: { key: string; name: string; time: string; past: boolean; en: TimelineEntry }[] = [
+    ...others.map((m) => ({
+      key: m.key,
+      name: t(m.kind === "midweek" ? "home.slim.midweek" : "home.slim.weekend"),
+      time: m.time,
+      past: isOver(m, todayISO, nowHM),
+      en: m as TimelineEntry,
+    })),
+    ...(field.length
+      ? [
+          {
+            key: field[0].key,
+            name: t("home.slim.field"),
+            time: field.map((m) => m.time).join(" · "),
+            past: field.every((m) => isOver(m, todayISO, nowHM)),
+            en: field[0] as TimelineEntry,
+          },
+        ]
+      : []),
+  ];
+  const tone = toneOf(group.entries[0]);
+  const isToday = group.dateISO === todayISO;
+  const ink = isToday ? "#ffffff" : MEETING_INK[tone];
+  return (
+    <View style={[s.slimDay, dim && { opacity: 0.55 }]}>
+      <View
+        style={[
+          s.slimTile,
+          { backgroundColor: isToday ? "#0f172a" : MEETING_TILE[tone] },
+        ]}
+      >
+        <Text style={[s.slimTileDay, { color: ink }]}>{d.getDate()}</Text>
+        <Text style={[s.slimTileDow, { color: ink }]}>{weekday}</Text>
+      </View>
+      <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
+        {lines.map((l) => (
+          <Pressable
+            key={l.key}
+            onPress={() => openEntry(l.en)}
+            style={({ pressed }) => [pressed && { opacity: 0.6 }]}
+            accessibilityRole="button"
+            accessibilityLabel={`${l.name}, ${l.time}`}
+          >
+            <View style={s.slimLine}>
+              <Text style={[s.slimName, l.past && s.slimPast]}>{l.name}</Text>
+              <Text style={[s.slimTime, l.past && s.slimPast]}>{l.time}</Text>
+            </View>
+            {l.past ? (
+              <Text style={[s.pill, s.pillPast]}>{t("home.list.pillPast")}</Text>
+            ) : isNextDay && l.en.type === "meeting" && isOwnEntry(l.en) ? (
+              <Text style={[s.pill, s.pillNext]}>{t("home.list.pillNext")}</Text>
+            ) : null}
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function DayRow({
   group,
   nextKey,
@@ -2700,8 +2820,10 @@ export default function HomeScreen() {
   const now = useNow();
   const todayISO = formatDateISO(now);
   const nowHM = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  const { width } = useWindowDimensions();
-  const wide = width >= WIDE_FROM;
+  const { width, fontScale } = useWindowDimensions();
+  // Two columns when each gets a phone's width (variant A, 19 November
+  // 2026): 380 + 24 + at least 356; one column with a large system font.
+  const wide = width - 32 >= WIDE_CONTENT && fontScale < 1.3;
   const [refreshing, setRefreshing] = useState(false);
   const [windows, setWindows] = useState<number[] | null>(null);
 
@@ -2740,6 +2862,22 @@ export default function HomeScreen() {
       month: "long",
     });
 
+  // «Следом» (variant A): the nearest own part with a partner after the card,
+  // within the two weeks.
+  const thenEntry: MeetingEntry | null = (() => {
+    if (!digest.next || digest.nextIsFar) return null;
+    const after = data.timeline.near
+      .flatMap((g) => g.entries)
+      .filter(
+        (en): en is MeetingEntry =>
+          en.type === "meeting" &&
+          en.key !== digest.next!.key &&
+          en.dateISO >= digest.next!.dateISO &&
+          en.myParts.some((p) => !!p.partnerName && !p.isDuty),
+      );
+    return after[0] ?? null;
+  })();
+
   const next = data.loading ? (
     <View style={s.section}>
       <SectionLabel>{t("home.next.title")}</SectionLabel>
@@ -2749,6 +2887,7 @@ export default function HomeScreen() {
     <NextCard
       entry={digest.next}
       following={null}
+      thenEntry={thenEntry}
       awayDuring={digest.awayDuring}
       isFar={digest.nextIsFar}
       now={now}
@@ -2784,6 +2923,14 @@ export default function HomeScreen() {
       .map((p) => p.value)
       .join(" ");
   };
+  // «Декабрь», «Январь 2027» — the month as a heading names it.
+  const monthName = (iso: string) =>
+    capitalizeFirst(
+      new Date(`${iso}T00:00:00`).toLocaleDateString(i18n.language, {
+        month: "long",
+        ...(iso.slice(0, 4) !== todayISO.slice(0, 4) ? { year: "numeric" } : {}),
+      }).replace(/\s?г\.$/, ""),
+    );
   // Changes on rows Home does not show (beyond the first few of «Дальше у
   // вас»): counted where the full list opens, which marks them too.
   const hiddenChanges = unshownCount(changes.data, [
@@ -2806,7 +2953,11 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={s.listCard}>
-        {aheadShown.map((en) => (
+        {aheadShown.map((en, i) => (
+          <Fragment key={en.key}>
+          {i === 0 || aheadShown[i - 1].dateISO.slice(0, 7) !== en.dateISO.slice(0, 7) ? (
+            <Text style={s.monthLabel}>{monthName(en.dateISO)}</Text>
+          ) : null}
           <DayRow
             key={en.key}
             group={{ dateISO: en.dateISO, entries: [en] }}
@@ -2817,6 +2968,7 @@ export default function HomeScreen() {
             onWindows={setWindows}
             compact
           />
+          </Fragment>
         ))}
       <Pressable
         onPress={() => router.push("/home/my-assignments" as never)}
@@ -2840,11 +2992,35 @@ export default function HomeScreen() {
     </View>
   );
 
+  // An away-period is one band over its days (variant A): its own row is the
+  // band's head; field service in it is left out — he is not there.
+  const listSegments: { away: Absence | null; groups: DayGroup[] }[] = [];
+  {
+    let cur: { away: Absence | null; groups: DayGroup[] } = { away: null, groups: [] };
+    for (const g of meetingsNear) {
+      const ab = g.entries.find((en) => en.type === "absence");
+      if (ab && ab.type === "absence") {
+        if (cur.groups.length) listSegments.push(cur);
+        cur = { away: ab.absence, groups: [] };
+      } else if (cur.away && g.dateISO > (cur.away.endDate ?? cur.away.startDate)) {
+        listSegments.push(cur);
+        cur = { away: null, groups: [] };
+      }
+      const entries = g.entries.filter(
+        (en) =>
+          en.type !== "absence" &&
+          !(cur.away && isPlainMeeting(en) && en.type === "meeting" && en.kind === "field_service"),
+      );
+      if (entries.length) cur.groups.push({ ...g, entries });
+    }
+    if (cur.groups.length || cur.away) listSegments.push(cur);
+  }
+
   const list = (
     <View style={s.section}>
       <View style={s.listHead}>
         <Text style={s.sectionLabel} accessibilityRole="header">
-          {t("home.list.meetings")}
+          {t("home.list.twoWeeks")}
         </Text>
         <Text style={s.listRange}>
           {fmtDay(todayISO)} – {fmtDay(nearTo)}
@@ -2868,36 +3044,46 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={s.listCard}>
-        {meetingsNear.map((g, i) => {
-          const month = g.dateISO.slice(0, 7);
-          const prev =
-            i === 0
-              ? todayISO.slice(0, 7)
-              : meetingsNear[i - 1].dateISO.slice(0, 7);
-          return (
-            <View key={g.dateISO}>
-              {month !== prev ? (
-                <Text style={s.monthLabel}>
-                  {capitalizeFirst(
-                    new Date(`${g.dateISO}T00:00:00`).toLocaleDateString(
-                      i18n.language,
-                      { month: "long" },
-                    ),
-                  )}
-                </Text>
-              ) : null}
-              <DayRow
+        {listSegments.map((seg, si) => {
+          const rows = seg.groups.map((g) => {
+            const nk = digest.next && !digest.nextIsFar ? digest.next.key : null;
+            const own = g.entries.filter(isOwnEntry);
+            const slim =
+              g.entries.every(
+                (en) => isPlainMeeting(en) || (en.key === nk && en.type === "meeting"),
+              ) && own.every((en) => en.key === nk);
+            return slim ? (
+              <SlimDay
+                key={g.dateISO}
                 group={g}
-                nextKey={
-                  digest.next && !digest.nextIsFar ? digest.next.key : null
-                }
+                todayISO={todayISO}
+                nowHM={nowHM}
+                isNextDay={own.length > 0}
+                dim={!!seg.away}
+              />
+            ) : (
+              <DayRow
+                key={g.dateISO}
+                group={g}
+                nextKey={nk}
                 todayISO={todayISO}
                 myGroupName={data.myGroupName}
                 myName={data.myName}
                 onWindows={setWindows}
                 compact
               />
+            );
+          });
+          return seg.away ? (
+            <View key={`away-${si}`} style={s.awayBand}>
+              <View style={s.awayHead}>
+                <Text style={s.awayTitle}>{t("home.list.away")}</Text>
+                <Text style={s.awayRange}>{absenceRange(seg.away, i18n.language)}</Text>
+              </View>
+              {rows}
             </View>
+          ) : (
+            <Fragment key={`seg-${si}`}>{rows}</Fragment>
           );
         })}
         <Pressable
@@ -2992,11 +3178,11 @@ export default function HomeScreen() {
                 {removedBlock}
                 <HoursCard onSaved={logUndo.saved} />
                 <TodoSection />
-                {ahead}
+                {soon}
               </View>
               <View style={s.colRight}>
                 {list}
-                {soon}
+                {ahead}
               </View>
             </>
           ) : (
@@ -3010,8 +3196,8 @@ export default function HomeScreen() {
               {removedBlock}
               <HoursCard onSaved={logUndo.saved} />
               <TodoSection />
-              {ahead}
               {list}
+              {ahead}
               {soon}
             </>
           )}
@@ -3045,8 +3231,8 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
   content: { padding: 16, paddingBottom: 40, alignItems: "center" },
   frame: { width: "100%", maxWidth: MAX_WIDTH, gap: 22 },
-  frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 40 },
-  colLeft: { width: 400, gap: 22 },
+  frameWide: { flexDirection: "row", alignItems: "flex-start", gap: 24 },
+  colLeft: { width: 380, gap: 22 },
   colRight: { flex: 1, minWidth: 0, gap: 22 },
   section: { gap: 8 },
   sectionLabel: {
@@ -3286,6 +3472,51 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
   },
   nextInner: { padding: 16, paddingTop: 12, gap: 12 },
+  slimDay: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    paddingVertical: 9,
+    paddingHorizontal: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eef2f6",
+  },
+  slimTile: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  slimTileDay: { fontSize: 15, lineHeight: 17, fontFamily: "Manrope_800ExtraBold" },
+  slimTileDow: { fontSize: 9.5, lineHeight: 12, fontFamily: "Manrope_800ExtraBold" },
+  slimLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  slimName: { flex: 1, fontSize: 14.5, lineHeight: 20, fontFamily: "Manrope_600SemiBold", color: "#334155" },
+  slimTime: { fontSize: 14, fontFamily: "Manrope_700Bold", color: "#334155", fontVariant: ["tabular-nums"] },
+  slimPast: { color: "#64748b" },
+  pill: {
+    alignSelf: "flex-start",
+    marginTop: 3,
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Manrope_700Bold",
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    overflow: "hidden",
+  },
+  pillNext: { backgroundColor: "#fef3c7", color: "#92400e" },
+  pillPast: { backgroundColor: "#e2e8f0", color: "#334155" },
+  awayBand: {
+    backgroundColor: "#f8fafc",
+    borderLeftWidth: 4,
+    borderLeftColor: "#94a3b8",
+    marginHorizontal: -12,
+    paddingLeft: 12,
+    paddingRight: 12,
+  },
+  awayHead: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8, paddingTop: 10 },
+  awayTitle: { fontSize: 13, fontFamily: "Manrope_800ExtraBold", color: "#334155" },
+  awayRange: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#475569" },
+  thenBox: { borderTopWidth: 1, borderTopColor: "#e2e8f0", paddingTop: 10, gap: 3 },
+  thenLabel: { fontSize: 13, fontFamily: "Manrope_800ExtraBold", color: "#475569" },
+  thenLine: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", gap: 10 },
+  thenName: { flex: 1, fontSize: 15, lineHeight: 20, fontFamily: "Manrope_700Bold", color: "#0f172a" },
+  thenTime: { fontSize: 14, fontFamily: "Manrope_800ExtraBold", color: "#b45309", fontVariant: ["tabular-nums"] },
+  thenSub: { fontSize: 13, fontFamily: "Manrope_600SemiBold", color: "#475569" },
   listCard: {
     backgroundColor: "#fff",
     borderRadius: 18,
