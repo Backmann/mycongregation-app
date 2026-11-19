@@ -3551,9 +3551,10 @@ const s = StyleSheet.create({
 
   listHead: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "baseline",
     justifyContent: "space-between",
-    gap: 8,
+    columnGap: 8,
   },
   listTitle: {
     fontSize: 18,
