@@ -2591,7 +2591,8 @@
       "address": "Address",
       "mapUrl": "Map link",
       "programUrl": "Program link",
-      "note": "Note"
+      "note": "Note",
+      "noteInvited": "For those invited"
     },
     "placeholders": {
       "title": "Enter a title",
@@ -2807,8 +2808,8 @@
         "branch_representative_visit": "The meeting usually takes place, with changes — you will be asked which",
         "other": "A cleanup day, a group gathering… Does not affect meetings unless you specify it",
         "campaign": "Days or weeks; meetings stay as they are. Can let auxiliary pioneers take 15 hours",
-        "kingdom_ministry_school_elders": "Seen and announced to the elders only; meetings unchanged",
-        "kingdom_ministry_school_servants": "Seen and announced to the ministerial servants only; meetings unchanged",
+        "kingdom_ministry_school_elders": "Seen and announced to the elders only; marked as away on the school days",
+        "kingdom_ministry_school_servants": "Seen and announced to the ministerial servants only; marked as away on the school days",
         "pioneer_special_meeting": "For regular and special pioneers and missionaries; meetings unchanged"
       },
       "specialTalk": "A special talk is recorded by the talk coordinator — in the Incoming / Outgoing log, with its speaker.",
@@ -2936,7 +2937,8 @@
     "warnAway": "Away: {{range}}",
     "add": "Add absence",
     "reason": {
-      "pioneerSchool": "Pioneer Service School"
+      "pioneerSchool": "Pioneer Service School",
+      "event": "Invited to an event"
     },
     "fromSchool": {
       "title": "From the Pioneer Service School",
@@ -2979,6 +2981,10 @@
       "week": "One week",
       "twoWeeks": "2 weeks",
       "month": "To month end"
+    },
+    "fromEvent": {
+      "title": "From an event he is invited to",
+      "body": "This absence was set by an event the brother is invited to. To change it, change the event."
     }
   },
   "home": {
@@ -3214,6 +3220,10 @@
       "title": "Pioneer Service School",
       "short": "Pioneer Service School",
       "yourDays": "your days: {{days}}"
+    },
+    "event": {
+      "route": "directions",
+      "atSchool": "You are at the school that day"
     }
   },
   "halls": {
@@ -6349,7 +6359,8 @@
       "CO_VISIT_TEMPLATE_NO_SOURCE": "There is no earlier visit to start from.",
       "CO_VISIT_PASTORAL_ELDERS": "Shepherding calls are planned by elders only.",
       "CO_VISIT_NO_WIFE": "The overseer's wife is not coming this time — turn on «His wife comes too» on the visit.",
-      "CO_VISIT_WIFE_COMES": "The overseer's wife is coming — her rows stay."
+      "CO_VISIT_WIFE_COMES": "The overseer's wife is coming — her rows stay.",
+      "ABSENCE_FROM_EVENT": "This absence comes from an event the brother is invited to. Change the event instead."
     }
   },
   "stage": {

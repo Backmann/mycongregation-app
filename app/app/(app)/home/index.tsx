@@ -95,6 +95,7 @@ import { WindowsPlanDialog } from "../../../components/WindowsPlan";
 import { SECTION_COLORS, SectionKind } from "../../../lib/section-colors";
 import { MEETING_INK, MEETING_TILE, MeetingTone } from "../../../lib/palette";
 import { inviteesOf } from "../../../lib/invitations";
+import { routeLink } from "../../../lib/route-link";
 import { FieldNotice } from "../../../components/FieldNotice";
 import {
   SUBSECTIONS,
@@ -1205,7 +1206,7 @@ function NextCard({
               <View style={s.awayNote}>
                 <Ionicons name="warning-outline" size={17} color="#b45309" />
                 <Text style={s.awayText}>
-                  {t("home.next.away", { range: absenceRange(awayDuring, loc) })}
+                  {awayText(awayDuring, t, loc)}
                 </Text>
               </View>
             ) : null}
@@ -1931,7 +1932,7 @@ function EntryBody({
           <View style={[s.awayNote, { marginTop: 8 }]}>
             <Ionicons name="warning-outline" size={17} color="#b45309" />
             <Text style={s.awayText}>
-              {t("home.next.away", { range: absenceRange(en.awayConflict, loc) })}
+              {awayText(en.awayConflict, t, loc)}
             </Text>
           </View>
         ) : null}
@@ -1978,6 +1979,14 @@ function EntryBody({
         />
         {en.folded ? (
           <Text style={s.rowQuiet}>{t("home.list.groupOnVisit")}</Text>
+        ) : null}
+        {/* He leads it on a day he is away — at the school he is invited
+            to, or on a trip of his own (19 November 2026). */}
+        {en.awayConflict && !isNext ? (
+          <View style={[s.awayNote, { marginTop: 8 }]}>
+            <Ionicons name="warning-outline" size={17} color="#b45309" />
+            <Text style={s.awayText}>{awayText(en.awayConflict, t, loc)}</Text>
+          </View>
         ) : null}
       </>
     );
@@ -2119,6 +2128,14 @@ function EntryBody({
             ))}
           </View>
         ) : null}
+        {/* His assignment on a day of the school he is invited to (19
+            November 2026): a fact, said on the row. */}
+        {en.awayConflict && !isNext ? (
+          <View style={[s.awayNote, { marginTop: 8 }]}>
+            <Ionicons name="warning-outline" size={17} color="#b45309" />
+            <Text style={s.awayText}>{awayText(en.awayConflict, t, loc)}</Text>
+          </View>
+        ) : null}
       </>
     );
   }
@@ -2229,13 +2246,23 @@ function EntryBody({
   // month-long campaign read as if it happened today only.
   const e = en.event;
   const multiDay = !!e.endDate && e.endDate !== e.date;
+  // An event for the invited (19 November 2026): his invitation, said as the
+  // pioneer school is — the short kind over it with its hours, the name once,
+  // where with the way there, and what the brothers are asked to know.
+  const invited = !!inviteesOf(e.type);
+  const kindName = e.type
+    ? t(`specialEvents.types.${e.type}`, e.type)
+    : t("feed.kindSpecial");
+  const kindWord = invited
+    ? t(`specialEvents.kindShort.${e.type}`, kindName)
+    : kindName;
+  const hours =
+    e.time && e.timeEnd && !multiDay ? `${e.time}–${e.timeEnd}` : (e.time ?? null);
   return (
     <>
       <KindLine
         text={[
-          e.type
-            ? t(`specialEvents.types.${e.type}`, e.type)
-            : t("feed.kindSpecial"),
+          kindWord,
           multiDay
             ? e.date < en.dateISO
               ? t("home.list.until", {
@@ -2246,12 +2273,58 @@ function EntryBody({
         ]
           .filter(Boolean)
           .join(" · ")}
-        time={e.time ?? null}
+        time={hours}
       />
       <Text style={s.rowTitle}>{e.title}</Text>
-      {e.address ? <Text style={s.rowSub}>{e.address}</Text> : null}
+      {invited ? (
+        <Text style={[s.pill, s.pillInvited, { alignSelf: "flex-start", marginTop: 4 }]}>
+          {t("home.soon.invited")}
+        </Text>
+      ) : null}
+      {e.address ? <PlaceLink address={e.address} mapUrl={e.mapUrl} /> : null}
+      {invited && e.note?.trim() ? (
+        <Text style={s.rowSub}>{e.note.trim()}</Text>
+      ) : null}
     </>
   );
+}
+
+/**
+ * An address that opens the way there (19 November 2026): tapped, the
+ * phone's maps show the route. Its own target, so the row around it still
+ * opens the event.
+ */
+function PlaceLink({
+  address,
+  mapUrl,
+}: {
+  address: string;
+  mapUrl?: string | null;
+}) {
+  const { t } = useTranslation();
+  const url = routeLink(address, mapUrl);
+  if (!url) return <Text style={s.rowSub}>{address}</Text>;
+  return (
+    <Pressable
+      onPress={() => void Linking.openURL(url).catch(() => {})}
+      accessibilityRole="link"
+      accessibilityLabel={`${address}, ${t("home.event.route")}`}
+      hitSlop={6}
+      style={s.placeLink}
+    >
+      <Ionicons name="navigate-outline" size={14} color="#0369a1" />
+      <Text style={s.placeLinkText}>
+        {address} · {t("home.event.route")}
+      </Text>
+    </Pressable>
+  );
+}
+
+/** A clash with an absence, in words: the school by name, else the dates. */
+function awayText(a: Absence, t: TFunction, loc: string): string {
+  return a.specialEventId
+    ? t("home.event.atSchool")
+    : t("home.next.away", { range: absenceRange(a, loc) });
 }
 
 /**
@@ -3740,6 +3813,8 @@ const s = StyleSheet.create({
     color: "#0f172a",
   },
   rowSub: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#64748b" },
+  placeLink: { flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4, alignSelf: "flex-start" },
+  placeLinkText: { fontFamily: "Manrope_500Medium", fontSize: 13, color: "#0369a1", flexShrink: 1 },
   rowPlain: { fontFamily: "Manrope_400Regular", fontSize: 13, color: "#0f172a" },
   struck: { textDecorationLine: "line-through", color: "#94a3b8" },
   rowNote: {

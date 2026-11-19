@@ -2591,7 +2591,8 @@
       "address": "Adresse",
       "mapUrl": "Karten-Link",
       "programUrl": "Programm-Link",
-      "note": "Notiz"
+      "note": "Notiz",
+      "noteInvited": "Für Eingeladene"
     },
     "placeholders": {
       "title": "Titel eingeben",
@@ -2807,8 +2808,8 @@
         "branch_representative_visit": "Die Zusammenkunft findet meist mit Änderungen statt — welche, geben Sie im nächsten Schritt an",
         "other": "Arbeitseinsatz, Gruppentreffen… Betrifft die Zusammenkünfte nur, wenn Sie es angeben",
         "campaign": "Tage oder Wochen; die Zusammenkünfte bleiben, wie sie sind. Hilfspioniere können 15 Stunden wählen dürfen",
-        "kingdom_ministry_school_elders": "Nur für Älteste sichtbar und angekündigt; Zusammenkünfte wie üblich",
-        "kingdom_ministry_school_servants": "Nur für Dienstamtgehilfen sichtbar und angekündigt; Zusammenkünfte wie üblich",
+        "kingdom_ministry_school_elders": "Nur für Älteste sichtbar und angekündigt; an den Schultagen als abwesend eingetragen",
+        "kingdom_ministry_school_servants": "Nur für Dienstamtgehilfen sichtbar und angekündigt; an den Schultagen als abwesend eingetragen",
         "pioneer_special_meeting": "Für allgemeine und Sonderpioniere und Missionare; Zusammenkünfte wie üblich"
       },
       "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein – im Vortragsplan unter „Zu uns“, mit dem Redner.",
@@ -2936,7 +2937,8 @@
     "warnAway": "Abwesend: {{range}}",
     "add": "Abwesenheit hinzufügen",
     "reason": {
-      "pioneerSchool": "Pionierdienstschule"
+      "pioneerSchool": "Pionierdienstschule",
+      "event": "Eingeladen zu einem Ereignis"
     },
     "fromSchool": {
       "title": "Aus der Pionierdienstschule",
@@ -2979,6 +2981,10 @@
       "week": "Eine Woche",
       "twoWeeks": "2 Wochen",
       "month": "Bis Monatsende"
+    },
+    "fromEvent": {
+      "title": "Aus einer Einladung",
+      "body": "Diese Abwesenheit stammt aus einem Ereignis, zu dem der Bruder eingeladen ist. Um sie zu ändern, das Ereignis ändern."
     }
   },
   "home": {
@@ -3214,6 +3220,10 @@
       "title": "Pionierdienstschule",
       "short": "Pionierdienstschule",
       "yourDays": "Ihre Tage: {{days}}"
+    },
+    "event": {
+      "route": "Route",
+      "atSchool": "An diesem Tag sind Sie in der Schule"
     }
   },
   "halls": {
@@ -6349,7 +6359,8 @@
       "CO_VISIT_TEMPLATE_NO_SOURCE": "Es gibt keinen früheren Besuch, mit dem man beginnen könnte.",
       "CO_VISIT_PASTORAL_ELDERS": "Hirtenbesuche planen nur Älteste.",
       "CO_VISIT_NO_WIFE": "Die Frau des Kreisaufsehers kommt diesmal nicht — schalte „Kommt mit seiner Frau“ beim Besuch ein.",
-      "CO_VISIT_WIFE_COMES": "Die Frau des Kreisaufsehers kommt — ihre Einträge bleiben."
+      "CO_VISIT_WIFE_COMES": "Die Frau des Kreisaufsehers kommt — ihre Einträge bleiben.",
+      "ABSENCE_FROM_EVENT": "Diese Abwesenheit stammt aus einer Einladung zu einem Ereignis. Bitte das Ereignis ändern."
     }
   },
   "stage": {

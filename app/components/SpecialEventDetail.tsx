@@ -34,6 +34,8 @@ import {
   VisitWeek,
 } from './EventDetailSections';
 import { programmeLinkOf } from '../lib/event-view';
+import { routeLink } from '../lib/route-link';
+import { inviteesOf } from '../lib/invitations';
 import { usePermissions } from '../lib/permissions';
 import { MeetingChangeNote } from './MeetingChangeNote';
 import { confirm } from './ConfirmHost';
@@ -429,14 +431,28 @@ export function SpecialEventDetail({
         </View>
       ) : null}
 
+      {/* The address opens the way there (19 November 2026): the map link
+          when the keeper pasted one, else directions to the address. */}
       {event.address && !isCongress ? (
-        <InfoRow label={t('specialEvents.fields.address')} value={event.address} />
+        <AddressRow
+          label={t('specialEvents.fields.address')}
+          address={event.address}
+          mapUrl={event.mapUrl}
+          hint={t('home.event.route')}
+        />
       ) : null}
       {event.note ? (
-        <InfoRow label={t('specialEvents.fields.note')} value={event.note} />
+        <InfoRow
+          label={
+            inviteesOf(event.type)
+              ? t('specialEvents.fields.noteInvited')
+              : t('specialEvents.fields.note')
+          }
+          value={event.note}
+        />
       ) : null}
 
-      {event.mapUrl && !isCongress ? (
+      {event.mapUrl && !isCongress && !event.address ? (
         <LinkButton
           label={t('specialEvents.actions.openMap')}
           url={event.mapUrl}
@@ -515,6 +531,36 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function AddressRow({
+  label,
+  address,
+  mapUrl,
+  hint,
+}: {
+  label: string;
+  address: string;
+  mapUrl: string | null;
+  hint: string;
+}) {
+  const url = routeLink(address, mapUrl);
+  if (!url) return <InfoRow label={label} value={address} />;
+  return (
+    <Pressable
+      style={styles.infoRow}
+      onPress={() => void Linking.openURL(url).catch(() => {})}
+      accessibilityRole="link"
+      accessibilityLabel={`${label}: ${address}, ${hint}`}
+    >
+      <Text style={styles.infoLabel}>{label}</Text>
+      <View style={styles.addressLine}>
+        <Ionicons name="navigate-outline" size={16} color="#0369a1" />
+        <Text style={styles.addressText}>{address}</Text>
+      </View>
+      <Text style={styles.addressHint}>{hint}</Text>
+    </Pressable>
+  );
+}
+
 function LinkButton({ label, url }: { label: string; url: string }) {
   return (
     <Pressable style={styles.link} onPress={() => Linking.openURL(url)}>
@@ -525,6 +571,9 @@ function LinkButton({ label, url }: { label: string; url: string }) {
 
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: '#f1f5f9' },
+  addressLine: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  addressText: { fontFamily: 'Manrope_500Medium', fontSize: 16, color: '#0369a1', flexShrink: 1 },
+  addressHint: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 2 },
   container: { padding: 16 },
   error: { fontFamily: 'Manrope_400Regular', color: '#b91c1c' },
   problem: { color: '#b45309', marginTop: 8, textAlign: 'center' },

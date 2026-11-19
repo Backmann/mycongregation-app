@@ -4268,6 +4268,13 @@ export interface Absence {
   talkExchangeId?: string | null;
   /** The pioneer school's duty this absence comes from — the reason itself. */
   pioneerSchoolDutyId?: string | null;
+  /**
+   * The event for the invited it comes from (19 November 2026): the Kingdom
+   * Ministry School marks its brothers away. Changed with the event only.
+   */
+  specialEventId?: string | null;
+  /** That event's kind, sent with it so the reason can be named. */
+  specialEventType?: string | null;
   startDate: string;
   endDate: string | null;
   note: string | null;
