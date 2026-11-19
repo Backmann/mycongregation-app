@@ -89,7 +89,7 @@ import {
   buildTimeline,
   clockPlus,
 } from "../../../lib/home-timeline";
-import { digestHome, entryTime, isOver, isOwnEntry, isPlainMeeting, isWeekChore, splitHome } from "../../../lib/home-digest";
+import { awaySegments, digestHome, entryTime, isOver, isOwnEntry, isSlimDay, isWeekChore, pickThen, splitHome } from "../../../lib/home-digest";
 import { partDisplay } from "../../../lib/part-display";
 import { MyGlowRow } from "../../../components/MyGlowRow";
 import { WindowsPlanDialog } from "../../../components/WindowsPlan";
@@ -150,7 +150,6 @@ import { entryAgendaIds, unshownCount } from "../../../lib/home-changes";
  * names the role and puts the topic under it.
  */
 /** Two columns from this width; the content never grows past MAX_WIDTH. */
-const WIDE_FROM = 900;
 const WIDE_CONTENT = 760;
 const MAX_WIDTH = 1000;
 const NEAR_DAYS = 14;
@@ -1241,19 +1240,23 @@ function ThenBlock({ entry }: { entry: MeetingEntry }) {
   const p = entry.myParts.find((x) => x.partnerName && !x.isDuty);
   if (!p) return null;
   return (
-    <View style={s.thenBox}>
+    <Pressable
+      onPress={() => openEntry(entry)}
+      style={({ pressed }) => [s.thenBox, pressed && { opacity: 0.7 }]}
+      accessibilityRole="button"
+    >
       <Text style={s.thenLabel}>
         {t("home.next.then", { when: shortDay(entry.dateISO, i18n.language) })}
       </Text>
       <View style={s.thenLine}>
-        <Text style={s.thenName}>{partText(p, t)}</Text>
+        <Text style={s.thenName}>{p.label ?? p.title}</Text>
         {p.offsetMin != null && clockPlus(entry.time, p.offsetMin) ? (
           <Text style={s.thenTime}>{clockPlus(entry.time, p.offsetMin)}</Text>
         ) : null}
       </View>
       <Text style={s.thenSub}>{t("home.next.pair", { name: p.partnerName })}</Text>
       <PairPrep agendaId={p.agendaId} partName={p.label ?? p.title} compact />
-    </View>
+    </Pressable>
   );
 }
 
@@ -2149,6 +2152,9 @@ function EntryBody({
         {coVisitPlace(it) ? (
           <Text style={s.rowSub}>{coVisitPlace(it)}</Text>
         ) : null}
+        {/* The instruction for it, as the lunch row of «Мои назначения»
+            said it — that row is no longer drawn twice (19 November 2026). */}
+        {it.note ? <Text style={s.rowSub}>{it.note}</Text> : null}
       </>
     );
   }
@@ -2268,13 +2274,13 @@ function SlimDay({
   group,
   todayISO,
   nowHM,
-  isNextDay,
+  nextKey,
   dim = false,
 }: {
   group: DayGroup;
   todayISO: string;
   nowHM: string;
-  isNextDay: boolean;
+  nextKey: string | null;
   dim?: boolean;
 }) {
   const { t, i18n } = useTranslation();
@@ -2288,12 +2294,14 @@ function SlimDay({
   );
   const field = meetings.filter((m) => m.kind === "field_service");
   const others = meetings.filter((m) => m.kind !== "field_service");
-  const lines: { key: string; name: string; time: string; past: boolean; en: TimelineEntry }[] = [
+  const fieldNext = field.find((m) => m.key === nextKey);
+  const lines: { key: string; name: string; time: string; past: boolean; next: boolean; en: TimelineEntry }[] = [
     ...others.map((m) => ({
       key: m.key,
       name: t(m.kind === "midweek" ? "home.slim.midweek" : "home.slim.weekend"),
       time: m.time,
       past: isOver(m, todayISO, nowHM),
+      next: m.key === nextKey,
       en: m as TimelineEntry,
     })),
     ...(field.length
@@ -2303,20 +2311,22 @@ function SlimDay({
             name: t("home.slim.field"),
             time: field.map((m) => m.time).join(" · "),
             past: field.every((m) => isOver(m, todayISO, nowHM)),
-            en: field[0] as TimelineEntry,
+            next: !!fieldNext,
+            // The one of his, if one is: the line opens that meeting.
+            en: (fieldNext ?? field[0]) as TimelineEntry,
           },
         ]
       : []),
   ];
+  const dayLabel = d.toLocaleDateString(i18n.language, { weekday: "long", day: "numeric", month: "long" });
   const tone = toneOf(group.entries[0]);
-  const isToday = group.dateISO === todayISO;
-  const ink = isToday ? "#ffffff" : MEETING_INK[tone];
+  const ink = MEETING_INK[tone];
   return (
     <View style={[s.slimDay, dim && { opacity: 0.55 }]}>
       <View
         style={[
           s.slimTile,
-          { backgroundColor: isToday ? "#0f172a" : MEETING_TILE[tone] },
+          { backgroundColor: MEETING_TILE[tone] },
         ]}
       >
         <Text style={[s.slimTileDay, { color: ink }]}>{d.getDate()}</Text>
@@ -2329,7 +2339,14 @@ function SlimDay({
             onPress={() => openEntry(l.en)}
             style={({ pressed }) => [pressed && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel={`${l.name}, ${l.time}`}
+            accessibilityLabel={[
+              dayLabel,
+              l.name,
+              l.time,
+              l.past ? t("home.list.pillPast") : l.next ? t("home.list.pillNext") : null,
+            ]
+              .filter(Boolean)
+              .join(", ")}
           >
             <View style={s.slimLine}>
               <Text style={[s.slimName, l.past && s.slimPast]}>{l.name}</Text>
@@ -2337,7 +2354,7 @@ function SlimDay({
             </View>
             {l.past ? (
               <Text style={[s.pill, s.pillPast]}>{t("home.list.pillPast")}</Text>
-            ) : isNextDay && l.en.type === "meeting" && isOwnEntry(l.en) ? (
+            ) : l.next ? (
               <Text style={[s.pill, s.pillNext]}>{t("home.list.pillNext")}</Text>
             ) : null}
           </Pressable>
@@ -2880,22 +2897,8 @@ export default function HomeScreen() {
       month: "long",
     });
 
-  // «Следом» (variant A): the nearest own part with a partner after the card,
-  // within the two weeks.
-  const thenEntry: MeetingEntry | null = (() => {
-    if (!digest.next || digest.nextIsFar) return null;
-    const after = data.timeline.near
-      .flatMap((g) => g.entries)
-      .filter(
-        (en): en is MeetingEntry =>
-          en.type === "meeting" &&
-          en.key !== digest.next!.key &&
-          en.dateISO >= digest.next!.dateISO &&
-          en.myParts.some((p) => !!p.partnerName && !p.isDuty),
-      );
-    return after[0] ?? null;
-  })();
-
+  // «Следом» (variant A): lib/home-digest.ts pickThen.
+  const thenEntry = pickThen(data.timeline.near, digest.next, digest.nextIsFar);
   const next = data.loading ? (
     <View style={s.section}>
       <SectionLabel>{t("home.next.title")}</SectionLabel>
@@ -2974,10 +2977,9 @@ export default function HomeScreen() {
         {aheadShown.map((en, i) => (
           <Fragment key={en.key}>
           {i === 0 || aheadShown[i - 1].dateISO.slice(0, 7) !== en.dateISO.slice(0, 7) ? (
-            <Text style={s.monthLabel}>{monthName(en.dateISO)}</Text>
+            <Text style={s.monthLabel} accessibilityRole="header">{monthName(en.dateISO)}</Text>
           ) : null}
           <DayRow
-            key={en.key}
             group={{ dateISO: en.dateISO, entries: [en] }}
             nextKey={null}
             todayISO={todayISO}
@@ -3010,29 +3012,10 @@ export default function HomeScreen() {
     </View>
   );
 
-  // An away-period is one band over its days (variant A): its own row is the
-  // band's head; field service in it is left out — he is not there.
-  const listSegments: { away: Absence | null; groups: DayGroup[] }[] = [];
-  {
-    let cur: { away: Absence | null; groups: DayGroup[] } = { away: null, groups: [] };
-    for (const g of meetingsNear) {
-      const ab = g.entries.find((en) => en.type === "absence");
-      if (ab && ab.type === "absence") {
-        if (cur.groups.length) listSegments.push(cur);
-        cur = { away: ab.absence, groups: [] };
-      } else if (cur.away && g.dateISO > (cur.away.endDate ?? cur.away.startDate)) {
-        listSegments.push(cur);
-        cur = { away: null, groups: [] };
-      }
-      const entries = g.entries.filter(
-        (en) =>
-          en.type !== "absence" &&
-          !(cur.away && isPlainMeeting(en) && en.type === "meeting" && en.kind === "field_service"),
-      );
-      if (entries.length) cur.groups.push({ ...g, entries });
-    }
-    if (cur.groups.length || cur.away) listSegments.push(cur);
-  }
+  // An away-period is one band over its days (variant A): lib/home-digest.ts
+  // awaySegments.
+  const listSegments = awaySegments(meetingsNear);
+  const nk = digest.next && !digest.nextIsFar ? digest.next.key : null;
 
   const list = (
     <View style={s.section}>
@@ -3062,46 +3045,47 @@ export default function HomeScreen() {
         </View>
       ) : (
         <View style={s.listCard}>
-        {listSegments.map((seg, si) => {
-          const rows = seg.groups.map((g) => {
-            const nk = digest.next && !digest.nextIsFar ? digest.next.key : null;
-            const own = g.entries.filter(isOwnEntry);
-            const slim =
-              g.entries.every(
-                (en) => isPlainMeeting(en) || (en.key === nk && en.type === "meeting"),
-              ) && own.every((en) => en.key === nk);
-            return slim ? (
-              <SlimDay
-                key={g.dateISO}
-                group={g}
-                todayISO={todayISO}
-                nowHM={nowHM}
-                isNextDay={own.length > 0}
-                dim={!!seg.away}
-              />
-            ) : (
-              <DayRow
-                key={g.dateISO}
-                group={g}
-                nextKey={nk}
-                todayISO={todayISO}
-                myGroupName={data.myGroupName}
-                myName={data.myName}
-                onWindows={setWindows}
-                compact
-              />
+        {listSegments.map((seg) => {
+          const rows = seg.groups
+            .filter((g) => g.entries.length > 0)
+            .map((g) =>
+              isSlimDay(g, nk) ? (
+                <SlimDay
+                  key={g.dateISO}
+                  group={g}
+                  todayISO={todayISO}
+                  nowHM={nowHM}
+                  nextKey={nk}
+                  dim={seg.away.length > 0}
+                />
+              ) : (
+                <DayRow
+                  key={g.dateISO}
+                  group={g}
+                  nextKey={nk}
+                  todayISO={todayISO}
+                  myGroupName={data.myGroupName}
+                  myName={data.myName}
+                  onWindows={setWindows}
+                  compact
+                />
+              ),
             );
-          });
-          return seg.away ? (
-            <View key={`away-${si}`} style={s.awayBand}>
-              <View style={s.awayHead}>
-                <Text style={s.awayTitle}>{t("home.list.away")}</Text>
-                <Text style={s.awayRange}>{absenceRange(seg.away, i18n.language)}</Text>
-              </View>
+          const segKey = `${seg.groups[0]?.dateISO ?? ""}|${seg.away.map((a) => a.id).join(",")}`;
+          return seg.away.length ? (
+            <View key={segKey} style={s.awayBand}>
+              {seg.away.map((a) => (
+                <View key={a.id} style={s.awayHead}>
+                  <Text style={s.awayTitle} accessibilityRole="header">
+                    {[t("home.list.away"), absenceNote(a, t)].filter(Boolean).join(" · ")}
+                  </Text>
+                  <Text style={s.awayRange}>{absenceRange(a, i18n.language)}</Text>
+                </View>
+              ))}
               {rows}
             </View>
           ) : (
-            <Fragment key={`seg-${si}`}>{rows}</Fragment>
+            <Fragment key={segKey}>{rows}</Fragment>
           );
         })}
         <Pressable

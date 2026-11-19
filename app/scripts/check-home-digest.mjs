@@ -730,6 +730,60 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   check('24б′ и свой номер для «Изменено»', far?.myParts?.[0]?.agendaId ?? null, 'part:far2');
 }
 
+// --- 25. Variant A: one line, the away band, «Следом» (19 November 2026) ----
+{
+  const { isSlimDay, awaySegments, pickThen } = await import(pathToFileURL(join(out, 'home-digest.mjs')));
+  const m = (key, dateISO, extra = {}) => ({ type: 'meeting', key, dateISO, kind: 'midweek', time: '19:00', myParts: [], weeklyCleaning: false, ...extra });
+  const fs = (key, dateISO, extra = {}) => m(key, dateISO, { kind: 'field_service', time: '10:00', ...extra });
+  const mine = [{ label: 'x', partKey: 'x' }];
+  // а. One line only when nothing is his but the card, and nothing different.
+  check('25а день без своего — одной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd'), fs('b', 'd')] }, null), true);
+  check('25б своё не на карточке — полной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine })] }, null), false);
+  check('25в своё на карточке — одной строкой', isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine })] }, 'a'), true);
+  check('25г карточка с переменой (Вечеря, перенос) — полной строкой',
+    [{ memorial: { id: 'x' } }, { movedFrom: '2026-01-01' }, { notice: 'n' }, { occasion: { id: 'e' } }].map((x) =>
+      isSlimDay({ dateISO: 'd', entries: [m('a', 'd', { myParts: mine, ...x })] }, 'a')),
+    [false, false, false, false]);
+  check('25д не встреча (уборка, тележка) — полной строкой', isSlimDay({ dateISO: 'd', entries: [{ type: 'task', key: 't', dateISO: 'd', task: { item: { kind: 'cart' } } }] }, 't'), false);
+  // б. The away band: covers its days, hides plain field service, never his own.
+  const ab = (id, startDate, endDate, dateISO) => ({ type: 'absence', key: `abs-${id}`, dateISO, absence: { id, startDate, endDate } });
+  const groups = [
+    { dateISO: '2026-11-19', entries: [ab('A', '2026-11-10', '2026-11-20', '2026-11-19'), fs('f1', '2026-11-19')] },
+    { dateISO: '2026-11-20', entries: [fs('f2', '2026-11-20', { myParts: mine })] },
+    { dateISO: '2026-11-21', entries: [fs('f3', '2026-11-21')] },
+    { dateISO: '2026-11-25', entries: [ab('B', '2026-11-25', null, '2026-11-25')] },
+    { dateISO: '2026-11-26', entries: [m('w', '2026-11-26')] },
+  ];
+  const seg = awaySegments(groups);
+  const shape = seg.map((sg) => [sg.away.map((a) => a.id).join('+'), sg.groups.map((g) => [g.dateISO, g.entries.map((e) => e.key)])]);
+  check('25е полосы: уехал до сегодня, вернулся; отсутствие без конца — один день',
+    shape,
+    [
+      ['A', [['2026-11-19', []], ['2026-11-20', ['f2']]]],
+      ['', [['2026-11-21', ['f3']]]],
+      ['B', [['2026-11-25', []]]],
+      ['', [['2026-11-26', ['w']]]],
+    ]);
+  // Nothing that carries «Изменено» is ever left out: Home marks changes seen.
+  const kept = new Set(seg.flatMap((sg) => sg.groups.flatMap((g) => g.entries.map((e) => e.key))));
+  const dropped = groups.flatMap((g) => g.entries).filter((e) => e.type !== 'absence' && !kept.has(e.key));
+  check('25ж из полосы уходит только чужая проповедь', dropped.map((e) => [e.key, e.myParts.length]), [['f1', 0]]);
+  const two = awaySegments([
+    { dateISO: '2026-11-19', entries: [ab('A', '2026-11-19', '2026-11-22', '2026-11-19'), ab('C', '2026-11-19', '2026-11-19', '2026-11-19')] },
+    { dateISO: '2026-11-20', entries: [m('w2', '2026-11-20')] },
+  ]);
+  check('25з два отсутствия в один день — оба в голове полосы', two.map((sg) => sg.away.map((a) => a.id)), [['A', 'C'], ['A']]);
+  // в. «Следом» — after the card, a part with a partner.
+  const pair = [{ label: 'p', partnerName: 'N', partKey: 'p' }];
+  const near = [
+    { dateISO: '2026-11-25', entries: [m('same-earlier', '2026-11-25', { time: '18:00', myParts: pair }), m('card', '2026-11-25', { myParts: mine })] },
+    { dateISO: '2026-12-02', entries: [m('later', '2026-12-02', { myParts: pair })] },
+  ];
+  const card = near[0].entries[1];
+  check('25и «Следом» — не раньше карточки', pickThen(near, card, false)?.key ?? null, 'later');
+  check('25к карточка дальше двух недель — без «Следом»', pickThen(near, card, true), null);
+}
+
 if (failures) {
   console.error(`\nГлавная: ${failures} из ${passed + failures} не сходятся.`);
   process.exit(1);

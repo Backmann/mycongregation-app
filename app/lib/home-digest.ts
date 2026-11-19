@@ -21,7 +21,7 @@
  */
 import type { Absence, SpecialEvent } from './api';
 import { addDays, formatDateISO } from './dates';
-import type { DayGroup, Timeline, TimelineEntry } from './home-timeline';
+import type { DayGroup, MeetingEntry, Timeline, TimelineEntry } from './home-timeline';
 import { isCongressEvent } from './week-rules';
 import { inviteesOf } from './invitations';
 
@@ -189,15 +189,6 @@ export interface HomeSplit {
   ahead: TimelineEntry[];
 }
 
-/** A row of the person's own that is not a meeting. */
-export function isOwnElsewhere(en: TimelineEntry): boolean {
-  return (
-    en.type === 'task' ||
-    en.type === 'outgoing_talk' ||
-    en.type === 'co_visit' ||
-    en.type === 'absence'
-  );
-}
 
 export function splitHome(timeline: Timeline, nextKey: string | null): HomeSplit {
   // Variant A (draft, 19 November 2026): the two weeks are ONE list, the
@@ -211,14 +202,15 @@ export function splitHome(timeline: Timeline, nextKey: string | null): HomeSplit
 }
 
 /**
- * A meeting row with nothing of the person's own and nothing different about
- * it (no move, no notice, no visit, not replaced, not the Memorial): it can be
- * said in one line — its name and its hour.
+ * A meeting row with nothing different about it (no move, no notice, no
+ * visit, not replaced, not the Memorial, not cancelled) and — unless
+ * `allowOwn` — nothing of the person's own: it can be said in one line, its
+ * name and its hour.
  */
-export function isPlainMeeting(en: TimelineEntry): boolean {
+export function isPlainMeeting(en: TimelineEntry, allowOwn = false): boolean {
   return (
     en.type === 'meeting' &&
-    !isOwnEntry(en) &&
+    (allowOwn || !isOwnEntry(en)) &&
     !en.cancelled &&
     !en.movedFrom &&
     !en.movedTo &&
@@ -226,6 +218,94 @@ export function isPlainMeeting(en: TimelineEntry): boolean {
     !en.memorial &&
     !en.notice &&
     !en.fieldNote &&
-    !en.serviceOverseerVisit
+    !en.serviceOverseerVisit &&
+    !en.occasion &&
+    !en.specialTalk &&
+    !en.meetingChanged
   );
+}
+
+/**
+ * Is a day of the two weeks said in one line per meeting (variant A)? Only
+ * when every row is a plain meeting, and the only row of his own is the one
+ * on the «Ваше ближайшее» card — which says it whole, with its change marks.
+ * A row of his that is not on the card never goes into one line: Home marks
+ * changes seen once shown, and a mark not drawn would be lost.
+ */
+export function isSlimDay(g: DayGroup, nextKey: string | null): boolean {
+  return (
+    g.entries.length > 0 &&
+    g.entries.every(
+      (en) => isPlainMeeting(en) || (en.key === nextKey && isPlainMeeting(en, true)),
+    )
+  );
+}
+
+export interface ListSegment {
+  /** The away-periods covering these days; empty — not away. */
+  away: Absence[];
+  groups: DayGroup[];
+}
+
+/**
+ * The two weeks cut where being away begins and ends (variant A). A day is
+ * away when any of the person's away-periods covers it; its away-period rows
+ * become the band's head, and plain field service is left out of it — he is
+ * not there. Nothing of his own is ever left out. A day left empty stays as
+ * an empty group, so a band with no meetings still shows.
+ */
+export function awaySegments(groups: DayGroup[]): ListSegment[] {
+  const seen = new Set<string>();
+  const periods: Absence[] = [];
+  for (const g of groups)
+    for (const en of g.entries)
+      if (en.type === 'absence' && !seen.has(en.absence.id)) {
+        seen.add(en.absence.id);
+        periods.push(en.absence);
+      }
+  const covering = (d: string) =>
+    periods.filter((a) => a.startDate <= d && d <= (a.endDate ?? a.startDate));
+  const out: ListSegment[] = [];
+  let curKey: string | null = null;
+  for (const g of groups) {
+    const away = covering(g.dateISO);
+    const key = away.map((a) => a.id).join('|');
+    const entries = g.entries.filter(
+      (en) =>
+        en.type !== 'absence' &&
+        !(
+          away.length > 0 &&
+          en.type === 'meeting' &&
+          en.kind === 'field_service' &&
+          isPlainMeeting(en)
+        ),
+    );
+    if (key !== curKey) {
+      out.push({ away, groups: [] });
+      curKey = key;
+    }
+    out[out.length - 1].groups.push({ ...g, entries });
+  }
+  return out.filter((sg) => sg.away.length > 0 || sg.groups.some((g) => g.entries.length > 0));
+}
+
+/**
+ * «Следом» (variant A): the nearest own meeting after the card, within the
+ * two weeks, that holds a part with a partner — the one reason to look past
+ * the nearest thing: agreeing on preparing takes days.
+ */
+export function pickThen(
+  near: DayGroup[],
+  next: TimelineEntry | null,
+  nextIsFar: boolean,
+): MeetingEntry | null {
+  if (!next || nextIsFar) return null;
+  const nextTime = entryTime(next) ?? '';
+  for (const en of flat(near)) {
+    if (en.type !== 'meeting' || en.key === next.key) continue;
+    const after =
+      en.dateISO > next.dateISO || (en.dateISO === next.dateISO && (en.time || '') > nextTime);
+    if (after && en.myParts.some((p) => !!p.partnerName && !p.isDuty)) return en;
+  }
+  return null;
 }
