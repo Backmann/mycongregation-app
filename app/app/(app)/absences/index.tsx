@@ -44,7 +44,7 @@ type Kind = 'now' | 'school' | 'trip' | 'own';
 
 function kindOf(a: Absence, today: string): Kind {
   if (a.startDate <= today && (a.endDate ?? a.startDate) >= today) return 'now';
-  if (a.pioneerSchoolDutyId) return 'school';
+  if (a.pioneerSchoolDutyId || a.specialEventId) return 'school';
   if (a.talkExchangeId) return 'trip';
   return 'own';
 }
@@ -300,7 +300,7 @@ function Timeline({
               const k = kindOf(a, today);
               const s = pos(a.startDate);
               const e = pos(a.endDate ?? a.startDate) + 1;
-              const note = a.pioneerSchoolDutyId ? '' : a.note?.trim() ?? '';
+              const note = a.pioneerSchoolDutyId ? '' : a.specialEventId ? absenceNote(a, t) ?? '' : a.note?.trim() ?? '';
               return (
                 <View key={a.id} style={[styles.bar, { left: pct(s), width: pct(Math.max(1, e - s)), backgroundColor: KIND[k].bar }]}>
                   {e - s >= 5 && note ? (

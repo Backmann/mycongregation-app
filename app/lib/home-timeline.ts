@@ -374,6 +374,11 @@ export interface TaskEntry {
    */
   schoolDays?: string[];
   schoolFirst?: boolean;
+  /**
+   * The school he is invited to on the day of this assignment of his
+   * (19 November 2026): the row says so — a fact, nothing to press.
+   */
+  awayConflict?: Absence | null;
 }
 
 /** One field-service meeting of a visit day, for the visit's row. */
@@ -1246,16 +1251,29 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       if (a.pioneerSchoolDutyId && schoolDays.has(a.startDate)) consumedAbsenceIds.add(a.id);
   }
 
+  // ---- The Kingdom Ministry School's absence: the school's row says it ----
+  // Each invited brother is away on its days (19 November 2026); his Home
+  // has the school itself, not a second «В отъезде» row for it.
+  for (const a of absences) if (a.specialEventId) consumedAbsenceIds.add(a.id);
+
   // ---- A part of mine on a day I am away ----
+  // The school's absence is spoken by its row, but a part of his on its day
+  // is still a clash, and the part's row says it.
+  const clashOn = (dateISO: string) =>
+    absences.find(
+      (a) =>
+        (!consumedAbsenceIds.has(a.id) || !!a.specialEventId) &&
+        a.startDate <= dateISO &&
+        (a.endDate ?? a.startDate) >= dateISO,
+    ) ?? null;
   for (const en of [...entries, ...farEntries]) {
+    if (en.type === 'task' && !en.task.weekOnly) {
+      const a = clashOn(en.dateISO);
+      en.awayConflict = a?.specialEventId ? a : null;
+      continue;
+    }
     if (en.type !== 'meeting' || en.myParts.length === 0) continue;
-    en.awayConflict =
-      absences.find(
-        (a) =>
-          !consumedAbsenceIds.has(a.id) &&
-          a.startDate <= en.dateISO &&
-          (a.endDate ?? a.startDate) >= en.dateISO,
-      ) ?? null;
+    en.awayConflict = clashOn(en.dateISO);
   }
 
   // ---- My away-periods (quiet context, "тебя нет") ----

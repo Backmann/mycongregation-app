@@ -11,9 +11,19 @@ import type { Absence } from './api';
  * note. A note a person typed is theirs and is shown as typed.
  */
 export function absenceNote(
-  a: Pick<Absence, 'note'> & { pioneerSchoolDutyId?: string | null },
+  a: Pick<Absence, 'note'> & {
+    pioneerSchoolDutyId?: string | null;
+    specialEventId?: string | null;
+    specialEventType?: string | null;
+  },
   t: TFunction,
 ): string | null {
   if (a.pioneerSchoolDutyId) return t('absences.reason.pioneerSchool');
+  // The Kingdom Ministry School writes one for each invited brother
+  // (19 November 2026): named by the school's kind.
+  if (a.specialEventId)
+    return a.specialEventType
+      ? t(`specialEvents.types.${a.specialEventType}`, t('absences.reason.event'))
+      : t('absences.reason.event');
   return a.note?.trim() || null;
 }

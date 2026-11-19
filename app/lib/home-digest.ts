@@ -142,7 +142,11 @@ export function digestHome(input: {
           (a.endDate ?? a.startDate) >= next.dateISO &&
           // Away on the day of a talk elsewhere is no news: the trip IS the
           // absence, however many records describe it (22 October 2026).
-          next.type !== 'outgoing_talk',
+          next.type !== 'outgoing_talk' &&
+          // Nor the school he is invited to, on its own card, nor the
+          // pioneer school on its own: they ARE the absence (19 November).
+          !(next.type === 'event' && a.specialEventId === next.event.id) &&
+          !(next.type === 'task' && next.task.item.kind === 'pioneer_school' && a.pioneerSchoolDutyId),
       ) ?? null)
     : null;
 

@@ -38,6 +38,7 @@ const MODULES = [
   'group-name',
   'home-changes',
   'date-range',
+  'route-link',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -876,6 +877,51 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
   // в. The hall's name is not said twice.
   const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
   check('27ж адрес без повтора названия зала', /function hallPlace/.test(home) && /hallPlace\(it\.location\)/.test(home), true);
+}
+
+// --- 28. The Kingdom Ministry School (19 November 2026) -----------------------
+{
+  // а. The school marks him away on its day: Home has the school's own row,
+  // not a second «В отъезде» row for it; the card on the school is not
+  // warned about the school itself; his field service lead that morning
+  // says he is at the school.
+  const ev = { id: 'kms', type: 'kingdom_ministry_school_elders', date: '2026-10-03', endDate: null, title: 'Школа Священного Служения для старейшин', time: '09:30', timeEnd: '16:00', address: 'Musterstraße 5, Hamm', note: 'Взять Библию' };
+  const abs = { id: 'abs-kms', startDate: '2026-10-03', endDate: null, note: null, specialEventId: 'kms', specialEventType: 'kingdom_ministry_school_elders' };
+  const lead = { kind: 'field_service', sortDate: '2026-10-03', weekStartDate: '2026-09-28', dayOfWeek: 6, time: '09:30', label: 'conduct' };
+  const { timeline, digest } = run({ me: 'p-x', group: null, items: [lead], absences: [abs], events: [ev] });
+  const all = [...timeline.near, ...timeline.far].flatMap((g) => g.entries);
+  check('28а школа своей строкой, без «в отъезде» за неё', [all.some((e) => e.type === 'event' && e.event.id === 'kms'), all.some((e) => e.type === 'absence')], [true, false]);
+  const fs = all.find((e) => e.type === 'meeting' && e.kind === 'field_service' && e.myParts.length);
+  check('28б его встреча для проповеди в день школы — помечена', fs?.awayConflict?.id, 'abs-kms');
+  check('28н карточка ближайшего: «в этот день вы на школе»', [digest.next?.dateISO, digest.awayDuring?.id], ['2026-10-03', 'abs-kms']);
+  // The pioneer school's own card is not warned about its own absence.
+  const ps = { kind: 'pioneer_school', sortDate: '2026-09-28', date: '2026-09-28', label: 'Школа', agendaId: 'pioneer_school:S1:2026-09-28', schoolDuties: [{ type: 'av' }] };
+  const { digest: d5 } = run({ me: 'p-x', group: null, items: [ps], absences: [{ id: 'ps-abs', startDate: '2026-09-28', endDate: null, note: null, pioneerSchoolDutyId: 'd1' }] });
+  check('28о карточка Школы пионеров — без «вы в отъезде» за неё саму', [d5.next?.type, d5.awayDuring], ['task', null]);
+  // б. A field service lead on another day knows nothing of the school.
+  const other = { ...lead, sortDate: '2026-10-10', weekStartDate: '2026-10-05' };
+  const { timeline: t2 } = run({ me: 'p-x', group: null, items: [other], absences: [abs], events: [ev] });
+  const fs2 = [...t2.near, ...t2.far].flatMap((g) => g.entries).find((e) => e.myParts?.length);
+  check('28в в другой день — без пометки', fs2?.awayConflict ?? null, null);
+  // в. An ordinary away-period still makes its own row (unchanged).
+  const own = { id: 'own', startDate: '2026-10-05', endDate: '2026-10-06', note: null };
+  const { timeline: t3 } = run({ me: 'p-x', group: null, items: [], absences: [own] });
+  check('28г обычный отъезд — своей строкой, как прежде', [...t3.near, ...t3.far].flatMap((g) => g.entries).filter((e) => e.type === 'absence').map((e) => e.absence.id), ['own']);
+  // г. The way there.
+  const { routeLink } = await import(pathToFileURL(join(out, 'route-link.mjs')));
+  check('28д адрес — маршрут в картах', routeLink('Musterstraße 5, Hamm'), 'https://www.google.com/maps/dir/?api=1&destination=Musterstra%C3%9Fe%205%2C%20Hamm');
+  check('28е своя ссылка на карту — она', routeLink('x', 'https://maps.app.goo.gl/abc'), 'https://maps.app.goo.gl/abc');
+  check('28ж не веб-ссылка не открывается', routeLink('x', 'javascript:alert(1)'), 'https://www.google.com/maps/dir/?api=1&destination=x');
+  check('28з без адреса — ничего', routeLink('  ', null), null);
+  // д. The row and the screen: the address is a link, the note is for the invited.
+  const home = readFileSync(join(ROOT, 'app', '(app)', 'home', 'index.tsx'), 'utf8');
+  const detail = readFileSync(join(ROOT, 'components', 'SpecialEventDetail.tsx'), 'utf8');
+  check('28и Главная: адрес события — ссылка на маршрут', /<PlaceLink address=\{e\.address\}/.test(home), true);
+  check('28к экран события: адрес — ссылка на маршрут', /<AddressRow/.test(detail) && /routeLink\(address, mapUrl\)/.test(detail), true);
+  // е. The new name, in Russian.
+  const ru = JSON.parse(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8'));
+  check('28л название школы', [ru.specialEvents.types.kingdom_ministry_school_elders, ru.specialEvents.types.kingdom_ministry_school_servants], ['Школа Священного Служения для старейшин', 'Школа Священного Служения для служебных помощников']);
+  check('28м старого названия нигде нет', /царственного служения/i.test(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8')), false);
 }
 
 if (failures) {

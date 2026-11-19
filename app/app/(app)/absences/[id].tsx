@@ -103,6 +103,8 @@ export default function AbsenceDetailScreen() {
    * duty there. Deleting it here broke the school's later assignments.
    */
   const fromSchool = !!data.pioneerSchoolDutyId;
+  /** Written by an event he is invited to (19 November 2026): it follows it. */
+  const fromEvent = !!data.specialEventId;
 
   if (editing) {
     return (
@@ -186,7 +188,21 @@ export default function AbsenceDetailScreen() {
         </View>
       ) : null}
 
-      {canWrite && !fromTrip && !fromSchool ? (
+      {fromEvent ? (
+        <View style={styles.fromTrip}>
+          <Ionicons name="school-outline" size={16} color="#0369a1" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.fromTripTitle}>
+              {t("absences.fromEvent.title")}
+            </Text>
+            <Text style={styles.fromTripText}>
+              {t("absences.fromEvent.body")}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {canWrite && !fromTrip && !fromSchool && !fromEvent ? (
         <View style={styles.actions}>
           {removed ? (
             <Pressable
