@@ -554,6 +554,7 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     ['old-11', 'new-12', 'fs-14', 'we-15'].map((k) => isPlainMeeting(timeline.near.flatMap((g) => g.entries).find((e) => e.key === k))),
     [false, false, false, false]);
   check('19ж обычная встреча без своего — одной строкой', isPlainMeeting(mtg('plain', '2026-11-18')), true);
+  check('19з встреча с номером для «Изменено» — не одной строкой', isPlainMeeting(mtg('ids', '2026-11-18', { agendaIds: ['part:x'] })), false);
 }
 
 // --- 20. «Изменено» finds its row: each row lists its own agenda ids --------
