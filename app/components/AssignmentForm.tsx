@@ -1,6 +1,7 @@
 import { useBottomRoom } from "./Sheet";
 import { KeyboardScroll } from "./KeyboardScroll";
 import { useEffect, useMemo, useState } from "react";
+import { confirm } from "./ConfirmHost";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ActivityIndicator,
@@ -112,6 +113,11 @@ export function AssignmentForm({
   const debounceBox = useState(() => ({
     timer: null as ReturnType<typeof setTimeout> | null,
     pending: null as Partial<CreateAssignmentInput> | null,
+    // The save of the part the pending edit was typed into: closing the
+    // window before the debounce fired used to save the text with whatever
+    // part was open by then — or throw on none (programme audit, 20
+    // November 2026).
+    save: null as ((p: Partial<CreateAssignmentInput>) => Promise<unknown>) | null,
   }))[0];
   const instant = async (patch: Partial<CreateAssignmentInput>) => {
     if (!onInstantSave) return;
@@ -129,6 +135,7 @@ export function AssignmentForm({
   const queueInstant = (patch: Partial<CreateAssignmentInput>) => {
     if (!onInstantSave) return;
     debounceBox.pending = { ...(debounceBox.pending ?? {}), ...patch };
+    debounceBox.save = onInstantSave;
     if (debounceBox.timer) clearTimeout(debounceBox.timer);
     debounceBox.timer = setTimeout(() => {
       const p = debounceBox.pending;
@@ -146,9 +153,16 @@ export function AssignmentForm({
       debounceBox.timer = null;
     }
     const p = debounceBox.pending;
+    const save = debounceBox.save ?? onInstantSave;
     debounceBox.pending = null;
-    if (p && onInstantSave) void onInstantSave(p);
+    if (p && save) void save(p);
   };
+  // Closed with an edit still waiting: it is saved, to its own part.
+  useEffect(
+    () => () => flushInstant(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const effectiveSubmitLabel = submitLabel ?? t("common.save");
   const EVENT_TYPE_OPTIONS: { value: EventType; label: string }[] = [
     { value: "midweek", label: t("assignments.eventTypeShort.midweek") },
@@ -424,6 +438,22 @@ export function AssignmentForm({
       publicTalkId: talk?.id ?? null,
       partTitle: nextTitle ?? "",
     });
+  };
+
+  /**
+   * A theme typed by hand is a talk not from the catalogue (programme audit,
+   * 20 November 2026): the catalogue choice goes with it. Before, both
+   * stayed — the programme showed the typed theme while the talks' history
+   * recorded the catalogue number as given.
+   */
+  const onManualTheme = (v: string) => {
+    if (form.publicTalkId) {
+      setForm((prev) => ({ ...prev, publicTalkId: null, partTitle: v }));
+      queueInstant({ partTitle: v, publicTalkId: null });
+      return;
+    }
+    update("partTitle", v);
+    queueInstant({ partTitle: v });
   };
 
   const handleSpeakerTypeChange = (type: "local" | "invited") => {
@@ -715,10 +745,7 @@ export function AssignmentForm({
             <FormField
               label={t("assignments.form.field.talkThemeManual")}
               value={form.partTitle ?? ""}
-              onChangeText={(v) => {
-                update("partTitle", v);
-                queueInstant({ partTitle: v });
-              }}
+              onChangeText={onManualTheme}
               onBlur={flushInstant}
               placeholder={t("assignments.form.placeholder.talkThemeManual")}
               multiline
@@ -749,10 +776,7 @@ export function AssignmentForm({
             <FormField
               label={t("assignments.form.field.talkThemeManual")}
               value={form.partTitle ?? ""}
-              onChangeText={(v) => {
-                update("partTitle", v);
-                queueInstant({ partTitle: v });
-              }}
+              onChangeText={onManualTheme}
               onBlur={flushInstant}
               placeholder={t("assignments.form.placeholder.talkThemeManual")}
               multiline
@@ -993,9 +1017,22 @@ export function AssignmentForm({
                 styles.cancelPartLink,
                 pressed && styles.cancelPartLinkPressed,
               ]}
-              onPress={() => {
+              onPress={async () => {
                 const next =
                   form.status === "cancelled" ? "draft" : "cancelled";
+                // Cancelling is news for its brother and takes the part out
+                // of everybody's programme: asked first, on every device
+                // (programme audit, 20 November 2026). Giving back is not.
+                if (
+                  next === "cancelled" &&
+                  !(await confirm({
+                    title: t("assignments.form.cancelConfirm.title"),
+                    body: t("assignments.form.cancelConfirm.body"),
+                    confirmLabel: t("assignments.form.cancelPart"),
+                    danger: true,
+                  }))
+                )
+                  return;
                 update("status", next);
                 void instant({ status: next });
               }}

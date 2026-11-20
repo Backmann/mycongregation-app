@@ -121,6 +121,7 @@ const STEPS = [
   // отсюда часы, режим ведения — обратный отсчёт; сдвиг на минуту менял бы
   // и то и другое молча.
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
+  ['Составление программы', 'node', ['scripts/check-programme-editor.mjs']],
   // The coordinator's ready messages, agreed word for word (25.10.2026).
   ['Готовые сообщения координатора речей', 'node', ['scripts/check-talk-messages.mjs']],
   // A screen nothing leads to (26.10.2026): `/schedule/[id]` lived on unseen.

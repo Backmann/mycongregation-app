@@ -51,6 +51,7 @@ import {
   getEventTypeLabel,
   getPartLabel,
   PARTS_BY_EVENT,
+  CO_VISIT_PART_KEYS,
   buildPartNumbers,
   resolveSubsection,
   buildMidweekPartTimes,
@@ -61,6 +62,7 @@ import {
   Subsection,
   SUBSECTIONS,
 } from "../../../lib/parts";
+import { refreshProgramme as refreshProgrammeOf } from "../../../lib/programme-refresh";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { partDisplay } from "../../../lib/part-display";
@@ -236,7 +238,7 @@ function ProgrammeEditor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["special-events"] });
-      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme();
     },
   });
   const publishersQuery = useQuery({
@@ -444,24 +446,40 @@ function ProgrammeEditor() {
   });
 
 
+  /**
+   * After any change on this screen: the parts, the «N из M» badge (the
+   * server's count — it went stale until the screen reloaded, programme
+   * audit 20 November 2026) and the history the person picker ranks by.
+   * Returned, so a button can stay busy until the screen shows the result.
+   */
+  const refreshProgramme = () => refreshProgrammeOf(queryClient);
+
   const createWeekMutation = useMutation({
     mutationFn: (eventType: EventType) => {
-      const parts = PARTS_BY_EVENT[eventType] ?? [];
-      const inputs: CreateAssignmentInput[] = parts.map((p) => ({
+      // An empty meeting is the congregation's own parts (programme audit,
+      // 20 November 2026): the circuit overseer's talks are the visit's, and
+      // the server writes them into a visit week itself. Taken here too, they
+      // stood in every ordinary week — «Служебная речь районного старейшины»
+      // on a Wednesday without a visit, and a weekend that could never be
+      // «ready». Orders run 1, 2, 3… in the list's order: the list gives two
+      // parts the same default place.
+      const parts = (PARTS_BY_EVENT[eventType] ?? [])
+        .filter((p) => !CO_VISIT_PART_KEYS.has(p.key))
+        .slice()
+        .sort((a, b) => a.defaultOrder - b.defaultOrder);
+      const inputs: CreateAssignmentInput[] = parts.map((p, i) => ({
         weekStartDate: weekStartISO,
         eventType,
         partKey: p.key,
-        partOrder: p.defaultOrder,
+        partOrder: i + 1,
         partDurationMin: p.defaultDurationMin || undefined,
         status: "draft",
       }));
       return assignmentsApi.bulkCreate(inputs, { retroactive: retro });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["assignments", weekStartISO],
-      });
-    },
+    // Busy until the new week is on the screen: a second tap while it loaded
+    // made a second full set of parts.
+    onSuccess: () => refreshProgramme(),
   });
 
   // Add an extra "Living as Christians" part: place it right after the last
@@ -511,7 +529,7 @@ function ProgrammeEditor() {
       });
     },
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme();
       setEditing(created);
     },
   });
@@ -822,8 +840,13 @@ function ProgrammeEditor() {
         weekStart: weeks[0].weekStartDate,
         weekEnd: formatDateISO(addWeeks(lastMonday, 1)),
         eventType: kind,
+        // A month is up to six weeks of ~20 lines: past the server's default
+        // of 100 the last week was cut off without a word.
+        limit: 500,
       });
-      const rows = res.data ?? [];
+      // A cancelled part does not take place: the sheet on the board must
+      // not name its brother as if it did (programme audit, 20 November).
+      const rows = (res.data ?? []).filter((a) => a.status !== "cancelled");
       // Index by week + partKey for O(1) cell lookup.
       const byWeekPart = new Map<string, Assignment>();
       for (const a of rows) {
@@ -1032,7 +1055,7 @@ function ProgrammeEditor() {
     setPublishingType(eventType);
     try {
       await assignmentsApi.publish({ weekStartDate, eventType, notify });
-      await queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      await refreshProgramme();
     } catch (e) {
       // The server's own words (or lib/error-text's), on the strip every
       // other failure uses — not the library's «Request failed with status
@@ -1064,8 +1087,7 @@ function ProgrammeEditor() {
             status: "draft",
             ...(retro ? { retroactive: true } : {}),
           }),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["assignments"] }),
+    onSuccess: () => refreshProgramme(),
   });
 
   const hasMidweek = (grouped.get("midweek")?.length ?? 0) > 0;
@@ -1313,6 +1335,11 @@ function ProgrammeEditor() {
                         lock={locks?.meetings.midweek}
                         retro={retro}
                       />
+                      <AwayNote
+                        items={items}
+                        absentIds={midweekAbsentIds}
+                        publishersById={publishersById}
+                      />
                       <ConductEntry
                         week={items[0].weekStartDate}
                         chairmanPublisherId={
@@ -1397,6 +1424,11 @@ function ProgrammeEditor() {
                         lock={locks?.meetings.weekend}
                         retro={retro}
                       />
+                      <AwayNote
+                        items={programItems}
+                        absentIds={weekendAbsentIds}
+                        publishersById={publishersById}
+                      />
                       <ConductEntry
                         kind="weekend"
                         week={items[0].weekStartDate}
@@ -1416,7 +1448,12 @@ function ProgrammeEditor() {
                       />
                       <HospitalityZone
                         hospitality={hospitality}
-                        canEdit={canEditWeekendSchedule}
+                        // Not while the first choice is still being
+                        // written: a quick second one made a second line
+                        // (programme audit, 20 November 2026).
+                        canEdit={
+                          canEditWeekendSchedule && !hospitalityMutation.isPending
+                        }
                         publishersById={publishersById}
                         activityById={activityById}
                         weekStartISO={weekStartISO}
@@ -1597,6 +1634,54 @@ const SUBSECTION_ORDER: Subsection[] = [
   "apply_yourself",
   "christian_life",
 ];
+
+/**
+ * WHO IS AWAY ON THE MEETING'S DAY, SAID AT THE TOP (programme audit, 20
+ * November 2026). A brother away was a small aeroplane by his name, deep in
+ * the list, under a green «12/12» — easy to publish past. Now the meeting
+ * says it once, under its title: who, and which of his parts.
+ */
+function AwayNote({
+  items,
+  absentIds,
+  publishersById,
+}: {
+  items: Assignment[];
+  absentIds: Set<string>;
+  publishersById: Map<string, Publisher>;
+}) {
+  const { t } = useTranslation();
+  if (absentIds.size === 0) return null;
+  const byPerson = new Map<string, string[]>();
+  for (const a of items) {
+    if (a.status === "cancelled") continue;
+    for (const id of [a.publisherId, a.assistantPublisherId]) {
+      if (!id || !absentIds.has(id)) continue;
+      const label = partDisplay(a.partKey, a.partTitle).label;
+      const list = byPerson.get(id) ?? [];
+      if (!list.includes(label)) list.push(label);
+      byPerson.set(id, list);
+    }
+  }
+  if (byPerson.size === 0) return null;
+  return (
+    <View style={styles.awayNote} accessibilityRole="alert">
+      <Ionicons name="airplane" size={15} color="#b45309" />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.awayNoteTitle}>
+          {t("schedule.awayNote.title")}
+        </Text>
+        {[...byPerson.entries()].map(([id, parts]) => (
+          <Text key={id} style={styles.awayNoteLine}>
+            {publishersById.get(id)?.displayName ?? "—"}
+            {" — "}
+            {parts.join(", ")}
+          </Text>
+        ))}
+      </View>
+    </View>
+  );
+}
 
 function MidweekSections({
   times,
@@ -2120,6 +2205,19 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
+  awayNote: {
+    flexDirection: "row",
+    gap: 8,
+    marginHorizontal: 14,
+    marginTop: 8,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+  },
+  awayNoteTitle: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#92400e" },
+  awayNoteLine: { fontFamily: "Manrope_500Medium", fontSize: 13, color: "#78350f" },
   previousWeek: { opacity: 0.45 },
   movedDoors: { gap: 8, marginTop: 12 },
   movedDoor: {

@@ -10,6 +10,7 @@ import { useProgrammeRetro } from "./ProgrammeLockNote";
 import { useEffect, useState } from "react";
 import { Sheet } from "./Sheet";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { refreshProgramme } from "../lib/programme-refresh";
 import { useTranslation } from "react-i18next";
 import {
   Assignment,
@@ -84,23 +85,26 @@ export function AssignmentSheet({
     retro ? { ...input, retroactive: true } : input;
 
   const updateMutation = useMutation({
-    mutationFn: (input: UpdateAssignmentInput) =>
-      assignmentsApi.update(assignment!.id, asRetro(input)),
+    // The part's id travels with each save (programme audit, 20 November
+    // 2026): read from the open window at save time, a delayed save of one
+    // part landed on the next one opened.
+    mutationFn: ({ id, input }: { id: string; input: UpdateAssignmentInput }) =>
+      assignmentsApi.update(id, asRetro(input)),
     // Optimistic: patch the cached week immediately.
-    onMutate: async (input) => {
+    onMutate: async ({ id, input }) => {
       await queryClient.cancelQueries({ queryKey });
       const prev = queryClient.getQueryData<{ data: Assignment[] }>(queryKey);
       if (prev) {
         queryClient.setQueryData(queryKey, {
           ...prev,
           data: prev.data.map((row) =>
-            row.id === assignment!.id ? { ...row, ...input } : row,
+            row.id === id ? { ...row, ...input } : row,
           ),
         });
       }
       return { prev };
     },
-    onError: (_e, _input, ctx) => {
+    onError: (_e, _vars, ctx) => {
       if (ctx?.prev) queryClient.setQueryData(queryKey, ctx.prev);
     },
     onSuccess: (result) => {
@@ -133,7 +137,7 @@ export function AssignmentSheet({
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme(queryClient);
       if (assignment) {
         queryClient.invalidateQueries({
           queryKey: ["assignment", assignment.id],
@@ -161,10 +165,16 @@ export function AssignmentSheet({
           speakerName: null,
           speakerCongregation: null,
           publicTalkId: null,
+          // A catalogue talk's theme goes with it: «№N. …» left behind
+          // named a talk nobody gives (programme audit, 20 November 2026).
+          ...(assignment?.partKey === "public_talk_speaker" &&
+          /^№\s*\d+/.test(assignment.partTitle ?? "")
+            ? { partTitle: "" }
+            : {}),
         }),
       ),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme(queryClient);
       // Both ways here too: clearing the prayer clears the auto-filled talk
       // and its microphone.
       queryClient.invalidateQueries({ queryKey: ["duties"] });
@@ -172,15 +182,31 @@ export function AssignmentSheet({
     },
   });
 
-  const confirmUnassign = () => {
-    if (Platform.OS === "web") {
-      if (window.confirm(t("schedule.unassign.confirmWebMessage"))) {
-        unassignMutation.mutate();
-      }
-      return;
-    }
-    unassignMutation.mutate();
+  // One question on every device, in the app's own dialog (programme audit,
+  // 20 November 2026): the phone took the person off at the first tap, the
+  // browser asked in its own grey box.
+  const confirmUnassign = async () => {
+    if (
+      await confirm({
+        title: t("schedule.unassign.button"),
+        body: t("schedule.unassign.confirmWebMessage"),
+        confirmLabel: t("schedule.unassign.button"),
+        danger: true,
+      })
+    )
+      unassignMutation.mutate();
   };
+
+  // A guest speaker, the overseer's prayer or an assistant alone are someone
+  // too: the button used to wait for a card in the main place.
+  const hasSomeone =
+    !!active &&
+    !!(
+      active.publisherId ||
+      active.assistantPublisherId ||
+      active.speakerName?.trim() ||
+      active.publicTalkId
+    );
 
   // Manually added Christian-Life parts can be removed entirely (imported
   // workbook parts cannot — they have no delete affordance).
@@ -188,7 +214,7 @@ export function AssignmentSheet({
   const removeMutation = useMutation({
     mutationFn: () => assignmentsApi.remove(assignment!.id, { retroactive: retro }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme(queryClient);
       onClose();
     },
   });
@@ -237,7 +263,7 @@ export function AssignmentSheet({
             isSaving={updateMutation.isPending}
             onSave={(pt) =>
               updateMutation
-                .mutateAsync({ partTitle: pt ?? "" })
+                .mutateAsync({ id: active.id, input: { partTitle: pt ?? "" } })
                 .then(() => onClose())
             }
           />
@@ -261,11 +287,14 @@ export function AssignmentSheet({
                 notes: active.notes ?? undefined,
               }}
               onSubmit={(data: CreateAssignmentInput) =>
-                updateMutation.mutateAsync(data).then(() => onClose())
+                updateMutation
+                  .mutateAsync({ id: active.id, input: data })
+                  .then(() => onClose())
               }
               onInstantSave={
                 canEdit
-                  ? (patch) => updateMutation.mutateAsync(patch)
+                  ? (patch) =>
+                      updateMutation.mutateAsync({ id: active.id, input: patch })
                   : undefined
               }
               onCancel={onClose}
@@ -283,11 +312,11 @@ export function AssignmentSheet({
                 style={({ pressed }) => [
                   styles.unassignLink,
                   pressed && styles.unassignLinkPressed,
-                  (unassignMutation.isPending || !active.publisherId) &&
+                  (unassignMutation.isPending || !hasSomeone) &&
                     styles.unassignLinkDisabled,
                 ]}
                 onPress={confirmUnassign}
-                disabled={unassignMutation.isPending || !active.publisherId}
+                disabled={unassignMutation.isPending || !hasSomeone}
               >
                 <Text style={styles.unassignLinkText}>
                   {unassignMutation.isPending

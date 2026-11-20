@@ -994,6 +994,10 @@
       "coRoleShort": {
         "overseer": "Kreisaufseher",
         "substitute": "Vertreter"
+      },
+      "cancelConfirm": {
+        "title": "Diesen Programmpunkt absagen?",
+        "body": "Er wird aus dem Programm genommen. Ist das Programm schon veröffentlicht, wird der Zugeteilte benachrichtigt. Er lässt sich jederzeit zurückholen."
       }
     }
   },
@@ -1221,6 +1225,9 @@
       "void": "Die Verlegung gilt nicht mehr: ein Kreisaufseherbesuch oder ein Kongress hat diese Woche geändert.",
       "voidRemove": "Verlegung entfernen",
       "voidDone": "Verlegung entfernt"
+    },
+    "awayNote": {
+      "title": "Am Tag der Zusammenkunft abwesend"
     }
   },
   "audit": {

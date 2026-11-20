@@ -303,6 +303,15 @@ export const WEEKEND_PARTS: PartDef[] = [
   },
 ];
 
+/**
+ * The circuit overseer's own parts. A visit week gets them from the server
+ * (its template); an empty meeting made by hand never has them.
+ */
+export const CO_VISIT_PART_KEYS: ReadonlySet<string> = new Set([
+  'co_service_talk',
+  'co_concluding_talk',
+]);
+
 export const PARTS_BY_EVENT: Record<EventType, PartDef[]> = {
   midweek: MIDWEEK_PARTS,
   weekend: WEEKEND_PARTS,
