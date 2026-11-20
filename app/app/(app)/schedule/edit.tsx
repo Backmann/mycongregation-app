@@ -1,19 +1,24 @@
 import {
   createContext,
+  type ReactElement,
+  type ReactNode,
   useCallback,
   useMemo,
   useContext,
   useState,
   useEffect,
+  useRef,
 } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -108,6 +113,8 @@ import { formatDayRange } from "../../../lib/date-range";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
 import { MeetingMoveSheet } from "../../../components/MeetingMoveSheet";
 import { MeetingMoveBar } from "../../../components/MeetingMoveBar";
+import { OVERVIEW_WIDTH, SIDE_NAV_FROM } from "../../../lib/screen-width";
+import { PANEL_WIDTH, programmeLayout } from "../../../lib/programme-layout";
 
 const EVENT_TYPE_ORDER: EventType[] = [
   "midweek",
@@ -116,6 +123,35 @@ const EVENT_TYPE_ORDER: EventType[] = [
   "av_duty",
   "public_witnessing",
 ];
+
+/**
+ * The two meetings side by side (variant «В»): the blocks of the midweek and
+ * the weekend meeting — or what stands in their place, a Memorial or a
+ * replaced meeting — go into one row of two columns; anything else stays
+ * below, as it was. Narrower, the list is returned untouched.
+ */
+function arrangeMeetings(
+  twoColumns: boolean,
+  blocks: (ReactElement | null)[],
+): ReactNode {
+  if (!twoColumns) return blocks;
+  const isMeeting = (b: ReactElement | null) =>
+    !!b && (b.key === "midweek" || b.key === "weekend" || b.key === "memorial");
+  const meetings = blocks.filter(isMeeting);
+  if (meetings.length < 2) return blocks;
+  return (
+    <>
+      <View style={styles.meetingColumns}>
+        {meetings.map((b) => (
+          <View key={String(b!.key)} style={styles.meetingColumn}>
+            {b}
+          </View>
+        ))}
+      </View>
+      {blocks.filter((b) => !isMeeting(b))}
+    </>
+  );
+}
 
 /** Parse ?week=YYYY-MM-DD into a Monday; fall back to current week. */
 function weekFromParam(raw: string | string[] | undefined): Date {
@@ -129,6 +165,12 @@ function weekFromParam(raw: string | string[] | undefined): Date {
 
 /** IDs of prayer slots auto-filled from the chairman (for the "авто" badge). */
 const AutoAssignedContext = createContext<Set<string>>(new Set());
+/**
+ * The part open on the right (variant «В»): its row is marked and kept in
+ * view — opening the panel folds the two meetings into one column, and the
+ * row just pressed would otherwise slide away under the cursor.
+ */
+const OpenPartContext = createContext<string | null>(null);
 
 /**
  * The door of «Составление программы», at the screen itself.
@@ -166,12 +208,41 @@ function ProgrammeEditor() {
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ week?: string; meeting?: string }>();
   const [editing, setEditing] = useState<Assignment | null>(null);
+  /**
+   * Variant «В» (Р-02, 20 November 2026). How wide the screen's own area is,
+   * measured, first guessed from the window so that the meetings mount open
+   * on a computer: with the side menu (window 1024+) the part opens on the
+   * right and the week stays in view; from 960 of the area the two meetings
+   * stand side by side.
+   */
+  const { width: windowW } = useWindowDimensions();
+  const [areaW, setAreaW] = useState(() =>
+    Math.min(OVERVIEW_WIDTH, windowW - (windowW >= SIDE_NAV_FROM ? 232 : 0)),
+  );
+  const layout = programmeLayout(windowW, areaW, !!editing);
+  const panelMode = layout.panel;
+  // A panel stays on screen while the week behind it changes: another week
+  // closes it; Escape closes it on a computer.
+  useEffect(() => {
+    if (Platform.OS !== "web" || !panelMode) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setEditing(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [panelMode]);
+  const twoColumns = layout.twoColumns;
   const [publishPrompt, setPublishPrompt] = useState<{
     eventType: "midweek" | "weekend";
     weekStartDate: string;
   } | null>(null);
   const weekStart = weekFromParam(params.week);
   const weekStartISO = formatDateISO(weekStart);
+  useEffect(() => {
+    setEditing((open) =>
+      open && open.weekStartDate.slice(0, 10) !== weekStartISO ? null : open,
+    );
+  }, [weekStartISO]);
   const setWeekStart = (d: Date) => {
     router.setParams({ week: formatDateISO(startOfWeekMonday(d)) });
   };
@@ -1038,6 +1109,7 @@ function ProgrammeEditor() {
   return (
     <ProgrammeRetroContext.Provider value={retro}>
     <AutoAssignedContext.Provider value={autoAssignedIds}>
+    <OpenPartContext.Provider value={panelMode ? (editing?.id ?? null) : null}>
       <View style={styles.container}>
         <WeekNavigator
           weekStart={weekStart}
@@ -1070,14 +1142,16 @@ function ProgrammeEditor() {
           }}
           meetingOf={drawerMeetingOf}
         />
-        <AssignmentSheet
-          assignment={editing}
-          weekStartISO={weekStartISO}
-          canEdit={canEditEditing}
-          circuitOverseer={circuitOverseer}
-          coPicker={coPicker}
-          onClose={() => setEditing(null)}
-        />
+        {panelMode ? null : (
+          <AssignmentSheet
+            assignment={editing}
+            weekStartISO={weekStartISO}
+            canEdit={canEditEditing}
+            circuitOverseer={circuitOverseer}
+            coPicker={coPicker}
+            onClose={() => setEditing(null)}
+          />
+        )}
         <PublishDialog
           open={!!publishPrompt}
           busy={publishingType === publishPrompt?.eventType}
@@ -1094,7 +1168,12 @@ function ProgrammeEditor() {
           onCancel={() => setPublishPrompt(null)}
         />
 
+        <View
+          style={styles.workArea}
+          onLayout={(e) => setAreaW(Math.round(e.nativeEvent.layout.width))}
+        >
         <ScrollView
+          style={styles.weekColumn}
           contentContainerStyle={{ paddingBottom: 32 }}
           refreshControl={
             <RefreshControl
@@ -1189,7 +1268,7 @@ function ProgrammeEditor() {
                   onOpen={setEditing}
                 />
               ) : null}
-              {EVENT_TYPE_ORDER.map((eventType) => {
+              {arrangeMeetings(twoColumns, EVENT_TYPE_ORDER.map((eventType) => {
                 const items = grouped.get(eventType) ?? [];
                 if (
                   congressThisWeek &&
@@ -1251,7 +1330,7 @@ function ProgrammeEditor() {
                   return (
                     <CollapsibleMeetingBlock
                       key="midweek"
-                      initiallyOpen={focusOn("midweek")}
+                      initiallyOpen={focusOn("midweek") || layout.meetingsOpen}
                       openSignal={
                         focusOn("midweek") ? meetingFocus?.n : undefined
                       }
@@ -1342,7 +1421,7 @@ function ProgrammeEditor() {
                   return (
                     <CollapsibleMeetingBlock
                       key="weekend"
-                      initiallyOpen={focusOn("weekend")}
+                      initiallyOpen={focusOn("weekend") || layout.meetingsOpen}
                       openSignal={
                         focusOn("weekend") ? meetingFocus?.n : undefined
                       }
@@ -1469,7 +1548,7 @@ function ProgrammeEditor() {
                     </View>
                   </View>
                 );
-              })}
+              }))}
 
               {/* Only the two meetings live here (Lionel, 20 November 2026):
                   duties, cleaning and the field service meetings have screens
@@ -1511,8 +1590,23 @@ function ProgrammeEditor() {
             </View>
           )}
         </ScrollView>
+        {panelMode && editing ? (
+          <View style={[styles.partPanel, { width: PANEL_WIDTH }]}>
+            <AssignmentSheet
+              panel
+              assignment={editing}
+              weekStartISO={weekStartISO}
+              canEdit={canEditEditing}
+              circuitOverseer={circuitOverseer}
+              coPicker={coPicker}
+              onClose={() => setEditing(null)}
+            />
+          </View>
+        ) : null}
+        </View>
 
       </View>
+    </OpenPartContext.Provider>
     </AutoAssignedContext.Provider>
     </ProgrammeRetroContext.Provider>
   );
@@ -1865,6 +1959,18 @@ function AssignmentRow({
   const { t } = useTranslation();
   const { myPublisherId } = useMyPublisher();
   const isAuto = useContext(AutoAssignedContext).has(assignment.id);
+  const isOpen = useContext(OpenPartContext) === assignment.id;
+  const rowRef = useRef<View>(null);
+  useEffect(() => {
+    if (!isOpen || Platform.OS !== "web") return;
+    // After the columns have folded into one.
+    const timer = setTimeout(() => {
+      (rowRef.current as unknown as HTMLElement | null)?.scrollIntoView?.({
+        block: "center",
+      });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
   const isMine =
     !!myPublisherId &&
     (assignment.publisherId === myPublisherId ||
@@ -1909,7 +2015,9 @@ function AssignmentRow({
             ? { borderLeftWidth: 3, borderLeftColor: accentColor }
             : null,
           pressed && styles.rowPressed,
+          isOpen && styles.rowOpen,
         ]}
+        ref={rowRef}
         onPress={canEdit ? () => onEdit(assignment) : undefined}
         disabled={!canEdit}
       >
@@ -1937,7 +2045,9 @@ function AssignmentRow({
           ? { borderLeftWidth: 3, borderLeftColor: accentColor }
           : null,
         pressed && styles.rowPressed,
+        isOpen && styles.rowOpen,
       ]}
+      ref={rowRef}
       onPress={canEdit ? () => onEdit(assignment) : undefined}
       disabled={!canEdit}
     >
@@ -2102,6 +2212,13 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
+  // Variant «В»: the week on the left, the open part on the right.
+  workArea: { flex: 1, flexDirection: "row" },
+  weekColumn: { flex: 1 },
+  partPanel: { alignSelf: "stretch" },
+  meetingColumns: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
+  meetingColumn: { flex: 1, minWidth: 0 },
+  rowOpen: { backgroundColor: "#e0f2fe" },
   conductRow: { paddingHorizontal: 14, marginTop: 8 },
   awayNote: {
     flexDirection: "row",
