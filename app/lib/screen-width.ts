@@ -27,6 +27,8 @@ const OVERVIEW = new Set<string>([
   '/home',
   '/schedule',
   '/schedule/edit',
+  // Eight weeks of student parts across (step 4б, 20 November 2026).
+  '/schedule/students',
   '/publishers',
   '/cart',
   '/cart/field-service',

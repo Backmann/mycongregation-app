@@ -127,6 +127,7 @@ const STEPS = [
   ['Проверка недели', 'node', ['scripts/check-week-check.mjs']],
   ['Файлы программы', 'node', ['scripts/check-programme-files.mjs']],
   ['Раскладка программы', 'node', ['scripts/check-programme-layout.mjs']],
+  ['Учебные на месяц', 'node', ['scripts/check-student-month.mjs']],
   // The coordinator's ready messages, agreed word for word (25.10.2026).
   ['Готовые сообщения координатора речей', 'node', ['scripts/check-talk-messages.mjs']],
   // A screen nothing leads to (26.10.2026): `/schedule/[id]` lived on unseen.

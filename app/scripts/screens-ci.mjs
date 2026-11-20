@@ -121,6 +121,8 @@ const SCREENS = [
   // «Файлы программы» (20 November 2026): which weeks have their programme,
   // which came from a file, what to load next.
   ['programme-files', '/schedule/import', 'admin'],
+  // «Учебные на месяц» (step 4б, 20 November 2026): eight weeks of student parts.
+  ['student-month', '/schedule/students', 'admin'],
   ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
   // Its lines moved on the map (16 November 2026, step 3b).
   ...(RECUT ? [['recut-lines', `/cart/recut/lines/${RECUT}`, 'admin']] : []),
