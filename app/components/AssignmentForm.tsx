@@ -41,7 +41,10 @@ import {
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from "../lib/parts";
-import { pickerGuideline } from "../lib/meeting-guidelines";
+import { ministryKind, pickerGuideline } from "../lib/meeting-guidelines";
+import type { RankInput } from "../lib/picker-rank";
+
+type PickerRankProp = Pick<RankInput, "mode" | "partId" | "partKeys" | "otherId">;
 import { usePermissions } from "../lib/permissions";
 import { useAllPublishers } from "../lib/useAllPublishers";
 import { GuestSpeakerField } from "./GuestSpeakerField";
@@ -269,11 +272,15 @@ export function AssignmentForm({
   };
 
   const activityQuery = useQuery({
-    queryKey: ["publisher-activity", form.weekStartDate],
+    // Half a year back and the planned weeks ahead (20 November 2026): a
+    // person's student parts come every 7 weeks, a pair repeated after
+    // 15–17, and the programme stands 11 weeks ahead.
+    queryKey: ["publisher-activity", form.weekStartDate, "rank"],
     queryFn: () =>
       publisherActivityApi.getActivity({
         weekStart: form.weekStartDate,
-        weeks: 13,
+        weeks: 26,
+        ahead: 12,
       }),
     enabled: !!form.weekStartDate,
   });
@@ -450,6 +457,34 @@ export function AssignmentForm({
     }
     return [key];
   }, [form.partKey]);
+
+  // The order of the pickers (lib/picker-rank.ts, 20 November 2026): the
+  // midweek's student parts by the student's own history and the pair; every
+  // other part in turn, by the same part.
+  const isStudentPart =
+    form.eventType === "midweek" &&
+    (form.partKey === "bible_reading" ||
+      ((form.partKey ?? "").startsWith("apply_yourself_") &&
+        !guideline?.noAssistant) ||
+      ((form.partKey ?? "").startsWith("apply_yourself_") &&
+        ministryKind(form.partTitle) === "talk"));
+  const pickerRank = (side: "lead" | "assistant"): PickerRankProp | null => {
+    if (!form.weekStartDate) return null;
+    if (isStudentPart)
+      return side === "lead"
+        ? {
+            mode: "student-lead",
+            partId: assignmentId ?? null,
+            otherId: showAssistant ? (form.assistantPublisherId ?? null) : null,
+          }
+        : {
+            mode: "student-assistant",
+            partId: assignmentId ?? null,
+            otherId: form.publisherId ?? null,
+          };
+    if (suggestionPartKeys.length === 0) return null;
+    return { mode: "rotation", partId: assignmentId ?? null, partKeys: suggestionPartKeys };
+  };
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
     // Picking derives the title from the talk; clearing wipes both the talk
@@ -959,6 +994,7 @@ export function AssignmentForm({
                   pairOfPublisherId={
                     showAssistant ? (form.assistantPublisherId ?? null) : null
                   }
+                  rank={pickerRank("lead")}
                   suggestionPartKeys={suggestionPartKeys}
                   activityById={activityById}
                   currentWeekStart={form.weekStartDate}
@@ -980,6 +1016,7 @@ export function AssignmentForm({
                     matchGenderOfPublisherId={form.publisherId ?? null}
                     guideline={guideline}
                     guidelineRole="assistant"
+                    rank={pickerRank("assistant")}
                     showAllWords={
                       guideline?.assistant === "same-or-family"
                         ? {

@@ -1704,6 +1704,10 @@ export interface ActivityItem {
   partKey?: string;
   partTitle?: string | null;
   role?: "primary" | "assistant";
+  /** The part itself (servers from 20 November 2026). */
+  assignmentId?: string;
+  /** The other side of the pair on that part, if any. */
+  partnerId?: string | null;
   dutyType?: string;
   slotIndex?: number;
   customLabel?: string | null;
@@ -1728,6 +1732,8 @@ export const publisherActivityApi = {
   async getActivity(params: {
     weekStart: string;
     weeks?: number;
+    /** Weeks after this one as well — the planned programme. */
+    ahead?: number;
   }): Promise<PublisherActivity[]> {
     const { data } = await api.get("/publisher-activity", { params });
     return data;

@@ -35,6 +35,8 @@ import { formatDayRange } from "../lib/date-range";
 import { useMeetingMoves } from "../lib/useMeetingMoves";
 import { confirm } from "./ConfirmHost";
 import type { PickerGuideline } from "../lib/meeting-guidelines";
+import { rankCandidates, type RankInput } from "../lib/picker-rank";
+import { RankedPickerList } from "./RankedPickerList";
 
 interface Props {
   label: string;
@@ -138,6 +140,12 @@ interface Props {
    * the family after the elder says so (review of 20 November 2026).
    */
   pairOfPublisherId?: string | null;
+  /**
+   * The programme's order (lib/picker-rank.ts, 20 November 2026): when set,
+   * the list is «Подходят лучше всего» / «Остальные» / «Не смогут», each row
+   * with its last part, the weeks since and the facts that matter.
+   */
+  rank?: Pick<RankInput, "mode" | "partId" | "partKeys" | "otherId"> | null;
   /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
   variant?: "field" | "chip";
   /** Label for the empty chip in chip variant. Defaults to common.none. */
@@ -209,6 +217,7 @@ export function PublisherSelector({
   guideline,
   guidelineRole = "lead",
   pairOfPublisherId,
+  rank,
   preferGender,
   variant = "field",
   emptyLabel,
@@ -530,6 +539,74 @@ export function PublisherSelector({
         })
       : filtered;
 
+  // Choosing a person: of the other gender only one of the family (п. 7,
+  // 11) — the elder's own word, kept nowhere (Lionel, 20 November 2026).
+  const pick = async (p: (typeof allPublishers)[number]) => {
+    const other =
+      guidelineRole === "assistant"
+        ? matchGenderOfPublisherId
+        : pairOfPublisherId;
+    const otherGender =
+      guidelineRole === "assistant" ? matchGender : pairGender;
+    if (
+      guideline?.assistant === "same-or-family" &&
+      otherGender &&
+      p.gender &&
+      p.gender !== otherGender &&
+      !(await confirm({
+        title: t("pickers.family.title"),
+        body: t("pickers.family.body", {
+          name: p.displayName,
+          lead:
+            allPublishers.find((x) => x.id === other)
+              ?.displayName ?? "",
+        }),
+        confirmLabel: t("pickers.family.yes"),
+      }))
+    )
+      return;
+    onChange(p.id);
+    setOpen(false);
+  };
+
+  // The programme's order (20 November 2026): groups and the facts per row.
+  const peopleById = new Map(allPublishers.map((p) => [p.id, p]));
+  const meetingDateOfWeek = (weekISO: string): string => {
+    const v = effectiveVersionFor(msOverview?.versions, weekISO);
+    if (!v) return weekISO.slice(0, 10);
+    return weekRules({
+      weekStartISO: weekISO.slice(0, 10),
+      version: v,
+      events: weekEvents ?? [],
+      moves,
+    }).dateOf(currentEventType === "weekend" ? "weekend" : "midweek") ?? weekISO.slice(0, 10);
+  };
+  const awayLabel = (id: string): string | null => {
+    const a = absentThisWeek.get(id);
+    if (a)
+      return t("pickers.rank.awayAbsence", {
+        range: absenceRangeLabel(a, i18n.language),
+      });
+    const b = invitedBusy.get(id);
+    if (b)
+      return t("specialEvents.invited.busy", {
+        range: formatDayRange(b.date, b.endDate, i18n.language, { year: "never" }),
+        what: t(`specialEvents.types.${b.type}`),
+      });
+    return null;
+  };
+  const ranked =
+    rank && currentWeekStart && ISO_RE.test(currentWeekStart)
+      ? rankCandidates({
+          ...rank,
+          week: currentWeekStart,
+          eventType: currentEventType ?? "midweek",
+          candidates: filtered,
+          itemsOf: (id) => activityById?.get(id)?.items ?? [],
+          isAway,
+        })
+      : null;
+
   // Hidden count = those filtered out only because of capability mismatch
   const hiddenByCapability = filterByCapability
     ? allPublishers.filter(
@@ -704,7 +781,7 @@ export function PublisherSelector({
           autoCorrect={false}
         />
 
-        {historyEnabled && (
+        {historyEnabled && !ranked && (
           <View style={styles.histScopeNote}>
             <Ionicons name="calendar-outline" size={13} color="#64748b" />
             <Text style={styles.histScopeText}>
@@ -745,7 +822,23 @@ export function PublisherSelector({
               </Text>
             )}
 
-            {sorted.map((p) => (
+            {ranked ? (
+              <RankedPickerList
+                result={ranked}
+                value={value}
+                people={peopleById}
+                otherName={
+                  rank?.otherId
+                    ? allPublishers.find((x) => x.id === rank.otherId)?.displayName
+                    : null
+                }
+                awayLabel={awayLabel}
+                awayDate={meetingDayISO}
+                dateOf={meetingDateOfWeek}
+                student={rank?.mode !== "rotation"}
+                onPick={(p) => void pick(p)}
+              />
+            ) : sorted.map((p) => (
               <PublisherOption
                 key={p.id}
                 publisher={p}
@@ -754,35 +847,7 @@ export function PublisherSelector({
                   !requiredCapability || !!p.capabilities?.[requiredCapability]
                 }
                 showCapabilityWarning={!!requiredCapability && showAll}
-                onPress={async () => {
-                  // п. 7, 11: of the other gender only one of the family —
-                  // the elder's own word, kept nowhere (Lionel, 20 November).
-                  const other =
-                    guidelineRole === "assistant"
-                      ? matchGenderOfPublisherId
-                      : pairOfPublisherId;
-                  const otherGender =
-                    guidelineRole === "assistant" ? matchGender : pairGender;
-                  if (
-                    guideline?.assistant === "same-or-family" &&
-                    otherGender &&
-                    p.gender &&
-                    p.gender !== otherGender &&
-                    !(await confirm({
-                      title: t("pickers.family.title"),
-                      body: t("pickers.family.body", {
-                        name: p.displayName,
-                        lead:
-                          allPublishers.find((x) => x.id === other)
-                            ?.displayName ?? "",
-                      }),
-                      confirmLabel: t("pickers.family.yes"),
-                    }))
-                  )
-                    return;
-                  onChange(p.id);
-                  setOpen(false);
-                }}
+                onPress={() => void pick(p)}
                 activity={summarizeActivity(
                   activityById?.get(p.id),
                   currentWeekStart,

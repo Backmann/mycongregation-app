@@ -1293,7 +1293,32 @@
       "off": "Nur dasselbe Geschlecht wird gezeigt. Für einen Familienangehörigen des anderen Geschlechts einschalten.",
       "on": "Alle werden gezeigt. Bei jemandem des anderen Geschlechts wird gefragt, ob er zur Familie gehört."
     },
-    "nobodyHasCapabilityGuideline": "«{{name}}» ist noch bei niemandem markiert — gezeigt werden alle, denen die Hinweise zur Zusammenkunft diesen Programmpunkt erlauben."
+    "nobodyHasCapabilityGuideline": "«{{name}}» ist noch bei niemandem markiert — gezeigt werden alle, denen die Hinweise zur Zusammenkunft diesen Programmpunkt erlauben.",
+    "rank": {
+      "current": "Jetzt",
+      "best": "Passen am besten",
+      "others": "Weitere · am längsten ohne Aufgabe zuerst",
+      "awayOn": "Können am {{date}} nicht · {{n}}",
+      "away": "Können nicht · {{n}}",
+      "last": "Zuletzt: {{date}} — {{part}}",
+      "asAssistant": "(Partner)",
+      "neverLine": "Noch keine Schüleraufgabe",
+      "ago": "her",
+      "never": "noch nie",
+      "pair": "{{name}}: schon ein Paar · {{date}}",
+      "neverPaired": "{{name}}: noch kein Paar",
+      "sameMeeting": "schon in dieser Zusammenkunft · {{part}}",
+      "prevWeek": "letzte Woche",
+      "nextWeek": "nächste Woche",
+      "rotation": "derselbe Programmpunkt in der Nachbarwoche",
+      "awayAbsence": "abwesend · {{range}}",
+      "note": "Verlauf — ein halbes Jahr zurück und 12 Wochen voraus. «Passen am besten» — am längsten ohne Aufgabe und nichts, was in dieser Woche dagegen spricht.",
+      "weeks_one": "{{count}} Woche",
+      "weeks_other": "{{count}} Wochen",
+      "ownSoon_one": "eigene Aufgabe am {{date}} — in {{count}} Woche",
+      "ownSoon_other": "eigene Aufgabe am {{date}} — in {{count}} Wochen",
+      "neverLineTurn": "Diesen Programmpunkt noch nicht"
+    }
   },
   "admin": {
     "users": {
