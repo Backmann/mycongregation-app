@@ -1007,7 +1007,8 @@
     "title": {
       "new": "New assignment",
       "import": "Program files",
-      "rules": "Congregation rules"
+      "rules": "Congregation rules",
+      "students": "Student parts by month"
     },
     "a11y": {
       "localNeeds": "Local needs"
@@ -1015,7 +1016,8 @@
     "menu": {
       "more": "More",
       "rulesSub": "Automatic assignments: prayers and microphones",
-      "localNeedsSub": "Topics for “Living as Christians”"
+      "localNeedsSub": "Topics for “Living as Christians”",
+      "studentsSub": "Two months of student parts in one table"
     },
     "noAssignments": "No assignments for this week.",
     "unassigned": "Unassigned",
@@ -1321,6 +1323,19 @@
       "summaryFailed": "Could not find out which weeks are loaded",
       "partsWithout_one": "{{count}} part in the program",
       "partsWithout_other": "{{count}} parts in the program"
+    },
+    "students": {
+      "assign": "Assign",
+      "with": "with {{name}}",
+      "pairBefore": "paired before on {{date}}",
+      "twoInRow": "{{name}} — two weeks running",
+      "earlier": "Earlier",
+      "later": "Later",
+      "summary": "Empty student parts: {{empty}} · flagged: {{flagged}}",
+      "lead": "Guidelines, par. 24: once the workbook is out, plan its student parts as a whole. A cell opens the same part as in the week.",
+      "nothing": "No student parts in these weeks: load the workbook in Program files.",
+      "bibleReading": "Bible reading",
+      "scrollMore": "More weeks — scroll right →"
     }
   },
   "audit": {

@@ -1007,7 +1007,8 @@
     "title": {
       "new": "Neue Zuteilung",
       "import": "Programmdateien",
-      "rules": "Versammlungsregeln"
+      "rules": "Versammlungsregeln",
+      "students": "Schülerteile im Monat"
     },
     "a11y": {
       "localNeeds": "Örtliche Bedürfnisse"
@@ -1015,7 +1016,8 @@
     "menu": {
       "more": "Mehr",
       "rulesSub": "Automatische Zuteilungen: Gebete und Mikrofone",
-      "localNeedsSub": "Themen für „Unser Leben als Christ“"
+      "localNeedsSub": "Themen für „Unser Leben als Christ“",
+      "studentsSub": "Schülerteile von zwei Monaten in einer Tabelle"
     },
     "noAssignments": "Keine Zuteilungen für diese Woche.",
     "unassigned": "Nicht zugeteilt",
@@ -1321,6 +1323,19 @@
       "summaryFailed": "Es ließ sich nicht abrufen, welche Wochen geladen sind",
       "partsWithout_one": "{{count}} Programmpunkt eingetragen",
       "partsWithout_other": "{{count}} Programmpunkte eingetragen"
+    },
+    "students": {
+      "assign": "Zuteilen",
+      "with": "mit {{name}}",
+      "pairBefore": "schon zusammen am {{date}}",
+      "twoInRow": "{{name}} — zwei Wochen hintereinander",
+      "earlier": "Früher",
+      "later": "Später",
+      "summary": "Leere Schülerteile: {{empty}} · mit Hinweis: {{flagged}}",
+      "lead": "Laut den Anweisungen (Abs. 24): Sobald das Arbeitsheft da ist, die Schülerteile als Ganzes planen. Ein Feld öffnet denselben Programmpunkt wie in der Woche.",
+      "nothing": "In diesen Wochen gibt es keine Schülerteile: Arbeitsheft unter Programmdateien laden.",
+      "bibleReading": "Bibellesung",
+      "scrollMore": "Weitere Wochen — nach rechts scrollen →"
     }
   },
   "audit": {

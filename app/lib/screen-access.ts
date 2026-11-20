@@ -119,6 +119,9 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // what the part is — the screen and the server know.
   '/schedule/rules': 'editsProgramme',
   '/schedule/import': 'importsProgramme',
+  // The student parts of two months (step 4б): read-only for whoever builds
+  // only the weekend.
+  '/schedule/students': 'editsProgramme',
   '/special-events': 'all',
   '/special-events/[id]': 'all',
   '/special-events/new': 'events',

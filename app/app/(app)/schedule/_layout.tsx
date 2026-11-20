@@ -101,6 +101,17 @@ export default function ScheduleLayout() {
           },
         ]
       : []),
+    ...(mayOpen('/schedule/students')
+      ? [
+          {
+            key: 'students',
+            icon: 'school-outline' as const,
+            title: t('schedule.title.students'),
+            subtitle: t('schedule.menu.studentsSub'),
+            onPress: () => router.push('/schedule/students' as any),
+          },
+        ]
+      : []),
     ...(mayOpen('/schedule/import')
       ? [
           {
@@ -205,6 +216,13 @@ export default function ScheduleLayout() {
         name="rules"
         options={{
           title: t('schedule.title.rules'),
+          headerLeft: () => <BackButton fallback="/schedule/edit" toParent />,
+        }}
+      />
+      <Stack.Screen
+        name="students"
+        options={{
+          title: t('schedule.title.students'),
           headerLeft: () => <BackButton fallback="/schedule/edit" toParent />,
         }}
       />
