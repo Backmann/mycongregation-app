@@ -271,6 +271,10 @@ export function AssignmentSheet({
           <>
             <AssignmentForm
               key={active.id}
+              // The part itself (20 November 2026): without it the pickers
+              // took the part for «another part this meeting», and a part
+              // holding a local-needs topic was not known as one.
+              assignmentId={active.id}
               initial={{
                 weekStartDate: active.weekStartDate,
                 eventType: active.eventType,

@@ -1230,6 +1230,24 @@
     },
     "awayNote": {
       "title": "Am Tag der Zusammenkunft abwesend"
+    },
+    "weekCheck": {
+      "title": "Wochenprüfung",
+      "allGood": "Alles in Ordnung: keine leeren Programmpunkte, niemand abwesend, keine wiederholten Paare.",
+      "empty": "{{part}} — niemand eingeteilt",
+      "away": "{{name}} ist am Tag der Zusammenkunft abwesend — {{part}}",
+      "pair": "{{part}}: {{lead}} und {{assistant}} waren schon ein Paar · {{date}}",
+      "long": "Die Zusammenkunft unter der Woche dauert {{hours}} Std. {{minutes}} Min. — laut den Hinweisen höchstens 1 Std. 45 Min.",
+      "double": "{{name}} — {{parts}}",
+      "late_one": "{{part}} — niemand eingeteilt. Noch {{count}} Tag bis zur Zusammenkunft; Aufgaben werden mindestens 3 Wochen vorher vergeben",
+      "late_other": "{{part}} — niemand eingeteilt. Noch {{count}} Tage bis zur Zusammenkunft; Aufgaben werden mindestens 3 Wochen vorher vergeben",
+      "unsent_one": "{{part}} — nicht versandt, noch {{count}} Tag bis zur Zusammenkunft",
+      "unsent_other": "{{part}} — nicht versandt, noch {{count}} Tage bis zur Zusammenkunft",
+      "emptyMany_one": "{{meeting}}: niemand eingeteilt in {{count}} Programmpunkt",
+      "emptyMany_other": "{{meeting}}: niemand eingeteilt in {{count}} Programmpunkten",
+      "more_one": "Noch {{count}} ›",
+      "more_other": "Noch {{count}} ›",
+      "less": "Weniger"
     }
   },
   "audit": {
@@ -1293,7 +1311,36 @@
       "off": "Nur dasselbe Geschlecht wird gezeigt. Für einen Familienangehörigen des anderen Geschlechts einschalten.",
       "on": "Alle werden gezeigt. Bei jemandem des anderen Geschlechts wird gefragt, ob er zur Familie gehört."
     },
-    "nobodyHasCapabilityGuideline": "«{{name}}» ist noch bei niemandem markiert — gezeigt werden alle, denen die Hinweise zur Zusammenkunft diesen Programmpunkt erlauben."
+    "nobodyHasCapabilityGuideline": "«{{name}}» ist noch bei niemandem markiert — gezeigt werden alle, denen die Hinweise zur Zusammenkunft diesen Programmpunkt erlauben.",
+    "rank": {
+      "current": "Jetzt",
+      "best": "Passen am besten",
+      "others": "Weitere · am längsten ohne Aufgabe zuerst",
+      "awayOn": "Können am {{date}} nicht · {{n}}",
+      "away": "Können nicht · {{n}}",
+      "last": "Zuletzt: {{date}} — {{part}}",
+      "asAssistant": "(Partner)",
+      "neverLine": "Noch keine Schüleraufgabe",
+      "ago": "her",
+      "never": "noch nie",
+      "pair": "{{name}}: schon ein Paar · {{date}}",
+      "neverPaired": "{{name}}: im letzten halben Jahr kein Paar",
+      "sameMeeting": "schon in dieser Zusammenkunft · {{part}}",
+      "prevWeek": "letzte Woche",
+      "nextWeek": "nächste Woche",
+      "rotation": "derselbe Programmpunkt in der Nachbarwoche",
+      "awayAbsence": "abwesend · {{range}}",
+      "note": "Verlauf — ein halbes Jahr zurück und 12 Wochen voraus. «Passen am besten» — am längsten ohne Aufgabe und nichts, was in dieser Woche dagegen spricht.",
+      "weeks_one": "{{count}} Woche",
+      "weeks_other": "{{count}} Wochen",
+      "ownSoon_one": "eigene Aufgabe am {{date}} — in {{count}} Woche",
+      "ownSoon_other": "eigene Aufgabe am {{date}} — in {{count}} Wochen",
+      "neverLineTurn": "Diesen Programmpunkt noch nicht",
+      "duty": "Aufgabe in dieser Zusammenkunft · {{duty}}",
+      "noCapability": "nicht markiert für «{{name}}»",
+      "otherGender": "anderes Geschlecht — nur Familienangehöriger",
+      "historyError": "Der Verlauf wurde nicht geladen — die Liste ist ungeordnet. Bitte erneut öffnen."
+    }
   },
   "admin": {
     "users": {

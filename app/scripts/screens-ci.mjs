@@ -114,6 +114,10 @@ const SCREENS = [
   // of the congregation's meetings when no settings version was in force
   // today, and no frame ever opened it.
   ['co-schedule', '/cart/co-schedule', 'admin'],
+  // «Составление программы» (20 November 2026): the screen where the
+  // programme is built had no frame at all — the week check and the new
+  // pickers were checked by hand only.
+  ['programme-edit', `/schedule/edit?week=${CURRENT}`, 'admin'],
   ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
   // Its lines moved on the map (16 November 2026, step 3b).
   ...(RECUT ? [['recut-lines', `/cart/recut/lines/${RECUT}`, 'admin']] : []),

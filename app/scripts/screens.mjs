@@ -282,27 +282,27 @@ async function hub(page, name, expect, forbid) {
  * are gone, and the cleaning door opens this week's cleaning.
  */
 async function programmeSections(page) {
-  // «Составление программы» — the old programme screen, at /schedule/edit
-  // since the feed became the tab (23 September).
+  // «Составление программы», at /schedule/edit since the feed became the tab
+  // (23 September). Its doors to duties and cleaning left it on 20 November
+  // 2026 (#258), and this frame waited for them — so the screen went
+  // unphotographed, silently. Now the top of the week: the week check and
+  // the first meeting.
   await page.goto(`${BASE}/schedule/edit`);
-  const door = page.getByText(/^Уборка зала$/).first();
-  await door.waitFor({ timeout: 30000 }).catch(() => {});
-  if (!(await door.count())) {
-    console.log('· 14/15 — НЕ ТАК: на экране программы нет двери «Уборка зала»');
+  const check = page.getByText(/^Проверка недели$/).first();
+  await check.waitFor({ timeout: 30000 }).catch(() => {});
+  if (!(await check.count())) {
+    await fail(page, '14-programme-edit.png: на экране программы нет «Проверки недели»');
     return;
   }
   await page.waitForTimeout(1200);
-  await around(page, door, '14-programme-moved.png', { above: 160, height: 500 });
-  await words(page, '14-programme-moved.png',
-    ['Обязанности на встречах', 'Уборка зала',
-     'Теперь в своём экране: Собрание → Встречи', 'Теперь в своём экране: Собрание → Зал Царства'],
-    ['Обязанности', 'Уборка']);
-  await door.click();
-  await page.getByText(/^Уборка после встреч$/).first().waitFor({ timeout: 30000 }).catch(() => {});
-  await page.waitForTimeout(1200);
   const vp = page.viewportSize();
-  await page.screenshot({ path: join(OUT, '15-programme-to-cleaning.png'), clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 900) } });
-  await words(page, '15-programme-to-cleaning.png', ['Уборка после встреч', 'Еженедельная уборка'], []);
+  await page.screenshot({
+    path: join(OUT, '14-programme-edit.png'),
+    clip: { x: 0, y: 0, width: vp.width, height: Math.min(vp.height, 1100) },
+  });
+  console.log('· 14-programme-edit.png');
+  await words(page, '14-programme-edit.png', ['Составление программы', 'Проверка недели'],
+    ['Уборка зала', 'Обязанности на встречах']);
 }
 
 /**
@@ -323,7 +323,7 @@ async function programmeMenus(page) {
   await page.waitForTimeout(500);
 
   await page.goto(`${BASE}/schedule/edit`);
-  await page.getByText(/^Уборка зала$/).first().waitFor({ timeout: 30000 }).catch(() => {});
+  await page.getByText(/^Проверка недели$/).first().waitFor({ timeout: 30000 }).catch(() => {});
   await page.waitForTimeout(800);
   // The talk coordinator and the events left this header; «+» stayed.
   await words(page, '32-edit-menu.png', ['Составление программы'], [],

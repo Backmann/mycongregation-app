@@ -123,6 +123,8 @@ const STEPS = [
   ['Порядок ведения', 'node', ['scripts/check-run-order.mjs']],
   ['Составление программы', 'node', ['scripts/check-programme-editor.mjs']],
   ['Указания к встрече «Жизнь и служение»', 'node', ['scripts/check-meeting-guidelines.mjs']],
+  ['Порядок выбора людей', 'node', ['scripts/check-picker-rank.mjs']],
+  ['Проверка недели', 'node', ['scripts/check-week-check.mjs']],
   // The coordinator's ready messages, agreed word for word (25.10.2026).
   ['Готовые сообщения координатора речей', 'node', ['scripts/check-talk-messages.mjs']],
   // A screen nothing leads to (26.10.2026): `/schedule/[id]` lived on unseen.

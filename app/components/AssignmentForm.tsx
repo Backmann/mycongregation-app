@@ -41,13 +41,21 @@ import {
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from "../lib/parts";
-import { pickerGuideline } from "../lib/meeting-guidelines";
+import { ministryKind, pickerGuideline } from "../lib/meeting-guidelines";
+import { isStudentItem, type RankInput } from "../lib/picker-rank";
+
 import { usePermissions } from "../lib/permissions";
 import { useAllPublishers } from "../lib/useAllPublishers";
 import { GuestSpeakerField } from "./GuestSpeakerField";
 import { QuickReplaceSheet } from "./QuickReplaceSheet";
 import { useTranslation } from "react-i18next";
 import { Toast } from "./ErrorToast";
+
+type PickerRankProp = Pick<
+  RankInput,
+  "mode" | "partId" | "partKeys" | "otherId" | "noTurn" | "onlyDiscussion"
+>;
+
 
 interface Props {
   initial?: Partial<CreateAssignmentInput>;
@@ -257,24 +265,32 @@ export function AssignmentForm({
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["local-needs"] }),
   });
-  const applyLocalNeed = (topic: LocalNeedsTopic) => {
-    update("partTitle", topic.title);
-    void instant({ partTitle: topic.title });
-    if (topic.speakerPublisherId) {
-      update("publisherId", topic.speakerPublisherId);
-      void instant({ publisherId: topic.speakerPublisherId });
-    }
-    if (form.weekStartDate) markUsedMut.mutate(topic.id);
+  const applyLocalNeed = async (topic: LocalNeedsTopic) => {
     setLnPickerOpen(false);
+    update("partTitle", topic.title);
+    if (topic.speakerPublisherId) update("publisherId", topic.speakerPublisherId);
+    // The part is saved FIRST, then the topic told which part it became: in
+    // parallel the server could read the part's old brother and record him
+    // as the speaker (review, 20 November 2026).
+    await instant({
+      partTitle: topic.title,
+      ...(topic.speakerPublisherId ? { publisherId: topic.speakerPublisherId } : {}),
+    });
+    if (form.weekStartDate) markUsedMut.mutate(topic.id);
   };
 
   const activityQuery = useQuery({
-    queryKey: ["publisher-activity", form.weekStartDate],
+    // Half a year back and the planned weeks ahead (20 November 2026): a
+    // person's student parts come every 7 weeks, a pair repeated after
+    // 15–17, and the programme stands 11 weeks ahead.
+    queryKey: ["publisher-activity", form.weekStartDate, "rank"],
     queryFn: () =>
       publisherActivityApi.getActivity({
         weekStart: form.weekStartDate,
-        weeks: 13,
+        weeks: 26,
+        ahead: 12,
       }),
+    staleTime: 60 * 1000,
     enabled: !!form.weekStartDate,
   });
   const meetingDate = useMeetingDate(form.weekStartDate, form.eventType);
@@ -450,6 +466,48 @@ export function AssignmentForm({
     }
     return [key];
   }, [form.partKey]);
+
+  // The order of the pickers (lib/picker-rank.ts, 20 November 2026): the
+  // midweek's student parts by the student's own history and the pair; every
+  // other part in turn, by the same part.
+  // One answer to «is this a student part» — the order's own (review, 20
+  // November 2026: a second rule here could drift from it).
+  const isStudentPart = isStudentItem({
+    weekStartDate: form.weekStartDate ?? "",
+    eventType: form.eventType ?? "",
+    kind: "part",
+    partKey: form.partKey ?? "",
+    partTitle: form.partTitle ?? null,
+  });
+  const pickerRank = (side: "lead" | "assistant"): PickerRankProp | null => {
+    if (!form.weekStartDate) return null;
+    if (isStudentPart)
+      return side === "lead"
+        ? {
+            mode: "student-lead",
+            partId: assignmentId ?? null,
+            otherId: showAssistant ? (form.assistantPublisherId ?? null) : null,
+          }
+        : {
+            mode: "student-assistant",
+            partId: assignmentId ?? null,
+            otherId: form.publisherId ?? null,
+          };
+    if (suggestionPartKeys.length === 0) return null;
+    const key = form.partKey ?? "";
+    return {
+      mode: "rotation",
+      partId: assignmentId ?? null,
+      // Christian life is one turn, whichever of its parts (review, 20 Nov).
+      partKeys: key.startsWith("living_christians")
+        ? ["living_christians_1", "living_christians_2", "living_christians_extra"]
+        : suggestionPartKeys,
+      // A discussion counts only the discussions among the ministry parts.
+      onlyDiscussion: key.startsWith("apply_yourself_"),
+      // The Watchtower conductor holds his part week after week.
+      noTurn: key === "watchtower_conductor",
+    };
+  };
 
   const handleTalkSelect = (talk: PublicTalk | null) => {
     // Picking derives the title from the talk; clearing wipes both the talk
@@ -711,7 +769,7 @@ export function AssignmentForm({
                     <Pressable
                       key={topic.id}
                       style={[styles.lnRow, used && { opacity: 0.7 }]}
-                      onPress={() => applyLocalNeed(topic)}
+                      onPress={() => void applyLocalNeed(topic)}
                     >
                       <View style={{ flex: 1 }}>
                         <Text style={styles.lnRowTitle}>{topic.title}</Text>
@@ -959,6 +1017,10 @@ export function AssignmentForm({
                   pairOfPublisherId={
                     showAssistant ? (form.assistantPublisherId ?? null) : null
                   }
+                  rank={pickerRank("lead")}
+                  rankState={
+                    activityQuery.isSuccess ? "ready" : activityQuery.isError ? "error" : "loading"
+                  }
                   suggestionPartKeys={suggestionPartKeys}
                   activityById={activityById}
                   currentWeekStart={form.weekStartDate}
@@ -980,6 +1042,10 @@ export function AssignmentForm({
                     matchGenderOfPublisherId={form.publisherId ?? null}
                     guideline={guideline}
                     guidelineRole="assistant"
+                    rank={pickerRank("assistant")}
+                    rankState={
+                      activityQuery.isSuccess ? "ready" : activityQuery.isError ? "error" : "loading"
+                    }
                     showAllWords={
                       guideline?.assistant === "same-or-family"
                         ? {
