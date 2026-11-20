@@ -6385,7 +6385,7 @@
       "PART_NEEDS_ELDER": "Laut den Hinweisen zur Zusammenkunft behandelt diesen Programmpunkt nur ein Ältester.",
       "PART_NEEDS_ELDER_OR_SERVANT": "Laut den Hinweisen zur Zusammenkunft erhält diesen Programmpunkt ein Ältester oder Dienstamtgehilfe.",
       "PART_NO_ASSISTANT": "Dieser Programmpunkt hat keinen Partner.",
-      "ASSISTANT_SAME_GENDER": "Laut den Hinweisen zur Zusammenkunft hat der Partner dasselbe Geschlecht wie der Schüler.",
+      "ASSISTANT_SAME_GENDER": "Laut den Hinweisen zur Zusammenkunft hat der Partner dasselbe Geschlecht wie der Schüler. Um das Paar zu ändern, zuerst den Partner ändern oder entfernen.",
       "STUDENT_NOT_APPROVED": "Dieser Schüler ist für diesen Programmpunkt noch nicht freigegeben: in seiner Karte markieren."
     }
   },

@@ -6385,7 +6385,7 @@
       "PART_NEEDS_ELDER": "By the meeting guidelines only an elder gives this part.",
       "PART_NEEDS_ELDER_OR_SERVANT": "By the meeting guidelines this part is given to an elder or a ministerial servant.",
       "PART_NO_ASSISTANT": "This part has no assistant.",
-      "ASSISTANT_SAME_GENDER": "By the meeting guidelines the assistant is of the same gender as the student.",
+      "ASSISTANT_SAME_GENDER": "By the meeting guidelines the assistant is of the same gender as the student. To change the pair, change or remove the assistant first.",
       "STUDENT_NOT_APPROVED": "This student is not yet approved for this kind of part: mark it on the card."
     }
   },

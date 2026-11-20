@@ -27,17 +27,25 @@ import { createRequire } from 'node:module';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(join(ROOT, 'package.json'));
 
-// The module imports nothing — no types, no neighbours — so it travels alone.
-// That is deliberate: the truth about the minutes should have no dependencies.
+// The module imports one neighbour only — lib/meeting-guidelines.ts, which
+// itself imports nothing — so the two travel together. What a part IS (a
+// discussion has no counsel minute) is read the same way as by the pickers
+// and the server (20 November 2026); the minutes stay free of anything else.
 const ts = require('typescript');
 const out = mkdtempSync(join(tmpdir(), 'run-order-'));
 const src = readFileSync(join(ROOT, 'lib', 'run-order.ts'), 'utf8');
-const js = ts.transpileModule(src, {
-  compilerOptions: {
-    module: ts.ModuleKind.ESNext,
-    target: ts.ScriptTarget.ES2020,
-  },
-}).outputText;
+const emit = (code) =>
+  ts.transpileModule(code, {
+    compilerOptions: {
+      module: ts.ModuleKind.ESNext,
+      target: ts.ScriptTarget.ES2020,
+    },
+  }).outputText;
+const js = emit(src).replace(/from '\.\/meeting-guidelines'/g, "from './meeting-guidelines.mjs'");
+writeFileSync(
+  join(out, 'meeting-guidelines.mjs'),
+  emit(readFileSync(join(ROOT, 'lib', 'meeting-guidelines.ts'), 'utf8')),
+);
 writeFileSync(join(out, 'run-order.mjs'), js);
 const { buildMidweekRunOrder, buildWeekendRunOrder, totalRunMinutes } = await import(
   pathToFileURL(join(out, 'run-order.mjs'))

@@ -132,6 +132,12 @@ interface Props {
   guideline?: PickerGuideline | null;
   /** Which side of the part this picker fills, for `guideline`. */
   guidelineRole?: "lead" | "assistant";
+  /**
+   * For the lead's picker: the assistant already on the part. The pair is
+   * kept to the guidelines from this side too — the same gender, or one of
+   * the family after the elder says so (review of 20 November 2026).
+   */
+  pairOfPublisherId?: string | null;
   /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
   variant?: "field" | "chip";
   /** Label for the empty chip in chip variant. Defaults to common.none. */
@@ -202,6 +208,7 @@ export function PublisherSelector({
   showAllWords,
   guideline,
   guidelineRole = "lead",
+  pairOfPublisherId,
   preferGender,
   variant = "field",
   emptyLabel,
@@ -397,9 +404,14 @@ export function PublisherSelector({
     : "";
 
   // The meeting guidelines (20 November 2026): who may take the part at all.
+  const pairGender = pairOfPublisherId
+    ? (allPublishers.find((x) => x.id === pairOfPublisherId)?.gender ?? null)
+    : null;
   const guidelineAllows = (p: (typeof allPublishers)[number]): boolean => {
     if (!guideline) return true;
     if (guidelineRole === "lead") {
+      if (guideline.assistant === "same" && pairGender && p.gender !== pairGender)
+        return false;
       if (guideline.leadGender && p.gender !== guideline.leadGender) return false;
       if (
         guideline.leadAppointments &&
@@ -745,18 +757,23 @@ export function PublisherSelector({
                 onPress={async () => {
                   // п. 7, 11: of the other gender only one of the family —
                   // the elder's own word, kept nowhere (Lionel, 20 November).
+                  const other =
+                    guidelineRole === "assistant"
+                      ? matchGenderOfPublisherId
+                      : pairOfPublisherId;
+                  const otherGender =
+                    guidelineRole === "assistant" ? matchGender : pairGender;
                   if (
-                    guidelineRole === "assistant" &&
                     guideline?.assistant === "same-or-family" &&
-                    matchGender &&
+                    otherGender &&
                     p.gender &&
-                    p.gender !== matchGender &&
+                    p.gender !== otherGender &&
                     !(await confirm({
                       title: t("pickers.family.title"),
                       body: t("pickers.family.body", {
                         name: p.displayName,
                         lead:
-                          allPublishers.find((x) => x.id === matchGenderOfPublisherId)
+                          allPublishers.find((x) => x.id === other)
                             ?.displayName ?? "",
                       }),
                       confirmLabel: t("pickers.family.yes"),

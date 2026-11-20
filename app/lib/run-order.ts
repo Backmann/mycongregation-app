@@ -1,3 +1,4 @@
+import { ministryKind } from './meeting-guidelines';
 /**
  * THE MIDWEEK MEETING'S MINUTES, in one place.
  *
@@ -99,8 +100,8 @@ const COUNSEL_MIN = 1;
 
 /** A ministry-section part led as a discussion — no student, no counsel. */
 export function isDiscussion(title: string | null | undefined): boolean {
-  if (!title) return false;
-  return /(?:^|:\s*)(?:обсуждение|besprechung|discussion)(?=[\s.,:;!]|$)/iu.test(title.trim());
+  // The same reading as the pickers and the server (20 November 2026).
+  return ministryKind(title) === 'discussion';
 }
 
 export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {

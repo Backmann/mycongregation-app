@@ -1,6 +1,7 @@
 import { EventType } from './api';
 import i18n from './i18n';
 import { buildMidweekRunOrder } from './run-order';
+import { ministryKind } from './meeting-guidelines';
 
 export type Subsection =
   | 'opening'
@@ -368,21 +369,23 @@ const NON_NUMBERED_PARTS = new Set<string>([
 export function skillCapabilityFromTitle(
   title: string | null | undefined,
 ): string | null {
-  if (!title) return null;
-  const t = title.toLowerCase();
-  // "Речь" (a student talk) is checked FIRST: it describes the delivery
-  // format (solo, no assistant) and overrides the ministry heading, which
-  // may itself read like a demonstration skill (e.g. "Объясняйте свои
-  // взгляды. Речь на основе ...").
-  if (t.includes('речь')) return 'fs_talk';
-  if (t.includes('начина') && t.includes('разговор'))
-    return 'fs_starting_conversation';
-  if (t.includes('развива') && t.includes('интерес')) return 'fs_following_up';
-  if (t.includes('ученик') && (t.includes('подготав') || t.includes('готов')))
-    return 'fs_making_disciples';
-  if (t.includes('объясня') && t.includes('взгляд'))
-    return 'fs_explaining_beliefs';
-  return null;
+  // ONE reading of a ministry part's title for the whole app (review of
+  // 20 November 2026): the pickers, the timing and the server agree on what
+  // a part is — lib/meeting-guidelines.ts, the server's rule word for word.
+  switch (ministryKind(title)) {
+    case 'talk':
+      return 'fs_talk';
+    case 'start':
+      return 'fs_starting_conversation';
+    case 'follow':
+      return 'fs_following_up';
+    case 'disciples':
+      return 'fs_making_disciples';
+    case 'explain':
+      return 'fs_explaining_beliefs';
+    default:
+      return null;
+  }
 }
 
 export function isNumberedPart(key: string): boolean {

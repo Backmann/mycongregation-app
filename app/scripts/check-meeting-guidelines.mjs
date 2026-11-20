@@ -65,6 +65,10 @@ if (serverDir) {
     'правило в приложении — слово в слово серверное (lib/meeting-guidelines.ts)',
     norm(cut(appRule)) === norm(server),
   );
+} else if (process.env.CI) {
+  // CI checks the server out beside the app: missing there is a broken job,
+  // not a reason to skip the comparison.
+  check('сервер лежит рядом с приложением (CI: шаг «Checkout the server (for the gate)»)', false);
 } else {
   console.log('· сервер не лежит рядом — сверка с ним пропущена');
 }
@@ -102,6 +106,12 @@ check('у помощника — роль assistant', form.includes('guidelineRo
 check('обсуждение и речь — без помощника', /isStudentTalk =[\s\S]{0,120}guideline\?\.noAssistant/.test(form));
 check('выбор не показывает тех, кого правило не пускает (не снимается «показать всех»)', /if \(guideline && !guidelineAllows\(p\)\) return false;/.test(selector));
 check('другой пол — только с подтверждением «член семьи»', selector.includes('pickers.family.title'));
+check('выбор ведущего видит пол помощника (пара по указаниям с обеих сторон)', form.includes('pairOfPublisherId={') && selector.includes('guideline.assistant === "same" && pairGender && p.gender !== pairGender'));
+check('обсуждение не фильтруется навыком учащегося', /requiredCap = isGuidedDiscussion\s*\?\s*undefined/.test(form));
+check('часть с темой местных потребностей — только старейшины', form.includes('holdsTopic') && form.includes('leadAppointments: ["elder"]'));
+const parts = read(join(ROOT, 'lib/parts.ts'));
+const runOrder = read(join(ROOT, 'lib/run-order.ts'));
+check('одно чтение названия на всё приложение: навык и время — через ministryKind', parts.includes('switch (ministryKind(title))') && runOrder.includes("return ministryKind(title) === 'discussion';"));
 const topic = read(join(ROOT, 'components/local-needs/TopicForm.tsx'));
 check('докладчик «Местных потребностей» — только старейшина', topic.includes('appointmentFilter="elder"'));
 

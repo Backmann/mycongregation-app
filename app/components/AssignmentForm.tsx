@@ -244,7 +244,10 @@ export function AssignmentForm({
     // unavailable at exactly the moment it was needed.
     queryKey: ["local-needs", "picker"],
     queryFn: () => localNeedsApi.list(),
-    enabled: lnPickerOpen,
+    // Also for any Christian-life part: one that holds a topic is given by an
+    // elder only (guidelines п. 16), and its title no longer says so.
+    enabled: lnPickerOpen || isLivingChristians,
+    retry: false,
   });
   const markUsedMut = useMutation({
     mutationFn: (id: string) =>
@@ -291,7 +294,17 @@ export function AssignmentForm({
   // The midweek guidelines (20 November 2026): who may take the part at all,
   // and whether it has an assistant — a student talk and a discussion have
   // none.
-  const guideline = pickerGuideline(form.partKey, form.partTitle);
+  const holdsTopic =
+    isLivingChristians &&
+    !!assignmentId &&
+    (lnQuery.data ?? []).some((topic) =>
+      (topic.uses ?? []).some((u) => u.assignmentId === assignmentId),
+    );
+  const baseGuideline = pickerGuideline(form.partKey, form.partTitle);
+  const guideline =
+    holdsTopic && baseGuideline
+      ? { ...baseGuideline, leadAppointments: ["elder"] as const }
+      : baseGuideline;
   const isStudentTalk =
     !!partDef?.hasAssistant &&
     (titleSkill === "fs_talk" || !!guideline?.noAssistant);
@@ -408,8 +421,14 @@ export function AssignmentForm({
   const christianLifeCap = (form.partKey ?? "").startsWith("living_christians")
     ? "christian_life"
     : null;
-  const requiredCap =
-    titleCap ?? christianLifeCap ?? partDef?.requiredCapability;
+  // A discussion is no student part: its leader is chosen among the elders
+  // and servants by the guidelines, not by a student's skill (review of
+  // 20 November 2026 — the skill emptied the list).
+  const isGuidedDiscussion =
+    !!guideline?.noAssistant && !!guideline?.leadAppointments;
+  const requiredCap = isGuidedDiscussion
+    ? undefined
+    : (titleCap ?? christianLifeCap ?? partDef?.requiredCapability);
   const requiredAssistantCap =
     titleCap ??
     partDef?.requiredAssistantCapability ??
@@ -937,6 +956,9 @@ export function AssignmentForm({
                   }
                   requiredCapability={requiredCap}
                   guideline={guideline}
+                  pairOfPublisherId={
+                    showAssistant ? (form.assistantPublisherId ?? null) : null
+                  }
                   suggestionPartKeys={suggestionPartKeys}
                   activityById={activityById}
                   currentWeekStart={form.weekStartDate}
