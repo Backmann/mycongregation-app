@@ -129,22 +129,6 @@ export function CollapsibleMeetingBlock({
             </View>
           ) : null}
         </View>
-        {actionLabel && onAction ? (
-          <Pressable
-            style={({ pressed }) => [
-              styles.actionBtn,
-              { backgroundColor: accent },
-              pressed && styles.actionBtnPressed,
-              actionBusy && styles.actionBtnDisabled,
-            ]}
-            onPress={onAction}
-            disabled={!!actionBusy}
-          >
-            <Text style={styles.actionBtnText}>
-              {actionBusy ? '…' : actionLabel}
-            </Text>
-          </Pressable>
-        ) : null}
         {/* Progress badge and the print button share one narrow column, so the
             title keeps the width it needs on phone screens. */}
         {showBadge || onPrint ? (
@@ -196,6 +180,28 @@ export function CollapsibleMeetingBlock({
           color="#94a3b8"
         />
       </Pressable>
+      {/* Its own line under the title (programme audit, 20 November 2026):
+          beside it, on a phone, the title broke into three lines and the
+          address was cut. */}
+      {actionLabel && onAction ? (
+        <View style={styles.actionRow}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionBtn,
+              { backgroundColor: accent },
+              pressed && styles.actionBtnPressed,
+              actionBusy && styles.actionBtnDisabled,
+            ]}
+            onPress={onAction}
+            disabled={!!actionBusy}
+            accessibilityRole="button"
+          >
+            <Text style={styles.actionBtnText}>
+              {actionBusy ? '…' : actionLabel}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
       {banner}
       {open ? children : null}
     </View>
@@ -209,6 +215,7 @@ function tint(hex: string): string {
 }
 
 const styles = StyleSheet.create({
+  actionRow: { paddingHorizontal: 16, paddingBottom: 12, alignItems: 'flex-end' },
   wrap: {
     marginTop: 12,
     backgroundColor: '#ffffff',

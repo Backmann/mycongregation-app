@@ -21,6 +21,7 @@ import { PublisherSelector } from "./PublisherSelector";
 import { PublicTalkSelector } from "./PublicTalkSelector";
 import { EventOnDateNotice } from "./EventOnDateNotice";
 import { formatWeekRange } from "../lib/week-range";
+import { useMeetingDate } from "../lib/useMeetingDate";
 import { parseISODate } from "../lib/dates";
 import {
   AssignmentStatus,
@@ -272,6 +273,7 @@ export function AssignmentForm({
       }),
     enabled: !!form.weekStartDate,
   });
+  const meetingDate = useMeetingDate(form.weekStartDate, form.eventType);
   const activityById = new Map<string, PublisherActivity>();
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
 
@@ -515,14 +517,25 @@ export function AssignmentForm({
         ) : null}
         {lockIdentity ? (
           <View style={styles.contextCard}>
+            {/* The meeting by its name and its day (programme audit, 20
+                November 2026) — not the week's range and «Среди недели». */}
             <Text style={styles.contextMeta}>
-              {/^\d{4}-\d{2}-\d{2}$/.test(form.weekStartDate)
-                ? formatWeekRange(parseISODate(form.weekStartDate), i18n.language)
-                : form.weekStartDate}
-              {" \u00b7 "}
-              {t(`assignments.eventTypeShort.${form.eventType}`, {
-                defaultValue: form.eventType,
-              })}
+              {meetingDate &&
+              (form.eventType === "midweek" || form.eventType === "weekend")
+                ? `${t(`eventTypes.${form.eventType}`)} \u00b7 ${parseISODate(
+                    meetingDate,
+                  ).toLocaleDateString(i18n.language, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}`
+                : `${
+                    /^\d{4}-\d{2}-\d{2}$/.test(form.weekStartDate)
+                      ? formatWeekRange(parseISODate(form.weekStartDate), i18n.language)
+                      : form.weekStartDate
+                  } \u00b7 ${t(`assignments.eventTypeShort.${form.eventType}`, {
+                    defaultValue: form.eventType,
+                  })}`}
             </Text>
             {autosave && (instantSaving || instantSavedAt || instantError) ? (
               <Text
@@ -740,7 +753,7 @@ export function AssignmentForm({
               label={t("assignments.form.field.talk")}
               value={form.publicTalkId}
               onChange={handleTalkSelect}
-              forDate={weekendOf(form.weekStartDate)}
+              forDate={meetingDate ?? weekendOf(form.weekStartDate)}
             />
             <FormField
               label={t("assignments.form.field.talkThemeManual")}
@@ -761,7 +774,7 @@ export function AssignmentForm({
               label={t("assignments.form.field.talk")}
               value={form.publicTalkId}
               onChange={handleTalkSelect}
-              forDate={weekendOf(form.weekStartDate)}
+              forDate={meetingDate ?? weekendOf(form.weekStartDate)}
             />
             {/*
               Тема вручную — на ЛЮБОЙ неделе, а не только при визите районного.

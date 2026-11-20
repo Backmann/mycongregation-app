@@ -1091,7 +1091,8 @@
       "thisWeek": "This week",
       "jumpToToday": "Jump to today",
       "previous": "Previous week",
-      "next": "Next week"
+      "next": "Next week",
+      "allWeeks": "All weeks"
     },
     "subsection": {
       "opening": "Opening",
@@ -1168,7 +1169,6 @@
       "watchtowerPrefix": "Watchtower",
       "movedFrom": "Moved — usually {{day}}"
     },
-    "movedTo": "In {{path}}",
     "lock": {
       "frozen": "The meeting was on {{date}} — its program is now locked as a record and can no longer be changed.",
       "grace": "The meeting has taken place — the program can still be corrected until {{until}}.",
@@ -4130,7 +4130,7 @@
     "clear": "Remove the song",
     "search": "Search by number or title",
     "none": "Not chosen",
-    "catalogEmpty": "The song catalog is empty. Import songs under Profile → Songs."
+    "catalogEmpty": "The song catalog is empty. Import songs under Congregation → Administration → Import songs."
   },
   "songsImport": {
     "title": "Import songs",

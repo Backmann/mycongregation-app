@@ -98,7 +98,18 @@ export function WeekDrawer({
   // Turn published weeks into a list of meetings of the selected kind: the
   // current week on top, the rest grouped by the month the meeting falls in.
   const { currentEntry, groups } = useMemo(() => {
-    const rows: PublishedWeek[] = weeksQuery.data ?? [];
+    // The weeks ahead first, nearest at the top, then the past, latest first
+    // (programme audit, 20 November 2026): newest-first put the farthest
+    // planned week above next week's, and the planner read the list upwards.
+    const todayKey = dayjs(currentWeekStart).format('YYYY-MM-DD');
+    const rows: PublishedWeek[] = [...(weeksQuery.data ?? [])].sort((a, b) => {
+      const fa = a.weekStartDate >= todayKey;
+      const fb = b.weekStartDate >= todayKey;
+      if (fa !== fb) return fa ? -1 : 1;
+      return fa
+        ? a.weekStartDate.localeCompare(b.weekStartDate)
+        : b.weekStartDate.localeCompare(a.weekStartDate);
+    });
     let current: MeetingEntry | null = null;
     const out: { key: string; label: string; entries: MeetingEntry[] }[] = [];
     for (const r of rows) {
