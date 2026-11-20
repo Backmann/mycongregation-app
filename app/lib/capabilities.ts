@@ -15,6 +15,11 @@ export interface CapabilityDef {
   brotherOnly?: boolean;
   /** Requires elder appointment (informational, not enforced). */
   elderOnly?: boolean;
+  /**
+   * An elder or a ministerial servant (the midweek guidelines, п. 3, 4, 16):
+   * the pickers and the server hold to it whatever is marked here.
+   */
+  elderOrServant?: boolean;
   /** Requires baptism (informational, not enforced). */
   baptizedOnly?: boolean;
 }
@@ -32,10 +37,10 @@ export const CAPABILITY_CATEGORIES: CapabilityCategory[] = [
     capabilities: [
       { key: 'midweek_chairman', label: 'Chairman', brotherOnly: true, elderOnly: true },
       { key: 'midweek_opening_prayer', label: 'Opening prayer', brotherOnly: true, baptizedOnly: true },
-      { key: 'treasures_talk', label: 'Treasures from God\'s Word', brotherOnly: true, elderOnly: true },
-      { key: 'spiritual_gems', label: 'Spiritual Gems', brotherOnly: true, baptizedOnly: true },
-      { key: 'bible_reading', label: 'Bible reading', brotherOnly: true, baptizedOnly: true },
-      { key: 'christian_life', label: 'Life and Ministry part', brotherOnly: true },
+      { key: 'treasures_talk', label: 'Treasures from God\'s Word', brotherOnly: true, elderOrServant: true },
+      { key: 'spiritual_gems', label: 'Spiritual Gems', brotherOnly: true, elderOrServant: true },
+      { key: 'bible_reading', label: 'Bible reading', brotherOnly: true },
+      { key: 'christian_life', label: 'Life and Ministry part', brotherOnly: true, elderOrServant: true },
       { key: 'congregation_study_conductor', label: 'Congregation Bible Study', brotherOnly: true, elderOnly: true },
       { key: 'congregation_study_reader', label: 'Congregation Bible Study reader', brotherOnly: true, baptizedOnly: true },
     ],

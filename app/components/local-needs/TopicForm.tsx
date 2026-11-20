@@ -217,7 +217,9 @@ export function TopicForm({
         label={t('localNeeds.fields.speaker')}
         value={speakerId}
         onChange={setSpeakerId}
-        preferAppointment="elder"
+        // Only an elder gives «Местные потребности» (guidelines п. 16): a
+        // hard limit now — the server refuses anyone else (20 November 2026).
+        appointmentFilter="elder"
       />
 
       {/* A topic given weeks ago, recorded after the fact. */}

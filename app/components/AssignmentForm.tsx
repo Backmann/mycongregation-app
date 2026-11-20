@@ -41,6 +41,7 @@ import {
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from "../lib/parts";
+import { pickerGuideline } from "../lib/meeting-guidelines";
 import { usePermissions } from "../lib/permissions";
 import { useAllPublishers } from "../lib/useAllPublishers";
 import { GuestSpeakerField } from "./GuestSpeakerField";
@@ -287,7 +288,13 @@ export function AssignmentForm({
   // assistant, because the positional key (apply_yourself_1..4) varies and a
   // talk can land on any of those slots.
   const titleSkill = skillCapabilityFromTitle(form.partTitle);
-  const isStudentTalk = !!partDef?.hasAssistant && titleSkill === "fs_talk";
+  // The midweek guidelines (20 November 2026): who may take the part at all,
+  // and whether it has an assistant — a student talk and a discussion have
+  // none.
+  const guideline = pickerGuideline(form.partKey, form.partTitle);
+  const isStudentTalk =
+    !!partDef?.hasAssistant &&
+    (titleSkill === "fs_talk" || !!guideline?.noAssistant);
   const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
   // A student TALK has one participant: if the workbook title marks this
   // part as a talk, any previously stored assistant is cleared on open —
@@ -929,6 +936,7 @@ export function AssignmentForm({
                     form.assistantPublisherId ? [form.assistantPublisherId] : []
                   }
                   requiredCapability={requiredCap}
+                  guideline={guideline}
                   suggestionPartKeys={suggestionPartKeys}
                   activityById={activityById}
                   currentWeekStart={form.weekStartDate}
@@ -948,6 +956,17 @@ export function AssignmentForm({
                     suggestionRole="assistant"
                     partnerOfPublisherId={form.publisherId ?? null}
                     matchGenderOfPublisherId={form.publisherId ?? null}
+                    guideline={guideline}
+                    guidelineRole="assistant"
+                    showAllWords={
+                      guideline?.assistant === "same-or-family"
+                        ? {
+                            toggle: t("pickers.familyToggle.toggle"),
+                            off: t("pickers.familyToggle.off"),
+                            on: t("pickers.familyToggle.on"),
+                          }
+                        : undefined
+                    }
                     activityById={activityById}
                     currentWeekStart={form.weekStartDate}
                     currentEventType={form.eventType}

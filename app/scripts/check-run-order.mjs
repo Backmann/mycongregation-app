@@ -139,8 +139,11 @@ const CASES = [
       ['apply_yourself_3', 6],
       ['mid_song', 5],
       ['living_christians_1', 15],
-      ['co_service_talk', 30],
+      // Guidelines п. 21 (20 November 2026): the chairman's review and
+      // announcements come BEFORE the overseer's talk; he closes with the
+      // song of his choice and the prayer.
       ['midweek_closing_words', 3],
+      ['co_service_talk', 30],
       ['midweek_closing_prayer', 6],
     ],
     total: 105,
