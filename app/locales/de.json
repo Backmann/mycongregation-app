@@ -1091,7 +1091,8 @@
       "thisWeek": "Diese Woche",
       "jumpToToday": "Zur aktuellen Woche",
       "previous": "Vorherige Woche",
-      "next": "Nächste Woche"
+      "next": "Nächste Woche",
+      "allWeeks": "Alle Wochen"
     },
     "subsection": {
       "opening": "Einleitung",
@@ -1168,7 +1169,6 @@
       "watchtowerPrefix": "Wachtturm",
       "movedFrom": "Verlegt — sonst {{day}}"
     },
-    "movedTo": "Unter {{path}}",
     "lock": {
       "frozen": "Die Zusammenkunft war am {{date}} — das Programm ist jetzt Teil der Aufzeichnungen und kann nicht mehr geändert werden.",
       "grace": "Die Zusammenkunft hat stattgefunden — das Programm kann bis {{until}} noch korrigiert werden.",
@@ -4130,7 +4130,7 @@
     "clear": "Lied entfernen",
     "search": "Nach Nummer oder Titel suchen",
     "none": "Nicht gewählt",
-    "catalogEmpty": "Der Liederkatalog ist leer. Importieren Sie Lieder unter Profil → Lieder."
+    "catalogEmpty": "Der Liederkatalog ist leer. Importieren Sie Lieder unter Versammlung → Verwaltung → Lieder importieren."
   },
   "songsImport": {
     "title": "Lieder importieren",

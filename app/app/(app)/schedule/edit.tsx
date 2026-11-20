@@ -34,8 +34,6 @@ import {
   publishersApi,
   meetingSettingsApi,
   readinessApi,
-  coVisitItemsApi,
-  fieldServiceApi,
   specialEventsApi,
   circuitOverseersApi,
   CircuitOverseer,
@@ -78,11 +76,9 @@ import {
   buildMeetingSchedulePdfHtml,
   type MeetingPdfWeek,
 } from "../../../lib/meetingSchedulePdf";
-import { FieldServiceSection } from "../../../components/FieldServiceSection";
 import { CongressWeekBanner } from "../../../components/CongressWeekBanner";
 import { NotHeldCard } from "../../../components/NotHeldCard";
 import { usePermissions } from "../../../lib/permissions";
-import { useMayOpen } from "../../../lib/useMayOpen";
 import { SpecialEventsWeekBanner } from "../../../components/SpecialEventsWeekBanner";
 import { weekRules } from "../../../lib/week-rules";
 import { ReplacedMeetingNotice } from "../../../components/ReplacedMeetingNotice";
@@ -164,7 +160,6 @@ export default function ScheduleEditScreen() {
 function ProgrammeEditor() {
   const { t, i18n } = useTranslation();
   const perms = usePermissions();
-  const mayOpen = useMayOpen();
   const [publishingType, setPublishingType] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -306,7 +301,6 @@ function ProgrammeEditor() {
     queryFn: () => absencesApi.list(),
   });
   const {
-    canEditFieldServiceMeetings,
     canEditMidweekSchedule: mayEditMidweek,
     canEditWeekendSchedule: mayEditWeekend,
   } = usePermissions();
@@ -381,69 +375,7 @@ function ProgrammeEditor() {
   // lives in «Meeting duties».
   const { duties, activityById } = useDutiesWeek(weekStartISO, nextWeekISO);
 
-  // The planners see the week's drafts here too (marked «черновик»), so a
-  // Saturday prepared on the month page is not added a second time from
-  // this editor. Everybody else reads the announced schedule, under its own
-  // key, so the two never share a cache entry.
-  const fieldServiceQuery = useQuery({
-    queryKey: [
-      "field-service",
-      weekStartISO,
-      canEditFieldServiceMeetings ? "drafts" : "public",
-    ],
-    queryFn: () =>
-      fieldServiceApi.list({
-        weekStart: weekStartISO,
-        drafts: canEditFieldServiceMeetings,
-        // Crossed out where called off — the planner restores or deletes it.
-        cancelled: true,
-      }),
-    placeholderData: keepPreviousData,
-  });
-  const fieldServiceMeetings = fieldServiceQuery.data ?? [];
-  // During a circuit-overseer visit the week's field service is planned in the
-  // visit schedule, not here, so this section stood empty exactly when there
-  // was the most going on. Shown, not edited: these belong to the visit.
-  const coVisitFieldServiceQuery = useQuery({
-    queryKey: ["co-visit-field-service"],
-    queryFn: () => coVisitItemsApi.fieldService(),
-    staleTime: 5 * 60 * 1000,
-  });
-  const weekEndISO = formatDateISO(addDays(weekStart, 6));
-  const visitFieldServiceMeetings = (coVisitFieldServiceQuery.data ?? [])
-    .flatMap((w) => w.meetings)
-    .filter((m) => m.itemDate >= weekStartISO && m.itemDate <= weekEndISO);
-  const invalidateFieldService = () => {
-    queryClient.invalidateQueries({
-      queryKey: ["field-service"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["field-service-conductor-stats"],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["field-service-topic-history"],
-    });
-    // Same reason as on the field-service screen: the overseer's group counts
-    // are derived from these meetings, and a meeting can be saved from here
-    // too. Two places save, so two places must refresh.
-    queryClient.invalidateQueries({ queryKey: ["service-overseer"] });
-  };
-  const createFieldServiceMutation = useMutation({
-    mutationFn: (input: Parameters<typeof fieldServiceApi.create>[0]) =>
-      fieldServiceApi.create(input),
-    onSuccess: () => invalidateFieldService(),
-  });
-  const updateFieldServiceMutation = useMutation({
-    mutationFn: (vars: {
-      id: string;
-      input: Parameters<typeof fieldServiceApi.update>[1];
-    }) => fieldServiceApi.update(vars.id, vars.input),
-    onSuccess: () => invalidateFieldService(),
-  });
-  const removeFieldServiceMutation = useMutation({
-    mutationFn: (id: string) => fieldServiceApi.remove(id),
-    onSuccess: () => invalidateFieldService(),
-  });
+
 
 
   /**
@@ -1340,13 +1272,15 @@ function ProgrammeEditor() {
                         absentIds={midweekAbsentIds}
                         publishersById={publishersById}
                       />
-                      <ConductEntry
-                        week={items[0].weekStartDate}
-                        chairmanPublisherId={
-                          items.find((a) => a.partKey === "midweek_chairman")
-                            ?.publisherId ?? null
-                        }
-                      />
+                      <View style={styles.conductRow}>
+                        <ConductEntry
+                          week={items[0].weekStartDate}
+                          chairmanPublisherId={
+                            items.find((a) => a.partKey === "midweek_chairman")
+                              ?.publisherId ?? null
+                          }
+                        />
+                      </View>
                       <MidweekSections
                         canEdit={canEditMidweekSchedule}
                         onEdit={setEditing}
@@ -1429,14 +1363,16 @@ function ProgrammeEditor() {
                         absentIds={weekendAbsentIds}
                         publishersById={publishersById}
                       />
-                      <ConductEntry
-                        kind="weekend"
-                        week={items[0].weekStartDate}
-                        chairmanPublisherId={
-                          items.find((a) => a.partKey === "weekend_chairman")
-                            ?.publisherId ?? null
-                        }
-                      />
+                      <View style={styles.conductRow}>
+                        <ConductEntry
+                          kind="weekend"
+                          week={items[0].weekStartDate}
+                          chairmanPublisherId={
+                            items.find((a) => a.partKey === "weekend_chairman")
+                              ?.publisherId ?? null
+                          }
+                        />
+                      </View>
                       <WeekendSections
                         canEdit={canEditWeekendSchedule}
                         items={programItems}
@@ -1498,59 +1434,9 @@ function ProgrammeEditor() {
                 );
               })}
 
-              {/* Duties and cleaning moved to screens of their own (Congregation →
-                  Meetings, Kingdom Hall). Two doors stand where the sections were,
-                  so whoever looks for them here learns where they went. */}
-              {!congressThisWeek && (
-                <View style={styles.movedDoors}>
-                  {mayOpen("/publishers/duties") ? (
-                    <MovedDoor
-                      icon="people-outline"
-                      color={SECTION_COLORS.duty.color}
-                      title={t("congregationHub.duties")}
-                      subtitle={t("schedule.movedTo", { path: `${t("tabs.publishers")} → ${t("congregationHub.sections.meetings")}` })}
-                      onPress={() => router.push("/publishers/duties" as never)}
-                    />
-                  ) : null}
-                  <MovedDoor
-                    icon="sparkles-outline"
-                    color={SECTION_COLORS.cleaning.color}
-                    title={t("congregationHub.cleaning")}
-                    subtitle={t("schedule.movedTo", { path: `${t("tabs.publishers")} → ${t("congregationHub.sections.hall")}` })}
-                    onPress={() => router.push(`/publishers/cleaning-week?week=${weekStartISO}` as never)}
-                  />
-                </View>
-              )}
-
-              {/* Встречи для проповеди — разворачивающаяся секция */}
-              <CollapsibleMeetingBlock
-                accent={SECTION_COLORS.field_service.color}
-                icon="navigate-outline"
-                title={t("fieldService.title")}
-                assigned={0}
-                total={0}
-                showBadge={false}
-              >
-                <FieldServiceSection
-                  meetings={fieldServiceMeetings}
-                  visitMeetings={visitFieldServiceMeetings}
-                  hideHeader
-                  publishersById={publishersById}
-                  canEdit={canEditFieldServiceMeetings}
-                  weekStartISO={weekStartISO}
-                  onCreate={(input) => createFieldServiceMutation.mutate(input)}
-                  onUpdate={(id, input) =>
-                    updateFieldServiceMutation.mutate({ id, input })
-                  }
-                  onRemove={(id) => removeFieldServiceMutation.mutate(id)}
-                  pending={
-                    createFieldServiceMutation.isPending ||
-                    updateFieldServiceMutation.isPending ||
-                    removeFieldServiceMutation.isPending
-                  }
-                />
-              </CollapsibleMeetingBlock>
-
+              {/* Only the two meetings live here (Lionel, 20 November 2026):
+                  duties, cleaning and the field service meetings have screens
+                  of their own — Собрание → Встречи, Зал Царства, and Служение. */}
 
               {isEmpty && (
                 <Text style={styles.emptyHint}>
@@ -1595,37 +1481,6 @@ function ProgrammeEditor() {
   );
 }
 
-/** A door to where a section moved: its icon, its name, where it lives now. */
-function MovedDoor({
-  icon,
-  color,
-  title,
-  subtitle,
-  onPress,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-  title: string;
-  subtitle: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.movedDoor, pressed && { opacity: 0.7 }]}
-      accessibilityRole="button"
-    >
-      <View style={[styles.movedIcon, { backgroundColor: `${color}14` }]}>
-        <Ionicons name={icon} size={18} color={color} />
-      </View>
-      <View style={styles.movedBody}>
-        <Text style={styles.movedTitle}>{title}</Text>
-        <Text style={styles.movedSub}>{subtitle}</Text>
-      </View>
-      <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-    </Pressable>
-  );
-}
 
 const SUBSECTION_ORDER: Subsection[] = [
   "opening",
@@ -1992,7 +1847,8 @@ function AssignmentRow({
     ["treasures", "apply_yourself", "christian_life"].includes(
       resolveSubsection(assignment.partKey) as string,
     )
-      ? ` (${assignment.partDurationMin} ${t("schedule.minShort")})`
+      ? // Non-breaking spaces: «(30 / мин)» broke inside the brackets.
+        `\u00a0(${assignment.partDurationMin}\u00a0${t("schedule.minShort")})`
       : "";
   const partLabel =
     (enrichSongRef(rawPartLabel, songTitles) ?? rawPartLabel) + durationSuffix;
@@ -2049,6 +1905,10 @@ function AssignmentRow({
       disabled={!canEdit}
     >
       <View style={styles.badgeCol}>
+        {/* A row without a number (chairman, prayer, reader) shows no badge:
+            a «·» in a circle on every such row was noise (programme audit,
+            20 November 2026). */}
+        {displayNumber != null ? (
         <View
           style={[
             styles.orderBadge,
@@ -2066,9 +1926,10 @@ function AssignmentRow({
                 : null,
             ]}
           >
-            {displayNumber ?? "·"}
+            {displayNumber}
           </Text>
         </View>
+        ) : null}
         {partTime ? (
           <View style={styles.timePill}>
             <Text style={styles.timePillStart}>{partTime.start}</Text>
@@ -2204,6 +2065,7 @@ function AssignmentRow({
 }
 
 const styles = StyleSheet.create({
+  conductRow: { paddingHorizontal: 14, marginTop: 8 },
   awayNote: {
     flexDirection: "row",
     gap: 8,
@@ -2218,17 +2080,6 @@ const styles = StyleSheet.create({
   awayNoteTitle: { fontFamily: "Manrope_700Bold", fontSize: 13, color: "#92400e" },
   awayNoteLine: { fontFamily: "Manrope_500Medium", fontSize: 13, color: "#78350f" },
   previousWeek: { opacity: 0.45 },
-  movedDoors: { gap: 8, marginTop: 12 },
-  movedDoor: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
   movedIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   movedBody: { flex: 1, minWidth: 0 },
   movedTitle: { fontSize: 15.5, fontFamily: "Manrope_700Bold", color: "#0f172a" },
@@ -2281,6 +2132,9 @@ const styles = StyleSheet.create({
   section: { marginTop: 16 },
   weekendCard: {
     marginTop: 14,
+    // Inset from the meeting card's edges on both sides (it touched the
+    // left edge and kept a gap on the right).
+    marginHorizontal: 12,
     backgroundColor: "#fff",
     borderRadius: 14,
     overflow: "hidden",

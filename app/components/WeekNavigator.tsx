@@ -4,6 +4,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 import {
   addWeeks,
   formatWeekRange,
@@ -111,7 +112,14 @@ function BreathingDrawerButton({ onPress }: { onPress: () => void }) {
     outputRange: [1, 0.72],
   });
   return (
-    <Pressable onPress={onPress} hitSlop={10}>
+    <Pressable
+      onPress={onPress}
+      hitSlop={10}
+      // An icon alone said nothing to a screen reader (programme audit, 20
+      // November 2026).
+      accessibilityRole="button"
+      accessibilityLabel={i18n.t('schedule.weekNav.allWeeks')}
+    >
       <Animated.View
         style={[styles.drawerBtn, { opacity, transform: [{ scale }] }]}
       >
