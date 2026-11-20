@@ -38,6 +38,11 @@ interface Props {
   circuitOverseer?: { displayName: string; role?: string | null } | null;
   /** Forwarded to the form: manager-only visiting-overseer picker. */
   coPicker?: AssignmentFormCoPicker | null;
+  /**
+   * Not a window: the part beside the week, on the right of the wide
+   * programme screen (variant «В», 20 November 2026). The caller places it.
+   */
+  panel?: boolean;
 }
 
 const SONG_KEYS = ["mid_song", "weekend_song", "weekend_opening_song"];
@@ -56,6 +61,7 @@ export function AssignmentSheet({
   onNext,
   circuitOverseer,
   coPicker,
+  panel,
 }: Props) {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
@@ -67,7 +73,8 @@ export function AssignmentSheet({
   // sheet doesn't briefly collapse to an empty header before fading out.
   const [active, setActive] = useState<Assignment | null>(assignment);
   useEffect(() => {
-    if (assignment) {
+    // A panel has no closing animation to wait for.
+    if (assignment || panel) {
       setActive(assignment);
       return;
     }
@@ -242,7 +249,7 @@ export function AssignmentSheet({
       // this was the THIRD hand-rolled shell in the app, and being third is
       // exactly why fixes made to the other two never reached it. Now there is
       // one place where a window is a window.
-      variant={centered ? "centered" : "bottom"}
+      variant={panel ? "panel" : centered ? "centered" : "bottom"}
       fills
       title={active ? readerTitle(active.partTitle) || t("schedule.sheet.title") : ""}
       closeLabel={t("common.close")}

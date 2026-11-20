@@ -1,4 +1,11 @@
-import { ReactNode, RefObject, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  RefObject,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   Keyboard,
   Modal,
@@ -16,6 +23,14 @@ import { useTranslation } from "react-i18next";
 import { BRAND } from "../lib/header";
 import { Toast } from "./ErrorToast";
 import { KeyboardScroll } from "./KeyboardScroll";
+import { PanelPortal } from "./PanelPortal";
+
+/**
+ * Where a window opened from inside a part panel is drawn (web): over the
+ * panel, so the week beside it stays in view (variant «В», 20 November 2026).
+ * Null everywhere else — a window is a window, as before.
+ */
+const SheetPanelHost = createContext<HTMLElement | null>(null);
 
 /**
  * How much room is taken at the BOTTOM of the screen on Android — by the
@@ -83,9 +98,12 @@ export function Sheet({
    * 'full' takes the whole screen — for pickers and long forms. 'bottom' rises
    * from the edge over the screen behind it. 'centered' floats in the middle,
    * which only suits a wide screen; a caller picks it by measuring, not by
-   * guessing the platform.
+   * guessing the platform. 'panel' is no window at all: the header and the
+   * content in a plain column, for a caller that sets it beside its own
+   * screen — the part window on the right of the wide programme screen
+   * (variant «В», 20 November 2026), where the week stays in view.
    */
-  variant?: "full" | "bottom" | "centered";
+  variant?: "full" | "bottom" | "centered" | "panel";
   /** A second header action, e.g. "Reset". */
   action?: ReactNode;
   /**
@@ -114,6 +132,8 @@ export function Sheet({
   scrollRef?: RefObject<ScrollView | null>;
 }) {
   const { t } = useTranslation();
+  const panelHost = useContext(SheetPanelHost);
+  const [ownHost, setOwnHost] = useState<HTMLElement | null>(null);
   const bottomRoom = useBottomRoom();
   const { width: screenW, height: screenH } = useWindowDimensions();
   // A phone on its side, Android: the full-screen sheet is drawn under the
@@ -145,6 +165,70 @@ export function Sheet({
   const cardHeight = fills
     ? Math.round(screenH * (variant === "centered" ? 0.85 : 0.9))
     : undefined;
+
+  const panelBody = (
+    <>
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <View style={styles.subtitle}>{subtitleNode(subtitle)}</View>
+          ) : null}
+        </View>
+        {action}
+        {hideClose ? null : (
+          <Pressable onPress={onClose} hitSlop={10} style={styles.closeBtn}>
+            <Text style={styles.closeText}>{closeLabel ?? t("common.done")}</Text>
+          </Pressable>
+        )}
+      </View>
+      {fills ? (
+        <View style={styles.fillBody}>{children}</View>
+      ) : (
+        <KeyboardScroll
+          pad={false}
+          ref={scrollRef}
+          style={styles.fillBody}
+          contentContainerStyle={styles.bottomBody}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </KeyboardScroll>
+      )}
+      {footer ? <View style={styles.footer}>{footer}</View> : null}
+    </>
+  );
+
+  if (variant === "panel") {
+    if (!visible) return null;
+    return (
+      <View style={styles.panel}>
+        <SheetPanelHost.Provider value={Platform.OS === "web" ? ownHost : null}>
+          {panelBody}
+        </SheetPanelHost.Provider>
+        {/* The layer windows opened from inside are drawn into. */}
+        <View
+          ref={(node) => setOwnHost(node as unknown as HTMLElement | null)}
+          style={styles.panelHost}
+          pointerEvents="box-none"
+        />
+      </View>
+    );
+  }
+
+  // A window opened from inside a panel: over the panel, not the screen.
+  if (panelHost) {
+    if (!visible) return null;
+    return (
+      <PanelPortal host={panelHost}>
+        <SheetPanelHost.Provider value={panelHost}>
+          <View style={styles.panelLayer}>{panelBody}</View>
+        </SheetPanelHost.Provider>
+      </PanelPortal>
+    );
+  }
 
   if (variant === "centered" || variant === "bottom") {
     return (
@@ -297,6 +381,19 @@ function subtitleNode(subtitle: ReactNode): ReactNode {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f1f5f9" },
+  panelHost: { ...StyleSheet.absoluteFillObject },
+  panelLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "#f1f5f9",
+    borderLeftWidth: 1,
+    borderLeftColor: "#e2e8f0",
+  },
+  panel: {
+    flex: 1,
+    backgroundColor: "#f1f5f9",
+    borderLeftWidth: 1,
+    borderLeftColor: "#e2e8f0",
+  },
   bottomOverlay: {
     flex: 1,
     backgroundColor: "rgba(15,23,42,0.45)",
