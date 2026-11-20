@@ -96,7 +96,12 @@ check('«Местные потребности» — старейшины (п. 1
 check('«Христианская жизнь» — старейшины и помощники (п. 16)', same(pg('living_christians_2', 'Тема')?.leadAppointments, ['elder', 'ministerial_servant']));
 for (const k of ['treasures_talk', 'spiritual_gems', 'midweek_chairman', 'cbs_conductor'])
   check(`${k} — старейшины и помощники собрания`, same(pg(k)?.leadAppointments, ['elder', 'ministerial_servant']));
-check('выходной день — без правил указаний', pg('watchtower_reader') === null);
+for (const k of fx.brotherOnly) {
+  check(`${k} — только брат (выбор)`, pg(k)?.leadGender === 'brother');
+  check(`${k} — только брат (сохранение)`, G.guidelineRefusal(k, null, { gender: 'sister', appointment: 'publisher' }, null) === 'PART_NEEDS_BROTHER');
+  check(`${k} — брату можно`, G.guidelineRefusal(k, null, { gender: 'brother', appointment: 'publisher' }, null) === null);
+}
+check('песня — без правил указаний', pg('weekend_song') === null);
 
 // --- the pickers and the form use it ------------------------------------------
 const form = read(join(ROOT, 'components/AssignmentForm.tsx'));
