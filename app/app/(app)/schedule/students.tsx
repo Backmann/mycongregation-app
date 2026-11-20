@@ -40,8 +40,8 @@ const STEP = 4;
 const TABLE_FROM = 700;
 const PART_COL = 110;
 const WEEK_COL = 160;
-/** One height for every row: heading, two names, two lines of notes. */
-const ROW_H = 132;
+/** The least a row is; a long name makes it taller, measured. */
+const ROW_MIN = 72;
 
 const dayMonth = (iso: string) =>
   parseISODate(iso).toLocaleDateString(i18n.language, { day: "numeric", month: "short" });
@@ -62,6 +62,9 @@ export default function StudentMonthScreen() {
   );
   const [from, setFrom] = useState(() => formatDateISO(startOfWeekMonday(new Date())));
   const [editing, setEditing] = useState<Assignment | null>(null);
+  // Each row of cells as tall as its longest cell; the part number on the
+  // left takes the same height (the numbers stay while the weeks scroll).
+  const [rowH, setRowH] = useState<Record<string, number>>({});
   const layout = programmeLayout(windowW, areaW, !!editing);
 
   const weeks = Array.from({ length: WEEKS }, (_, i) =>
@@ -117,7 +120,6 @@ export default function StudentMonthScreen() {
   // pressed must not jump into a list.
   const wide = areaW >= TABLE_FROM;
   const tableW = PART_COL + WEEKS * WEEK_COL;
-  const flagLines = 2;
   const roomW = areaW - (layout.panel && editing ? PANEL_WIDTH : 0) - 32;
 
   const cellView = (c: MonthCell | undefined, compact = false) => {
@@ -145,18 +147,18 @@ export default function StudentMonthScreen() {
           <Text style={styles.assign}>{t("schedule.students.assign")}</Text>
         ) : (
           <>
-            <Text style={styles.lead} numberOfLines={1}>
+            <Text style={styles.lead}>
               {name(c.row.publisherId)}
             </Text>
             {c.row.assistantPublisherId ? (
-              <Text style={styles.assistant} numberOfLines={1}>
+              <Text style={styles.assistant}>
                 {t("schedule.students.with", { name: name(c.row.assistantPublisherId) })}
               </Text>
             ) : null}
           </>
         )}
         {c.flags.map((f, i) => (
-          <Text key={i} style={styles.flag} numberOfLines={compact ? undefined : flagLines}>
+          <Text key={i} style={styles.flag}>
             {f.kind === "pairBefore"
               ? t("schedule.students.pairBefore", { date: dayMonth(f.week) })
               : t("schedule.students.twoInRow", { name: name(f.personId) })}
@@ -233,7 +235,10 @@ export default function StudentMonthScreen() {
             <View>
               <View style={[styles.th, styles.partCol]} />
               {month.lines.map((l) => (
-                <View key={l.partKey} style={[styles.partCol, styles.partCell, { height: ROW_H }]}>
+                <View
+                  key={l.partKey}
+                  style={[styles.partCol, styles.partCell, { height: rowH[l.partKey] ?? ROW_MIN }]}
+                >
                   <Text style={styles.partNo}>№{l.number}</Text>
                   {l.partKey === "bible_reading" ? (
                     <Text style={styles.partName}>{t("schedule.students.bibleReading")}</Text>
@@ -251,7 +256,14 @@ export default function StudentMonthScreen() {
                   ))}
                 </View>
                 {month.lines.map((l) => (
-                  <View key={l.partKey} style={[styles.tr, { height: ROW_H }]}>
+                  <View
+                    key={l.partKey}
+                    style={[styles.tr, { minHeight: ROW_MIN }]}
+                    onLayout={(e) => {
+                      const h = Math.round(e.nativeEvent.layout.height);
+                      setRowH((all) => (all[l.partKey] === h ? all : { ...all, [l.partKey]: h }));
+                    }}
+                  >
                     {weeks.map((w) => (
                       <View key={w} style={styles.weekCol}>
                         {cellView(l.cells.get(w))}
@@ -334,7 +346,6 @@ const styles = StyleSheet.create({
     borderColor: "#e2e8f0",
     padding: 8,
     gap: 2,
-    overflow: "hidden",
   },
   cellCompact: { minHeight: 0 },
   cellOther: { backgroundColor: "#f8fafc" },
