@@ -19,6 +19,7 @@ import {
   visitingSpeakersApi,
 } from "../lib/api";
 import { useAllPublishers } from "../lib/useAllPublishers";
+import { refreshProgramme } from "../lib/programme-refresh";
 
 /**
  * «Приехал другой докладчик» — in a minute, on the meeting day
@@ -154,7 +155,7 @@ export function QuickReplaceSheet({
     onSuccess: () => {
       setDone(true);
       void qc.invalidateQueries({ queryKey: ["conduct-assignments"] });
-      void qc.invalidateQueries({ queryKey: ["assignments"] });
+      void refreshProgramme(qc);
       void qc.invalidateQueries({ queryKey: ["talk-exchange"] });
       void qc.invalidateQueries({ queryKey: ["visiting-speakers"] });
       onDone?.();

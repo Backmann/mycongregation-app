@@ -26,6 +26,7 @@ import { Sheet } from '../../../components/Sheet';
 import { notify } from '../../../lib/error-bus';
 import { confirm } from '../../../components/ConfirmHost';
 import { failsScreen } from '../../../lib/screen-failure';
+import { refreshProgramme } from '../../../lib/programme-refresh';
 
 type FormState = {
   id: string | null;
@@ -123,7 +124,7 @@ export default function CircuitOverseerScreen() {
         });
       }
       qc.invalidateQueries({ queryKey: ['special-events'] });
-      qc.invalidateQueries({ queryKey: ['assignments'] });
+      refreshProgramme(qc);
       return saved;
     },
     onSuccess: () => {

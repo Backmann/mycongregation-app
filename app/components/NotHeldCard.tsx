@@ -10,6 +10,7 @@ import {
   NotHeldMeeting,
   NotHeldRestorable,
 } from '../lib/api';
+import { refreshProgramme } from '../lib/programme-refresh';
 
 /**
  * Assignments on a meeting that is not held (8 November 2026).
@@ -57,7 +58,7 @@ export function NotHeldCard({
 
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: NOT_HELD_KEY });
-    void qc.invalidateQueries({ queryKey: ['assignments'] });
+    void refreshProgramme(qc);
     void qc.invalidateQueries({ queryKey: ['duties'] });
     void qc.invalidateQueries({ queryKey: ['readiness'] });
   };

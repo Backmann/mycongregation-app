@@ -105,6 +105,7 @@ import type {
   WeekModel,
 } from "../../../components/talk-log/JournalWeeks";
 import { useMeetingMoves } from "../../../lib/useMeetingMoves";
+import { refreshProgramme } from "../../../lib/programme-refresh";
 
 const QK = ["talk-exchange"] as const;
 
@@ -876,7 +877,7 @@ export default function TalkExchangeYearScreen() {
     qc.invalidateQueries({ queryKey: QK });
     // Incoming entries write the weekend public-talk slot via server side
     // effects, so refresh the schedule's assignments/events too.
-    qc.invalidateQueries({ queryKey: ["assignments"] });
+    refreshProgramme(qc);
     qc.invalidateQueries({ queryKey: ["special-events"] });
     // A special talk shows on the events screen too.
     qc.invalidateQueries({ queryKey: ["special-talks"] });
@@ -938,7 +939,7 @@ export default function TalkExchangeYearScreen() {
     }) => assignmentsApi.swapPublicTalk(vars),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QK });
-      qc.invalidateQueries({ queryKey: ["assignments"] });
+      refreshProgramme(qc);
       setSwapTarget(null);
       setSwapSource(null);
       setSwapError(null);
@@ -991,7 +992,7 @@ export default function TalkExchangeYearScreen() {
     mutationFn: (id: string) => talkExchangeApi.undoReplacement(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QK });
-      qc.invalidateQueries({ queryKey: ["assignments"] });
+      refreshProgramme(qc);
     },
   });
 
@@ -1020,7 +1021,7 @@ export default function TalkExchangeYearScreen() {
       talkExchangeApi.moveAside(v.id, v.week),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: QK });
-      qc.invalidateQueries({ queryKey: ["assignments"] });
+      refreshProgramme(qc);
     },
     onError: (e) => notify(extractErrorMessage(e)),
   });

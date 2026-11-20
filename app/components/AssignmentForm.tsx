@@ -1027,7 +1027,10 @@ export function AssignmentForm({
                   next === "cancelled" &&
                   !(await confirm({
                     title: t("assignments.form.cancelConfirm.title"),
-                    body: t("assignments.form.cancelConfirm.body"),
+                    body:
+                      form.publisherId || form.assistantPublisherId || form.speakerName?.trim()
+                        ? t("assignments.form.cancelConfirm.body")
+                        : t("assignments.form.cancelConfirm.bodyNoOne"),
                     confirmLabel: t("assignments.form.cancelPart"),
                     danger: true,
                   }))

@@ -997,7 +997,8 @@
       },
       "cancelConfirm": {
         "title": "Cancel this part?",
-        "body": "It is taken out of the program. If the program is published, the person assigned is notified. You can give it back at any time."
+        "body": "It is taken out of the program. If the program is published, the person assigned is notified. You can give it back at any time.",
+        "bodyNoOne": "It is taken out of the program. You can give it back at any time."
       }
     }
   },
@@ -1084,7 +1085,7 @@
     "unassign": {
       "button": "Unassign publisher",
       "unassigning": "Unassigning…",
-      "confirmWebMessage": "Unassign the publisher from this part? The program part will remain."
+      "confirmWebMessage": "Remove the assignment? The part stays in the program, with nobody in it."
     },
     "weekNav": {
       "thisWeek": "This week",

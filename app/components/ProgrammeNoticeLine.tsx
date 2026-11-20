@@ -12,6 +12,7 @@ import {
 } from '../lib/api';
 import { formatDateISO } from '../lib/dates';
 import { reportError } from '../lib/error-bus';
+import { refreshProgramme } from '../lib/programme-refresh';
 
 /**
  * THE LINE THAT TOOK THE «УВЕДОМИТЬ» BUTTON'S PLACE (21 October 2026).
@@ -67,7 +68,7 @@ export function ProgrammeNoticeLine({
     const due = Date.parse(data.dueAt);
     if (now < due + 20_000 || asked.current === data.dueAt) return;
     asked.current = data.dueAt;
-    void queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    void refreshProgramme(queryClient);
     void status.refetch();
   }, [now, data?.dueAt, data?.state, queryClient, status]);
 
@@ -75,7 +76,7 @@ export function ProgrammeNoticeLine({
 
   const refresh = async (next?: NoticeStatus) => {
     if (next) queryClient.setQueryData(key, next);
-    await queryClient.invalidateQueries({ queryKey: ['assignments'] });
+    await refreshProgramme(queryClient);
     await queryClient.invalidateQueries({ queryKey: ['notice-status', weekStartDate, eventType] });
   };
   const sendNow = async () => {

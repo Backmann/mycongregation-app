@@ -997,7 +997,8 @@
       },
       "cancelConfirm": {
         "title": "Diesen Programmpunkt absagen?",
-        "body": "Er wird aus dem Programm genommen. Ist das Programm schon veröffentlicht, wird der Zugeteilte benachrichtigt. Er lässt sich jederzeit zurückholen."
+        "body": "Er wird aus dem Programm genommen. Ist das Programm schon veröffentlicht, wird der Zugeteilte benachrichtigt. Er lässt sich jederzeit zurückholen.",
+        "bodyNoOne": "Er wird aus dem Programm genommen. Er lässt sich jederzeit zurückholen."
       }
     }
   },
@@ -1084,7 +1085,7 @@
     "unassign": {
       "button": "Zuteilung aufheben",
       "unassigning": "Wird aufgehoben…",
-      "confirmWebMessage": "Zuteilung des Verkündigers aufheben? Der Programmpunkt bleibt erhalten."
+      "confirmWebMessage": "Zuteilung entfernen? Der Programmpunkt bleibt im Programm, ohne Zugeteilten."
     },
     "weekNav": {
       "thisWeek": "Diese Woche",

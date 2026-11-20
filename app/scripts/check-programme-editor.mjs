@@ -15,7 +15,7 @@
  *    device, in the app's own dialog (the phone did it at the first tap).
  * 5. A delayed text save goes to the part it was typed into.
  */
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,16 +33,19 @@ const form = read('components/AssignmentForm.tsx');
 const refresh = read('lib/programme-refresh.ts');
 const parts = read('lib/parts.ts');
 
-// 1
-for (const [name, src] of [
-  ['экран', edit],
-  ['окно части', sheet],
-]) {
-  check(
-    `${name}: части не обновляются в обход refreshProgramme`,
-    !/invalidateQueries\(\{\s*queryKey:\s*\[\s*["']assignments["']\s*\]/.test(src),
-  );
-}
+// 1 — every file of the app, not only the editor: the import, the quick
+// replacement, the talk coordinator's journal, «Местные потребности» write
+// the programme too (review, 20 November 2026).
+const walk = (d) =>
+  readdirSync(join(ROOT, d)).flatMap((f) => {
+    const p = join(d, f);
+    return statSync(join(ROOT, p)).isDirectory() ? walk(p) : /\.(tsx?|mjs)$/.test(f) ? [p] : [];
+  });
+const bypass = ['app', 'components', 'lib']
+  .flatMap(walk)
+  .filter((p) => !p.endsWith('programme-refresh.ts'))
+  .filter((p) => /invalidateQueries\(\{\s*queryKey:\s*\[\s*["']assignments["']\s*\]/.test(read(p)));
+check(`программа обновляется только через refreshProgramme${bypass.length ? ': ' + bypass.join(', ') : ''}`, bypass.length === 0);
 check(
   'refreshProgramme обновляет части, счётчик и историю людей',
   ["'assignments'", "'readiness'", "'publisher-activity'"].every((k) => refresh.includes(k)),

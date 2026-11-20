@@ -18,6 +18,7 @@ export function HospitalityZone({
   activityById,
   weekStartISO,
   onChange,
+  busy = false,
 }: {
   hospitality: Assignment | null;
   canEdit: boolean;
@@ -25,6 +26,8 @@ export function HospitalityZone({
   activityById?: Map<string, PublisherActivity>;
   weekStartISO: string;
   onChange: (publisherId: string | null) => void;
+  /** The last choice is still being written: a second one waits for it. */
+  busy?: boolean;
 }) {
   const { t } = useTranslation();
   const sister = hospitality?.publisherId
@@ -42,6 +45,10 @@ export function HospitalityZone({
         <Text style={styles.headerText}>{t('hospitality.title')}</Text>
       </View>
       {canEdit ? (
+        <View
+          pointerEvents={busy ? 'none' : 'auto'}
+          style={busy ? { opacity: 0.55 } : undefined}
+        >
         <PublisherSelector
           variant="chip"
           emptyLabel={t('hospitality.sister')}
@@ -55,6 +62,7 @@ export function HospitalityZone({
           suggestionPartKeys={['weekend_hospitality']}
           suggestionRole="primary"
         />
+        </View>
       ) : sister ? (
         <PersonChip label={sister.displayName} variant="main" />
       ) : null}

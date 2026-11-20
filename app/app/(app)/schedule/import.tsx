@@ -31,6 +31,7 @@ import { formatWeekRange } from '../../../lib/week-range';
 import { DropZone } from '../../../components/DropZone';
 import { useTranslation } from 'react-i18next';
 import { failsScreen } from '../../../lib/screen-failure';
+import { refreshProgramme } from '../../../lib/programme-refresh';
 
 interface PickedFile {
   uri: string;
@@ -64,7 +65,7 @@ export default function ImportEpubScreen() {
   const applyMutation = useMutation<ImportResult, unknown, ParsedWorkbook>({
     mutationFn: (wb) => scheduleImportApi.apply(toApplyPayload(wb)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      refreshProgramme(queryClient);
       // The coverage figure on this very screen is what the import changes;
       // it was left reading the state from before the file was applied.
       queryClient.invalidateQueries({ queryKey: ['import-coverage'] });

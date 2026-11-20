@@ -1425,7 +1425,7 @@ function ProgrammeEditor() {
                         retro={retro}
                       />
                       <AwayNote
-                        items={programItems}
+                        items={items}
                         absentIds={weekendAbsentIds}
                         publishersById={publishersById}
                       />
@@ -1451,9 +1451,8 @@ function ProgrammeEditor() {
                         // Not while the first choice is still being
                         // written: a quick second one made a second line
                         // (programme audit, 20 November 2026).
-                        canEdit={
-                          canEditWeekendSchedule && !hospitalityMutation.isPending
-                        }
+                        canEdit={canEditWeekendSchedule}
+                        busy={hospitalityMutation.isPending}
                         publishersById={publishersById}
                         activityById={activityById}
                         weekStartISO={weekStartISO}
