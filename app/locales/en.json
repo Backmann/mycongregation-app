@@ -1306,18 +1306,22 @@
       "ago": "ago",
       "never": "never",
       "pair": "{{name}}: already a pair · {{date}}",
-      "neverPaired": "{{name}}: never a pair yet",
+      "neverPaired": "{{name}}: not a pair in the last half year",
       "sameMeeting": "already at this meeting · {{part}}",
       "prevWeek": "last week",
       "nextWeek": "next week",
-      "rotation": "the same part in the next week",
-      "awayAbsence": "away · {{range}}",
+      "rotation": "the same part in an adjacent week",
+      "awayAbsence": "absent · {{range}}",
       "note": "History — half a year back and 12 weeks ahead. «Best fit» — longest without a part and nothing in the way this week.",
       "weeks_one": "{{count}} week",
       "weeks_other": "{{count}} weeks",
       "ownSoon_one": "own part on {{date}} — in {{count}} week",
       "ownSoon_other": "own part on {{date}} — in {{count}} weeks",
-      "neverLineTurn": "Not this part yet"
+      "neverLineTurn": "Not this part yet",
+      "duty": "duty at this meeting · {{duty}}",
+      "noCapability": "not marked for «{{name}}»",
+      "otherGender": "other gender — family member only",
+      "historyError": "The history did not load — the list is not ordered. Try opening it again."
     }
   },
   "admin": {

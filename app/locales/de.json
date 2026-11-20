@@ -1306,7 +1306,7 @@
       "ago": "her",
       "never": "noch nie",
       "pair": "{{name}}: schon ein Paar · {{date}}",
-      "neverPaired": "{{name}}: noch kein Paar",
+      "neverPaired": "{{name}}: im letzten halben Jahr kein Paar",
       "sameMeeting": "schon in dieser Zusammenkunft · {{part}}",
       "prevWeek": "letzte Woche",
       "nextWeek": "nächste Woche",
@@ -1317,7 +1317,11 @@
       "weeks_other": "{{count}} Wochen",
       "ownSoon_one": "eigene Aufgabe am {{date}} — in {{count}} Woche",
       "ownSoon_other": "eigene Aufgabe am {{date}} — in {{count}} Wochen",
-      "neverLineTurn": "Diesen Programmpunkt noch nicht"
+      "neverLineTurn": "Diesen Programmpunkt noch nicht",
+      "duty": "Aufgabe in dieser Zusammenkunft · {{duty}}",
+      "noCapability": "nicht markiert für «{{name}}»",
+      "otherGender": "anderes Geschlecht — nur Familienangehöriger",
+      "historyError": "Der Verlauf wurde nicht geladen — die Liste ist ungeordnet. Bitte erneut öffnen."
     }
   },
   "admin": {

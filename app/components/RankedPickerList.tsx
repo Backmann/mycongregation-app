@@ -21,6 +21,8 @@ export function RankedPickerList({
   value,
   people,
   otherName,
+  otherFirstName,
+  capabilityName,
   awayLabel,
   awayDate,
   dateOf,
@@ -32,6 +34,9 @@ export function RankedPickerList({
   people: Map<string, Publisher>;
   /** The other side of the pair, for «с … ещё не были». */
   otherName?: string | null;
+  otherFirstName?: string | null;
+  /** The mark the part asks for, for «нет отметки …». */
+  capabilityName?: string | null;
   /** Why someone cannot: «в отъезде · 20–30 нояб.» or the event. */
   awayLabel: (id: string) => string | null;
   /** The meeting's own day, for «Не смогут …». */
@@ -55,10 +60,11 @@ export function RankedPickerList({
     const heading = (title ?? "").split(":")[0].trim();
     return heading || getPartLabel(partKey);
   };
-  const firstName = (name?: string | null) =>
-    (name ?? "").split(/\s+/).filter(Boolean).slice(-1)[0] ?? "";
+  // The other side's own first name, not the last word of «Фамилия Имя
+  // Отчество» (review, 20 November 2026).
+  const firstName = (name?: string | null) => otherFirstName || (name ?? "");
 
-  const flagText = (f: RankFlag): { text: string; tone: "pair" | "warn" | "ok" } => {
+  const flagText = (f: RankFlag): { text: string; tone: "pair" | "warn" | "ok" | "info" } => {
     switch (f.kind) {
       case "pair":
         return {
@@ -84,6 +90,17 @@ export function RankedPickerList({
         };
       case "rotation":
         return { tone: "warn", text: t("pickers.rank.rotation") };
+      case "duty":
+        return {
+          tone: "info",
+          text: t("pickers.rank.duty", {
+            duty: f.label?.trim() || t(`duties.types.${f.dutyType}`, { defaultValue: f.dutyType }),
+          }),
+        };
+      case "noCapability":
+        return { tone: "warn", text: t("pickers.rank.noCapability", { name: capabilityName ?? "" }) };
+      case "otherGender":
+        return { tone: "warn", text: t("pickers.rank.otherGender") };
     }
   };
 
@@ -145,7 +162,13 @@ export function RankedPickerList({
                   key={i}
                   style={[
                     styles.flag,
-                    f.tone === "pair" ? styles.flagPair : f.tone === "ok" ? styles.flagOk : styles.flagWarn,
+                    f.tone === "pair"
+                      ? styles.flagPair
+                      : f.tone === "ok"
+                        ? styles.flagOk
+                        : f.tone === "info"
+                          ? styles.flagInfo
+                          : styles.flagWarn,
                   ]}
                 >
                   {f.text}
@@ -262,6 +285,7 @@ const styles = StyleSheet.create({
   flagPair: { backgroundColor: "#f3e8ff", color: "#6b21a8" },
   flagWarn: { backgroundColor: "#fff7ed", color: "#9a3412" },
   flagOk: { backgroundColor: "#ecfdf5", color: "#065f46" },
+  flagInfo: { backgroundColor: "#ecfeff", color: "#155e75" },
   flagAway: { backgroundColor: "#e2e8f0", color: "#1e293b" },
   ago: { alignItems: "flex-end", minWidth: 56 },
   agoNum: { fontFamily: "Manrope_700Bold", fontSize: 14, color: "#0f172a" },

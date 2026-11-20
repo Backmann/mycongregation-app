@@ -35,7 +35,7 @@ import { formatDayRange } from "../lib/date-range";
 import { useMeetingMoves } from "../lib/useMeetingMoves";
 import { confirm } from "./ConfirmHost";
 import type { PickerGuideline } from "../lib/meeting-guidelines";
-import { rankCandidates, type RankInput } from "../lib/picker-rank";
+import { rankCandidates, type RankFlag, type RankInput } from "../lib/picker-rank";
 import { RankedPickerList } from "./RankedPickerList";
 
 interface Props {
@@ -145,7 +145,13 @@ interface Props {
    * the list is «Подходят лучше всего» / «Остальные» / «Не смогут», each row
    * with its last part, the weeks since and the facts that matter.
    */
-  rank?: Pick<RankInput, "mode" | "partId" | "partKeys" | "otherId"> | null;
+  rank?: Pick<RankInput, "mode" | "partId" | "partKeys" | "otherId" | "noTurn" | "onlyDiscussion"> | null;
+  /**
+   * The history behind `rank` is still coming, or did not come: the groups
+   * wait for it rather than put whoever is first into «Подходят лучше
+   * всего» (review, 20 November 2026).
+   */
+  rankState?: "loading" | "error" | "ready";
   /** Resting trigger style: 'field' (bordered, default) or 'chip' (program-style). */
   variant?: "field" | "chip";
   /** Label for the empty chip in chip variant. Defaults to common.none. */
@@ -218,6 +224,7 @@ export function PublisherSelector({
   guidelineRole = "lead",
   pairOfPublisherId,
   rank,
+  rankState = "ready",
   preferGender,
   variant = "field",
   emptyLabel,
@@ -595,8 +602,20 @@ export function PublisherSelector({
       });
     return null;
   };
+  // What the picker itself knows against a person: a mark of the part
+  // others have and he has not; the other gender, shown for the family.
+  const pickerFlags = (id: string): RankFlag[] => {
+    const p = peopleById.get(id);
+    if (!p) return [];
+    const out: RankFlag[] = [];
+    if (requiredCapability && !nobodyHasCapability && !p.capabilities?.[requiredCapability])
+      out.push({ kind: "noCapability" });
+    const otherGender = guidelineRole === "assistant" ? matchGender : pairGender;
+    if (otherGender && p.gender && p.gender !== otherGender) out.push({ kind: "otherGender" });
+    return out;
+  };
   const ranked =
-    rank && currentWeekStart && ISO_RE.test(currentWeekStart)
+    rank && rankState === "ready" && currentWeekStart && ISO_RE.test(currentWeekStart)
       ? rankCandidates({
           ...rank,
           week: currentWeekStart,
@@ -604,6 +623,7 @@ export function PublisherSelector({
           candidates: filtered,
           itemsOf: (id) => activityById?.get(id)?.items ?? [],
           isAway,
+          extraFlags: pickerFlags,
         })
       : null;
 
@@ -822,7 +842,13 @@ export function PublisherSelector({
               </Text>
             )}
 
-            {ranked ? (
+            {rank && rankState === "loading" ? (
+              <ActivityIndicator style={{ marginTop: 24 }} />
+            ) : null}
+            {rank && rankState === "error" ? (
+              <Text style={styles.empty}>{t("pickers.rank.historyError")}</Text>
+            ) : null}
+            {rank && rankState === "loading" ? null : ranked ? (
               <RankedPickerList
                 result={ranked}
                 value={value}
@@ -832,6 +858,12 @@ export function PublisherSelector({
                     ? allPublishers.find((x) => x.id === rank.otherId)?.displayName
                     : null
                 }
+                otherFirstName={
+                  rank?.otherId
+                    ? allPublishers.find((x) => x.id === rank.otherId)?.firstName
+                    : null
+                }
+                capabilityName={capabilityLabel || null}
                 awayLabel={awayLabel}
                 awayDate={meetingDayISO}
                 dateOf={meetingDateOfWeek}

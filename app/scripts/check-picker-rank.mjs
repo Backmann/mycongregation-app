@@ -127,16 +127,76 @@ check('4 недели — уже в лучших', ids(run('student-lead', { x: 
   check('обсуждение — не учебная часть, но часть на прошлой неделе видна', r.others[0]?.flags, [{ kind: 'prevWeek' }]);
   check('уехавшие — отдельно', ids(r.away), ['q']);
 }
-// 8. Parts given in turn: the same part last week keeps one off the best.
+// 8. Parts given in turn: the same part in the next or last week, or
+//    another part this meeting, keeps one off the best.
 {
   const r = run('rotation', {
     last: [part(-1, 'midweek_chairman', 'primary')],
+    next: [part(1, 'midweek_chairman', 'primary')],
     long: [part(-8, 'midweek_chairman', 'primary')],
     mid: [part(-4, 'midweek_chairman', 'primary'), part(0, 'cbs_conductor', 'primary')],
   }, { partKeys: ['midweek_chairman'] });
-  check('по очереди: был на прошлой неделе — не в лучших', ids(r.others), ['last']);
-  check('по очереди: дольше всех — выше; другая часть этой встречи не мешает', ids(r.best), ['long', 'mid']);
-  check('метка очереди', r.others[0]?.flags, [{ kind: 'rotation' }]);
+  check('по очереди: та же часть на прошлой или следующей неделе, другая часть этой встречи — не в лучших', ids(r.others).sort(), ['last', 'mid', 'next']);
+  check('по очереди: дольше всех — выше', ids(r.best), ['long']);
+  check('метка очереди', r.others.find((x) => x.id === 'next')?.flags, [{ kind: 'rotation' }]);
+  const wt = run('rotation', { w: [part(-1, 'watchtower_conductor', 'primary')] }, { partKeys: ['watchtower_conductor'], noTurn: true });
+  check('постоянный ведущий СБ — без очереди', ids(wt.best), ['w']);
+}
+// 9. The window of «own part soon»: 2–3 weeks, own parts only.
+{
+  const r = run('student-assistant', {
+    three: [part(3, 'apply_yourself_1', 'primary')],
+    four: [part(4, 'apply_yourself_1', 'primary')],
+    helps: [part(2, 'apply_yourself_1', 'assistant')],
+  });
+  check('своя часть через 3 недели — метка', r.others.find((x) => x.id === 'three')?.flags, [{ kind: 'ownSoon', week: wk(3), weeks: 3 }]);
+  check('через 4 недели — не метка', r.best.find((x) => x.id === 'four')?.flags, []);
+  check('помогать через 2 недели — не «своя часть»', r.best.find((x) => x.id === 'helps')?.flags, []);
+  const next = run('student-assistant', { n: [part(1, 'apply_yourself_2', 'assistant')] });
+  check('часть на следующей неделе — метка', next.others[0]?.flags, [{ kind: 'nextWeek' }]);
+}
+// 10. The pair's window: 26 back, 12 ahead — and no further.
+{
+  const at = (n) => run('student-assistant', { x: [part(n, 'apply_yourself_1', 'assistant', { partnerId: 'm' })] }, { otherId: 'm' });
+  check('пара на −26 — метка', at(-26).others[0]?.flags?.[0]?.kind, 'pair');
+  check('пара на −27 — нет', at(-27).best.length, 1);
+  check('пара на +12 — метка', at(12).others[0]?.flags?.[0]?.kind, 'pair');
+  check('пара на +13 — нет', at(13).best.length, 1);
+}
+// 11. Another meeting the same week is no «this meeting»; a duty is told, not
+//     keeping one off, and is no part.
+{
+  const we = { ...part(0, 'weekend_opening_prayer', 'primary'), eventType: 'weekend' };
+  check('часть в выходной той же недели — не «на этой встрече»', run('student-lead', { x: [we] }).best[0]?.flags, []);
+  const duty = { weekStartDate: wk(0), eventType: 'midweek', kind: 'duty', dutyType: 'microphone', customLabel: null };
+  const r = run('student-lead', { x: [duty] });
+  check('обязанность на этой встрече — метка, но в лучших', r.best[0]?.flags, [{ kind: 'duty', dutyType: 'microphone', label: null }]);
+  const dutyLastWeek = { ...duty, weekStartDate: wk(-1) };
+  check('обязанность — не часть (не «прошлая неделя»)', run('student-lead', { x: [dutyLastWeek] }).best[0]?.flags, []);
+}
+// 12. «Longest without» looks both ways; away people in that order too.
+{
+  const r = run('student-lead', {
+    soon5: [part(5, 'apply_yourself_1', 'primary')],
+    never: [],
+    back9: [part(-9, 'apply_yourself_1', 'primary')],
+  });
+  check('ближайшая часть в любую сторону: впереди через 5 — ниже давних', ids(r.best), ['never', 'back9', 'soon5']);
+  const a = run('student-lead', { a1: [part(-2, 'bible_reading', 'primary')], a2: [part(-10, 'bible_reading', 'primary')] }, { away: ['a1', 'a2'] });
+  check('не смогут — тоже по давности', ids(a.away), ['a2', 'a1']);
+}
+// 13. What the picker knows itself keeps one off the best.
+{
+  const r = run('student-lead', { x: [], y: [] }, { extraFlags: (id) => (id === 'x' ? [{ kind: 'noCapability' }] : []) });
+  check('нет отметки — не в лучших', ids(r.best), ['y']);
+}
+// 14. A discussion turn counts discussions only.
+{
+  const disc = { ...part(-1, 'apply_yourself_3', 'primary'), partTitle: 'Что бы вы сказали?: Обсуждение.' };
+  const stud = part(-1, 'apply_yourself_3', 'primary');
+  const keys = ['apply_yourself_1', 'apply_yourself_2', 'apply_yourself_3'];
+  check('обсуждение на прошлой неделе — очередь', run('rotation', { x: [disc] }, { partKeys: keys, onlyDiscussion: true }).others[0]?.flags, [{ kind: 'rotation' }]);
+  check('учебная часть на прошлой неделе — не очередь обсуждения', run('rotation', { x: [stud] }, { partKeys: keys, onlyDiscussion: true }).best.length, 1);
 }
 
 // The sheet hands the part's own id to the form: without it the picker
