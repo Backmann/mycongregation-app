@@ -1230,6 +1230,24 @@
     },
     "awayNote": {
       "title": "Away on the meeting day"
+    },
+    "weekCheck": {
+      "title": "Week check",
+      "allGood": "All in order: no empty parts, nobody away, no repeated pairs.",
+      "empty": "{{part}} — nobody assigned",
+      "away": "{{name}} is away on the meeting day — {{part}}",
+      "pair": "{{part}}: {{lead}} and {{assistant}} were already a pair · {{date}}",
+      "long": "The midweek meeting runs {{hours}} h {{minutes}} min — the guidelines say at most 1 h 45 min",
+      "double": "{{name}} — {{parts}}",
+      "late_one": "{{part}} — nobody assigned. {{count}} day to the meeting; assignments are given at least 3 weeks ahead",
+      "late_other": "{{part}} — nobody assigned. {{count}} days to the meeting; assignments are given at least 3 weeks ahead",
+      "unsent_one": "{{part}} — not sent out, {{count}} day to the meeting",
+      "unsent_other": "{{part}} — not sent out, {{count}} days to the meeting",
+      "emptyMany_one": "{{meeting}}: nobody assigned in {{count}} part",
+      "emptyMany_other": "{{meeting}}: nobody assigned in {{count}} parts",
+      "more_one": "{{count}} more ›",
+      "more_other": "{{count}} more ›",
+      "less": "Show less"
     }
   },
   "audit": {

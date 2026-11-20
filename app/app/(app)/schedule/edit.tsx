@@ -64,6 +64,7 @@ import { refreshProgramme as refreshProgrammeOf } from "../../../lib/programme-r
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { partDisplay } from "../../../lib/part-display";
+import { WeekCheck } from "../../../components/WeekCheck";
 import { readerTitle } from "../../../lib/reader-titles";
 import { WeekNavigator } from "../../../components/WeekNavigator";
 import { WeekDrawer } from "../../../components/WeekDrawer";
@@ -1152,6 +1153,42 @@ function ProgrammeEditor() {
               {!showingPreviousWeek && (
                 <NotHeldCard key={weekStartISO} week={weekStartISO} />
               )}
+              {/* «Проверка недели» (20 November 2026): what asks for a look,
+                  above the meetings, for whoever builds the programme. */}
+              {!showingPreviousWeek &&
+              !congressThisWeek &&
+              (mayEditMidweek || mayEditWeekend) &&
+              (hasMidweek || hasWeekend) ? (
+                <WeekCheck
+                  week={weekStartISO}
+                  items={[
+                    ...(midweekReplacedBy ? [] : (grouped.get("midweek") ?? [])),
+                    ...(weekendReplacedBy ? [] : (grouped.get("weekend") ?? [])),
+                  ]}
+                  missing={{
+                    midweek:
+                      readinessQuery.data
+                        ?.find((w) => w.weekStart === weekStartISO)
+                        ?.meetings.find((m) => m.kind === "midweek")?.programme
+                        ?.missing ?? [],
+                    weekend:
+                      readinessQuery.data
+                        ?.find((w) => w.weekStart === weekStartISO)
+                        ?.meetings.find((m) => m.kind === "weekend")?.programme
+                        ?.missing ?? [],
+                  }}
+                  dates={{ midweek: midweekDateISO, weekend: weekendDateISO }}
+                  absent={{ midweek: midweekAbsentIds, weekend: weekendAbsentIds }}
+                  numbers={
+                    new Map([
+                      ...buildPartNumbers(grouped.get("midweek") ?? []),
+                      ...buildPartNumbers(grouped.get("weekend") ?? []),
+                    ])
+                  }
+                  publishersById={publishersById}
+                  onOpen={setEditing}
+                />
+              ) : null}
               {EVENT_TYPE_ORDER.map((eventType) => {
                 const items = grouped.get(eventType) ?? [];
                 if (

@@ -1230,6 +1230,24 @@
     },
     "awayNote": {
       "title": "Am Tag der Zusammenkunft abwesend"
+    },
+    "weekCheck": {
+      "title": "Wochenprüfung",
+      "allGood": "Alles in Ordnung: keine leeren Programmpunkte, niemand abwesend, keine wiederholten Paare.",
+      "empty": "{{part}} — niemand eingeteilt",
+      "away": "{{name}} ist am Tag der Zusammenkunft abwesend — {{part}}",
+      "pair": "{{part}}: {{lead}} und {{assistant}} waren schon ein Paar · {{date}}",
+      "long": "Die Zusammenkunft unter der Woche dauert {{hours}} Std. {{minutes}} Min. — laut den Hinweisen höchstens 1 Std. 45 Min.",
+      "double": "{{name}} — {{parts}}",
+      "late_one": "{{part}} — niemand eingeteilt. Noch {{count}} Tag bis zur Zusammenkunft; Aufgaben werden mindestens 3 Wochen vorher vergeben",
+      "late_other": "{{part}} — niemand eingeteilt. Noch {{count}} Tage bis zur Zusammenkunft; Aufgaben werden mindestens 3 Wochen vorher vergeben",
+      "unsent_one": "{{part}} — nicht versandt, noch {{count}} Tag bis zur Zusammenkunft",
+      "unsent_other": "{{part}} — nicht versandt, noch {{count}} Tage bis zur Zusammenkunft",
+      "emptyMany_one": "{{meeting}}: niemand eingeteilt in {{count}} Programmpunkt",
+      "emptyMany_other": "{{meeting}}: niemand eingeteilt in {{count}} Programmpunkten",
+      "more_one": "Noch {{count}} ›",
+      "more_other": "Noch {{count}} ›",
+      "less": "Weniger"
     }
   },
   "audit": {
