@@ -116,6 +116,8 @@ function mwb_parser_spec_ts({ extractYearFromFilename, extractPartTitle, parseWe
           });
           it('handles full path, not just basename', () => {
               expect(extractYearFromFilename('/home/user/Downloads/mwb_U_202605.epub')).toBe(2026);
+              expect(extractYearFromFilename('mwb_U_202701 (1).epub')).toBe(2027);
+              expect(extractYearFromFilename('mwb_U_202701-2.epub')).toBe(2027);
           });
           it('falls back to current year when no pattern matches', () => {
               expect(extractYearFromFilename('random-name.epub')).toBe(new Date().getFullYear());
@@ -343,6 +345,7 @@ function wt_parser_spec_ts({ extractYearFromFilename, daysBetween, parseDateRang
           });
           it('extracts year from Public edition (wp_) filename', () => {
               expect(extractYearFromFilename('wp_E_202509.epub')).toBe(2025);
+              expect(extractYearFromFilename('w_U_202701 (3).epub')).toBe(2027);
           });
           it('falls back to current year when pattern does not match', () => {
               expect(extractYearFromFilename('random.epub')).toBe(new Date().getFullYear());

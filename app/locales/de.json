@@ -1006,7 +1006,7 @@
   "schedule": {
     "title": {
       "new": "Neue Zuteilung",
-      "import": "Programm-Import",
+      "import": "Programmdateien",
       "rules": "Versammlungsregeln"
     },
     "a11y": {
@@ -1022,24 +1022,15 @@
     "createEmptyMidweek": "Leere Zusammenkunft unter der Woche erstellen",
     "createEmptyWeekend": "Leere Wochenendzusammenkunft erstellen",
     "import": {
-      "title": "Programm (EPUB) importieren",
-      "subtitle": "Laden Sie das Arbeitsheft für die Zusammenkunft (mwb_*.epub) oder das Wachtturm-Studium (w_*.epub) hoch, um das Wochenprogramm automatisch zu erstellen. Leere Plätze werden mit offiziellen Titeln gefüllt; Zuteilungen mit Verkündigern bleiben erhalten.",
-      "choosePrompt": "EPUB-Datei wählen",
-      "chooseDifferent": "Andere Datei wählen",
-      "openSchedule": "Programm öffnen",
       "errors": {
         "noFileSelected": "Keine Datei ausgewählt",
         "notEpub": "Bitte eine .epub-Datei auswählen",
-        "webOnly": "Der Datei-Import ist in der Web-Version verfügbar (mycongregation.org im Desktop-Browser öffnen).",
         "noWeeks": "Keine Wochenprogramme in dieser Datei gefunden. Ist es ein Arbeitsheft?",
         "parseFailed": "Datei konnte nicht ausgewertet werden"
       },
       "typeBadge": {
-        "midweek": "Unter der Woche",
-        "weekend": "Wochenende",
         "unknown": "Unbekannter Typ"
       },
-      "unknownTypeWarning": "Dateiname entspricht nicht dem erwarteten Muster. Der Server versucht es zu erkennen, kann die Datei jedoch ablehnen.",
       "result": {
         "complete": "Import abgeschlossen",
         "stats": {
@@ -1066,21 +1057,13 @@
       "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
       "parsing": "Datei wird ausgewertet…",
       "applying": "Wird importiert…",
-      "applyButton": "Importieren (Wochen: {{count}})",
       "preview": {
-        "title": "Gefundene Wochen",
-        "partsShort": "Punkte: {{count}}",
         "unclassifiedTitle": "Nicht erkannte Punkte: {{count}} (werden übersprungen)",
         "unreadWeeksTitle": "Wochendaten nicht erkannt: {{count}} — diese Wochen werden nicht geladen",
         "unreadWeeksHint": "Die übrigen Wochen werden wie gewohnt geladen. Das Programm dieser Wochen muss von Hand eingetragen werden."
       },
-      "dropHint": "oder eine .epub-Datei hierher ziehen",
+      "dropHint": "oder EPUB-Dateien hierher ziehen — mehrere auf einmal",
       "dropRelease": "Zum Laden loslassen",
-      "have": {
-        "title": "Bereits geladen",
-        "weeks_one": "{{count}} Woche",
-        "weeks_other": "{{count}} Wochen"
-      },
       "noRights": "Das Zusammenkunftsprogramm importieren dürfen der Administrator und die Ältesten."
     },
     "unassign": {
@@ -1248,6 +1231,96 @@
       "more_one": "Noch {{count}} ›",
       "more_other": "Noch {{count}} ›",
       "less": "Weniger"
+    },
+    "files": {
+      "lead": "Arbeitshefte (mwb_…) und Der Wachtturm (w_…) als EPUB. Hier sehen Sie, für welche Wochen das Programm schon da ist und was als Nächstes zu laden ist.",
+      "midweek": "Unter der Woche",
+      "weekend": "Wochenende",
+      "next": "Als Nächstes laden",
+      "readyUntil": "vorhanden bis {{date}}",
+      "nothingYet": "noch nichts",
+      "missingFrom": "ab der Woche {{week}} kein Programm",
+      "needWorkbook": "Benötigt: das Arbeitsheft mit der Woche {{week}}.",
+      "needWatchtower": "Benötigt: Der Wachtturm mit dem Studienartikel für {{week}}.",
+      "allLoaded": "für die nächsten Wochen ist alles geladen",
+      "dropSub": "Arbeitsheft und Wachtturm können zusammen ausgewählt werden",
+      "choose": "Dateien auswählen",
+      "loadNew_one": "{{count}} Datei laden",
+      "loadNew_other": "{{count}} Dateien laden",
+      "onComputer": "Dateien werden am Computer geladen — auf mycongregation.org im Browser. Hier sehen Sie, was schon da ist.",
+      "byWeek": "Nach Wochen",
+      "showPast_one": "vergangene Woche zeigen ({{count}})",
+      "showPast_other": "vergangene Wochen zeigen ({{count}})",
+      "hidePast": "vergangene Wochen ausblenden",
+      "colWeek": "Woche",
+      "colMidweek": "Unter der Woche · Arbeitsheft",
+      "colWeekend": "Wochenende · Artikel",
+      "colPeople": "Personen",
+      "footnote": "„Aus Datei“ — die Ansprache „Schätze aus Gottes Wort“ bzw. der Studienartikel stammt aus dem EPUB. „Vorhanden“ — das Programm wurde früher oder von Hand eingetragen. Erneutes Laden ändert keine Programmpunkte mit eingeteilten Personen und keine nach dem Laden geänderten Titel; bei Wochen, die vor dem 24. Oktober 2026 geladen wurden, kann die App eine Titeländerung nicht von der Datei unterscheiden.",
+      "status": {
+        "midweek": {
+          "fromFile": "aus Datei",
+          "present": "vorhanden",
+          "missing": "kein Arbeitsheft",
+          "notHeld": "keine Zusammenkunft"
+        },
+        "weekend": {
+          "fromFile": "aus Datei",
+          "present": "vorhanden",
+          "missing": "kein Artikel",
+          "notHeld": "keine Zusammenkunft"
+        }
+      },
+      "short": {
+        "midweek": {
+          "fromFile": "Arbeitsheft",
+          "present": "unter der Woche",
+          "missing": "kein Arbeitsheft",
+          "notHeld": "keine unter der Woche"
+        },
+        "weekend": {
+          "fromFile": "Artikel",
+          "present": "Wochenende",
+          "missing": "kein Artikel",
+          "notHeld": "kein Wochenende"
+        }
+      },
+      "byHand_one": "{{count}} Titel von Hand geändert",
+      "byHand_other": "{{count}} Titel von Hand geändert",
+      "coVisit": "Besuch des Kreisaufsehers",
+      "people": {
+        "past": "vorbei",
+        "all": "alle",
+        "some": "{{assigned}} von {{total}}"
+      },
+      "kind": {
+        "workbook": "Arbeitsheft",
+        "watchtower": "Der Wachtturm"
+      },
+      "weeksRange_one": "{{count}} Woche · {{range}}",
+      "weeksRange_other": "{{count}} Wochen · {{range}}",
+      "verdict": {
+        "loaded": "Geladen",
+        "new_one": "eine neue Woche",
+        "new_other": "alle {{count}} Wochen sind neu",
+        "partly_one": "neu: {{count}}, schon da: {{loaded}}",
+        "partly_other": "neu: {{count}}, schon da: {{loaded}}",
+        "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist; Punkte mit Personen und nach dem Laden geänderte Titel bleiben.",
+        "sameAsOther": "Dieselben Wochen wie eine Datei weiter oben — diese wird übersprungen.",
+        "nothing": "Nichts zu laden: In diesen Wochen gibt es keine Zusammenkünfte.",
+        "unchecked": "Abgleich mit dem Programm nicht möglich. Laden ist trotzdem sicher: Programmpunkte mit eingeteilten Personen bleiben unverändert."
+      },
+      "loadAgain": "erneut laden",
+      "remove": "Datei aus der Liste entfernen",
+      "gap": "fehlt: Woche {{week}}",
+      "gapTitle": "kein Programm für die Woche {{week}}",
+      "line": "{{label}}: {{value}}",
+      "leftover_one": "{{count}} Programmpunkt übrig",
+      "leftover_other": "{{count}} Programmpunkte übrig",
+      "alreadyListed": "Schon in der Liste: {{names}}",
+      "summaryFailed": "Es ließ sich nicht abrufen, welche Wochen geladen sind",
+      "partsWithout_one": "{{count}} Programmpunkt eingetragen",
+      "partsWithout_other": "{{count}} Programmpunkte eingetragen"
     }
   },
   "audit": {
@@ -4182,7 +4255,7 @@
   },
   "profileExtra": {
     "songsSub": "Liederbuch der Versammlung übernehmen",
-    "mwbImportSub": "Zusammenkunftsprogramm aus den Publikationen (EPUB)"
+    "mwbImportSub": "Welche Wochen aus EPUB geladen sind und was als Nächstes kommt"
   },
   "songPicker": {
     "current": "Aktuelles Lied",

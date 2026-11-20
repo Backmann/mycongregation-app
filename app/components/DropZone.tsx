@@ -8,8 +8,12 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
-  /** Called with a dropped .epub file (web only). */
-  onFile: (file: File) => void;
+  /**
+   * Called with the dropped .epub files (web only) — all of them: a workbook
+   * and a Watchtower dropped together are loaded together (20 November 2026;
+   * until then only the first one was taken and the rest vanished).
+   */
+  onFiles: (files: File[]) => void;
   disabled?: boolean;
   children: ReactNode;
 }
@@ -21,7 +25,7 @@ interface Props {
  * handlers off <View>, so onDrop/onDragOver passed as props never reach the
  * underlying <div>.
  */
-export function DropZone({ onFile, disabled, children }: Props) {
+export function DropZone({ onFiles, disabled, children }: Props) {
   const { t } = useTranslation();
   const ref = useRef<any>(null);
   const [active, setActive] = useState(false);
@@ -61,10 +65,10 @@ export function DropZone({ onFile, disabled, children }: Props) {
       depth = 0;
       setActive(false);
       if (disabled) return;
-      const file = e.dataTransfer?.files?.[0];
-      if (file && file.name.toLowerCase().endsWith('.epub')) {
-        onFile(file);
-      }
+      const files = Array.from(e.dataTransfer?.files ?? []).filter((f) =>
+        f.name.toLowerCase().endsWith('.epub'),
+      );
+      if (files.length > 0) onFiles(files);
     };
 
     node.addEventListener('dragenter', onEnter);
@@ -77,7 +81,7 @@ export function DropZone({ onFile, disabled, children }: Props) {
       node.removeEventListener('dragleave', onLeave);
       node.removeEventListener('drop', onDrop);
     };
-  }, [disabled, onFile]);
+  }, [disabled, onFiles]);
 
   const isWeb = Platform.OS === 'web';
 

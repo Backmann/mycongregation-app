@@ -1,16 +1,17 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import i18n from '../../../lib/i18n';
 import { usePermissions } from '../../../lib/permissions';
 import {
@@ -26,165 +27,244 @@ import {
   toApplyPayload,
 } from '../../../lib/mwb-parser';
 import { parseWtFile, wtToWorkbook } from '../../../lib/wt-parser';
-import { parseISODate } from '../../../lib/dates';
+import { addDays, formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
 import { formatWeekRange } from '../../../lib/week-range';
+import {
+  FilePlan,
+  FileWeek,
+  NextStep,
+  ProgrammeFiles,
+  SideStatus,
+  filesToLoad,
+  fileMeeting,
+  leftover,
+  nextStep,
+  peopleOf,
+  planFiles,
+  sideStatus,
+  windowOf,
+} from '../../../lib/programme-files';
 import { DropZone } from '../../../components/DropZone';
 import { useTranslation } from 'react-i18next';
 import { failsScreen } from '../../../lib/screen-failure';
 import { refreshProgramme } from '../../../lib/programme-refresh';
 
-interface PickedFile {
-  uri: string;
+/** One picked file, from reading it to loading it. */
+interface Entry {
+  key: string;
   name: string;
-  mimeType?: string;
-  size?: number;
-  file?: Blob;
+  state: 'reading' | 'ready' | 'unreadable' | 'loading' | 'loaded' | 'failed';
+  wb?: ParsedWorkbook;
+  error?: string;
+  result?: ImportResult;
 }
 
-export default function ImportEpubScreen() {
+const SUMMARY_KEY = ['programme-files'] as const;
+/** The table is a table from here on; narrower, each week is two lines. */
+const TABLE_FROM = 760;
+
+/** «27 декабря» — the Sunday a week ends on. */
+const weekEnd = (monday: string) =>
+  addDays(parseISODate(monday), 6).toLocaleDateString(i18n.language, {
+    day: 'numeric',
+    month: 'long',
+  });
+/** «28 декабря» — the Monday a week starts on. */
+const dayMonth = (monday: string) =>
+  parseISODate(monday).toLocaleDateString(i18n.language, {
+    day: 'numeric',
+    month: 'long',
+  });
+const weekLabel = (monday: string) =>
+  formatWeekRange(parseISODate(monday), i18n.language);
+
+/**
+ * «Файлы программы» (20 November 2026). It was «Импорт программы»: one file
+ * at a time, and what was already loaded was six month chips. Lionel asked
+ * for a screen that says which files are in, and so which weeks are ready
+ * and which are not. Uploading needs a browser on a computer (the file is
+ * read here and never sent); on a phone the screen only shows the weeks.
+ */
+export default function ProgrammeFilesScreen() {
   const { t } = useTranslation();
   /**
-   * The screen guards itself now.
-   *
-   * It never had to: the only way in was a button in the schedule header that
-   * was hidden from everybody else. Moved to the profile, the old guard moved
-   * with it — and a screen whose only protection is that nobody links to it is
-   * not protected. The server refuses the work either way; this is so the
-   * refusal reads as a sentence rather than as a failed request.
+   * The screen guards itself: a screen whose only protection is that nobody
+   * links to it is not protected. The server refuses the work either way.
    */
   const { canImportMidweekSchedule, canImportWeekendSchedule } =
     usePermissions();
   const mayImport = canImportMidweekSchedule || canImportWeekendSchedule;
   const queryClient = useQueryClient();
-  const [picked, setPicked] = useState<PickedFile | null>(null);
+  const { width } = useWindowDimensions();
+  const wide = width >= TABLE_FROM;
+  const canRead = isClientParsingSupported();
+
+  const [entries, setEntries] = useState<Entry[]>([]);
+  /** The list as it stands now — two quick drops must not add a file twice. */
+  const entriesRef = useRef<Entry[]>([]);
+  entriesRef.current = entries;
   const [pickError, setPickError] = useState<string | null>(null);
-  const [parsing, setParsing] = useState(false);
-  const [parsed, setParsed] = useState<ParsedWorkbook | null>(null);
-  const [parseError, setParseError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showPast, setShowPast] = useState(false);
 
-  const applyMutation = useMutation<ImportResult, unknown, ParsedWorkbook>({
-    mutationFn: (wb) => scheduleImportApi.apply(toApplyPayload(wb)),
-    onSuccess: () => {
-      refreshProgramme(queryClient);
-      // The coverage figure on this very screen is what the import changes;
-      // it was left reading the state from before the file was applied.
-      queryClient.invalidateQueries({ queryKey: ['import-coverage'] });
-    },
+  const summaryQuery = useQuery({
+    throwOnError: failsScreen,
+    queryKey: SUMMARY_KEY,
+    queryFn: () => scheduleImportApi.weeks(),
+    enabled: mayImport,
   });
+  const summary = summaryQuery.data;
 
-  // Общий разбор: и выбор из папки, и drag-and-drop ведут сюда. Файл
-  // публикации не покидает устройство — разбирается локально.
-  const processBlob = async (
-    blob: Blob,
-    name: string,
-    uri: string,
-    size?: number,
-    mimeType?: string,
-  ) => {
-    if (!name.toLowerCase().endsWith('.epub')) {
-      setPickError(t('schedule.import.errors.notEpub'));
-      return;
-    }
-    if (!isClientParsingSupported()) {
-      setPickError(t('schedule.import.errors.webOnly'));
-      return;
-    }
-    setPicked({
-      uri,
-      name,
-      mimeType: mimeType ?? 'application/epub+zip',
-      size,
-      file: blob,
-    });
-    setParsing(true);
-    try {
-      const kind = detectFileType(name);
-      const wb =
-        kind === 'watchtower'
-          ? wtToWorkbook(await parseWtFile(blob, undefined, name))
-          : await parseMwbFile(blob, undefined, name);
-      setParsed(wb);
-    } catch (e) {
-      setParseError(
-        `${t('schedule.import.errors.parseFailed')}: ${extractErrorMessage(e)}`,
-      );
-    } finally {
-      setParsing(false);
-    }
-  };
+  /**
+   * Each file's own weeks, asked for separately: a file for March must not
+   * be judged against a window that ends in February.
+   */
+  // A file whose loading failed claims no weeks: a copy of it further down
+  // must not stay «skipped» because of it (review, 20 November 2026).
+  const readyEntries = entries.filter((e) => e.wb && e.state !== 'failed');
+  const windows = readyEntries.map((e) =>
+    windowOf(e.wb!.weeks.map((w) => w.weekStartDate)),
+  );
+  const fileWeeks = useQueries({
+    queries: windows.map((w) => ({
+      queryKey: [...SUMMARY_KEY, w?.from ?? '', w?.count ?? 0],
+      queryFn: () =>
+        w ? scheduleImportApi.weeks({ from: w.from, count: w.count }) : null,
+      enabled: !!w,
+      staleTime: 30_000,
+    })),
+  });
+  const knownWeeks: FileWeek[] = [
+    ...(summary?.weeks ?? []),
+    ...fileWeeks.flatMap((q) => (q.data as ProgrammeFiles | null)?.weeks ?? []),
+  ];
+  const plansReady = fileWeeks.every((q) => !q.isLoading);
+  /**
+   * The weeks could not be asked: every week would look new. The files are
+   * then said to be unchecked, not «new» — loading them is still safe, the
+   * import keeps what people did.
+   */
+  const unchecked = summaryQuery.isError || fileWeeks.some((q) => q.isError);
+  const plans: FilePlan[] = planFiles(
+    readyEntries.map((e) => ({
+      name: e.name,
+      weekStarts: e.wb!.weeks.map((w) => w.weekStartDate),
+      partKeys: e.wb!.weeks.flatMap((w) => w.parts.map((p) => p.partKey)),
+    })),
+    knownWeeks,
+  );
+  const planOf = new Map(readyEntries.map((e, i) => [e.key, plans[i]]));
+  const toLoad = (
+    unchecked
+      ? readyEntries.filter((e) => (e.wb?.weeks.length ?? 0) > 0)
+      : filesToLoad(plans).map((i) => readyEntries[i])
+  ).filter((e) => e.state === 'ready');
 
-  // Drag-and-drop (web): dropped File is a Blob → same parser path.
-  const handleDropped = (dropped: File) => {
+  const update = (key: string, patch: Partial<Entry>) =>
+    setEntries((all) => all.map((e) => (e.key === key ? { ...e, ...patch } : e)));
+
+  /** Reads the files here, in the browser — the publication never leaves it. */
+  const addFiles = async (files: { blob: Blob; name: string }[]) => {
     setPickError(null);
-    setParseError(null);
-    setParsed(null);
-    applyMutation.reset();
-    void processBlob(
-      dropped,
-      dropped.name,
-      (dropped as any).path ?? dropped.name,
-      dropped.size,
-      dropped.type || undefined,
+    // Still in the list (not loaded, not failed): the same file again is
+    // said, not dropped in silence; twice in one batch counts once.
+    const listed = new Set(
+      entriesRef.current
+        .filter((e) => e.state === 'reading' || e.state === 'ready' || e.state === 'loading')
+        .map((e) => e.name),
+    );
+    const seen = new Set<string>();
+    const already: string[] = [];
+    const fresh = files.filter((f) => {
+      if (listed.has(f.name) || seen.has(f.name)) {
+        already.push(f.name);
+        return false;
+      }
+      seen.add(f.name);
+      return true;
+    });
+    const wrong = fresh.filter((f) => !f.name.toLowerCase().endsWith('.epub'));
+    if (wrong.length > 0) setPickError(t('schedule.import.errors.notEpub'));
+    else if (already.length > 0) {
+      setPickError(t('schedule.files.alreadyListed', { names: [...new Set(already)].join(', ') }));
+    }
+    const epubs = fresh.filter((f) => f.name.toLowerCase().endsWith('.epub'));
+    const added: Entry[] = epubs.map((f) => ({
+      key: `${f.name}:${Date.now()}:${Math.random()}`,
+      name: f.name,
+      state: 'reading',
+    }));
+    const replaced = new Set(epubs.map((f) => f.name));
+    setEntries((all) => [
+      ...all.filter(
+        (e) =>
+          e.state !== 'loaded' &&
+          !((e.state === 'failed' || e.state === 'unreadable') && replaced.has(e.name)),
+      ),
+      ...added,
+    ]);
+    entriesRef.current = [...entriesRef.current, ...added];
+    await Promise.all(
+      epubs.map(async (f, i) => {
+        const key = added[i].key;
+        try {
+          const lower = f.name.toLowerCase();
+          const wb =
+            lower.startsWith('w_') || lower.startsWith('wp_')
+              ? wtToWorkbook(await parseWtFile(f.blob, undefined, f.name))
+              : await parseMwbFile(f.blob, undefined, f.name);
+          update(key, { state: 'ready', wb });
+        } catch (e) {
+          update(key, {
+            state: 'unreadable',
+            error: `${t('schedule.import.errors.parseFailed')}: ${extractErrorMessage(e)}`,
+          });
+        }
+      }),
     );
   };
 
-  /** Which months the congregation already has — asked once, on opening. */
-  const coverageQuery = useQuery({
-    throwOnError: failsScreen,
-    queryKey: ['import-coverage'],
-    queryFn: () => scheduleImportApi.coverage(),
-  });
-  const coverage = coverageQuery.data ?? [];
-
-  /** «2026-09» → «сентябрь 2026», in the reader's own language. */
-  const monthName = (ym: string) =>
-    new Date(`${ym}-01T00:00:00`).toLocaleDateString(i18n.language, {
-      month: 'long',
-      year: 'numeric',
-    });
-
   const handlePick = async () => {
     setPickError(null);
-    setParseError(null);
-    setParsed(null);
-    applyMutation.reset();
     try {
-      const result = await DocumentPicker.getDocumentAsync({
+      const picked = await DocumentPicker.getDocumentAsync({
         type: ['application/epub+zip', '*/*'],
         copyToCacheDirectory: true,
-        multiple: false,
+        multiple: true,
       });
-      if (result.canceled) return;
-      const asset = result.assets?.[0];
-      if (!asset) {
+      if (picked.canceled) return;
+      const files = (picked.assets ?? [])
+        .map((a) => ({ blob: (a as any).file as Blob | undefined, name: a.name }))
+        .filter((f): f is { blob: Blob; name: string } => !!f.blob);
+      if (files.length === 0) {
         setPickError(t('schedule.import.errors.noFileSelected'));
         return;
       }
-      if (!asset.name.toLowerCase().endsWith('.epub')) {
-        setPickError(t('schedule.import.errors.notEpub'));
-        return;
-      }
-      const blob = (asset as any).file as Blob | undefined;
-      if (!blob) {
-        setPickError(t('schedule.import.errors.webOnly'));
-        return;
-      }
-      await processBlob(
-        blob,
-        asset.name,
-        asset.uri,
-        asset.size,
-        asset.mimeType ?? undefined,
-      );
+      await addFiles(files);
     } catch (e) {
       setPickError(extractErrorMessage(e));
-      setParsing(false);
     }
   };
 
-  const result = applyMutation.data;
-  const detectedType = picked ? detectFileType(picked.name) : null;
-  const unclassified = parsed ? collectUnclassified(parsed) : [];
+  /** One after another: two files never write the same week at once. */
+  const load = async (list: Entry[]) => {
+    setLoading(true);
+    try {
+      for (const e of list) {
+        update(e.key, { state: 'loading', error: undefined });
+        try {
+          const result = await scheduleImportApi.apply(toApplyPayload(e.wb!));
+          update(e.key, { state: 'loaded', result });
+        } catch (err) {
+          update(e.key, { state: 'failed', error: extractErrorMessage(err) });
+        }
+      }
+    } finally {
+      setLoading(false);
+      refreshProgramme(queryClient);
+      queryClient.invalidateQueries({ queryKey: SUMMARY_KEY });
+    }
+  };
 
   if (!mayImport) {
     return (
@@ -197,260 +277,475 @@ export default function ImportEpubScreen() {
     );
   }
 
+  // The congregation's own week, as the server counts «next missing».
+  const thisWeek = summary?.thisWeek ?? formatDateISO(startOfWeekMonday(new Date()));
+  const weeks = summary?.weeks ?? [];
+  const past = weeks.filter((w) => w.weekStart < thisWeek);
+  const shown = showPast ? weeks : weeks.filter((w) => w.weekStart >= thisWeek);
+  const results = entries.filter((e) => e.result);
+
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={{ paddingBottom: 32 }}
+      contentContainerStyle={[styles.content, wide && styles.contentWide]}
     >
-      <View style={styles.intro}>
-        <Ionicons name="document-text-outline" size={48} color="#0ea5e9" />
-        <Text style={styles.title}>{t('schedule.import.title')}</Text>
-        <Text style={styles.subtitle}>{t('schedule.import.subtitle')}</Text>
-        <View style={styles.privacyRow}>
-          <Ionicons name="shield-checkmark-outline" size={16} color="#059669" />
-          <Text style={styles.privacyText}>
-            {t('schedule.import.privacyNote')}
-          </Text>
-        </View>
+      <Text style={styles.lead}>{t('schedule.files.lead')}</Text>
+      <View style={styles.privacyRow}>
+        <Ionicons name="shield-checkmark-outline" size={16} color="#059669" />
+        <Text style={styles.privacyText}>{t('schedule.import.privacyNote')}</Text>
       </View>
 
-      {/* What is already loaded, before a file is even chosen. The screen used
-          to look identical whether September was in or nothing was. */}
-      {coverage.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.haveTitle}>
-            {t('schedule.import.have.title')}
+      {summaryQuery.isLoading ? (
+        <ActivityIndicator color="#0ea5e9" style={{ marginVertical: 24 }} />
+      ) : summary ? (
+        <SummaryCards summary={summary} wide={wide} />
+      ) : summaryQuery.isError ? (
+        <View style={styles.errorBox}>
+          <Text style={styles.errorText}>
+            {t('schedule.files.summaryFailed')}: {extractErrorMessage(summaryQuery.error)}
           </Text>
-          <View style={styles.haveRow}>
-            {coverage.slice(-6).map((m) => (
-              <Pressable
-                key={m.month}
-                style={styles.haveChip}
-                onPress={() =>
-                  router.push(`/schedule/edit?week=${m.firstWeek}` as never)
-                }
-              >
-                <Text style={styles.haveChipMonth}>{monthName(m.month)}</Text>
-                <Text style={styles.haveChipWeeks}>
-                  {t('schedule.import.have.weeks', { count: m.weeks })}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
         </View>
       ) : null}
 
-      <View style={styles.section}>
-        <DropZone onFile={handleDropped} disabled={parsing}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.pickButton,
-              pressed && { opacity: 0.7 },
-            ]}
-            onPress={handlePick}
+      {canRead ? (
+        <View style={styles.card}>
+          <DropZone
+            onFiles={(files) =>
+              void addFiles(files.map((f) => ({ blob: f, name: f.name })))
+            }
+            disabled={loading}
           >
-            <Ionicons
-              name="document-attach-outline"
-              size={20}
-              color="#0ea5e9"
-            />
-            <Text style={styles.pickButtonText}>
-              {picked
-                ? t('schedule.import.chooseDifferent')
-                : t('schedule.import.choosePrompt')}
-            </Text>
-          </Pressable>
-        </DropZone>
-
-        {pickError && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{pickError}</Text>
-          </View>
-        )}
-
-        {picked && (
-          <View style={styles.fileCard}>
-            <Ionicons name="document-text-outline" size={20} color="#64748b" />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.fileName} numberOfLines={1}>
-                {picked.name}
-              </Text>
-              <View style={styles.fileMetaRow}>
-                {picked.size && (
-                  <Text style={styles.fileMeta}>
-                    {(picked.size / 1024 / 1024).toFixed(2)} MB
-                  </Text>
-                )}
-                {detectedType && (
-                  <View
-                    style={[
-                      styles.typeBadge,
-                      detectedType === 'mwb'
-                        ? styles.typeBadgeMidweek
-                        : detectedType === 'watchtower'
-                        ? styles.typeBadgeWeekend
-                        : styles.typeBadgeUnknown,
-                    ]}
-                  >
-                    <Text style={styles.typeBadgeText}>
-                      {detectedType === 'mwb'
-                        ? t('schedule.import.typeBadge.midweek')
-                        : detectedType === 'watchtower'
-                        ? t('schedule.import.typeBadge.weekend')
-                        : t('schedule.import.typeBadge.unknown')}
-                    </Text>
-                  </View>
-                )}
-              </View>
+            <View style={styles.dropInner}>
+              <Ionicons name="cloud-upload-outline" size={26} color="#0ea5e9" />
+              <Pressable
+                style={({ pressed }) => [styles.pickButton, pressed && { opacity: 0.7 }]}
+                onPress={handlePick}
+                disabled={loading}
+              >
+                <Ionicons name="document-attach-outline" size={18} color="#0ea5e9" />
+                <Text style={styles.pickButtonText}>{t('schedule.files.choose')}</Text>
+              </Pressable>
+              <Text style={styles.dropSub}>{t('schedule.files.dropSub')}</Text>
             </View>
-          </View>
-        )}
+          </DropZone>
+          {pickError ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorText}>{pickError}</Text>
+            </View>
+          ) : null}
 
-        {picked && detectedType === 'unknown' && (
-          <View style={styles.warningBox}>
-            <Text style={styles.warningText}>
-              {t('schedule.import.unknownTypeWarning')}
-            </Text>
-          </View>
-        )}
-
-        {parsing && (
-          <View style={styles.parsingRow}>
-            <ActivityIndicator color="#0ea5e9" />
-            <Text style={styles.parsingText}>
-              {t('schedule.import.parsing')}
-            </Text>
-          </View>
-        )}
-
-        {parseError && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{parseError}</Text>
-          </View>
-        )}
-
-        {parsed && parsed.weeks.length === 0 && !parsing && (
-          <View style={styles.warningBox}>
-            <Text style={styles.warningText}>
-              {t('schedule.import.errors.noWeeks')}
-            </Text>
-          </View>
-        )}
-
-        {/*
-          A week the file holds and the import could not date (5 October
-          2026). It is not in the list below and will not be loaded — and
-          until now nothing on this screen said so: the list was simply one
-          week shorter.
-        */}
-        {parsed && parsed.unreadWeeks.length > 0 && !parsing && !result && (
-          <View style={styles.warningBox}>
-            <Text style={styles.warningTitle}>
-              {t('schedule.import.preview.unreadWeeksTitle', {
-                count: parsed.unreadWeeks.length,
-              })}
-            </Text>
-            {parsed.unreadWeeks.map((heading, i) => (
-              <Text key={i} style={styles.warningText}>
-                • {heading}
-              </Text>
-            ))}
-            <Text style={styles.warningText}>
-              {t('schedule.import.preview.unreadWeeksHint')}
-            </Text>
-          </View>
-        )}
-
-        {parsed && parsed.weeks.length > 0 && !result && (
-          <>
-            <Text style={styles.weeksHeader}>
-              {t('schedule.import.preview.title')}
-            </Text>
-            <View style={styles.weeksList}>
-              {parsed.weeks.map((w) => (
-                <View key={w.weekStartDate} style={styles.weekRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.weekDate}>{w.weekRangeText}</Text>
-                    <Text style={styles.weekBible} numberOfLines={1}>
-                      {w.biblePassage}
-                    </Text>
-                  </View>
-                  <Text style={styles.weekPartsCount}>
-                    {t('schedule.import.preview.partsShort', {
-                      count: w.parts.filter((p) => p.partKey !== 'unknown')
-                        .length,
-                    })}
-                  </Text>
-                </View>
+          {entries.length > 0 ? (
+            <View style={styles.fileList}>
+              {entries.map((e) => (
+                <FileRow
+                  key={e.key}
+                  entry={e}
+                  plan={planOf.get(e.key)}
+                  planReady={plansReady}
+                  unchecked={unchecked}
+                  busy={loading}
+                  onRemove={() =>
+                    setEntries((all) => all.filter((x) => x.key !== e.key))
+                  }
+                  onLoadAgain={() => void load([e])}
+                />
               ))}
             </View>
+          ) : null}
 
-            {unclassified.length > 0 && (
-              <View style={styles.warningBox}>
-                <Text style={styles.warningTitle}>
-                  {t('schedule.import.preview.unclassifiedTitle', {
-                    count: unclassified.length,
-                  })}
-                </Text>
-                {unclassified.slice(0, 5).map((u, i) => (
-                  <Text key={i} style={styles.warningText}>
-                    • {u.weekStartDate}: {u.rawTitle}
-                  </Text>
-                ))}
-              </View>
-            )}
-
+          {toLoad.length > 0 ? (
             <Pressable
-              style={[
-                styles.uploadButton,
-                applyMutation.isPending && { opacity: 0.6 },
-              ]}
-              onPress={() => parsed && applyMutation.mutate(parsed)}
-              disabled={applyMutation.isPending}
+              style={[styles.uploadButton, (loading || !plansReady) && { opacity: 0.6 }]}
+              onPress={() => void load(toLoad)}
+              disabled={loading || !plansReady}
             >
-              {applyMutation.isPending ? (
-                <>
-                  <ActivityIndicator color="#fff" />
-                  <Text style={styles.uploadButtonText}>
-                    {t('schedule.import.applying')}
-                  </Text>
-                </>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
               ) : (
-                <>
-                  <Ionicons name="checkmark-circle" size={20} color="#fff" />
-                  <Text style={styles.uploadButtonText}>
-                    {t('schedule.import.applyButton', {
-                      count: parsed.weeks.length,
-                    })}
-                  </Text>
-                </>
+                <Ionicons name="checkmark-circle" size={20} color="#fff" />
               )}
+              <Text style={styles.uploadButtonText}>
+                {loading
+                  ? t('schedule.import.applying')
+                  : t('schedule.files.loadNew', { count: toLoad.length })}
+              </Text>
             </Pressable>
-          </>
-        )}
+          ) : null}
+        </View>
+      ) : (
+        <View style={styles.phoneNote}>
+          <Ionicons name="desktop-outline" size={18} color="#0369a1" />
+          <Text style={styles.phoneNoteText}>{t('schedule.files.onComputer')}</Text>
+        </View>
+      )}
 
-        {!!applyMutation.error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>
-              {extractErrorMessage(applyMutation.error)}
-            </Text>
+      {results.map((e) => (
+        <ResultSummary key={e.key} result={e.result!} fileName={e.name} />
+      ))}
+
+      {weeks.length > 0 ? (
+        <View style={styles.card}>
+          <View style={styles.tableHead}>
+            <Text style={styles.cardTitle}>{t('schedule.files.byWeek')}</Text>
+            {past.length > 0 ? (
+              <Pressable onPress={() => setShowPast((v) => !v)} hitSlop={8}>
+                <Text style={styles.link}>
+                  {showPast
+                    ? t('schedule.files.hidePast')
+                    : t('schedule.files.showPast', { count: past.length })}
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
-        )}
-      </View>
-
-      {result && <ResultSummary result={result} />}
+          {wide ? (
+            <View style={[styles.row, styles.headRow]}>
+              <Text style={[styles.th, styles.colWeek]}>{t('schedule.files.colWeek')}</Text>
+              <Text style={[styles.th, styles.colSide]}>{t('schedule.files.colMidweek')}</Text>
+              <Text style={[styles.th, styles.colSide]}>{t('schedule.files.colWeekend')}</Text>
+              <Text style={[styles.th, styles.colPeople]}>{t('schedule.files.colPeople')}</Text>
+            </View>
+          ) : null}
+          {shown.map((w) => (
+            <WeekRow key={w.weekStart} week={w} thisWeek={thisWeek} wide={wide} />
+          ))}
+          <Text style={styles.footnote}>{t('schedule.files.footnote')}</Text>
+        </View>
+      ) : null}
     </ScrollView>
   );
 }
 
-function detectFileType(filename: string): 'mwb' | 'watchtower' | 'unknown' {
-  const lower = filename.toLowerCase();
-  if (lower.startsWith('mwb_') || lower.startsWith('mwb-')) return 'mwb';
-  if (lower.startsWith('w_') || lower.startsWith('wp_')) return 'watchtower';
-  return 'unknown';
+/**
+ * On top: how far each meeting has its programme, and what to load next.
+ * Wide — three cards; narrow — one card for both meetings and the next step.
+ */
+function SummaryCards({ summary, wide }: { summary: ProgrammeFiles; wide: boolean }) {
+  const { t } = useTranslation();
+  const until = summary.loadedUntil;
+  const steps = {
+    midweek: nextStep(until.midweek, summary.nextMissing.midweek),
+    weekend: nextStep(until.weekend, summary.nextMissing.weekend),
+  };
+  const have = (m: 'midweek' | 'weekend') =>
+    until[m]
+      ? t('schedule.files.readyUntil', { date: weekEnd(until[m]!) })
+      : t('schedule.files.nothingYet');
+  const gapLine = (m: 'midweek' | 'weekend') => {
+    const s = steps[m];
+    return s.kind === 'gap'
+      ? t('schedule.files.gap', { week: weekLabel(s.week) })
+      : null;
+  };
+  const open = (['midweek', 'weekend'] as const)
+    .map((m) => ({ m, s: steps[m] }))
+    .filter((x): x is { m: 'midweek' | 'weekend'; s: Exclude<NextStep, { kind: 'done' }> } =>
+      x.s.kind !== 'done',
+    )
+    .sort((a, b) => a.s.week.localeCompare(b.s.week));
+  const first = open[0]?.s;
+  const nextCard = (
+    <View style={[styles.sumCard, wide && styles.sumCardWide, first ? styles.sumCardNext : styles.sumCardDone]}>
+      <Text style={styles.sumLabel}>{t('schedule.files.next')}</Text>
+      {first ? (
+        <>
+          <Text style={styles.sumValue}>
+            {first.kind === 'gap'
+              ? t('schedule.files.gapTitle', { week: weekLabel(first.week) })
+              : t('schedule.files.missingFrom', { week: weekLabel(first.week) })}
+          </Text>
+          {open.map(({ m, s }) => (
+            <Text key={m} style={styles.sumSub}>
+              {m === 'midweek'
+                ? t('schedule.files.needWorkbook', { week: weekLabel(s.week) })
+                : t('schedule.files.needWatchtower', { week: weekLabel(s.week) })}
+            </Text>
+          ))}
+        </>
+      ) : (
+        <Text style={styles.sumValue}>{t('schedule.files.allLoaded')}</Text>
+      )}
+    </View>
+  );
+  if (!wide) {
+    return (
+      <View style={styles.cards}>
+        <View style={styles.sumCard}>
+          {(['midweek', 'weekend'] as const).map((m) => (
+            <View key={m}>
+              <Text style={styles.sumLine}>
+                {t('schedule.files.line', { label: t(`schedule.files.${m}`), value: have(m) })}
+              </Text>
+              {gapLine(m) ? <Text style={styles.sumGap}>{gapLine(m)}</Text> : null}
+            </View>
+          ))}
+        </View>
+        {nextCard}
+      </View>
+    );
+  }
+  return (
+    <View style={[styles.cards, styles.cardsWide]}>
+      {(['midweek', 'weekend'] as const).map((m) => (
+        <View key={m} style={[styles.sumCard, styles.sumCardWide]}>
+          <Text style={styles.sumLabel}>{t(`schedule.files.${m}`)}</Text>
+          <Text style={styles.sumValue}>{have(m)}</Text>
+          {gapLine(m) ? <Text style={styles.sumGap}>{gapLine(m)}</Text> : null}
+        </View>
+      ))}
+      {nextCard}
+    </View>
+  );
 }
 
-function ResultSummary({ result }: { result: ImportResult }) {
+const STATUS_COLOR: Record<SideStatus, string> = {
+  fromFile: '#047857',
+  present: '#0369a1',
+  partial: '#b45309',
+  missing: '#b45309',
+  notHeld: '#64748b',
+};
+
+function SideCell({
+  status,
+  meeting,
+  byHand,
+  left = 0,
+  parts = 0,
+  coVisit,
+  short,
+}: {
+  status: SideStatus;
+  meeting: 'midweek' | 'weekend';
+  byHand: number;
+  left?: number;
+  parts?: number;
+  coVisit?: boolean;
+  short?: boolean;
+}) {
+  const { t } = useTranslation();
+  const icon =
+    status === 'fromFile' || status === 'present'
+      ? '✓'
+      : status === 'missing' || status === 'partial'
+        ? '—'
+        : '·';
+  // «partial» reads as «missing»: the file is not there; the parts that
+  // are (an empty skeleton, a part added by hand) are a note beside it.
+  const said = status === 'partial' ? 'missing' : status;
+  const text = short
+    ? t(`schedule.files.short.${meeting}.${said}`)
+    : t(`schedule.files.status.${meeting}.${said}`);
+  const notes = [
+    byHand > 0 && !short ? t('schedule.files.byHand', { count: byHand }) : null,
+    left > 0 && !short ? t('schedule.files.leftover', { count: left }) : null,
+    status === 'partial' && !short && parts > 0
+      ? t('schedule.files.partsWithout', { count: parts })
+      : null,
+    coVisit ? t('schedule.files.coVisit') : null,
+  ].filter(Boolean);
+  return (
+    <Text style={[styles.cell, { color: STATUS_COLOR[status] }]}>
+      {icon} {text}
+      {notes.length > 0 ? <Text style={styles.cellNote}>{` · ${notes.join(' · ')}`}</Text> : null}
+    </Text>
+  );
+}
+
+function WeekRow({ week, thisWeek, wide }: { week: FileWeek; thisWeek: string; wide: boolean }) {
+  const { t } = useTranslation();
+  const people = peopleOf(week, thisWeek);
+  const peopleText =
+    people.kind === 'past'
+      ? t('schedule.files.people.past')
+      : people.kind === 'none'
+        ? '—'
+        : people.kind === 'all'
+          ? t('schedule.files.people.all')
+          : t('schedule.files.people.some', {
+              assigned: people.assigned,
+              total: people.total,
+            });
+  const mid = sideStatus(week.midweek);
+  const end = sideStatus(week.weekend);
+  const open = () => router.push(`/schedule/edit?week=${week.weekStart}` as never);
+  if (wide) {
+    return (
+      <Pressable
+        onPress={open}
+        style={({ hovered, pressed }: any) => [styles.row, (hovered || pressed) && styles.rowHover]}
+      >
+        <Text style={[styles.weekCell, styles.colWeek]}>{weekLabel(week.weekStart)}</Text>
+        <View style={styles.colSide}>
+          <SideCell
+            status={mid}
+            meeting="midweek"
+            byHand={week.midweek.byHand}
+            left={leftover(week.midweek)}
+            parts={week.midweek.parts}
+            coVisit={week.coVisit}
+          />
+        </View>
+        <View style={styles.colSide}>
+          <SideCell
+            status={end}
+            meeting="weekend"
+            byHand={week.weekend.byHand}
+            left={leftover(week.weekend)}
+            parts={week.weekend.parts}
+          />
+        </View>
+        <Text style={[styles.peopleCell, styles.colPeople]}>{peopleText}</Text>
+      </Pressable>
+    );
+  }
+  return (
+    <Pressable onPress={open} style={styles.rowNarrow}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.weekCell}>{weekLabel(week.weekStart)}</Text>
+        <Text>
+          <SideCell status={mid} meeting="midweek" byHand={0} short />
+          <Text style={styles.cellNote}>{'  '}</Text>
+          <SideCell status={end} meeting="weekend" byHand={0} coVisit={week.coVisit} short />
+        </Text>
+      </View>
+      <Text style={styles.peopleCell}>{peopleText}</Text>
+    </Pressable>
+  );
+}
+
+/** One picked file and what it would add. */
+function FileRow({
+  entry,
+  plan,
+  planReady,
+  unchecked,
+  busy,
+  onRemove,
+  onLoadAgain,
+}: {
+  entry: Entry;
+  plan?: FilePlan;
+  planReady: boolean;
+  unchecked: boolean;
+  busy: boolean;
+  onRemove: () => void;
+  onLoadAgain: () => void;
+}) {
+  const { t } = useTranslation();
+  const wb = entry.wb;
+  const meeting =
+    plan?.meeting ?? fileMeeting(entry.name, wb?.weeks.flatMap((w) => w.parts.map((p) => p.partKey)) ?? []);
+  const unclassified = wb ? collectUnclassified(wb) : [];
+  const range =
+    plan && plan.weeks.length > 0
+      ? `${dayMonth(plan.weeks[0])} – ${weekEnd(plan.weeks[plan.weeks.length - 1])}`
+      : null;
+  let verdict: string | null = null;
+  let tone: 'ok' | 'repeat' | 'bad' = 'ok';
+  if (entry.state === 'reading') verdict = t('schedule.import.parsing');
+  else if (entry.state === 'unreadable' || entry.state === 'failed') {
+    verdict = entry.error ?? null;
+    tone = 'bad';
+  } else if (entry.state === 'loading') verdict = t('schedule.import.applying');
+  else if (entry.state === 'loaded') verdict = t('schedule.files.verdict.loaded');
+  else if (wb && wb.weeks.length === 0) verdict = null;
+  else if (unchecked) {
+    verdict = t('schedule.files.verdict.unchecked');
+    tone = 'repeat';
+  } else if (plan && planReady) {
+    tone = plan.verdict === 'new' || plan.verdict === 'partly' ? 'ok' : plan.verdict === 'nothing' ? 'bad' : 'repeat';
+    verdict = t(`schedule.files.verdict.${plan.verdict}`, {
+      count: plan.newWeeks.length,
+      loaded: plan.loadedWeeks.length,
+    });
+  }
+  return (
+    <View style={styles.fileRow}>
+      <View
+        style={[
+          styles.typeBadge,
+          meeting === 'midweek'
+            ? styles.typeBadgeMidweek
+            : meeting === 'weekend'
+              ? styles.typeBadgeWeekend
+              : styles.typeBadgeUnknown,
+        ]}
+      >
+        <Text style={styles.typeBadgeText}>
+          {meeting === 'midweek'
+            ? t('schedule.files.kind.workbook')
+            : meeting === 'weekend'
+              ? t('schedule.files.kind.watchtower')
+              : t('schedule.import.typeBadge.unknown')}
+        </Text>
+      </View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.fileName} numberOfLines={1}>
+          {entry.name}
+        </Text>
+        {range ? (
+          <Text style={styles.fileMeta}>
+            {t('schedule.files.weeksRange', { count: plan!.weeks.length, range })}
+          </Text>
+        ) : null}
+        {verdict ? (
+          <Text
+            style={[
+              styles.fileVerdict,
+              tone === 'bad' ? styles.verdictBad : tone === 'repeat' ? styles.verdictRepeat : null,
+            ]}
+          >
+            {verdict}
+          </Text>
+        ) : null}
+        {wb && wb.weeks.length === 0 && entry.state === 'ready' ? (
+          <Text style={[styles.fileVerdict, styles.verdictBad]}>
+            {t('schedule.import.errors.noWeeks')}
+          </Text>
+        ) : null}
+        {wb && wb.unreadWeeks.length > 0 && entry.state === 'ready' ? (
+          <Text style={[styles.fileVerdict, styles.verdictRepeat]}>
+            {t('schedule.import.preview.unreadWeeksTitle', { count: wb.unreadWeeks.length })}
+            {': '}
+            {wb.unreadWeeks.join('; ')}
+            {'. '}
+            {t('schedule.import.preview.unreadWeeksHint')}
+          </Text>
+        ) : null}
+        {unclassified.length > 0 && entry.state === 'ready' ? (
+          <Text style={[styles.fileVerdict, styles.verdictRepeat]}>
+            {t('schedule.import.preview.unclassifiedTitle', { count: unclassified.length })}
+          </Text>
+        ) : null}
+        {(entry.state === 'ready' && plan?.verdict === 'repeat' && !unchecked) ||
+        entry.state === 'failed' ? (
+          <Pressable onPress={onLoadAgain} disabled={busy} hitSlop={6}>
+            <Text style={styles.link}>{t('schedule.files.loadAgain')}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+      {entry.state !== 'loading' ? (
+        <Pressable
+          onPress={onRemove}
+          disabled={busy}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('schedule.files.remove')}
+        >
+          <Ionicons name="close" size={18} color="#94a3b8" />
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+function ResultSummary({
+  result,
+  fileName,
+}: {
+  result: ImportResult;
+  fileName: string;
+}) {
   const { t } = useTranslation();
   /**
    * The first week of what was just loaded.
@@ -509,12 +804,17 @@ function ResultSummary({ result }: { result: ImportResult }) {
     (n) => n.code === 'meeting_not_held',
   );
   return (
-    <View style={styles.section}>
+    <View style={styles.card}>
       <View style={styles.successHeader}>
         <Ionicons name="checkmark-circle" size={32} color="#059669" />
-        <Text style={styles.successTitle}>
-          {t('schedule.import.result.complete')}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.successTitle}>
+            {t('schedule.import.result.complete')}
+          </Text>
+          <Text style={styles.fileMeta} numberOfLines={1}>
+            {fileName}
+          </Text>
+        </View>
       </View>
 
       <View style={styles.statsRow}>
@@ -634,14 +934,6 @@ function ResultSummary({ result }: { result: ImportResult }) {
         ))}
       </View>
 
-      <Pressable
-        style={styles.doneButton}
-        onPress={() => router.replace('/schedule/edit' as any)}
-      >
-        <Text style={styles.doneButtonText}>
-          {t('schedule.import.openSchedule')}
-        </Text>
-      </Pressable>
     </View>
   );
 }
@@ -664,6 +956,98 @@ function Stat({
 }
 
 const styles = StyleSheet.create({
+  content: { padding: 16, gap: 14, paddingBottom: 40 },
+  contentWide: { maxWidth: 1080, width: '100%', alignSelf: 'center', paddingHorizontal: 24 },
+  lead: { fontFamily: 'Manrope_400Regular', fontSize: 14, lineHeight: 20, color: '#334155' },
+  cards: { gap: 10 },
+  cardsWide: { flexDirection: 'row' },
+  sumCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    gap: 4,
+  },
+  sumCardWide: { flex: 1 },
+  sumCardNext: { borderColor: '#fcd34d', backgroundColor: '#fffbeb' },
+  sumCardDone: { borderColor: '#a7f3d0', backgroundColor: '#ecfdf5' },
+  sumLabel: {
+    fontFamily: 'Manrope_600SemiBold',
+    fontSize: 11.5,
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  sumValue: { fontFamily: 'Manrope_700Bold', fontSize: 16, color: '#0f172a' },
+  sumLine: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0f172a', lineHeight: 20 },
+  sumGap: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#b45309', lineHeight: 17 },
+  sumSub: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569', lineHeight: 18 },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    padding: 14,
+    gap: 10,
+  },
+  cardTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0f172a' },
+  dropInner: { alignItems: 'center', gap: 6, paddingVertical: 14 },
+  dropSub: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b', textAlign: 'center' },
+  fileList: { gap: 8 },
+  fileRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  fileVerdict: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#047857', lineHeight: 17 },
+  verdictRepeat: { color: '#92400e' },
+  verdictBad: { color: '#b91c1c' },
+  link: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#0369a1' },
+  phoneNote: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'flex-start',
+    backgroundColor: '#e0f2fe',
+    borderRadius: 10,
+    padding: 12,
+  },
+  phoneNoteText: { flex: 1, fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#075985', lineHeight: 18 },
+  tableHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 9,
+    paddingHorizontal: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    gap: 10,
+  },
+  rowHover: { backgroundColor: '#f8fafc' },
+  headRow: { borderTopWidth: 0, paddingVertical: 4 },
+  rowNarrow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 9,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  th: { fontFamily: 'Manrope_600SemiBold', fontSize: 11.5, color: '#64748b' },
+  colWeek: { width: 190 },
+  colSide: { flex: 1, minWidth: 0 },
+  colPeople: { width: 90, textAlign: 'right' },
+  weekCell: { fontFamily: 'Manrope_600SemiBold', fontSize: 13, color: '#0f172a' },
+  cell: { fontFamily: 'Manrope_500Medium', fontSize: 13 },
+  cellNote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
+  peopleCell: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#475569' },
+  footnote: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', lineHeight: 17, marginTop: 4 },
+
   noRights: {
     flex: 1,
     alignItems: 'center',
@@ -679,30 +1063,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  haveTitle: {
-    fontSize: 11,
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-    color: '#94a3b8',
-    fontFamily: 'Manrope_700Bold',
-    marginBottom: 10,
-  },
-  haveRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   /* Tappable: the month is not just a fact, it is the way into those weeks. */
-  haveChip: {
-    borderWidth: 1,
-    borderColor: '#bae6fd',
-    backgroundColor: '#f0f9ff',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  haveChipMonth: {
-    fontSize: 13.5,
-    color: '#0c4a6e',
-    fontFamily: 'Manrope_600SemiBold',
-  },
-  haveChipWeeks: { fontFamily: 'Manrope_400Regular', fontSize: 11.5, color: '#0369a1', marginTop: 1 },
   openWeek: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -720,30 +1081,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_600SemiBold',
   },
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  intro: {
-    backgroundColor: '#fff',
-    paddingTop: 24,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: 'Manrope_700Bold',
-    color: '#0f172a',
-    marginTop: 12,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontFamily: 'Manrope_400Regular',
-    fontSize: 14,
-    color: '#64748b',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
   privacyRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -761,7 +1098,6 @@ const styles = StyleSheet.create({
     color: '#047857',
     lineHeight: 16,
   },
-  section: { padding: 16, gap: 12 },
 
   pickButton: {
     flexDirection: 'row',
@@ -777,24 +1113,7 @@ const styles = StyleSheet.create({
   },
   pickButtonText: { color: '#0ea5e9', fontSize: 15, fontFamily: 'Manrope_500Medium',},
 
-  fileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
   fileName: { fontSize: 14, fontFamily: 'Manrope_500Medium', color: '#0f172a' },
-  fileMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
   fileMeta: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b' },
   typeBadge: {
     paddingHorizontal: 8,
@@ -806,14 +1125,6 @@ const styles = StyleSheet.create({
   typeBadgeUnknown: { backgroundColor: '#f1f5f9' },
   typeBadgeText: { fontSize: 10, fontFamily: 'Manrope_600SemiBold', color: '#0f172a' },
 
-  parsingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 12,
-  },
-  parsingText: { color: '#0ea5e9', fontSize: 14, fontFamily: 'Manrope_500Medium',},
 
   uploadButton: {
     flexDirection: 'row',
@@ -903,7 +1214,6 @@ const styles = StyleSheet.create({
   },
   weekDate: { fontSize: 13, color: '#0f172a', fontFamily: 'Manrope_500Medium',},
   weekBible: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#64748b', marginTop: 2 },
-  weekPartsCount: { fontSize: 12, color: '#64748b', fontFamily: 'Manrope_500Medium',},
   weekStats: { flexDirection: 'row', gap: 8 },
   weekNotHeld: { fontFamily: 'Manrope_400Regular', fontSize: 12, color: '#92400e' },
   weekStat: {
@@ -913,12 +1223,4 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
 
-  doneButton: {
-    marginTop: 12,
-    paddingVertical: 14,
-    backgroundColor: '#0ea5e9',
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  doneButtonText: { color: '#fff', fontSize: 16, fontFamily: 'Manrope_600SemiBold',},
 });
