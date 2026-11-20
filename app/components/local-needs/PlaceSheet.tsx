@@ -10,6 +10,7 @@ import { localNeedsApi, type LocalNeedsTopic, type LocalNeedsWeek } from '../../
 import { reportSuccess } from '../../lib/error-bus';
 import { BRAND } from '../../lib/header';
 import { byFit, fitOf, fullName, mondayOfISO, shortDayLabel } from '../../lib/local-needs';
+import { refreshProgramme } from '../../lib/programme-refresh';
 
 /**
  * «Поставить на неделю» — the three ways the body of elders puts a topic into
@@ -97,7 +98,7 @@ export function PlaceSheet({
 
   const done = (msg: string) => {
     void qc.invalidateQueries({ queryKey: ['local-needs'] });
-    void qc.invalidateQueries({ queryKey: ['assignments'] });
+    void refreshProgramme(qc);
     reportSuccess(msg);
     onClose();
   };

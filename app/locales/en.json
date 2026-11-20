@@ -994,6 +994,11 @@
       "coRoleShort": {
         "overseer": "Circuit overseer",
         "substitute": "Substitute"
+      },
+      "cancelConfirm": {
+        "title": "Cancel this part?",
+        "body": "It is taken out of the program. If the program is published, the person assigned is notified. You can give it back at any time.",
+        "bodyNoOne": "It is taken out of the program. You can give it back at any time."
       }
     }
   },
@@ -1080,13 +1085,14 @@
     "unassign": {
       "button": "Unassign publisher",
       "unassigning": "Unassigning…",
-      "confirmWebMessage": "Unassign the publisher from this part? The program part will remain."
+      "confirmWebMessage": "Remove the assignment? The part stays in the program, with nobody in it."
     },
     "weekNav": {
       "thisWeek": "This week",
       "jumpToToday": "Jump to today",
       "previous": "Previous week",
-      "next": "Next week"
+      "next": "Next week",
+      "allWeeks": "All weeks"
     },
     "subsection": {
       "opening": "Opening",
@@ -1163,7 +1169,6 @@
       "watchtowerPrefix": "Watchtower",
       "movedFrom": "Moved — usually {{day}}"
     },
-    "movedTo": "In {{path}}",
     "lock": {
       "frozen": "The meeting was on {{date}} — its program is now locked as a record and can no longer be changed.",
       "grace": "The meeting has taken place — the program can still be corrected until {{until}}.",
@@ -1221,6 +1226,9 @@
       "void": "The move no longer applies: a circuit overseer visit or a convention changed this week.",
       "voidRemove": "Remove the move",
       "voidDone": "Move removed"
+    },
+    "awayNote": {
+      "title": "Away on the meeting day"
     }
   },
   "audit": {
@@ -4122,7 +4130,7 @@
     "clear": "Remove the song",
     "search": "Search by number or title",
     "none": "Not chosen",
-    "catalogEmpty": "The song catalog is empty. Import songs under Profile → Songs."
+    "catalogEmpty": "The song catalog is empty. Import songs under Congregation → Administration → Import songs."
   },
   "songsImport": {
     "title": "Import songs",

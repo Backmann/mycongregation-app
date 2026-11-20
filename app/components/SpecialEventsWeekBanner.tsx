@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { SpecialEvent } from '../lib/api';
 import { formatDayRange } from '../lib/date-range';
 import { wifeComesOf } from '../lib/co-visit-week';
+import { eventDisplayTitle } from '../lib/event-title';
 
 /**
  * Shows the special events that fall within the currently displayed schedule
@@ -28,7 +29,12 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
           const typeLabel = e.type
             ? t(`specialEvents.types.${e.type}`, e.type)
             : null;
-          const meta = [rangeText, e.time, typeLabel].filter(Boolean).join(' · ');
+          // The kind once: when the title is the kind's own name, it is not
+          // said again in the line under it.
+          const shown = eventDisplayTitle(e);
+          const meta = [rangeText, e.time, shown.isKindName ? null : typeLabel]
+            .filter(Boolean)
+            .join(' · ');
           const coName =
             e.type === 'circuit_overseer_visit'
               ? [e.coFirstName, e.coLastName].filter(Boolean).join(' ').trim()
@@ -48,7 +54,7 @@ export function SpecialEventsWeekBanner({ events }: { events: SpecialEvent[] }) 
                 style={{ marginTop: 2 }}
               />
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{e.title}</Text>
+                <Text style={styles.title}>{shown.title}</Text>
                 {meta ? <Text style={styles.meta}>{meta}</Text> : null}
                 {coName ? (
                   <Text style={styles.coName}>

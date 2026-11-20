@@ -994,6 +994,11 @@
       "coRoleShort": {
         "overseer": "Kreisaufseher",
         "substitute": "Vertreter"
+      },
+      "cancelConfirm": {
+        "title": "Diesen Programmpunkt absagen?",
+        "body": "Er wird aus dem Programm genommen. Ist das Programm schon veröffentlicht, wird der Zugeteilte benachrichtigt. Er lässt sich jederzeit zurückholen.",
+        "bodyNoOne": "Er wird aus dem Programm genommen. Er lässt sich jederzeit zurückholen."
       }
     }
   },
@@ -1080,13 +1085,14 @@
     "unassign": {
       "button": "Zuteilung aufheben",
       "unassigning": "Wird aufgehoben…",
-      "confirmWebMessage": "Zuteilung des Verkündigers aufheben? Der Programmpunkt bleibt erhalten."
+      "confirmWebMessage": "Zuteilung entfernen? Der Programmpunkt bleibt im Programm, ohne Zugeteilten."
     },
     "weekNav": {
       "thisWeek": "Diese Woche",
       "jumpToToday": "Zur aktuellen Woche",
       "previous": "Vorherige Woche",
-      "next": "Nächste Woche"
+      "next": "Nächste Woche",
+      "allWeeks": "Alle Wochen"
     },
     "subsection": {
       "opening": "Einleitung",
@@ -1163,7 +1169,6 @@
       "watchtowerPrefix": "Wachtturm",
       "movedFrom": "Verlegt — sonst {{day}}"
     },
-    "movedTo": "Unter {{path}}",
     "lock": {
       "frozen": "Die Zusammenkunft war am {{date}} — das Programm ist jetzt Teil der Aufzeichnungen und kann nicht mehr geändert werden.",
       "grace": "Die Zusammenkunft hat stattgefunden — das Programm kann bis {{until}} noch korrigiert werden.",
@@ -1221,6 +1226,9 @@
       "void": "Die Verlegung gilt nicht mehr: ein Kreisaufseherbesuch oder ein Kongress hat diese Woche geändert.",
       "voidRemove": "Verlegung entfernen",
       "voidDone": "Verlegung entfernt"
+    },
+    "awayNote": {
+      "title": "Am Tag der Zusammenkunft abwesend"
     }
   },
   "audit": {
@@ -4122,7 +4130,7 @@
     "clear": "Lied entfernen",
     "search": "Nach Nummer oder Titel suchen",
     "none": "Nicht gewählt",
-    "catalogEmpty": "Der Liederkatalog ist leer. Importieren Sie Lieder unter Profil → Lieder."
+    "catalogEmpty": "Der Liederkatalog ist leer. Importieren Sie Lieder unter Versammlung → Verwaltung → Lieder importieren."
   },
   "songsImport": {
     "title": "Lieder importieren",

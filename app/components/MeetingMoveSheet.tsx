@@ -353,7 +353,9 @@ export async function refreshAfterMove(qc: QueryClient): Promise<void> {
   // figure may have moved with the meeting) and the visit schedule.
   invalidateAfterEventChange(qc);
   await Promise.all(
-    [MEETING_MOVES_KEY, ['attendance'], ['co-visit-meetings']].map((queryKey) =>
+    // The week's locks too: whether a part may still be changed hangs on
+    // the meeting's day (programme audit, 20 November 2026).
+    [MEETING_MOVES_KEY, ['attendance'], ['co-visit-meetings'], ['programme-locks']].map((queryKey) =>
       qc.invalidateQueries({ queryKey: queryKey as readonly unknown[] }),
     ),
   );

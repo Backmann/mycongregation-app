@@ -76,7 +76,7 @@ export function MeetingMoveBar({
     if (!may) return null;
     return (
       <Pressable accessibilityRole="button" style={styles.cta} onPress={() => onOpen(kind)}>
-        <Ionicons name="swap-horizontal" size={18} color="#0e7490" />
+        <Ionicons name="swap-horizontal" size={15} color="#475569" />
         <Text style={styles.ctaText}>{t('schedule.move.button')}</Text>
       </Pressable>
     );
@@ -124,19 +124,22 @@ export function MeetingMoveBar({
 }
 
 const styles = StyleSheet.create({
+  // A rare action, said quietly (programme audit, 20 November 2026): it was
+  // the biggest button of the meeting, across the whole card.
   cta: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    minHeight: 44,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: '#0e7490',
+    alignSelf: 'flex-start',
+    gap: 6,
+    minHeight: 36,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    paddingHorizontal: 14,
     marginHorizontal: 14,
-    marginBottom: 12,
+    marginBottom: 4,
   },
-  ctaText: { color: '#0e7490', fontSize: 14, fontFamily: 'Manrope_700Bold' },
+  ctaText: { color: '#334155', fontSize: 13, fontFamily: 'Manrope_600SemiBold' },
   moved: {
     marginHorizontal: 14,
     marginBottom: 12,
