@@ -41,6 +41,7 @@ import {
   PARTS_BY_EVENT,
   skillCapabilityFromTitle,
 } from "../lib/parts";
+import { pickerGuideline } from "../lib/meeting-guidelines";
 import { usePermissions } from "../lib/permissions";
 import { useAllPublishers } from "../lib/useAllPublishers";
 import { GuestSpeakerField } from "./GuestSpeakerField";
@@ -243,7 +244,10 @@ export function AssignmentForm({
     // unavailable at exactly the moment it was needed.
     queryKey: ["local-needs", "picker"],
     queryFn: () => localNeedsApi.list(),
-    enabled: lnPickerOpen,
+    // Also for any Christian-life part: one that holds a topic is given by an
+    // elder only (guidelines п. 16), and its title no longer says so.
+    enabled: lnPickerOpen || isLivingChristians,
+    retry: false,
   });
   const markUsedMut = useMutation({
     mutationFn: (id: string) =>
@@ -287,7 +291,23 @@ export function AssignmentForm({
   // assistant, because the positional key (apply_yourself_1..4) varies and a
   // talk can land on any of those slots.
   const titleSkill = skillCapabilityFromTitle(form.partTitle);
-  const isStudentTalk = !!partDef?.hasAssistant && titleSkill === "fs_talk";
+  // The midweek guidelines (20 November 2026): who may take the part at all,
+  // and whether it has an assistant — a student talk and a discussion have
+  // none.
+  const holdsTopic =
+    isLivingChristians &&
+    !!assignmentId &&
+    (lnQuery.data ?? []).some((topic) =>
+      (topic.uses ?? []).some((u) => u.assignmentId === assignmentId),
+    );
+  const baseGuideline = pickerGuideline(form.partKey, form.partTitle);
+  const guideline =
+    holdsTopic && baseGuideline
+      ? { ...baseGuideline, leadAppointments: ["elder"] as const }
+      : baseGuideline;
+  const isStudentTalk =
+    !!partDef?.hasAssistant &&
+    (titleSkill === "fs_talk" || !!guideline?.noAssistant);
   const showAssistant = !!partDef?.hasAssistant && !isStudentTalk;
   // A student TALK has one participant: if the workbook title marks this
   // part as a talk, any previously stored assistant is cleared on open —
@@ -401,8 +421,14 @@ export function AssignmentForm({
   const christianLifeCap = (form.partKey ?? "").startsWith("living_christians")
     ? "christian_life"
     : null;
-  const requiredCap =
-    titleCap ?? christianLifeCap ?? partDef?.requiredCapability;
+  // A discussion is no student part: its leader is chosen among the elders
+  // and servants by the guidelines, not by a student's skill (review of
+  // 20 November 2026 — the skill emptied the list).
+  const isGuidedDiscussion =
+    !!guideline?.noAssistant && !!guideline?.leadAppointments;
+  const requiredCap = isGuidedDiscussion
+    ? undefined
+    : (titleCap ?? christianLifeCap ?? partDef?.requiredCapability);
   const requiredAssistantCap =
     titleCap ??
     partDef?.requiredAssistantCapability ??
@@ -929,6 +955,10 @@ export function AssignmentForm({
                     form.assistantPublisherId ? [form.assistantPublisherId] : []
                   }
                   requiredCapability={requiredCap}
+                  guideline={guideline}
+                  pairOfPublisherId={
+                    showAssistant ? (form.assistantPublisherId ?? null) : null
+                  }
                   suggestionPartKeys={suggestionPartKeys}
                   activityById={activityById}
                   currentWeekStart={form.weekStartDate}
@@ -948,6 +978,17 @@ export function AssignmentForm({
                     suggestionRole="assistant"
                     partnerOfPublisherId={form.publisherId ?? null}
                     matchGenderOfPublisherId={form.publisherId ?? null}
+                    guideline={guideline}
+                    guidelineRole="assistant"
+                    showAllWords={
+                      guideline?.assistant === "same-or-family"
+                        ? {
+                            toggle: t("pickers.familyToggle.toggle"),
+                            off: t("pickers.familyToggle.off"),
+                            on: t("pickers.familyToggle.on"),
+                          }
+                        : undefined
+                    }
                     activityById={activityById}
                     currentWeekStart={form.weekStartDate}
                     currentEventType={form.eventType}

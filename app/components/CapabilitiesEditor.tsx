@@ -119,7 +119,7 @@ function CategorySection({
                   >
                     {t(`capabilities.items.${cap.key}`)}
                   </Text>
-                  {(cap.brotherOnly || cap.elderOnly || cap.baptizedOnly) && (
+                  {(cap.brotherOnly || cap.elderOnly || cap.elderOrServant || cap.baptizedOnly) && (
                     <View style={styles.hintRow}>
                       {cap.brotherOnly && (
                         <Text
@@ -133,6 +133,9 @@ function CategorySection({
                       )}
                       {cap.elderOnly && (
                         <Text style={styles.hint}>{t('capabilities.hints.elder')}</Text>
+                      )}
+                      {cap.elderOrServant && (
+                        <Text style={styles.hint}>{t('capabilities.hints.elderOrServant')}</Text>
                       )}
                       {cap.baptizedOnly && (
                         <Text style={styles.hint}>{t('capabilities.hints.baptized')}</Text>

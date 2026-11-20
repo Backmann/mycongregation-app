@@ -483,7 +483,8 @@
     "hints": {
       "brother": "Brother",
       "elder": "Elder",
-      "baptized": "Baptized"
+      "baptized": "Baptized",
+      "elderOrServant": "Elder or ministerial servant"
     },
     "categories": {
       "midweek": "Midweek meeting",
@@ -1281,7 +1282,18 @@
     "historyScope": "Activity over the last 3 months",
     "showingElders": "Showing elders",
     "nobodyHasCapabilityBrothers": "Nobody has the “{{name}}” mark yet — brothers are shown. You can set it on the publisher card.",
-    "showingBrothers": "Brothers are shown"
+    "showingBrothers": "Brothers are shown",
+    "family": {
+      "title": "A family member?",
+      "body": "By the guidelines the assistant is of the same gender or a family member. Are {{name}} and {{lead}} one family?",
+      "yes": "Yes, family member"
+    },
+    "familyToggle": {
+      "toggle": "Family member of the other gender",
+      "off": "Only the same gender is shown. For a family member of the other gender, turn this on.",
+      "on": "Everyone is shown. Choosing someone of the other gender asks whether they are family."
+    },
+    "nobodyHasCapabilityGuideline": "Nobody has «{{name}}» marked yet — everyone the meeting guidelines allow for this part is shown."
   },
   "admin": {
     "users": {
@@ -6368,7 +6380,13 @@
       "CO_VISIT_PASTORAL_ELDERS": "Shepherding calls are planned by elders only.",
       "CO_VISIT_NO_WIFE": "The overseer's wife is not coming this time — turn on «His wife comes too» on the visit.",
       "CO_VISIT_WIFE_COMES": "The overseer's wife is coming — her rows stay.",
-      "ABSENCE_FROM_EVENT": "This absence comes from an event the brother is invited to. Change the event instead."
+      "ABSENCE_FROM_EVENT": "This absence comes from an event the brother is invited to. Change the event instead.",
+      "PART_NEEDS_BROTHER": "By the meeting guidelines this part is given to a brother.",
+      "PART_NEEDS_ELDER": "By the meeting guidelines only an elder gives this part.",
+      "PART_NEEDS_ELDER_OR_SERVANT": "By the meeting guidelines this part is given to an elder or a ministerial servant.",
+      "PART_NO_ASSISTANT": "This part has no assistant.",
+      "ASSISTANT_SAME_GENDER": "By the meeting guidelines the assistant is of the same gender as the student. To change the pair, change or remove the assistant first.",
+      "STUDENT_NOT_APPROVED": "This student is not yet approved for this kind of part: mark it on the card."
     }
   },
   "stage": {

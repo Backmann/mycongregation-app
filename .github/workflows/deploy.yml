@@ -105,6 +105,26 @@ jobs:
       # fingerprint from cee67fec… to f809e7eb…, and an update published under
       # a runtime version no installed app carries reaches nobody. That cost
       # four releases in a row on 3 August.
+      # The server beside the app (20 November 2026): the gate holds the app's
+      # copy of the meeting guidelines and the server's refusal codes to the
+      # server's own files — skipped without it, so it is always checked out.
+      # The branch of the same name when there is one, else main.
+      - name: Which server (for the gate)
+        id: gateserver
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if [ -n "$BRANCH" ] && git ls-remote --exit-code --heads https://github.com/Backmann/mycongregation-server "$BRANCH" > /dev/null; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"; echo "Server: branch $BRANCH"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"; echo "Server: main"
+          fi
+      - name: Checkout the server (for the gate)
+        uses: actions/checkout@v4
+        with:
+          repository: Backmann/mycongregation-server
+          ref: ${{ steps.gateserver.outputs.ref }}
+          path: server
       - name: Gate (route types, tsc, lint, eslint, i18n, dates)
         working-directory: app
         run: node scripts/gate.mjs

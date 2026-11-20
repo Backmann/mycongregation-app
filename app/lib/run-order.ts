@@ -1,3 +1,4 @@
+import { ministryKind } from './meeting-guidelines';
 /**
  * THE MIDWEEK MEETING'S MINUTES, in one place.
  *
@@ -99,8 +100,8 @@ const COUNSEL_MIN = 1;
 
 /** A ministry-section part led as a discussion — no student, no counsel. */
 export function isDiscussion(title: string | null | undefined): boolean {
-  if (!title) return false;
-  return /(?:^|:\s*)(?:обсуждение|besprechung|discussion)(?=[\s.,:;!]|$)/iu.test(title.trim());
+  // The same reading as the pickers and the server (20 November 2026).
+  return ministryKind(title) === 'discussion';
 }
 
 export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
@@ -176,8 +177,17 @@ export function buildMidweekRunOrder(items: RunItem[]): RunSegment[] {
   // The Bible study — or the service talk standing in its place.
   const study = first('cbs_conductor');
   const coTalk = first('co_service_talk');
-  if (!study && coTalk) push(coTalk, 'co_service_talk', dur(coTalk, STUDY_MIN));
-  else push(study, 'cbs_conductor', dur(study, STUDY_MIN));
+  if (!study && coTalk) {
+    // The visit (guidelines п. 21): the chairman reviews the meeting, says
+    // what comes next week, reads the announcements and introduces the
+    // overseer BEFORE his talk; the overseer then closes the meeting with a
+    // song of his choice, and prays or asks a brother (20 November 2026).
+    push(first('midweek_chairman'), 'midweek_closing_words', CLOSING_WORDS_MIN, false, 0, { chairmanWords: true });
+    push(coTalk, 'co_service_talk', dur(coTalk, STUDY_MIN));
+    push(first('midweek_closing_prayer'), 'midweek_closing_prayer', CLOSING_SONG_MIN, true, 0, { soft: true });
+    return out;
+  }
+  push(study, 'cbs_conductor', dur(study, STUDY_MIN));
 
   push(first('midweek_chairman'), 'midweek_closing_words', CLOSING_WORDS_MIN, false, 0, { chairmanWords: true });
   push(first('midweek_closing_prayer'), 'midweek_closing_prayer', CLOSING_SONG_MIN, true, 0, { soft: true });

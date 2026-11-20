@@ -483,7 +483,8 @@
     "hints": {
       "brother": "Bruder",
       "elder": "Ältester",
-      "baptized": "Getauft"
+      "baptized": "Getauft",
+      "elderOrServant": "Ältester oder Dienstamtgehilfe"
     },
     "categories": {
       "midweek": "Zusammenkunft unter der Woche",
@@ -1281,7 +1282,18 @@
     "historyScope": "Aktivität der letzten 3 Monate",
     "showingElders": "Älteste werden angezeigt",
     "nobodyHasCapabilityBrothers": "Die Markierung „{{name}}“ hat noch niemand — Brüder werden angezeigt. Markieren können Sie sie in der Verkündigerkarte.",
-    "showingBrothers": "Brüder werden angezeigt"
+    "showingBrothers": "Brüder werden angezeigt",
+    "family": {
+      "title": "Ein Familienangehöriger?",
+      "body": "Laut den Hinweisen ist der Partner vom selben Geschlecht oder ein Familienangehöriger. Gehören {{name}} und {{lead}} zu einer Familie?",
+      "yes": "Ja, Familienangehöriger"
+    },
+    "familyToggle": {
+      "toggle": "Familienangehöriger des anderen Geschlechts",
+      "off": "Nur dasselbe Geschlecht wird gezeigt. Für einen Familienangehörigen des anderen Geschlechts einschalten.",
+      "on": "Alle werden gezeigt. Bei jemandem des anderen Geschlechts wird gefragt, ob er zur Familie gehört."
+    },
+    "nobodyHasCapabilityGuideline": "«{{name}}» ist noch bei niemandem markiert — gezeigt werden alle, denen die Hinweise zur Zusammenkunft diesen Programmpunkt erlauben."
   },
   "admin": {
     "users": {
@@ -6368,7 +6380,13 @@
       "CO_VISIT_PASTORAL_ELDERS": "Hirtenbesuche planen nur Älteste.",
       "CO_VISIT_NO_WIFE": "Die Frau des Kreisaufsehers kommt diesmal nicht — schalte „Kommt mit seiner Frau“ beim Besuch ein.",
       "CO_VISIT_WIFE_COMES": "Die Frau des Kreisaufsehers kommt — ihre Einträge bleiben.",
-      "ABSENCE_FROM_EVENT": "Diese Abwesenheit stammt aus einer Einladung zu einem Ereignis. Bitte das Ereignis ändern."
+      "ABSENCE_FROM_EVENT": "Diese Abwesenheit stammt aus einer Einladung zu einem Ereignis. Bitte das Ereignis ändern.",
+      "PART_NEEDS_BROTHER": "Laut den Hinweisen zur Zusammenkunft erhält diesen Programmpunkt ein Bruder.",
+      "PART_NEEDS_ELDER": "Laut den Hinweisen zur Zusammenkunft behandelt diesen Programmpunkt nur ein Ältester.",
+      "PART_NEEDS_ELDER_OR_SERVANT": "Laut den Hinweisen zur Zusammenkunft erhält diesen Programmpunkt ein Ältester oder Dienstamtgehilfe.",
+      "PART_NO_ASSISTANT": "Dieser Programmpunkt hat keinen Partner.",
+      "ASSISTANT_SAME_GENDER": "Laut den Hinweisen zur Zusammenkunft hat der Partner dasselbe Geschlecht wie der Schüler. Um das Paar zu ändern, zuerst den Partner ändern oder entfernen.",
+      "STUDENT_NOT_APPROVED": "Dieser Schüler ist für diesen Programmpunkt noch nicht freigegeben: in seiner Karte markieren."
     }
   },
   "stage": {
