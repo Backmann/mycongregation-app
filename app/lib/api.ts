@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { openedFromIcon } from "./this-place";
 import { renewalRetryDelayMs, sessionVerdict } from "./session-verdict";
 import type { ApplyParsedPayload } from "./mwb-parser";
+import type { ProgrammeFiles } from "./programme-files";
 import type { AgendaChanges } from "./home-changes";
 import i18n from "./i18n";
 import { requestErrorText } from "./error-text";
@@ -5553,25 +5554,15 @@ export const assignmentsApi = {
   },
 };
 
-/** What the congregation already has, month by month. */
-export interface ImportCoverageMonth {
-  /** `YYYY-MM` — the month each week's Monday falls in. */
-  month: string;
-  weeks: number;
-  parts: number;
-  firstWeek: string;
-  lastWeek: string;
-}
-
 export const scheduleImportApi = {
   /**
-   * Which months are already loaded — asked before a file is chosen, so the
-   * screen can say «сентябрь есть, октября нет» instead of nothing at all.
+   * «Файлы программы»: week by week, which meetings have their programme
+   * and whether a file wrote it. Two weeks back to 16 ahead by default.
    */
-  async coverage(): Promise<ImportCoverageMonth[]> {
-    const { data } = await api.get<ImportCoverageMonth[]>(
-      "/mwb-import/coverage",
-    );
+  async weeks(params?: { from?: string; count?: number }): Promise<ProgrammeFiles> {
+    const { data } = await api.get<ProgrammeFiles>("/mwb-import/weeks", {
+      params,
+    });
     return data;
   },
   /**

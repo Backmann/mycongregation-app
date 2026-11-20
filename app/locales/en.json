@@ -1006,7 +1006,7 @@
   "schedule": {
     "title": {
       "new": "New assignment",
-      "import": "Program import",
+      "import": "Program files",
       "rules": "Congregation rules"
     },
     "a11y": {
@@ -1022,24 +1022,15 @@
     "createEmptyMidweek": "Create an empty midweek meeting",
     "createEmptyWeekend": "Create an empty weekend meeting",
     "import": {
-      "title": "Import schedule EPUB",
-      "subtitle": "Upload the Meeting Workbook (mwb_*.epub) or the Watchtower study edition (w_*.epub) to create the weekly program automatically. Existing empty slots are filled with the official titles; assignments with publishers are kept.",
-      "choosePrompt": "Choose EPUB file",
-      "chooseDifferent": "Choose a different file",
-      "openSchedule": "Open schedule",
       "errors": {
         "noFileSelected": "No file selected",
         "notEpub": "Please select a .epub file",
-        "webOnly": "File import is available in the web version (open mycongregation.org in a desktop browser).",
         "noWeeks": "No weekly programs found in this file. Is it a Meeting Workbook?",
         "parseFailed": "Could not parse the file"
       },
       "typeBadge": {
-        "midweek": "Midweek",
-        "weekend": "Weekend",
         "unknown": "Unknown type"
       },
-      "unknownTypeWarning": "Filename doesn't match expected pattern. Backend will try to detect, but may reject the file.",
       "result": {
         "complete": "Import complete",
         "stats": {
@@ -1066,21 +1057,13 @@
       "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
       "parsing": "Parsing the file…",
       "applying": "Importing…",
-      "applyButton": "Import ({{count}} wk)",
       "preview": {
-        "title": "Weeks found",
-        "partsShort": "{{count}} parts",
         "unclassifiedTitle": "Unrecognized parts: {{count}} (will be skipped)",
         "unreadWeeksTitle": "Week dates not understood: {{count}} — these weeks will not be loaded",
         "unreadWeeksHint": "The other weeks load as usual. The program of these weeks has to be entered by hand."
       },
-      "dropHint": "or drag an .epub file here",
+      "dropHint": "or drag EPUB files here — several at once",
       "dropRelease": "Release to load",
-      "have": {
-        "title": "Already loaded",
-        "weeks_one": "{{count}} week",
-        "weeks_other": "{{count}} weeks"
-      },
       "noRights": "Importing the meeting program is for the administrator and the elders."
     },
     "unassign": {
@@ -1248,6 +1231,96 @@
       "more_one": "{{count}} more ›",
       "more_other": "{{count}} more ›",
       "less": "Show less"
+    },
+    "files": {
+      "lead": "Meeting Workbooks (mwb_…) and The Watchtower (w_…) as EPUB. See which weeks already have their program and what to load next.",
+      "midweek": "Midweek",
+      "weekend": "Weekend",
+      "next": "Load next",
+      "readyUntil": "in through {{date}}",
+      "nothingYet": "nothing yet",
+      "missingFrom": "no program from the week {{week}}",
+      "needWorkbook": "Needed: the workbook with the week {{week}}.",
+      "needWatchtower": "Needed: The Watchtower with the study article for {{week}}.",
+      "allLoaded": "everything for the coming weeks is loaded",
+      "dropSub": "The workbook and The Watchtower can be chosen together",
+      "choose": "Choose files",
+      "loadNew_one": "Load {{count}} file",
+      "loadNew_other": "Load {{count}} files",
+      "onComputer": "Files are loaded on a computer, at mycongregation.org in a browser. Here you can see what is already in.",
+      "byWeek": "By week",
+      "showPast_one": "show the past week ({{count}})",
+      "showPast_other": "show past weeks ({{count}})",
+      "hidePast": "hide past weeks",
+      "colWeek": "Week",
+      "colMidweek": "Midweek · workbook",
+      "colWeekend": "Weekend · article",
+      "colPeople": "People",
+      "footnote": "“From file” — the Treasures talk or the study article came from the EPUB. “In” — the program was entered earlier or by hand. Loading again does not touch parts with people assigned or titles changed after loading from a file; for weeks loaded before October 24, 2026, the app cannot tell an edited title from the file’s.",
+      "status": {
+        "midweek": {
+          "fromFile": "from file",
+          "present": "in",
+          "missing": "no workbook",
+          "notHeld": "no meeting"
+        },
+        "weekend": {
+          "fromFile": "from file",
+          "present": "in",
+          "missing": "no article",
+          "notHeld": "no meeting"
+        }
+      },
+      "short": {
+        "midweek": {
+          "fromFile": "workbook",
+          "present": "midweek",
+          "missing": "no workbook",
+          "notHeld": "no midweek"
+        },
+        "weekend": {
+          "fromFile": "article",
+          "present": "weekend",
+          "missing": "no article",
+          "notHeld": "no weekend"
+        }
+      },
+      "byHand_one": "{{count}} title changed by hand",
+      "byHand_other": "{{count}} titles changed by hand",
+      "coVisit": "circuit overseer’s visit",
+      "people": {
+        "past": "past",
+        "all": "all",
+        "some": "{{assigned}} of {{total}}"
+      },
+      "kind": {
+        "workbook": "Workbook",
+        "watchtower": "The Watchtower"
+      },
+      "weeksRange_one": "{{count}} week · {{range}}",
+      "weeksRange_other": "{{count}} weeks · {{range}}",
+      "verdict": {
+        "loaded": "Loaded",
+        "new_one": "a new week",
+        "new_other": "all {{count}} weeks are new",
+        "partly_one": "new: {{count}}, already in: {{loaded}}",
+        "partly_other": "new: {{count}}, already in: {{loaded}}",
+        "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet; parts with people and titles changed after loading from a file stay.",
+        "sameAsOther": "The same weeks as a file above — this one will be skipped.",
+        "nothing": "Nothing to load: there are no meetings in these weeks.",
+        "unchecked": "Could not compare with the program. Loading is still safe: parts with people assigned are not touched."
+      },
+      "loadAgain": "load again",
+      "remove": "Remove the file from the list",
+      "gap": "missing: the week {{week}}",
+      "gapTitle": "no program for the week {{week}}",
+      "line": "{{label}}: {{value}}",
+      "leftover_one": "{{count}} part left",
+      "leftover_other": "{{count}} parts left",
+      "alreadyListed": "Already in the list: {{names}}",
+      "summaryFailed": "Could not find out which weeks are loaded",
+      "partsWithout_one": "{{count}} part in the program",
+      "partsWithout_other": "{{count}} parts in the program"
     }
   },
   "audit": {
@@ -4182,7 +4255,7 @@
   },
   "profileExtra": {
     "songsSub": "Bring in the congregation's songbook",
-    "mwbImportSub": "Meeting program from the publications (EPUB)"
+    "mwbImportSub": "Which weeks are loaded from EPUB and what to load next"
   },
   "songPicker": {
     "current": "Current song",

@@ -118,6 +118,9 @@ const SCREENS = [
   // programme is built had no frame at all — the week check and the new
   // pickers were checked by hand only.
   ['programme-edit', `/schedule/edit?week=${CURRENT}`, 'admin'],
+  // «Файлы программы» (20 November 2026): which weeks have their programme,
+  // which came from a file, what to load next.
+  ['programme-files', '/schedule/import', 'admin'],
   ...(RECUT ? [['recut-cut', `/cart/recut/${RECUT}`, 'admin']] : []),
   // Its lines moved on the map (16 November 2026, step 3b).
   ...(RECUT ? [['recut-lines', `/cart/recut/lines/${RECUT}`, 'admin']] : []),

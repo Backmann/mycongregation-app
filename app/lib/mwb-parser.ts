@@ -87,7 +87,10 @@ function baseName(p: string): string {
 }
 
 export function extractYearFromFilename(file: string): number {
-  const m = baseName(file).match(/(\d{4})\d{2}\.epub$/i);
+  // A file downloaded twice is «mwb_U_202701 (1).epub» (or «…-1.epub»): the
+  // year used to fall back to this year, and a January workbook loaded into
+  // the January just gone, in silence (found on the stand, 20 November 2026).
+  const m = baseName(file).match(/(\d{4})\d{2}(?:\s*\(\d+\)|-\d+)?\.epub$/i);
   return m ? parseInt(m[1], 10) : new Date().getFullYear();
 }
 
