@@ -69,8 +69,8 @@ export const ACCESS_RULES: Record<
   admin: (p) => p.isAdmin,
   elders: (p) => p.isAdmin || p.isElder,
   editsProgramme: (p) => p.canEditMidweekSchedule || p.canEditWeekendSchedule,
-  importsProgramme: (p) =>
-    p.canImportMidweekSchedule || p.canImportWeekendSchedule,
+  // «Файлы программы»: the elders read it; loading asks its own right.
+  importsProgramme: (p) => p.canViewProgrammeFiles,
   events: (p) => p.canManageEvents,
   publisherCards: (p) => p.canEditPublishers,
   publicTalks: (p) => p.canCoordinatePublicTalks,

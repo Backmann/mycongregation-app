@@ -1310,7 +1310,9 @@
         "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist; Punkte mit Personen und nach dem Laden geänderte Titel bleiben.",
         "sameAsOther": "Dieselben Wochen wie eine Datei weiter oben — diese wird übersprungen.",
         "nothing": "Nichts zu laden: In diesen Wochen gibt es keine Zusammenkünfte.",
-        "unchecked": "Abgleich mit dem Programm nicht möglich. Laden ist trotzdem sicher: Programmpunkte mit eingeteilten Personen bleiben unverändert."
+        "unchecked": "Abgleich mit dem Programm nicht möglich. Laden ist trotzdem sicher: Programmpunkte mit eingeteilten Personen bleiben unverändert.",
+        "notYoursMidweek": "Das Arbeitsheft lädt der Aufseher der Leben-und-Dienst-Zusammenkunft — diese Datei wird nicht geladen.",
+        "notYoursWeekend": "Den Wachtturm lädt der Koordinator der Ältestenschaft oder sein Assistent — diese Datei wird nicht geladen."
       },
       "loadAgain": "erneut laden",
       "remove": "Datei aus der Liste entfernen",
@@ -1322,7 +1324,8 @@
       "alreadyListed": "Schon in der Liste: {{names}}",
       "summaryFailed": "Es ließ sich nicht abrufen, welche Wochen geladen sind",
       "partsWithout_one": "{{count}} Programmpunkt eingetragen",
-      "partsWithout_other": "{{count}} Programmpunkte eingetragen"
+      "partsWithout_other": "{{count}} Programmpunkte eingetragen",
+      "readOnly": "Die Dateien lädt, wer das Programm der Zusammenkunft erstellt: das Arbeitsheft der Aufseher der Leben-und-Dienst-Zusammenkunft, den Wachtturm der Koordinator der Ältestenschaft oder sein Assistent."
     },
     "students": {
       "assign": "Zuteilen",
@@ -6521,7 +6524,8 @@
       "PART_NEEDS_ELDER_OR_SERVANT": "Laut den Hinweisen zur Zusammenkunft erhält diesen Programmpunkt ein Ältester oder Dienstamtgehilfe.",
       "PART_NO_ASSISTANT": "Dieser Programmpunkt hat keinen Partner.",
       "ASSISTANT_SAME_GENDER": "Laut den Hinweisen zur Zusammenkunft hat der Partner dasselbe Geschlecht wie der Schüler. Um das Paar zu ändern, zuerst den Partner ändern oder entfernen.",
-      "STUDENT_NOT_APPROVED": "Dieser Schüler ist für diesen Programmpunkt noch nicht freigegeben: in seiner Karte markieren."
+      "STUDENT_NOT_APPROVED": "Dieser Schüler ist für diesen Programmpunkt noch nicht freigegeben: in seiner Karte markieren.",
+      "PART_NOT_IN_MEETING": "Dieser Programmpunkt gehört zur anderen Zusammenkunft."
     }
   },
   "stage": {

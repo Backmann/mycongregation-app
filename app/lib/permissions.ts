@@ -28,8 +28,21 @@ export interface Permissions {
   canManageUsers: boolean;
   canManageResponsibilities: boolean;
   canManagePublicTalks: boolean;
+  /**
+   * Loading a file writes a meeting's programme, so it takes the right to that
+   * meeting (Lionel, 21 November 2026): the workbook — the midweek's editors,
+   * The Watchtower — the weekend's. Until then any elder loaded both.
+   */
   canImportMidweekSchedule: boolean;
   canImportWeekendSchedule: boolean;
+  /** «Файлы программы» is read by the elders too; loading is the above. */
+  canViewProgrammeFiles: boolean;
+  /**
+   * The Memorial's programme and its parts: the coordinator of the body of
+   * elders, his assistant and the administrator (21 November 2026) — one
+   * rule for the evening; every elder still reads the draft.
+   */
+  canEditMemorial: boolean;
   /**
    * «Составление программы» (/schedule/edit) is for whoever edits or imports
    * the programme — and for nobody else. ONE rule, asked by every door to that
@@ -169,8 +182,10 @@ export function usePermissions(): Permissions {
     // that «who may open the editor» is made of the very same answers and
     // cannot drift from them.
     const editsMidweek = isAdmin || holds("life_ministry_overseer");
-    const editsWeekend = isAdmin || holds("body_coordinator");
-    const importsProgramme = isAdmin || isElder;
+    // The coordinator's assistant stands in for him (Lionel, 21 November
+    // 2026): the weekend, the Memorial and moving meetings are his too.
+    const editsWeekend =
+      isAdmin || holds("body_coordinator") || holds("body_coordinator_assistant");
 
     return {
       isAdmin,
@@ -184,9 +199,11 @@ export function usePermissions(): Permissions {
 
       // Admin + Elder (current broad scope, pre responsibility refinement)
       canManagePublicTalks: isAdmin || isElder,
-      canImportMidweekSchedule: importsProgramme,
-      canImportWeekendSchedule: importsProgramme,
-      canOpenProgrammeEditor: editsMidweek || editsWeekend || importsProgramme,
+      canImportMidweekSchedule: editsMidweek,
+      canImportWeekendSchedule: editsWeekend,
+      canViewProgrammeFiles: isAdmin || isElder || editsMidweek || editsWeekend,
+      canEditMemorial: editsWeekend,
+      canOpenProgrammeEditor: editsMidweek || editsWeekend,
       loaded: isFetched,
       failed: isError && allResponsibilities === undefined,
       canEditPublishers: isAdmin || holds("secretary"),
@@ -217,7 +234,8 @@ export function usePermissions(): Permissions {
       canEditWeekendSchedule: editsWeekend,
       canMoveMidweek: editsMidweek,
       canMoveWeekend: editsWeekend,
-      canMoveAfterwards: isAdmin || holds("body_coordinator"),
+      canMoveAfterwards:
+        isAdmin || holds("body_coordinator") || holds("body_coordinator_assistant"),
       canEditCleaning: isAdmin || holds("cleaning_coordinator"),
       canEditCartWitnessing: isAdmin || holds("public_witnessing"),
       canEditFieldServiceMeetings:

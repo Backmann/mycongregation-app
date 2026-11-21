@@ -91,9 +91,22 @@ export default function ProgrammeFilesScreen() {
    * The screen guards itself: a screen whose only protection is that nobody
    * links to it is not protected. The server refuses the work either way.
    */
-  const { canImportMidweekSchedule, canImportWeekendSchedule } =
-    usePermissions();
+  const {
+    canImportMidweekSchedule,
+    canImportWeekendSchedule,
+    canViewProgrammeFiles,
+  } = usePermissions();
+  // The elders read the weeks; a file is loaded by whoever edits its meeting
+  // (21 November 2026) — the server asks the same.
+  const mayView = canViewProgrammeFiles;
   const mayImport = canImportMidweekSchedule || canImportWeekendSchedule;
+  // A file of no known meeting: only whoever may load both.
+  const mayLoad = (m: 'midweek' | 'weekend' | null) =>
+    m === 'weekend'
+      ? canImportWeekendSchedule
+      : m === 'midweek'
+        ? canImportMidweekSchedule
+        : canImportMidweekSchedule && canImportWeekendSchedule;
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= TABLE_FROM;
@@ -111,7 +124,7 @@ export default function ProgrammeFilesScreen() {
     throwOnError: failsScreen,
     queryKey: SUMMARY_KEY,
     queryFn: () => scheduleImportApi.weeks(),
-    enabled: mayImport,
+    enabled: mayView,
   });
   const summary = summaryQuery.data;
 
@@ -154,11 +167,20 @@ export default function ProgrammeFilesScreen() {
     knownWeeks,
   );
   const planOf = new Map(readyEntries.map((e, i) => [e.key, plans[i]]));
+  /**
+   * The meeting a file writes, from its own parts — not from the plan, which
+   * may not be there yet (review, 21 November 2026: a file whose meeting was
+   * not yet known went to the server and came back refused).
+   */
+  const meetingOfEntry = (e: Entry) =>
+    e.wb
+      ? fileMeeting(e.name, e.wb.weeks.flatMap((w) => w.parts.map((p) => p.partKey)))
+      : null;
   const toLoad = (
     unchecked
       ? readyEntries.filter((e) => (e.wb?.weeks.length ?? 0) > 0)
       : filesToLoad(plans).map((i) => readyEntries[i])
-  ).filter((e) => e.state === 'ready');
+  ).filter((e) => e.state === 'ready' && mayLoad(meetingOfEntry(e)));
 
   const update = (key: string, patch: Partial<Entry>) =>
     setEntries((all) => all.map((e) => (e.key === key ? { ...e, ...patch } : e)));
@@ -266,7 +288,7 @@ export default function ProgrammeFilesScreen() {
     }
   };
 
-  if (!mayImport) {
+  if (!mayView) {
     return (
       <View style={styles.noRights}>
         <Ionicons name="lock-closed-outline" size={28} color="#94a3b8" />
@@ -307,7 +329,7 @@ export default function ProgrammeFilesScreen() {
         </View>
       ) : null}
 
-      {canRead ? (
+      {canRead && mayImport ? (
         <View style={styles.card}>
           <DropZone
             onFiles={(files) =>
@@ -343,6 +365,7 @@ export default function ProgrammeFilesScreen() {
                   plan={planOf.get(e.key)}
                   planReady={plansReady}
                   unchecked={unchecked}
+                  allowed={mayLoad(meetingOfEntry(e))}
                   busy={loading}
                   onRemove={() =>
                     setEntries((all) => all.filter((x) => x.key !== e.key))
@@ -374,8 +397,14 @@ export default function ProgrammeFilesScreen() {
         </View>
       ) : (
         <View style={styles.phoneNote}>
-          <Ionicons name="desktop-outline" size={18} color="#0369a1" />
-          <Text style={styles.phoneNoteText}>{t('schedule.files.onComputer')}</Text>
+          <Ionicons
+            name={mayImport ? 'desktop-outline' : 'lock-closed-outline'}
+            size={18}
+            color="#0369a1"
+          />
+          <Text style={styles.phoneNoteText}>
+            {mayImport ? t('schedule.files.onComputer') : t('schedule.files.readOnly')}
+          </Text>
         </View>
       )}
 
@@ -619,6 +648,7 @@ function FileRow({
   plan,
   planReady,
   unchecked,
+  allowed,
   busy,
   onRemove,
   onLoadAgain,
@@ -627,6 +657,8 @@ function FileRow({
   plan?: FilePlan;
   planReady: boolean;
   unchecked: boolean;
+  /** This person may load a file of this meeting (21 November 2026). */
+  allowed: boolean;
   busy: boolean;
   onRemove: () => void;
   onLoadAgain: () => void;
@@ -649,7 +681,13 @@ function FileRow({
   } else if (entry.state === 'loading') verdict = t('schedule.import.applying');
   else if (entry.state === 'loaded') verdict = t('schedule.files.verdict.loaded');
   else if (wb && wb.weeks.length === 0) verdict = null;
-  else if (unchecked) {
+  else if (!allowed) {
+    verdict =
+      meeting === 'weekend'
+        ? t('schedule.files.verdict.notYoursWeekend')
+        : t('schedule.files.verdict.notYoursMidweek');
+    tone = 'bad';
+  } else if (unchecked) {
     verdict = t('schedule.files.verdict.unchecked');
     tone = 'repeat';
   } else if (plan && planReady) {
@@ -717,8 +755,9 @@ function FileRow({
             {t('schedule.import.preview.unclassifiedTitle', { count: unclassified.length })}
           </Text>
         ) : null}
-        {(entry.state === 'ready' && plan?.verdict === 'repeat' && !unchecked) ||
-        entry.state === 'failed' ? (
+        {allowed &&
+        ((entry.state === 'ready' && plan?.verdict === 'repeat' && !unchecked) ||
+          entry.state === 'failed') ? (
           <Pressable onPress={onLoadAgain} disabled={busy} hitSlop={6}>
             <Text style={styles.link}>{t('schedule.files.loadAgain')}</Text>
           </Pressable>
