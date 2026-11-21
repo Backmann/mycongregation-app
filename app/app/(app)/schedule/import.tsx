@@ -100,12 +100,13 @@ export default function ProgrammeFilesScreen() {
   // (21 November 2026) — the server asks the same.
   const mayView = canViewProgrammeFiles;
   const mayImport = canImportMidweekSchedule || canImportWeekendSchedule;
+  // A file of no known meeting: only whoever may load both.
   const mayLoad = (m: 'midweek' | 'weekend' | null) =>
     m === 'weekend'
       ? canImportWeekendSchedule
       : m === 'midweek'
         ? canImportMidweekSchedule
-        : mayImport;
+        : canImportMidweekSchedule && canImportWeekendSchedule;
   const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const wide = width >= TABLE_FROM;
@@ -166,13 +167,20 @@ export default function ProgrammeFilesScreen() {
     knownWeeks,
   );
   const planOf = new Map(readyEntries.map((e, i) => [e.key, plans[i]]));
+  /**
+   * The meeting a file writes, from its own parts — not from the plan, which
+   * may not be there yet (review, 21 November 2026: a file whose meeting was
+   * not yet known went to the server and came back refused).
+   */
+  const meetingOfEntry = (e: Entry) =>
+    e.wb
+      ? fileMeeting(e.name, e.wb.weeks.flatMap((w) => w.parts.map((p) => p.partKey)))
+      : null;
   const toLoad = (
     unchecked
       ? readyEntries.filter((e) => (e.wb?.weeks.length ?? 0) > 0)
       : filesToLoad(plans).map((i) => readyEntries[i])
-  ).filter(
-    (e) => e.state === 'ready' && mayLoad(planOf.get(e.key)?.meeting ?? null),
-  );
+  ).filter((e) => e.state === 'ready' && mayLoad(meetingOfEntry(e)));
 
   const update = (key: string, patch: Partial<Entry>) =>
     setEntries((all) => all.map((e) => (e.key === key ? { ...e, ...patch } : e)));
@@ -357,7 +365,7 @@ export default function ProgrammeFilesScreen() {
                   plan={planOf.get(e.key)}
                   planReady={plansReady}
                   unchecked={unchecked}
-                  allowed={mayLoad(planOf.get(e.key)?.meeting ?? null)}
+                  allowed={mayLoad(meetingOfEntry(e))}
                   busy={loading}
                   onRemove={() =>
                     setEntries((all) => all.filter((x) => x.key !== e.key))

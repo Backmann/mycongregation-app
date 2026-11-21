@@ -164,6 +164,11 @@ export const ELDERS_ONLY: ReadonlySet<ResponsibilityType> = new Set<Responsibili
   "secretary",
   "body_coordinator",
   "service_overseer",
+  // They carry an elder's rights over the programme — editing it, drafts with
+  // names, a week already held, moving a meeting (Lionel, 21 November 2026;
+  // until then only a warning).
+  "life_ministry_overseer",
+  "body_coordinator_assistant",
 ]);
 
 export const ELDER_USUALLY: ReadonlySet<ResponsibilityType> = new Set<ResponsibilityType>([

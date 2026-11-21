@@ -130,6 +130,20 @@ if (guard) {
       problems.push(`права «${meeting}»: сервер ${srv.join(', ')} — приложение ${app.join(', ')}`);
   }
   need(P, 'Вечерю правят те же, кто выходные', /canEditMemorial: editsWeekend,/);
+  // Elders only: the same list on both sides, or the picker offers a brother
+  // the server refuses (or the other way round) — 21 November 2026.
+  try {
+    const srvText = flat(readFileSync(join(ROOT, '../server/src/responsibilities/responsibilities.service.ts'), 'utf8'));
+    const m = srvText.match(/ELDERS_ONLY_RESPONSIBILITIES: readonly ResponsibilityType\[\] = \[([^\]]*)\]/);
+    const srv = m ? [...m[1].matchAll(/ResponsibilityType\.([A-Z_]+)/g)].map((x) => x[1].toLowerCase()).sort() : null;
+    const am = flat(read('lib/responsibility-groups.ts')).match(/export const ELDERS_ONLY[^=]*= new Set<ResponsibilityType>\(\[([^\]]*)\]/);
+    const app = am ? [...am[1].matchAll(/"([a-z_]+)"/g)].map((x) => x[1]).sort() : null;
+    if (!srv || !app) problems.push(`«только старейшины»: не нашёл список (${!srv ? 'сервер' : 'приложение'})`);
+    else if (JSON.stringify(srv) !== JSON.stringify(app))
+      problems.push(`«только старейшины»: сервер ${srv.join(', ')} — приложение ${app.join(', ')}`);
+  } catch {
+    // no server beside the app
+  }
   need('app/(app)/schedule/edit.tsx', 'блок Вечери спрашивает canEditMemorial', /canEdit=\{perms\.canEditMemorial\}/);
 }
 
