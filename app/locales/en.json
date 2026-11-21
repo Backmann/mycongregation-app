@@ -1310,7 +1310,9 @@
         "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet; parts with people and titles changed after loading from a file stay.",
         "sameAsOther": "The same weeks as a file above — this one will be skipped.",
         "nothing": "Nothing to load: there are no meetings in these weeks.",
-        "unchecked": "Could not compare with the program. Loading is still safe: parts with people assigned are not touched."
+        "unchecked": "Could not compare with the program. Loading is still safe: parts with people assigned are not touched.",
+        "notYoursMidweek": "The workbook is loaded by the Life and Ministry Meeting overseer — this file will not be loaded.",
+        "notYoursWeekend": "The Watchtower is loaded by the coordinator of the body of elders or his assistant — this file will not be loaded."
       },
       "loadAgain": "load again",
       "remove": "Remove the file from the list",
@@ -1322,7 +1324,8 @@
       "alreadyListed": "Already in the list: {{names}}",
       "summaryFailed": "Could not find out which weeks are loaded",
       "partsWithout_one": "{{count}} part in the program",
-      "partsWithout_other": "{{count}} parts in the program"
+      "partsWithout_other": "{{count}} parts in the program",
+      "readOnly": "Files are loaded by whoever builds the meeting’s program: the workbook by the Life and Ministry Meeting overseer, The Watchtower by the coordinator of the body of elders or his assistant."
     },
     "students": {
       "assign": "Assign",
@@ -6521,7 +6524,8 @@
       "PART_NEEDS_ELDER_OR_SERVANT": "By the meeting guidelines this part is given to an elder or a ministerial servant.",
       "PART_NO_ASSISTANT": "This part has no assistant.",
       "ASSISTANT_SAME_GENDER": "By the meeting guidelines the assistant is of the same gender as the student. To change the pair, change or remove the assistant first.",
-      "STUDENT_NOT_APPROVED": "This student is not yet approved for this kind of part: mark it on the card."
+      "STUDENT_NOT_APPROVED": "This student is not yet approved for this kind of part: mark it on the card.",
+      "PART_NOT_IN_MEETING": "This part belongs to the other meeting."
     }
   },
   "stage": {

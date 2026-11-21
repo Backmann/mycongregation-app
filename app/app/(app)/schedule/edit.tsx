@@ -1104,7 +1104,9 @@ function ProgrammeEditor() {
         ? canEditWeekendSchedule
         : editing.eventType === "midweek"
           ? canEditMidweekSchedule
-          : perms.isAdmin;
+          : editing.eventType === "memorial"
+            ? perms.canEditMemorial
+            : perms.isAdmin;
 
   return (
     <ProgrammeRetroContext.Provider value={retro}>
@@ -1289,7 +1291,7 @@ function ProgrammeEditor() {
                     <MemorialMeetingBlock
                       key="memorial"
                       event={rules.memorial}
-                      canEdit={perms.isAdmin || perms.isElder}
+                      canEdit={perms.canEditMemorial}
                       hiddenCount={items.length}
                       duties={duties}
                       publishersById={publishersById}

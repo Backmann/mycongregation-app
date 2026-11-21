@@ -33,11 +33,12 @@ const need = (file, what, pattern) => {
 // 1. The rule.
 const P = 'lib/permissions.ts';
 need(P, 'правило должно складываться из тех же ответов, что «правит» и «импортирует»',
-  /canOpenProgrammeEditor: editsMidweek \|\| editsWeekend \|\| importsProgramme,/);
+  /canOpenProgrammeEditor: editsMidweek \|\| editsWeekend,/);
 need(P, 'canEditMidweekSchedule должен быть editsMidweek', /canEditMidweekSchedule: editsMidweek,/);
 need(P, 'canEditWeekendSchedule должен быть editsWeekend', /canEditWeekendSchedule: editsWeekend,/);
-need(P, 'canImportMidweekSchedule должен быть importsProgramme', /canImportMidweekSchedule: importsProgramme,/);
-need(P, 'canImportWeekendSchedule должен быть importsProgramme', /canImportWeekendSchedule: importsProgramme,/);
+// Loading a file writes a meeting: the right to that meeting (21 November 2026).
+need(P, 'canImportMidweekSchedule должен быть editsMidweek', /canImportMidweekSchedule: editsMidweek,/);
+need(P, 'canImportWeekendSchedule должен быть editsWeekend', /canImportWeekendSchedule: editsWeekend,/);
 need(P, 'нужен признак loaded (ответ об обязанностях пришёл)', /loaded: isFetched,/);
 
 // 2. The screen.
@@ -92,6 +93,44 @@ for (const file of leads) {
 }
 for (const file of KNOWN.keys()) {
   if (!leads.includes(file)) problems.push(`${file}: в списке путей есть, а в коде пути уже нет — уберите из списка`);
+}
+
+// 5. The app and the server name the same people for each meeting (rights
+//    review, 21 November 2026): the app hides the buttons, the server
+//    decides — a responsibility on one side only is a button that fails or a
+//    right nobody can reach. Read when the server is checked out beside the
+//    app (CI checks it out; the app's own CI alone skips).
+const holdsOf = (name) => {
+  const m = flat(read(P)).match(new RegExp(`const ${name} = ([^;]+);`));
+  return m ? [...m[1].matchAll(/holds\("([a-z_]+)"\)/g)].map((x) => x[1]).sort() : null;
+};
+let guard = null;
+try {
+  guard = flat(readFileSync(join(ROOT, '../server/src/common/guards/assignment-section.guard.ts'), 'utf8'));
+} catch {
+  // no server beside the app
+}
+if (guard) {
+  const section = (key) => {
+    const m = guard.match(new RegExp(`\\[EventType\\.${key}\\]: \\[([^\\]]*)\\]`));
+    return m
+      ? [...m[1].matchAll(/ResponsibilityType\.([A-Z_]+)/g)].map((x) => x[1].toLowerCase()).sort()
+      : null;
+  };
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  for (const [meeting, key, local] of [
+    ['будни', 'MIDWEEK', 'editsMidweek'],
+    ['выходные', 'WEEKEND', 'editsWeekend'],
+    ['Вечеря', 'MEMORIAL', 'editsWeekend'],
+  ]) {
+    const srv = section(key);
+    const app = holdsOf(local);
+    if (!srv || !app) problems.push(`права «${meeting}»: не нашёл список (${!srv ? 'сервер' : 'приложение'})`);
+    else if (!same(srv, app))
+      problems.push(`права «${meeting}»: сервер ${srv.join(', ')} — приложение ${app.join(', ')}`);
+  }
+  need(P, 'Вечерю правят те же, кто выходные', /canEditMemorial: editsWeekend,/);
+  need('app/(app)/schedule/edit.tsx', 'блок Вечери спрашивает canEditMemorial', /canEdit=\{perms\.canEditMemorial\}/);
 }
 
 if (problems.length) {
