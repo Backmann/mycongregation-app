@@ -5535,9 +5535,12 @@
       "end": "Übung beenden",
       "endShort": "Beenden",
       "endHint": "Zurück zum echten Ablauf der Zusammenkunft",
-      "banner": "Übung – das Ergebnis wird nicht gespeichert und niemandem angezeigt",
+      "banner": "Übung – läuft auch auf dem Bühnenbildschirm, das Ergebnis wird nicht gespeichert",
       "notSaved": "Das war eine Übung: Das Ergebnis wurde nicht gespeichert.",
-      "againBody": "Die Übung beginnt von vorn."
+      "againBody": "Die Übung beginnt von vorn.",
+      "stageBanner": "ÜBUNG – keine Zusammenkunft. Das Ergebnis wird nicht gespeichert",
+      "beforeDay": "die Zusammenkunft an ihrem Tag; die Übung ist auf dem Bühnenbildschirm zu sehen",
+      "startLabel": "Übung beginnen"
     },
     "changed": {
       "title": "Das Programm hat sich während der Zusammenkunft geändert",
@@ -6525,7 +6528,10 @@
       "PART_NO_ASSISTANT": "Dieser Programmpunkt hat keinen Partner.",
       "ASSISTANT_SAME_GENDER": "Laut den Hinweisen zur Zusammenkunft hat der Partner dasselbe Geschlecht wie der Schüler. Um das Paar zu ändern, zuerst den Partner ändern oder entfernen.",
       "STUDENT_NOT_APPROVED": "Dieser Schüler ist für diesen Programmpunkt noch nicht freigegeben: in seiner Karte markieren.",
-      "PART_NOT_IN_MEETING": "Dieser Programmpunkt gehört zur anderen Zusammenkunft."
+      "PART_NOT_IN_MEETING": "Dieser Programmpunkt gehört zur anderen Zusammenkunft.",
+      "CONDUCT_NOT_TODAY": "Die Zusammenkunft wird an ihrem Tag geführt. Davor – eine Übung: sie ist auf dem Bühnenbildschirm zu sehen und wird nicht gespeichert.",
+      "CONDUCT_PRACTICE_AFTER_START": "Die Zusammenkunft läuft schon – geübt wird nur vor ihrem Beginn.",
+      "CONDUCT_RESULT_EARLY": "Die Zusammenkunft hat noch nicht stattgefunden – ein Ablauf vor ihrem Tag wird nicht als Ergebnis gespeichert."
     }
   },
   "stage": {

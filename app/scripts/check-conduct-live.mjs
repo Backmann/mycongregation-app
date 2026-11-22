@@ -148,6 +148,17 @@ check('who taps on which device', () => {
   assert.equal(L.liveMode({ ...base, practice: true, roles: roles(), live: { mine: false } }), 'run');
 });
 
+check('before the meeting day every hand that may run it starts a rehearsal (R-73)', () => {
+  const chairWithKeeper = { ...base, roles: roles({ isChairman: true, hasTimekeeper: true }) };
+  assert.equal(L.liveMode(chairWithKeeper), 'watch', 'on the day: the timekeeper taps');
+  assert.equal(L.liveMode({ ...chairWithKeeper, beforeDay: true }), 'run', 'before it: «Начать», a rehearsal');
+  assert.equal(
+    L.liveMode({ ...base, beforeDay: true, roles: roles({ mayRun: false }), canRunLocally: false }),
+    'watch',
+    'one who only watches still watches',
+  );
+});
+
 check('who oversees how the meeting runs — as on the server (16 October 2026)', () => {
   assert.equal(L.isConductOverseer('admin', []), true);
   assert.equal(L.isConductOverseer('elder', ['adviser']), true, 'the counsel brother');

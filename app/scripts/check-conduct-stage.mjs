@@ -96,4 +96,18 @@ check('the end against the programme counts a late start; off the meeting day th
   assert.ok(S.COUNTDOWN_FROM_SEC <= 3600);
 });
 
+check('a rehearsal is measured from its own start, as if the meeting were now (R-73)', () => {
+  // On the stand, 22 November 2026: a rehearsal at 16:22 said «окончание ≈
+  // 18:07 … с опережением» against the real meeting's 20:45 on Wednesday.
+  const begun = new Date(2026, 10, 22, 16, 22, 10).getTime();
+  const a = S.rehearsalAnchor(begun);
+  assert.deepEqual(a, { time: '16:22', day: '2026-11-22' });
+  // The programme of 104 min from 16:22 ends 18:06; the run ends there — on time.
+  const endsAt = new Date(2026, 10, 22, 18, 6, 0).getTime();
+  assert.equal(S.endDriftSec(endsAt, '18:06', a.day, 999), 0);
+  // Begun at :40 s of a minute — rounded to the next minute, not cut.
+  assert.equal(S.rehearsalAnchor(new Date(2026, 10, 22, 16, 22, 40).getTime()).time, '16:23');
+  assert.equal(S.rehearsalAnchor(null), null);
+});
+
 console.log(`conduct-stage: ${n} groups ok`);

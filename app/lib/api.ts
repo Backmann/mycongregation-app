@@ -7282,7 +7282,11 @@ async function timed<T extends { serverNow: string }>(
 export type ConductKindWire = "midweek" | "weekend";
 
 export const conductLiveApi = {
-  async get(week: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
+  /**
+   * `practice`: the rehearsal of that meeting (R-73, 22 November 2026) — its
+   * own row on the server, read by its runner and the stage screen.
+   */
+  async get(week: string, kind: ConductKindWire = "midweek", practice = false): Promise<ConductLiveAnswer> {
     const device = await deviceId();
     return timed(() =>
       api.get<{ live: ConductLive | null; roles: LiveRoles; programmeStamp?: string | null; serverNow: string }>(
@@ -7290,7 +7294,10 @@ export const conductLiveApi = {
         // Short: a hung ask must fail fast, so the next one goes out
         // (lib/conduct-live.ts LIVE_REQUEST_TIMEOUT_MS).
         {
-          params: kind === "weekend" ? { week, kind, device } : { week, device },
+          params: {
+            ...(kind === "weekend" ? { week, kind, device } : { week, device }),
+            ...(practice ? { practice: "1" } : {}),
+          },
           timeout: LIVE_REQUEST_TIMEOUT_MS,
         },
       ),
@@ -7300,25 +7307,48 @@ export const conductLiveApi = {
   async put(
     input: { weekStartDate: string; epoch: number; state: unknown },
     kind: ConductKindWire = "midweek",
+    practice = false,
   ): Promise<ConductLiveAnswer> {
     const device = await deviceId();
     return timed(() =>
-      api.put<{ live: ConductLive; serverNow: string }>(
-        "/conduct-live",
-        kind === "weekend" ? { ...input, eventType: kind, deviceId: device } : { ...input, deviceId: device },
-      ),
+      api.put<{ live: ConductLive; serverNow: string }>("/conduct-live", {
+        ...(kind === "weekend" ? { ...input, eventType: kind, deviceId: device } : { ...input, deviceId: device }),
+        // Said every time (R-73): the server holds the meeting itself to its
+        // day only for an app that says which one it sends.
+        practice,
+      }),
     );
   },
   /** «Взять ведение»: from now on this device's taps count. */
-  async take(weekStartDate: string, kind: ConductKindWire = "midweek"): Promise<ConductLiveAnswer> {
+  async take(
+    weekStartDate: string,
+    kind: ConductKindWire = "midweek",
+    rehearsal?: { state: unknown },
+  ): Promise<ConductLiveAnswer> {
     const device = await deviceId();
     return timed(() =>
-      api.post<{ live: ConductLive; serverNow: string }>(
-        "/conduct-live/take",
-        kind === "weekend"
+      api.post<{ live: ConductLive; serverNow: string }>("/conduct-live/take", {
+        ...(kind === "weekend"
           ? { weekStartDate, eventType: kind, deviceId: device }
-          : { weekStartDate, deviceId: device },
-      ),
+          : { weekStartDate, deviceId: device }),
+        // A rehearsal begun on this device: its row is taken with its run.
+        ...(rehearsal ? { practice: true, state: rehearsal.state } : { practice: false }),
+      }),
+    );
+  },
+  /**
+   * The rehearsal the stage screen shows when no meeting runs today (R-73):
+   * the congregation's latest under two hours old, with its week — or null.
+   */
+  async stagePractice(): Promise<{
+    practice: { weekStartDate: string; kind: ConductKindWire; live: ConductLive } | null;
+    serverNowMs: number;
+  }> {
+    return timed(() =>
+      api.get<{
+        practice: { weekStartDate: string; kind: ConductKindWire; live: ConductLive } | null;
+        serverNow: string;
+      }>("/conduct-live/stage-practice", { timeout: LIVE_REQUEST_TIMEOUT_MS }),
     );
   },
 };
