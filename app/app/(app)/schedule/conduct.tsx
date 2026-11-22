@@ -60,7 +60,7 @@ import { QuickReplaceSheet } from '../../../components/QuickReplaceSheet';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
 import { ConductStage, STAGE_SECTION_COLORS, type StagePart } from '../../../components/ConductStage';
-import { demoFrame, endDriftSec, stageTone, untilStartSec, warnSecFor } from '../../../lib/conduct-stage';
+import { demoFrame, endDriftSec, rehearsalAnchor, stageTone, untilStartSec, warnSecFor } from '../../../lib/conduct-stage';
 import { resolveSubsection, SUBSECTIONS } from '../../../lib/parts';
 import {
   EMPTY_RUN as EMPTY,
@@ -222,7 +222,10 @@ export default function ConductScreen({
 } = {}) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const params = useLocalSearchParams<{ week?: string; kind?: string }>();
+  const params = useLocalSearchParams<{ week?: string; kind?: string; practice?: string }>();
+  // THE STAGE SCREEN SHOWING A REHEARSAL (R-73, 22 November 2026): app/stage.tsx
+  // opens this screen with ?practice=1, and it watches the rehearsal's row.
+  const watchingRehearsal = params.practice === '1';
   const week = typeof params.week === 'string' ? params.week : '';
   // WHICH MEETING (18 October 2026): the midweek one, or the weekend one with
   // ?kind=weekend. Everything below that names «the meeting» takes it.
@@ -393,16 +396,19 @@ export default function ConductScreen({
   const pastMeeting =
     pastWeek || (!!meetingDay && meetingDay < formatDateISO(new Date()));
   const meetingOver = pastMeeting || notHeld;
+  // BEFORE THE MEETING'S DAY ONLY A REHEARSAL (R-73): the server runs the
+  // meeting itself only on its day, so «Начать» here begins a rehearsal.
+  const beforeDay = !!meetingDay && meetingDay > formatDateISO(new Date());
 
   // THE MEETING AS IT RUNS, from the server — and who this account is for it
   // (the timekeeper is named in the duties, which this screen does not read).
   // Asked every two seconds; not at all for a past week. A refusal (a
   // publisher who is not appointed) or an older server stops the asking.
   const queryClient = useQueryClient();
-  const liveKey = useMemo(() => ['conduct-live', week, kind], [week, kind]);
+  const liveKey = useMemo(() => ['conduct-live', week, kind, watchingRehearsal], [week, kind, watchingRehearsal]);
   const liveQuery = useQuery({
     queryKey: liveKey,
-    queryFn: () => conductLiveApi.get(week, kind),
+    queryFn: () => conductLiveApi.get(week, kind, watchingRehearsal),
     enabled: week.length > 0 && !meetingOver,
     retry: false,
     staleTime: 0,
@@ -565,6 +571,7 @@ export default function ConductScreen({
     live,
     roles,
     localStarted: state.meetingStartedAt !== null,
+    beforeDay: beforeDay && !watchingRehearsal,
   });
   const watching = mode === 'watch';
   const offset = serverClockOffset();
@@ -579,6 +586,60 @@ export default function ConductScreen({
       else apply(next);
     },
     [practice, apply],
+  );
+
+  // THE REHEARSAL ON THE STAGE SCREEN (R-73, Lionel 22 November 2026: «как
+  // будто встреча идёт сейчас… как взаимодействует наш лэптоп, ведение
+  // встречи и экран»). Every step of it goes to its own row on the server —
+  // never the meeting's, and never kept as a result — and the stage shows it.
+  // The first write takes the row (a rehearsal left from before is this
+  // one's now); a write that fails is a step the stage misses, the next one
+  // carries the whole run. Ended or left: an empty run, the stage waits again.
+  const rehearsalEpoch = useRef<number | null>(null);
+  const rehearsalOn = useRef(false);
+  const rehearsalTarget = useRef({ week, kind });
+  useEffect(() => {
+    rehearsalTarget.current = { week, kind };
+  }, [week, kind]);
+  useEffect(() => {
+    if (!week || !canRun || watchingRehearsal) return;
+    if (!practice) {
+      if (rehearsalOn.current && rehearsalEpoch.current !== null) {
+        void conductLiveApi
+          .put({ weekStartDate: week, epoch: rehearsalEpoch.current, state: {} }, kind, true)
+          .catch(() => undefined);
+      }
+      rehearsalOn.current = false;
+      rehearsalEpoch.current = null;
+      return;
+    }
+    rehearsalOn.current = true;
+    const wire =
+      practice.meetingStartedAt === null
+        ? {}
+        : { ...toWire(practice, serverClockOffset()), partMin: segments[practice.index]?.minutes ?? null };
+    const epoch = rehearsalEpoch.current;
+    const call =
+      epoch === null
+        ? conductLiveApi.take(week, kind, { state: wire })
+        : conductLiveApi.put({ weekStartDate: week, epoch, state: wire }, kind, true);
+    call
+      .then((ans) => {
+        if (ans.live) rehearsalEpoch.current = ans.live.epoch;
+      })
+      .catch(() => {
+        rehearsalEpoch.current = null;
+      });
+  }, [practice, week, kind, canRun, watchingRehearsal, segments]);
+  useEffect(
+    () => () => {
+      // The screen closed with a rehearsal on: the stage stops showing it.
+      const epoch = rehearsalEpoch.current;
+      if (!rehearsalOn.current || epoch === null) return;
+      const { week: w, kind: k } = rehearsalTarget.current;
+      void conductLiveApi.put({ weekStartDate: w, epoch, state: {} }, k, true).catch(() => undefined);
+    },
+    [],
   );
 
   // THE PROGRAMME CHANGED UNDER A RUNNING MEETING — the kept rows were
@@ -763,10 +824,12 @@ export default function ConductScreen({
     : 0;
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
   // The hour the rules give — an event's changed hour included.
-  const meetingTime = meeting?.time ?? null;
+  // A rehearsal is measured from its own start (R-73): as if the meeting were now.
+  const anchor = practice || watchingRehearsal ? rehearsalAnchor(run.meetingStartedAt) : null;
+  const meetingTime = anchor?.time ?? meeting?.time ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
   // Behind or ahead of the programme's END — a late start counts (18 October 2026).
-  const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, meetingDay, driftSec);
+  const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, anchor?.day ?? meetingDay, driftSec);
 
   // ONE TAP, ONE STEP. The big button changes its meaning under the finger
   // («Закончено» → «Следующая»), so a double tap on stage would skip the
@@ -803,7 +866,9 @@ export default function ConductScreen({
 
   const start = () => {
     const at = Date.now();
-    applyRun({ ...EMPTY, startedAt: at, meetingStartedAt: at, starts: [at], keys: [...segKeys], prev: snapshot(run) });
+    const begun = { ...EMPTY, startedAt: at, meetingStartedAt: at, starts: [at], keys: [...segKeys], prev: snapshot(run) };
+    if (beforeDay && !practice) setPractice(begun);
+    else applyRun(begun);
   };
   const closePause = (at: number) =>
     run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
@@ -965,7 +1030,9 @@ export default function ConductScreen({
   const [pushTick, setPushTick] = useState(0);
   const [takenBy, setTakenBy] = useState<string | null>(null);
   const [takeFailed, setTakeFailed] = useState(false);
-  const controlling = !!liveData && !practice && !meetingOver && mode === 'run';
+  // Before the meeting's day the meeting itself is not sent (R-73): the server
+  // would refuse it, and asking again after each refusal is a loop.
+  const controlling = !!liveData && !practice && !meetingOver && !beforeDay && !watchingRehearsal && mode === 'run';
 
   // Every change of the run goes up. A failure is tried again on the next
   // ask (every two seconds) — not at once, which would hammer a dead network.
@@ -1866,7 +1933,9 @@ export default function ConductScreen({
   // What the big button does now, and whom it calls next.
   const last = run.index === segments.length - 1;
   const primaryBase: { label: string; sub: string | null; onPress: () => void } = !started
-    ? { label: t('conduct.start'), sub: t('conduct.startSub'), onPress: start }
+    ? beforeDay && !practice
+      ? { label: t('conduct.practice.startLabel'), sub: t('conduct.practice.beforeDay'), onPress: start }
+      : { label: t('conduct.start'), sub: t('conduct.startSub'), onPress: start }
     : entering && current
       ? {
           label: current.soft
@@ -2201,8 +2270,9 @@ export default function ConductScreen({
             tone: (offline || controllerGone || !live ? 'muted' : 'live') as 'muted' | 'live',
           }
         : null;
-    const banner =
-      watching && hanging && hangingSince !== null
+    const banner = watchingRehearsal
+      ? t('conduct.practice.stageBanner')
+      : watching && hanging && hangingSince !== null
         ? t('conduct.hanging.watch', { time: clockOf(new Date(hangingSince)) })
         : watching && offline
         ? t('conduct.live.offlineWatch', { time: clockOf(new Date(liveQuery.dataUpdatedAt)) })
@@ -2224,7 +2294,7 @@ export default function ConductScreen({
             undo: run.prev ? { label: undoLoud ? t('conduct.undoLoud') : t('conduct.undo'), onPress: undo } : null,
           }
         : !watching
-          ? { primary: { label: t('conduct.start'), sub: null, onPress: guarded(start), locked }, pause: null, undo: null }
+          ? { primary: { label: beforeDay && !practice ? t('conduct.practice.startLabel') : t('conduct.start'), sub: beforeDay && !practice ? t('conduct.practice.beforeDay') : null, onPress: guarded(start), locked }, pause: null, undo: null }
           : null;
     return (
       <ConductStage

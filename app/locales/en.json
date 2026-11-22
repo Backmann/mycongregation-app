@@ -5535,9 +5535,12 @@
       "end": "End practice",
       "endShort": "End",
       "endHint": "Back to the meeting’s real run",
-      "banner": "Practice — the result is not saved and nobody sees it",
+      "banner": "Practice — shown on the stage screen too, nothing is saved",
       "notSaved": "This was practice: the result was not saved.",
-      "againBody": "The practice starts over."
+      "againBody": "The practice starts over.",
+      "stageBanner": "PRACTICE — this is not the meeting. Nothing is saved",
+      "beforeDay": "the meeting runs on its day; the practice shows on the stage screen",
+      "startLabel": "Start practice"
     },
     "changed": {
       "title": "The program changed during the meeting",
@@ -6525,7 +6528,10 @@
       "PART_NO_ASSISTANT": "This part has no assistant.",
       "ASSISTANT_SAME_GENDER": "By the meeting guidelines the assistant is of the same gender as the student. To change the pair, change or remove the assistant first.",
       "STUDENT_NOT_APPROVED": "This student is not yet approved for this kind of part: mark it on the card.",
-      "PART_NOT_IN_MEETING": "This part belongs to the other meeting."
+      "PART_NOT_IN_MEETING": "This part belongs to the other meeting.",
+      "CONDUCT_NOT_TODAY": "The meeting is run on its day. Before it — a practice: it shows on the stage screen and is not saved.",
+      "CONDUCT_PRACTICE_AFTER_START": "The meeting is already running — practice is only before it starts.",
+      "CONDUCT_RESULT_EARLY": "The meeting has not been held yet — a run before its day is not saved as its result."
     }
   },
   "stage": {

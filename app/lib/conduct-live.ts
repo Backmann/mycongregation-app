@@ -241,8 +241,17 @@ export function liveMode(input: {
   live: { mine: boolean } | null;
   roles: LiveRoles | null;
   localStarted: boolean;
+  /**
+   * Before the meeting's day (R-73): nothing runs on the server to watch or
+   * take over — every hand that may run it starts a rehearsal of its own.
+   * On the stand, 22 November 2026: with a timekeeper named the chairman
+   * opened watching and was offered only «Взять ведение», which the server
+   * now refuses before the day. Absent: as before.
+   */
+  beforeDay?: boolean;
 }): 'run' | 'watch' {
   if (input.practice) return 'run';
+  if (input.beforeDay) return input.canRunLocally || !!input.roles?.mayRun ? 'run' : 'watch';
   if (!input.answered || !input.roles) return input.canRunLocally ? 'run' : 'watch';
   if (input.live) return input.live.mine ? 'run' : 'watch';
   if (!input.roles.mayRun) return 'watch';

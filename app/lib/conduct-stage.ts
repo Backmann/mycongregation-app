@@ -136,3 +136,20 @@ export function demoFrame(segments: DemoSegment[], elapsedMs: number): DemoFrame
 export function demoLengthMs(segments: DemoSegment[]): number {
   return segments.reduce((sum, s) => sum + segmentMs(s), 0);
 }
+
+/**
+ * A REHEARSAL RUNS AS IF THE MEETING WERE NOW (R-73, Lionel 22 November 2026):
+ * its «по программе» is its own start plus the programme, not the meeting's
+ * hour on its day — on the stand the forecast said «окончание ≈ 18:07 …
+ * с опережением» against the real 20:45. The start, rounded to the minute,
+ * and its day, in the device's time — what momentOf reads.
+ */
+export function rehearsalAnchor(meetingStartedAtMs: number | null): { time: string; day: string } | null {
+  if (meetingStartedAtMs === null || !Number.isFinite(meetingStartedAtMs)) return null;
+  const d = new Date(Math.round(meetingStartedAtMs / 60_000) * 60_000);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return {
+    time: `${two(d.getHours())}:${two(d.getMinutes())}`,
+    day: `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`,
+  };
+}

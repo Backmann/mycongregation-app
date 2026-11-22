@@ -9,6 +9,7 @@ import { useAuth } from '../lib/auth';
 import {
   assignmentsApi,
   authApi,
+  conductLiveApi,
   meetingSettingsApi,
   publishersApi,
   specialEventsApi,
@@ -50,11 +51,13 @@ function statusOf(e: unknown): number | undefined {
 
 /** How often the hall screen asks again what day and hour each meeting is. */
 const STAGE_RULES_REFRESH_MS = 2 * 60 * 1000;
+/** How often the hall's screen asks whether a rehearsal runs (R-73). */
+const STAGE_PRACTICE_POLL_MS = 3000;
 
 export default function StageScreen() {
   const { t, i18n } = useTranslation();
   const { user, isLoading, signOut } = useAuth();
-  const params = useLocalSearchParams<{ week?: string; kind?: string }>();
+  const params = useLocalSearchParams<{ week?: string; kind?: string; practice?: string }>();
 
   // The day, re-read every half minute: the screen stays open for weeks.
   const [now, setNow] = useState(() => new Date());
@@ -114,13 +117,41 @@ export default function StageScreen() {
   const todays = meetings.find((m) => m.date === today) ?? null;
   const next = meetings.find((m) => m.date > today) ?? null;
 
-  // The meeting of the day is opened in place: its screen reads ?week&kind.
+  // A REHEARSAL ON THE HALL'S SCREEN (R-73, Lionel 22 November 2026: «как
+  // будто встреча идёт сейчас… как взаимодействует наш лэптоп, ведение
+  // встречи и экран»). The server gives the latest rehearsal under two hours
+  // old — and none while a meeting of today runs: that one always comes
+  // first. Shown once it has begun; an ended one is an empty run.
+  const rehearsalQuery = useQuery({
+    queryKey: ['stage-practice'],
+    queryFn: () => conductLiveApi.stagePractice(),
+    enabled: isStage,
+    retry: false,
+    refetchInterval: isStage ? STAGE_PRACTICE_POLL_MS : false,
+  });
+  const rehearsal = rehearsalQuery.data?.practice ?? null;
+  const rehearsalBegun =
+    !!rehearsal && typeof (rehearsal.live.state as { meetingStartedAt?: unknown } | null)?.meetingStartedAt === 'number';
+  const rWeek = rehearsalBegun ? rehearsal.weekStartDate : null;
+  const rKind = rehearsalBegun ? (rehearsal.kind as MeetingKind) : null;
+  const target = useMemo(
+    () =>
+      rWeek && rKind
+        ? { week: rWeek, kind: rKind, practice: '1' as const }
+        : todays
+          ? { week: todays.week, kind: todays.kind, practice: '0' as const }
+          : null,
+    [rWeek, rKind, todays],
+  );
+
+  // The meeting of the day — or the rehearsal — is opened in place: its
+  // screen reads ?week&kind (&practice=1).
   useEffect(() => {
-    if (!todays) return;
-    if (params.week !== todays.week || params.kind !== todays.kind) {
-      router.setParams({ week: todays.week, kind: todays.kind });
+    if (!target) return;
+    if (params.week !== target.week || params.kind !== target.kind || params.practice !== target.practice) {
+      router.setParams({ week: target.week, kind: target.kind, practice: target.practice });
     }
-  }, [todays, params.week, params.kind]);
+  }, [target, params.week, params.kind, params.practice]);
 
   // The meeting of the day has ended (its run's end, ms): the clock and the
   // next meeting again, with the time it ended — never its result.
@@ -128,7 +159,7 @@ export default function StageScreen() {
   const onStageFinished = useCallback((d: { endedAt: number | null } | null) => setDone(d), []);
   useEffect(() => {
     setDone(null);
-  }, [todays?.week, todays?.kind]);
+  }, [target?.week, target?.kind, target?.practice]);
   const insets = useSafeAreaInsets();
   // Whether the meeting's screen shows our menu in its header right now.
   const [chromeShown, setChromeShown] = useState(false);
@@ -189,7 +220,8 @@ export default function StageScreen() {
   if (!isStage) return <Redirect href={'/(app)/home' as never} />;
 
   const label = user.displayLabel ?? t('stage.screen.title');
-  const showMeeting = !!todays && params.week === todays.week && params.kind === todays.kind;
+  const showMeeting =
+    !!target && params.week === target.week && params.kind === target.kind && params.practice === target.practice;
 
   // In the header, beside the clock, clear of the status bar: on a phone the
   // old corner button sat under it and could not be found (21 October 2026).
@@ -213,7 +245,13 @@ export default function StageScreen() {
         // timekeeper's device brings the meeting back.
         <View style={ended ? { display: 'none' } : { flex: 1 }}>
           <StageChrome.Provider value={{ menu: menuButton, topInset: insets.top, shown: chrome.shown }}>
-            <ConductScreen stageCheckAt={checkAt} onStageFinished={onStageFinished} />
+            {/* A new screen for the rehearsal and for the meeting: nothing of one
+                is carried into the other. */}
+            <ConductScreen
+              key={`${target?.week}-${target?.kind}-${target?.practice}`}
+              stageCheckAt={checkAt}
+              onStageFinished={onStageFinished}
+            />
           </StageChrome.Provider>
         </View>
       ) : null}
