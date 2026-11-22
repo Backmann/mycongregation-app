@@ -1095,11 +1095,15 @@
     },
     "publishDialog": {
       "title": "Publish meeting",
-      "subtitle": "Assignments become visible to everyone. Notify the brothers?",
+      "subtitle": "Assignments become visible to everyone. Empty places can be filled after publishing too. Notify the assignees?",
       "notify": "Publish and notify",
-      "notifyHint": "The brothers get a notification",
+      "notifyHint": "The assignees get a notification",
       "silent": "Publish silently",
-      "silentHint": "No notification now; those assigned will learn about it from the evening reminders"
+      "silentHint": "No notification now; those assigned will learn about it from the evening reminders",
+      "empty_one": "{{count}} place is not filled",
+      "empty_other": "{{count}} places are not filled",
+      "fillFirst": "Fill them first →",
+      "journalNote": "The publish is written to the journal"
     },
     "sheet": {
       "next": "Next →",
@@ -4440,7 +4444,8 @@
       "VIEW": "opened",
       "DOWNLOAD": "downloaded",
       "DENY": "could not change",
-      "RESTORE": "restored"
+      "RESTORE": "restored",
+      "PUBLISH": "published"
     },
     "about": "about {{name}}",
     "bulk": "{{count}} at once",
@@ -4680,7 +4685,10 @@
       "wifeCleared": "Wife's rows cleared",
       "removed": "Removed",
       "unjoined": "Became his outings",
-      "wifeRestored": "Wife's rows put back"
+      "wifeRestored": "Wife's rows put back",
+      "publishedParts": "Parts published",
+      "notified": "With a notification",
+      "emptySeats": "Empty places"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",

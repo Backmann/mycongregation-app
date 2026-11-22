@@ -235,6 +235,8 @@ function ProgrammeEditor() {
   const [publishPrompt, setPublishPrompt] = useState<{
     eventType: "midweek" | "weekend";
     weekStartDate: string;
+    /** Places still empty as the badge counts them (R-16). */
+    empty: number;
   } | null>(null);
   const weekStart = weekFromParam(params.week);
   const weekStartISO = formatDateISO(weekStart);
@@ -1055,10 +1057,11 @@ function ProgrammeEditor() {
     eventType: "midweek" | "weekend",
     weekStartDate: string,
     notify = true,
+    emptySeats?: number,
   ) => {
     setPublishingType(eventType);
     try {
-      await assignmentsApi.publish({ weekStartDate, eventType, notify });
+      await assignmentsApi.publish({ weekStartDate, eventType, notify, emptySeats });
       await refreshProgramme();
     } catch (e) {
       // The server's own words (or lib/error-text's), on the strip every
@@ -1163,11 +1166,13 @@ function ProgrammeEditor() {
                 publishPrompt.eventType,
                 publishPrompt.weekStartDate,
                 notify,
+                publishPrompt.empty,
               );
             }
             setPublishPrompt(null);
           }}
           onCancel={() => setPublishPrompt(null)}
+          empty={publishPrompt?.empty ?? 0}
         />
 
         <View
@@ -1359,6 +1364,11 @@ function ProgrammeEditor() {
                         setPublishPrompt({
                           eventType: "midweek",
                           weekStartDate: items[0].weekStartDate,
+                          empty: Math.max(
+                            0,
+                            badgeOf("midweek", items).total -
+                              badgeOf("midweek", items).assigned,
+                          ),
                         })
                       }
                       banner={
@@ -1450,6 +1460,11 @@ function ProgrammeEditor() {
                         setPublishPrompt({
                           eventType: "weekend",
                           weekStartDate: items[0].weekStartDate,
+                          empty: Math.max(
+                            0,
+                            badgeOf("weekend", items).total -
+                              badgeOf("weekend", items).assigned,
+                          ),
                         })
                       }
                       banner={

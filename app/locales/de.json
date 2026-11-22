@@ -1095,11 +1095,15 @@
     },
     "publishDialog": {
       "title": "Zusammenkunft veröffentlichen",
-      "subtitle": "Zuteilungen werden für alle sichtbar. Brüder benachrichtigen?",
+      "subtitle": "Die Zuteilungen werden für alle sichtbar. Leere Plätze können auch nach der Veröffentlichung besetzt werden. Die Zugeteilten benachrichtigen?",
       "notify": "Veröffentlichen und benachrichtigen",
-      "notifyHint": "Die Brüder erhalten eine Benachrichtigung",
+      "notifyHint": "Die Zugeteilten erhalten eine Benachrichtigung",
       "silent": "Still veröffentlichen",
-      "silentHint": "Jetzt ohne Benachrichtigung; die Zugeteilten erfahren es durch die Abenderinnerungen"
+      "silentHint": "Jetzt ohne Benachrichtigung; die Zugeteilten erfahren es durch die Abenderinnerungen",
+      "empty_one": "{{count}} Platz ist nicht besetzt",
+      "empty_other": "{{count}} Plätze sind nicht besetzt",
+      "fillFirst": "Erst besetzen →",
+      "journalNote": "Die Veröffentlichung wird im Protokoll festgehalten"
     },
     "sheet": {
       "next": "Weiter →",
@@ -4440,7 +4444,8 @@
       "VIEW": "hat geöffnet",
       "DOWNLOAD": "hat heruntergeladen",
       "DENY": "konnte nicht ändern",
-      "RESTORE": "hat wiederhergestellt"
+      "RESTORE": "hat wiederhergestellt",
+      "PUBLISH": "veröffentlichte"
     },
     "about": "betrifft: {{name}}",
     "bulk": "{{count}} auf einmal",
@@ -4680,7 +4685,10 @@
       "wifeCleared": "Einträge der Frau entfernt",
       "removed": "Entfernt",
       "unjoined": "Wurden seine Dienste",
-      "wifeRestored": "Einträge der Frau zurückgeholt"
+      "wifeRestored": "Einträge der Frau zurückgeholt",
+      "publishedParts": "Veröffentlichte Programmpunkte",
+      "notified": "Mit Benachrichtigung",
+      "emptySeats": "Leere Plätze"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",

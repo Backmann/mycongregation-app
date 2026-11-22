@@ -9,6 +9,11 @@ interface Props {
   /** Called with notify=true (notify) or notify=false (silent). */
   onPublish: (notify: boolean) => void;
   onCancel: () => void;
+  /**
+   * Places still empty in the meeting (R-16, 22 November 2026): publishing
+   * stays possible, but not without seeing how many — «Не заполнено 7 мест».
+   */
+  empty?: number;
 }
 
 /**
@@ -16,7 +21,7 @@ interface Props {
  * blocks and planning mode), so the notify/silent choice is identical
  * across the app. Three outcomes: notify, silent, cancel.
  */
-export function PublishDialog({ open, busy, onPublish, onCancel }: Props) {
+export function PublishDialog({ open, busy, onPublish, onCancel, empty = 0 }: Props) {
   const { t } = useTranslation();
   return (
     <Dialog
@@ -27,6 +32,16 @@ export function PublishDialog({ open, busy, onPublish, onCancel }: Props) {
       onCancel={onCancel}
       pending={busy}
     >
+      {empty > 0 ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onCancel}
+          style={({ pressed }) => [emptyStyles.box, pressed && choiceStyles.pressed]}
+        >
+          <Text style={emptyStyles.title}>{t('schedule.publishDialog.empty', { count: empty })}</Text>
+          <Text style={emptyStyles.link}>{t('schedule.publishDialog.fillFirst')}</Text>
+        </Pressable>
+      ) : null}
       <Text style={choiceStyles.subtitle}>
         {t('schedule.publishDialog.subtitle')}
       </Text>
@@ -64,6 +79,7 @@ export function PublishDialog({ open, busy, onPublish, onCancel }: Props) {
           {t('schedule.publishDialog.silentHint')}
         </Text>
       </Pressable>
+      <Text style={emptyStyles.note}>{t('schedule.publishDialog.journalNote')}</Text>
     </Dialog>
   );
 }
@@ -94,3 +110,18 @@ export const choiceStyles = StyleSheet.create({
   disabled: { opacity: 0.5 },
 });
 
+
+const emptyStyles = StyleSheet.create({
+  box: {
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  title: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: '#78350f' },
+  link: { fontFamily: 'Manrope_700Bold', fontSize: 13.5, color: '#b45309', marginTop: 4 },
+  note: { fontFamily: 'Manrope_400Regular', fontSize: 12.5, color: '#64748b', marginTop: 10 },
+});
