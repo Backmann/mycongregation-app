@@ -25,7 +25,7 @@ const js = ts.transpileModule(src, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 writeFileSync(join(out, 'conduct-run-record.mjs'), js);
-const { readRunRecord, writeRunRecord, reconcileKeys, isExpiredRecord, inCounsel, EMPTY_RUN, LEGACY_LIVE_MS, KEEP_MS } = await import(
+const { readRunRecord, writeRunRecord, reconcileKeys, isExpiredRecord, inCounsel, inEntrance, settleEntrance, beginPart, snapshot, undoRun, ENTRANCE_AUTO_MS, EMPTY_RUN, LEGACY_LIVE_MS, KEEP_MS } = await import(
   pathToFileURL(join(out, 'conduct-run-record.mjs'))
 );
 
@@ -325,6 +325,100 @@ it('the counselled part removed: the part that takes its place began now', () =>
   const n = reconcileKeys(s, ['a', 'b', 'd'], NOW);
   assert.equal(n.index, 2);
   assert.deepEqual(n.starts, [NOW - 100_000, NOW - 80_000, NOW]);
+});
+
+// ------------------------------------------- «Вернуть» и выход к сцене (Р-72)
+//
+// Lionel, 21 November 2026: «Вернуть» on a part the brother walked up for
+// took the meeting back to the PREVIOUS part, not to his walk; after «Начал»
+// it seemed to do nothing. Both reproduced on the stand. The taps below are
+// the screen's own (app/(app)/schedule/conduct.tsx advanceAt / begin).
+
+const WEEKEND_KEYS = [
+  'weekend_opening_prayer',
+  'public_talk_speaker',
+  'weekend_chairman',
+  'watchtower_conductor',
+  'weekend_closing_prayer',
+];
+const S = 1000;
+
+/** A part running since `at`, the step before it kept for «Вернуть». */
+function partRunning(keys, index, at) {
+  const starts = Array.from({ length: index + 1 }, (_, i) => (i === index ? at : at - (index - i) * 300 * S));
+  const before = { ...EMPTY_RUN, keys, index: index - 1, startedAt: at - 300 * S, meetingStartedAt: starts[0], starts: starts.slice(0, index) };
+  return { ...EMPTY_RUN, keys, index, startedAt: at, meetingStartedAt: starts[0], starts, spent: Array(index).fill(240), prev: snapshot(before) };
+}
+/** «Следующая» at `at`, the next brother called up to the stage. */
+function callNext(run, at) {
+  const spent = [...run.spent];
+  spent[run.index] = (at - run.startedAt) / 1000;
+  const starts = [...run.starts.slice(0, run.index + 1), null];
+  return { ...run, index: run.index + 1, spent, starts, carried: 0, startedAt: null, enteringFrom: at, prev: snapshot(run) };
+}
+/** «Начал» at `at`. */
+const begin = (run, at) => ({ ...beginPart(run, at), prev: snapshot(run) });
+
+for (const [label, keys, index] of [
+  ['будни', KEYS, 3],
+  ['выходная', WEEKEND_KEYS, 2],
+]) {
+  const T = NOW;
+  const part = partRunning(keys, index, T - 200 * S);
+  const called = callNext(part, T);
+
+  it(`${label}: самостарт через 30 с → «Вернуть» снова «Выходит», не прошлая часть`, () => {
+    const at = T + 45 * S;
+    assert.equal(inEntrance(settleEntrance(called, at)), false, 'the part has begun by itself');
+    const back = undoRun(called, at);
+    assert.equal(back.index, index + 1, 'still the called part');
+    assert.ok(inEntrance(back), '«Выходит» again');
+    assert.ok(inEntrance(settleEntrance(back, at + 1 * S)), 'and it does not begin again at once');
+    assert.equal(back.enteringFrom, at);
+    assert.equal(back.startedAt, null);
+    // The 45 s since the call: the meeting's time, nobody's.
+    assert.equal(back.pausedSec, called.pausedSec + 45);
+    assert.equal(back.spent[index + 1], undefined, 'no seconds credited to the brother');
+  });
+
+  it(`${label}: «Начал», часть шла 50 с → «Вернуть» возвращает в «Выходит» с новым вызовом`, () => {
+    const started = begin(called, T + 10 * S);
+    const at = T + 60 * S;
+    const back = undoRun(started, at);
+    assert.equal(back.index, index + 1);
+    assert.ok(inEntrance(settleEntrance(back, at + 29 * S)), 'waits for «Начал» — 29 s later still walking');
+    assert.equal(inEntrance(settleEntrance(back, at + 30 * S)), false, 'and begins by itself 30 s after the NEW call');
+    assert.equal(back.pausedSec, called.pausedSec + 60, 'the 50 s it ran are nobody’s');
+    // «Начал» again: his clock starts then, not at the first «Начал».
+    const again = begin(back, at + 5 * S);
+    assert.equal(again.startedAt, at + 5 * S);
+    assert.equal(again.pausedSec, called.pausedSec + 65);
+  });
+
+  it(`${label}: «Вернуть» во время выхода (до 30 с) → прошлая часть идёт как шла`, () => {
+    const back = undoRun(called, T + 12 * S);
+    assert.equal(back.index, index);
+    assert.equal(back.startedAt, part.startedAt);
+    assert.equal(inEntrance(back), false);
+  });
+
+  it(`${label}: второе «Вернуть» после самостарта → прошлая часть`, () => {
+    const first = undoRun(called, T + 45 * S);
+    const second = undoRun(first, T + 46 * S);
+    assert.equal(second.index, index);
+    assert.equal(second.startedAt, part.startedAt);
+  });
+}
+
+it('экран берёт «Вернуть» из lib и от хранимого хода, не от сглаженного', () => {
+  const screen = readFileSync(join(ROOT, 'app', '(app)', 'schedule', 'conduct.tsx'), 'utf8');
+  assert.match(screen, /undoRun\(stored, Date\.now\(\)\)/, 'undo goes through undoRun(stored, …)');
+  assert.match(screen, /const run = settleEntrance\(stored, now\)/, 'stored is what settleEntrance smooths');
+  assert.doesNotMatch(screen, /run\.prev\.prev/, 'no second copy of the old one-step undo');
+});
+
+it('нечего возвращать → null', () => {
+  assert.equal(undoRun(EMPTY_RUN, NOW), null);
 });
 
 // ------------------------------------------------------------------ run
