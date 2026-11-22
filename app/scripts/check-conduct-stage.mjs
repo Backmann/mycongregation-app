@@ -110,4 +110,19 @@ check('a rehearsal is measured from its own start, as if the meeting were now (R
   assert.equal(S.rehearsalAnchor(null), null);
 });
 
+check('«Встреча началась в 19:00?» — asked up to three minutes after the start, on its day (R-78)', () => {
+  const at = (h, m, sec = 0) => new Date(2026, 10, 25, h, m, sec).getTime();
+  const planned = at(19, 0);
+  // 18.11: «Начать» at 19:01 — the song had begun before it.
+  assert.equal(S.startQuestionAt(at(19, 1, 5), '19:00', '2026-11-25'), planned);
+  assert.equal(S.startQuestionAt(at(19, 3, 0), '19:00', '2026-11-25'), planned, 'three minutes still asks');
+  assert.equal(S.startQuestionAt(at(19, 3, 1), '19:00', '2026-11-25'), null, 'later: a real late start');
+  assert.equal(S.startQuestionAt(at(18, 59, 30), '19:00', '2026-11-25'), null, 'before the start');
+  assert.equal(S.startQuestionAt(planned, '19:00', '2026-11-25'), null, 'at it');
+  assert.equal(S.startQuestionAt(at(19, 1), '19:00', '2026-11-24'), null, 'another day');
+  assert.equal(S.startQuestionAt(at(19, 1), null, '2026-11-25'), null);
+  // A meeting moved to 18:30 asks by its own hour.
+  assert.equal(S.startQuestionAt(at(18, 31), '18:30', '2026-11-25'), at(18, 30));
+});
+
 console.log(`conduct-stage: ${n} groups ok`);

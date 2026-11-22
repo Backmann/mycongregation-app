@@ -5777,6 +5777,12 @@
       "weekend": "Zusammenkunft am Wochenende",
       "keep": "aufbewahrt bis {{day}}",
       "who": "Die Ergebnisse sehen die Administratoren und die Brüder, die für diese Zusammenkünfte verantwortlich sind."
+    },
+    "startAsk": {
+      "title": "Hat die Zusammenkunft um {{time}} begonnen?",
+      "body": "Jetzt ist es {{now}}. Begann das Lied pünktlich, zählt die Zeit ab {{time}} – und der Bildschirm zeigt keine falsche Verspätung.",
+      "yes": "Ja, um {{time}}",
+      "no": "Nein – gerade eben, um {{now}}"
     }
   },
   "serviceHub": {

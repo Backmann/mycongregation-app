@@ -254,6 +254,16 @@ export function undoRun(kept: RunState, now: number): RunState | null {
   return inEntrance(back) ? recall(back, now) : back;
 }
 
+/**
+ * «Да, в 19:00» (R-78): the meeting began at the programme's start, not at
+ * the tap — its first part, and the meeting, count from `at`. Only while the
+ * first part runs; anything later is left as it is.
+ */
+export function startFrom(s: RunState, at: number): RunState {
+  if (s.index !== 0 || s.meetingStartedAt === null || s.startedAt === null || at >= s.meetingStartedAt) return s;
+  return { ...s, meetingStartedAt: at, startedAt: at, starts: [at, ...s.starts.slice(1)] };
+}
+
 export type RecordVerdict =
   /** Nothing kept for this week. */
   | 'none'

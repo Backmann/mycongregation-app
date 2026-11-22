@@ -60,7 +60,15 @@ import { QuickReplaceSheet } from '../../../components/QuickReplaceSheet';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
 import { ConductStage, STAGE_SECTION_COLORS, type StagePart } from '../../../components/ConductStage';
-import { demoFrame, endDriftSec, rehearsalAnchor, stageTone, untilStartSec, warnSecFor } from '../../../lib/conduct-stage';
+import {
+  demoFrame,
+  endDriftSec,
+  rehearsalAnchor,
+  stageTone,
+  startQuestionAt,
+  untilStartSec,
+  warnSecFor,
+} from '../../../lib/conduct-stage';
 import { resolveSubsection, SUBSECTIONS } from '../../../lib/parts';
 import {
   EMPTY_RUN as EMPTY,
@@ -72,6 +80,7 @@ import {
   readRunRecord,
   settleEntrance,
   snapshot,
+  startFrom,
   undoRun,
   recordPrefix,
   RUN_RECORD_VERSION,
@@ -867,9 +876,36 @@ export default function ConductScreen({
   const start = () => {
     const at = Date.now();
     const begun = { ...EMPTY, startedAt: at, meetingStartedAt: at, starts: [at], keys: [...segKeys], prev: snapshot(run) };
-    if (beforeDay && !practice) setPractice(begun);
-    else applyRun(begun);
+    if (beforeDay && !practice) {
+      setPractice(begun);
+      return;
+    }
+    applyRun(begun);
+    if (practice) return;
+    // «Встреча началась в 19:00?» (R-78): tapped after the song had begun.
+    const planned = startQuestionAt(at, meeting?.time ?? null, meetingDay);
+    if (planned === null || !meeting?.time) return;
+    const tapped = new Date(at);
+    const now = `${String(tapped.getHours()).padStart(2, '0')}:${String(tapped.getMinutes()).padStart(2, '0')}`;
+    void confirm({
+      title: t('conduct.startAsk.title', { time: meeting.time }),
+      body: t('conduct.startAsk.body', { now, time: meeting.time }),
+      confirmLabel: t('conduct.startAsk.yes', { time: meeting.time }),
+      cancelLabel: t('conduct.startAsk.no', { now }),
+    }).then((ok) => {
+      if (ok) setStartFromAt(planned);
+    });
   };
+  // «Да»: the meeting counts from the programme's start — applied to the run
+  // as it is by then (the answer may come seconds later).
+  const [startFromAt, setStartFromAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (startFromAt === null) return;
+    setStartFromAt(null);
+    applyRun(startFrom(stored, startFromAt));
+    // stored and applyRun are read as they are when the answer comes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startFromAt]);
   const closePause = (at: number) =>
     run.pausedSec + (run.pausedAt !== null ? (at - run.pausedAt) / 1000 : 0);
   const resume = () => {
