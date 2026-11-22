@@ -208,6 +208,52 @@ export function beginPart(s: RunState, at: number): RunState {
   };
 }
 
+/** The run as it was before a tap, with one step kept under it. */
+export function snapshot(s: RunState): RunSnapshot {
+  const { prev, ...rest } = s;
+  if (!prev) return { ...rest, prev: null };
+  const { prev: _older, ...under } = prev;
+  return { ...rest, prev: under };
+}
+
+/**
+ * The brother is called again NOW (Р-72, 22 November 2026): the walk since
+ * the first call is the meeting's time and nobody's, kept like a pause; his
+ * clock waits for «Начал» — or begins by itself ENTRANCE_AUTO_MS from now,
+ * not from the old call, which would begin it again at once.
+ */
+function recall(s: RunState, now: number): RunState {
+  const from = s.enteringFrom as number;
+  return {
+    ...s,
+    enteringFrom: now,
+    startedAt: null,
+    carried: 0,
+    pausedSec: s.pausedSec + Math.max(0, (now - from) / 1000),
+  };
+}
+
+/**
+ * «Вернуть» (Р-72, Lionel 21 November 2026 — «пункт отменяется и переходит на
+ * предыдущий пункт, а не на то, когда брат переходит со своего места на
+ * сцену»). `kept` is the run as stored, before settleEntrance:
+ *
+ * - a part that began by itself after the call: back to the call — «Выходит»,
+ *   «Начал» — the seconds it ran are nobody's;
+ * - a part begun with «Начал»: back to the call the same way;
+ * - anything else: the step before, as it was.
+ *
+ * Null when there is nothing to take back.
+ */
+export function undoRun(kept: RunState, now: number): RunState | null {
+  if (inEntrance(kept) && now - (kept.enteringFrom as number) >= ENTRANCE_AUTO_MS) {
+    return recall(kept, now);
+  }
+  if (!kept.prev) return null;
+  const back: RunState = { ...kept.prev, prev: kept.prev.prev ?? null };
+  return inEntrance(back) ? recall(back, now) : back;
+}
+
 export type RecordVerdict =
   /** Nothing kept for this week. */
   | 'none'

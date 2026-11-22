@@ -71,10 +71,11 @@ import {
   reconcileKeys,
   readRunRecord,
   settleEntrance,
+  snapshot,
+  undoRun,
   recordPrefix,
   RUN_RECORD_VERSION,
   RunState,
-  RunSnapshot,
   writeRunRecord,
 } from '../../../lib/conduct-run-record';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
@@ -201,12 +202,6 @@ function formatCountdown(seconds: number): string {
  * «Вернуть» goes back two taps, so a second mistaken tap does not lock in
  * the first.
  */
-function snapshot(s: RunState): RunSnapshot {
-  const { prev, ...rest } = s;
-  if (!prev) return { ...rest, prev: null };
-  const { prev: _older, ...under } = prev;
-  return { ...rest, prev: under };
-}
 
 /**
  * `stageCheckAt` — the screen on the stage (app/stage.tsx) starts «Проверить
@@ -576,7 +571,8 @@ export default function ConductScreen({
   const watched = useMemo(() => (live ? fromWire(live.state, offset) : null) ?? EMPTY, [live, offset]);
   // A forgotten «Начал» has begun the part by itself (lib/conduct-run-record
   // settleEntrance): the same answer on every device, from the same run.
-  const run = settleEntrance(practice ?? (watching ? watched : state), now);
+  const stored = practice ?? (watching ? watched : state);
+  const run = settleEntrance(stored, now);
   const applyRun = useCallback(
     (next: RunState) => {
       if (practice) setPractice(next);
@@ -925,8 +921,9 @@ export default function ConductScreen({
 
   /** One tap back: a tap pressed too early must not cost anybody time. */
   const undo = () => {
-    if (!run.prev) return;
-    applyRun({ ...run.prev, prev: run.prev.prev ?? null });
+    const back = undoRun(stored, Date.now());
+    if (!back) return;
+    applyRun(back);
     setLastTapAt(null);
   };
 
