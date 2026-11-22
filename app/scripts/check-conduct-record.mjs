@@ -25,7 +25,7 @@ const js = ts.transpileModule(src, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 writeFileSync(join(out, 'conduct-run-record.mjs'), js);
-const { readRunRecord, writeRunRecord, reconcileKeys, isExpiredRecord, inCounsel, inEntrance, settleEntrance, beginPart, snapshot, undoRun, ENTRANCE_AUTO_MS, EMPTY_RUN, LEGACY_LIVE_MS, KEEP_MS } = await import(
+const { readRunRecord, writeRunRecord, reconcileKeys, isExpiredRecord, inCounsel, inEntrance, settleEntrance, beginPart, snapshot, undoRun, startFrom, ENTRANCE_AUTO_MS, EMPTY_RUN, LEGACY_LIVE_MS, KEEP_MS } = await import(
   pathToFileURL(join(out, 'conduct-run-record.mjs'))
 );
 
@@ -415,6 +415,19 @@ it('экран берёт «Вернуть» из lib и от хранимого
   assert.match(screen, /undoRun\(stored, Date\.now\(\)\)/, 'undo goes through undoRun(stored, …)');
   assert.match(screen, /const run = settleEntrance\(stored, now\)/, 'stored is what settleEntrance smooths');
   assert.doesNotMatch(screen, /run\.prev\.prev/, 'no second copy of the old one-step undo');
+});
+
+it('«Да, в 19:00» (R-78): the meeting and its first part count from the programme\'s start', () => {
+  const tap = NOW;
+  const planned = NOW - 65 * S;
+  const begun = { ...EMPTY_RUN, keys: KEYS, startedAt: tap, meetingStartedAt: tap, starts: [tap] };
+  const from = startFrom(begun, planned);
+  assert.equal(from.meetingStartedAt, planned);
+  assert.equal(from.startedAt, planned);
+  assert.deepEqual(from.starts, [planned]);
+  // Once the second part runs, or for a later moment: left as it is.
+  assert.equal(startFrom({ ...begun, index: 1 }, planned).meetingStartedAt, tap);
+  assert.equal(startFrom(begun, tap + 5 * S), begun);
 });
 
 it('нечего возвращать → null', () => {

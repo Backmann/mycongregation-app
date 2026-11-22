@@ -5777,6 +5777,12 @@
       "weekend": "Weekend meeting",
       "keep": "kept until {{day}}",
       "who": "Meeting results are seen by the admins and the brothers responsible for these meetings."
+    },
+    "startAsk": {
+      "title": "Did the meeting start at {{time}}?",
+      "body": "It is {{now}} now. If the song began on time, the count runs from {{time}} — and the screen shows no false lateness.",
+      "yes": "Yes, at {{time}}",
+      "no": "No — it just began, at {{now}}"
     }
   },
   "serviceHub": {

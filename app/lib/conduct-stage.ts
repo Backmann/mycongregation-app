@@ -153,3 +153,23 @@ export function rehearsalAnchor(meetingStartedAtMs: number | null): { time: stri
     day: `${d.getFullYear()}-${two(d.getMonth() + 1)}-${two(d.getDate())}`,
   };
 }
+
+/** How long after the programme's start «Начать встречу» still asks (R-78). */
+export const START_QUESTION_SEC = 180;
+
+/**
+ * «ВСТРЕЧА НАЧАЛАСЬ В 19:00?» (R-78, Lionel 22 November 2026). On 18.11 and
+ * 22.11 both meetings «began» at :01 and the first step was about a minute
+ * shorter than the song and the prayer: «Начать» is tapped after the song
+ * has begun, and the screen showed a lateness that was not there. Tapped up
+ * to three minutes after the start by the programme, on the meeting's day,
+ * the screen asks; the moment returned is that start. Later than that — a
+ * real late start, shown as such (18 October 2026). Before it, at it, on
+ * another day, or with no hour: null, nothing to ask.
+ */
+export function startQuestionAt(tapMs: number, meetingTime: string | null, meetingDay: string | null): number | null {
+  const planned = momentOf(meetingTime, meetingDay);
+  if (planned === null) return null;
+  const late = tapMs - planned;
+  return late > 0 && late <= START_QUESTION_SEC * 1000 ? planned : null;
+}
