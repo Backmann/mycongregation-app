@@ -232,3 +232,110 @@ export function quotedSong(
 export function songLength(sec: number): string {
   return `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 }
+
+/**
+ * TIME WITH A CORRECTION (R-74, Lionel 21 November 2026: «Давай попробуем»).
+ *
+ * Hard parts keep the programme's minutes: the student parts, the Bible
+ * reading, the public talk, the songs, the overseer's talks. The flexible
+ * ones take the meeting's lag — a late start included — in proportion to
+ * their length, none more than FLEX_CAP of its own: the talk of the week,
+ * the spiritual gems, the parts of «Христианская жизнь», the congregation
+ * Bible study, the chairman's words and the Watchtower study. Minutes are
+ * never added past the programme. What the cap leaves over is said as such.
+ */
+export const FLEX_CAP = 0.15;
+/** A lag shorter than this is not corrected. */
+export const FLEX_FROM_SEC = 60;
+
+export function isFlexible(seg: { key: string; chairmanWords?: boolean }): boolean {
+  return (
+    !!seg.chairmanWords ||
+    seg.key === 'treasures_talk' ||
+    seg.key === 'spiritual_gems' ||
+    /^living_christians_\d+$/.test(seg.key) ||
+    seg.key === 'cbs_conductor' ||
+    seg.key === 'watchtower_conductor'
+  );
+}
+
+/** A short word for a flexible step's kind, for the line that says where the lag is taken. */
+export function flexKindOf(seg: { key: string; chairmanWords?: boolean }): 'talk' | 'gems' | 'living' | 'study' | 'words' | 'watchtower' {
+  if (seg.chairmanWords) return 'words';
+  if (seg.key === 'treasures_talk') return 'talk';
+  if (seg.key === 'spiritual_gems') return 'gems';
+  if (seg.key === 'cbs_conductor') return 'study';
+  if (seg.key === 'watchtower_conductor') return 'watchtower';
+  return 'living';
+}
+
+export interface FlexPlan {
+  /** Seconds taken off each flexible step still ahead (by index), the current one included. */
+  cut: Map<number, number>;
+  /** The lag the cap could not take. */
+  uncoveredSec: number;
+}
+
+/**
+ * Lays `lagSec` over the flexible steps from `from` on. The step at `from`
+ * may be under way: `currentLeftSec` is what it has left of its own minutes,
+ * and it cannot give more than that. Cuts are whole multiples of 10 s, and a
+ * lag under FLEX_FROM_SEC is left alone: seconds are not worth a correction
+ * (stand, 23 November 2026: 34 s behind gave «−0:05» three times).
+ */
+export function flexPlan(
+  segments: readonly { key: string; partMin: number; chairmanWords?: boolean }[],
+  from: number,
+  currentLeftSec: number | null,
+  lagSec: number,
+): FlexPlan {
+  const cut = new Map<number, number>();
+  if (!(lagSec >= FLEX_FROM_SEC)) return { cut, uncoveredSec: 0 };
+  const room = new Map<number, { len: number; max: number }>();
+  for (let i = Math.max(0, from); i < segments.length; i++) {
+    const s = segments[i];
+    if (!isFlexible(s) || s.partMin <= 0) continue;
+    const len = s.partMin * 60;
+    let max = len * FLEX_CAP;
+    if (i === from && currentLeftSec !== null) max = Math.min(max, Math.max(0, currentLeftSec));
+    if (max > 0) room.set(i, { len, max });
+  }
+  // Proportional to length; what a capped step cannot take goes to the rest.
+  let left = lagSec;
+  let open = new Set(room.keys());
+  const raw = new Map<number, number>();
+  while (left > 0.5 && open.size > 0) {
+    const total = [...open].reduce((a, i) => a + room.get(i)!.len, 0);
+    const next = new Set<number>();
+    let given = 0;
+    for (const i of open) {
+      const r = room.get(i)!;
+      const had = raw.get(i) ?? 0;
+      const want = had + (left * r.len) / total;
+      const got = Math.min(want, r.max);
+      raw.set(i, got);
+      given += got - had;
+      if (got < r.max) next.add(i);
+    }
+    left -= given;
+    if (next.size === open.size) break;
+    open = next;
+  }
+  let sum = 0;
+  for (const [i, v] of raw) {
+    const c = Math.floor(v / 10) * 10;
+    if (c > 0) {
+      cut.set(i, c);
+      sum += c;
+    }
+  }
+  return { cut, uncoveredSec: Math.max(0, Math.round(lagSec - sum)) };
+}
+
+/** «29», «14:30» — a step's minutes after its cut. */
+export function minutesAfterCut(partMin: number, cutSec: number): string {
+  const sec = partMin * 60 - cutSec;
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return s === 0 ? String(m) : `${m}:${String(s).padStart(2, '0')}`;
+}

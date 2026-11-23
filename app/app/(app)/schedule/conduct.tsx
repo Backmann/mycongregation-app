@@ -64,6 +64,11 @@ import {
   demoFrame,
   endDriftSec,
   rehearsalAnchor,
+  FLEX_FROM_SEC,
+  flexKindOf,
+  flexPlan,
+  isFlexible,
+  minutesAfterCut,
   quotedSong,
   settingLabel,
   songIsProgrammes,
@@ -574,6 +579,22 @@ export default function ConductScreen({
   // пробная встреча, доведённая до «Завершить», семь дней висела бы итогом у
   // старейшин.
   const [practice, setPractice] = useState<RunState | null>(null);
+  // THE REHEARSAL'S SIGN OF LIFE (23 November 2026). The device that runs a
+  // rehearsal asks the server about the meeting itself (liveQuery), so its
+  // own rehearsal row heard from it only when it tapped: twenty seconds into
+  // a counsel the stage took it for gone and greyed out. While it rehearses,
+  // it also asks for its rehearsal row — the server marks it seen there.
+  useQuery({
+    queryKey: ['conduct-live', week, kind, 'rehearsal-alive'],
+    queryFn: () => conductLiveApi.get(week, kind, true),
+    enabled: week.length > 0 && !!practice && !watchingRehearsal,
+    retry: false,
+    staleTime: 0,
+    refetchInterval: (q) => {
+      const st = statusOf(q.state.error);
+      return st === 403 || st === 404 ? false : LIVE_POLL_MS;
+    },
+  });
   // «Проверить экран»: when it began (this device only, nothing saved).
   const [check, setCheck] = useState<number | null>(null);
   useEffect(() => {
@@ -856,14 +877,57 @@ export default function ConductScreen({
           : Math.max(0, current.partMin * 60 - currentElapsed) + current.counselMin * 60) +
       segments.slice(run.index + 1).reduce((sum, s) => sum + stepSec(s), 0)
     : 0;
-  const endsAt = clockOf(new Date(now + remainingSec * 1000));
   // The hour the rules give — an event's changed hour included.
   // A rehearsal is measured from its own start (R-73): as if the meeting were now.
   const anchor = practice || watchingRehearsal ? rehearsalAnchor(run.meetingStartedAt) : null;
   const meetingTime = anchor?.time ?? meeting?.time ?? null;
   const plannedEnd = meetingTime ? addMinutes(meetingTime, totalRunMinutes(segments)) : null;
   // Behind or ahead of the programme's END — a late start counts (18 October 2026).
-  const shownDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, anchor?.day ?? meetingDay, driftSec);
+  // As things go now, before any correction: what the correction takes up.
+  const lagDriftSec = endDriftSec(now + remainingSec * 1000, plannedEnd, anchor?.day ?? meetingDay, driftSec);
+
+  /**
+   * TIME WITH A CORRECTION (R-74). The lag goes to the flexible parts still
+   * ahead (flexPlan). The part under way keeps the cut it got when it began —
+   * recomputed every second, its countdown would drift with the clock — and
+   * the rest of the lag goes to those after it.
+   */
+  const flexCuts = useRef(new Map<string, number>());
+  const lagSec = started && !finished ? Math.max(0, lagDriftSec) : 0;
+  const curFlex = !!current && !counselling && isFlexible(current);
+  const curBegun = curFlex && !entering && (run.startedAt !== null || run.carried > 0 || run.pausedAt !== null);
+  const cutKey = `${run.meetingStartedAt ?? 0}|${run.index}`;
+  let curCut = 0;
+  if (curFlex && current) {
+    const fresh = flexPlan(segments, run.index, null, lagSec).cut.get(run.index) ?? 0;
+    if (curBegun) {
+      if (!flexCuts.current.has(cutKey)) flexCuts.current.set(cutKey, fresh);
+      curCut = flexCuts.current.get(cutKey) ?? 0;
+    } else curCut = fresh;
+  }
+  const restPlan = flexPlan(segments, run.index + 1, null, Math.max(0, lagSec - curCut));
+  const cutOf = (i: number): number => (i === run.index ? curCut : i > run.index ? (restPlan.cut.get(i) ?? 0) : 0);
+  const futureCut = [...restPlan.cut.values()].reduce((a, b) => a + b, 0);
+  // What the correction takes off the rest of the meeting, the part under way included.
+  const curCutLeft = curFlex && current ? Math.min(curCut, Math.max(0, current.partMin * 60 - currentElapsed)) : 0;
+  const remainingAdjSec = Math.max(0, remainingSec - curCutLeft - futureCut);
+  const endsAtAdj = clockOf(new Date(now + remainingAdjSec * 1000));
+  // The end as it will be if the cuts are kept — what the chairman works to.
+  const shownDriftSec = endDriftSec(now + remainingAdjSec * 1000, plannedEnd, anchor?.day ?? meetingDay, driftSec);
+  // «отставание 1:47 · здесь −0:30, изучение −1:00»: where the lag is taken.
+  // Called at render: keyLabel is declared further down.
+  const correctionLineOf = (): string | null => {
+    if (lagSec < FLEX_FROM_SEC) return null;
+    const where: string[] = [];
+    if (curCut > 0) where.push(t('conduct.flex.here', { cut: mmss(curCut) }));
+    // The two largest, by a short word of their kind: «изучение −2:10».
+    const biggest = [...restPlan.cut].sort((a, b) => b[1] - a[1]).slice(0, 2);
+    for (const [i, c] of biggest) {
+      where.push(t('conduct.flex.there', { part: t(`conduct.flex.kind.${flexKindOf(segments[i])}`), cut: mmss(c) }));
+    }
+    if (restPlan.cut.size > biggest.length) where.push(t('conduct.flex.more'));
+    return t('conduct.flex.line', { lag: mmss(lagSec), where: where.join(', ') || t('conduct.flex.nowhere') });
+  };
 
   // ONE TAP, ONE STEP. The big button changes its meaning under the finger
   // («Закончено» → «Следующая»), so a double tap on stage would skip the
@@ -1880,7 +1944,8 @@ export default function ConductScreen({
 
   // The countdown, and what it means in words as well as colour: about one man
   // in twelve tells amber from red badly, and a minus alone is easy to miss.
-  const left = current ? current.partMin * 60 - currentElapsed : 0;
+  // A flexible part counts down from its corrected minutes (R-74).
+  const left = current ? current.partMin * 60 - (curFlex ? curCut : 0) - currentElapsed : 0;
   const tone = current ? stageTone(left, current.partMin) : 'calm';
   const counselLong = !unsure && (current ? counselElapsed > current.counselMin * 60 : false);
   const big = [wide ? styles.countdownWide : styles.countdown, unsure && styles.countdownStale];
@@ -1994,6 +2059,9 @@ export default function ConductScreen({
         ) : null}
         {!unsure && !pausedText && started && tone === 'over' ? (
           <Text style={[styles.stateLine, styles.toneOver]}>{t('conduct.overtime')}</Text>
+        ) : null}
+        {curFlex && curCut > 0 ? (
+          <Text style={[styles.stateLine, styles.flexLine]}>{t('conduct.flex.cut', { cut: mmss(curCut) })}</Text>
         ) : null}
         <Text style={styles.planned}>
           {isStudent
@@ -2126,10 +2194,11 @@ export default function ConductScreen({
       {started ? (
         <View style={styles.endBlock}>
           <Text style={styles.endLine}>
-            {t('conduct.endsAt')} <Text style={styles.endTime}>{endsAt}</Text>
+            {t('conduct.endsAt')} <Text style={styles.endTime}>{endsAtAdj}</Text>
             {plannedEnd ? <Text style={styles.endPlanned}>{`  ${t('conduct.byProgramme', { time: plannedEnd })}`}</Text> : null}
           </Text>
           <Text style={[styles.drift, unsure ? styles.driftOk : driftStyle(shownDriftSec)]}>{driftLabel(shownDriftSec, t)}</Text>
+          {!unsure && correctionLineOf() ? <Text style={styles.flexNote}>{correctionLineOf()}</Text> : null}
         </View>
       ) : null}
     </View>
@@ -2157,7 +2226,16 @@ export default function ConductScreen({
             style={[styles.sheetRow, i < run.index && styles.sheetRowDone]}
           >
             <Text style={styles.sheetMin}>
-              {s.partMin}
+              {cutOf(i) > 0 ? (
+                // R-74: the programme's minutes struck through, the corrected under them.
+                <>
+                  <Text style={styles.sheetMinWas}>{s.partMin}</Text>
+                  {'\n'}
+                  <Text style={styles.sheetMinCut}>{minutesAfterCut(s.partMin, cutOf(i))}</Text>
+                </>
+              ) : (
+                s.partMin
+              )}
               {s.counselMin > 0 ? <Text style={styles.sheetCounsel}>{` +${s.counselMin}`}</Text> : null}
             </Text>
             <View style={{ flex: 1 }}>
@@ -2241,6 +2319,8 @@ export default function ConductScreen({
       title: v.theme ?? v.label,
       person,
       minutes: seg.partMin,
+      // R-74: what the correction takes off this step.
+      cutSec: cutOf(segments.indexOf(seg)),
       soft: !!seg.soft,
       song: v.song,
       songLen: v.songLen ?? null,
@@ -2383,15 +2463,38 @@ export default function ConductScreen({
         startAt={meetingTime}
         untilStart={!started ? untilStartSec(meetingTime, meetingDay, now) : null}
         current={stagePart(current)}
-        counselFor={counselling ? (() => { const sp = stagePart(current); return sp ? { title: sp.title, person: sp.person, lesson: sp.lesson ?? null } : null; })() : null}
+        counselFor={
+          counselling
+            ? (() => {
+                const sp = stagePart(current);
+                return sp
+                  ? {
+                      title: sp.title,
+                      person: sp.person,
+                      lesson: sp.lesson ?? null,
+                      share: current && current.counselMin > 0 ? counselElapsed / (current.counselMin * 60) : undefined,
+                    }
+                  : null;
+              })()
+            : null
+        }
         leftSec={left}
         unsure={unsure}
         paused={pausedText}
         next={stagePart(!started ? segments[0] : next)}
         then={counselling ? null : stagePart(!started ? segments[1] : afterNext)}
-        endsAt={started ? endsAt : null}
+        endsAt={started ? endsAtAdj : null}
         plannedEnd={plannedEnd}
-        drift={started ? stageDrift(shownDriftSec) : null}
+        drift={
+          started
+            ? correctionLineOf()
+              ? // On the stage only the word and the figure: the cuts stand on
+                // the parts themselves (23 November 2026: the whole line
+                // squeezed «по программе» into a column, in red).
+                { text: t('conduct.flex.stage', { lag: mmss(lagSec) }), tone: 'ok' as const }
+              : stageDrift(shownDriftSec)
+            : null
+        }
         onTake={watching && canRun && liveData ? () => void takeOver() : null}
         controls={controls}
         check={null}
@@ -2658,6 +2761,9 @@ const styles = StyleSheet.create({
   toneSoon: { color: '#b45309' },
   toneOver: { color: '#b91c1c' },
   stateLine: { fontFamily: 'Manrope_700Bold', fontSize: 16, marginTop: 2 },
+  // R-74: «с поправкой −0:30» under a flexible part's countdown, and the lag line.
+  flexLine: { color: '#0369a1', fontSize: 15 },
+  flexNote: { textAlign: 'center', fontSize: 13.5, fontFamily: 'Manrope_500Medium', color: '#475569', marginTop: 4 },
   counselCard: { backgroundColor: '#f0f9ff', borderColor: '#bae6fd' },
   planned: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#64748b' },
 
@@ -2722,6 +2828,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#e2e8f0',
   },
   sheetRowDone: { opacity: 0.45 },
+  sheetMinWas: { textDecorationLine: 'line-through', color: '#94a3b8' },
+  sheetMinCut: { fontFamily: 'Manrope_700Bold', color: '#0369a1' },
   sheetMin: {
     fontFamily: 'Manrope_400Regular',
     width: 40,

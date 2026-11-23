@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from 're
 import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { COUNTDOWN_FROM_SEC, quotedSong, stageTone, warnSecFor, type StageTone } from '../lib/conduct-stage';
+import { COUNTDOWN_FROM_SEC, minutesAfterCut, quotedSong, stageTone, warnSecFor, type StageTone } from '../lib/conduct-stage';
 
 /**
  * What the screen on the stage adds around this screen (app/stage.tsx,
@@ -62,6 +62,8 @@ export interface StagePart {
   /** A student part's setting and its lesson for the counsel (23 November 2026). */
   setting?: string | null;
   lesson?: string | null;
+  /** R-74: seconds the correction takes off this flexible step. */
+  cutSec?: number;
 }
 
 export interface StageControls {
@@ -86,7 +88,16 @@ export interface StageProps {
   untilStart: number | null;
   current: StagePart | null;
   /** The part whose counsel is being given. */
-  counselFor: { title: string; person: string | null; lesson?: string | null } | null;
+  counselFor: {
+    title: string;
+    person: string | null;
+    lesson?: string | null;
+    /**
+     * R-75: how much of the counsel's minute has gone, 0…1 and past it. A thin
+     * bar without numbers fills over the minute and turns amber after it.
+     */
+    share?: number;
+  } | null;
   leftSec: number;
   /** The number cannot be trusted — grey, and words instead of a colour. */
   unsure: boolean;
@@ -337,6 +348,19 @@ export function ConductStage(p: StageProps) {
         </Text>
         <Text style={s.counselWord}>{t('conduct.stage.counsel')}</Text>
         {p.counselFor.lesson ? <Text style={s.counselLesson}>{p.counselFor.lesson}</Text> : null}
+        {typeof p.counselFor.share === 'number' && !p.unsure ? (
+          <View style={s.counselTrack}>
+            <View
+              style={[
+                s.counselFill,
+                {
+                  width: `${Math.round(Math.min(1, Math.max(0, p.counselFor.share)) * 100)}%`,
+                  backgroundColor: p.counselFor.share >= 1 ? C.amber : '#38bdf8',
+                },
+              ]}
+            />
+          </View>
+        ) : null}
       </View>
     );
   } else if (p.current) {
@@ -350,7 +374,7 @@ export function ConductStage(p: StageProps) {
               ? t('conduct.stage.lastMinute')
               : t('conduct.lastSeconds')
             : null;
-    const full = p.current.minutes * 60;
+    const full = p.current.minutes * 60 - (p.current.cutSec ?? 0);
     const done = full > 0 ? Math.min(1, Math.max(0, 1 - p.leftSec / full)) : 0;
     // A song runs as long as it runs: the time it has gone, upward.
     const soft = !!p.current.soft;
@@ -409,6 +433,9 @@ export function ConductStage(p: StageProps) {
                 : t('conduct.stage.ofMinutes', { minutes: p.current.minutes })}
             </Text>
           ) : null}
+          {!p.unsure && !soft && (p.current.cutSec ?? 0) > 0 ? (
+            <Text style={s.flexCut}>{t('conduct.flex.cut', { cut: mmssSigned(p.current.cutSec ?? 0) })}</Text>
+          ) : null}
         </View>
         <View style={s.track}>
           {soft ? null : <View style={[s.fill, { width: `${Math.round(done * 100)}%`, backgroundColor: barColor }]} />}
@@ -437,7 +464,7 @@ export function ConductStage(p: StageProps) {
         <Text style={s.nextPerson}>
           {p.next.person ?? ''}
         </Text>
-        <Text style={s.nextMin}>{t('conduct.stage.min', { minutes: p.next.minutes })}</Text>
+        <Text style={s.nextMin}>{stepMinutes(t, p.next)}</Text>
       </View>
     </View>
   ) : null;
@@ -448,7 +475,7 @@ export function ConductStage(p: StageProps) {
         <Text style={s.thenText}>
           {[p.then.title, p.then.person].filter(Boolean).join(' · ')}
         </Text>
-        <Text style={s.thenText}>{t('conduct.stage.min', { minutes: p.then.minutes })}</Text>
+        <Text style={s.thenText}>{stepMinutes(t, p.then)}</Text>
       </View>
     </View>
   ) : null;
@@ -671,6 +698,7 @@ const s = StyleSheet.create({
   stateRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginTop: 10 },
   leftWord: { fontFamily: 'Manrope_700Bold', fontSize: 26, color: C.textSoft },
   ofMinutes: { fontFamily: 'Manrope_500Medium', fontSize: 20, color: C.muted },
+  flexCut: { fontFamily: 'Manrope_700Bold', fontSize: 20, color: '#7dd3fc' },
   unsureText: { fontFamily: 'Manrope_700Bold', fontSize: 23, color: C.muted },
   pill: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 999, alignSelf: 'flex-start' },
   pillText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 23 },
@@ -687,6 +715,8 @@ const s = StyleSheet.create({
     paddingHorizontal: 44,
   },
   counselWord: { fontFamily: 'Manrope_800ExtraBold', fontSize: 112, lineHeight: 120, color: '#a5d8e6', marginTop: 14 },
+  counselTrack: { height: 8, borderRadius: 4, backgroundColor: '#1e293b', marginTop: 36, overflow: 'hidden' },
+  counselFill: { height: 8, borderRadius: 4 },
   counselLesson: { fontFamily: 'Manrope_600SemiBold', fontSize: 34, color: C.textMid, marginTop: 10 },
   nextCard: { backgroundColor: C.panel, borderWidth: 1, borderColor: C.line, borderRadius: 20, paddingVertical: 22, paddingHorizontal: 24 },
   small: { fontFamily: 'Manrope_700Bold', fontSize: 14, letterSpacing: 1.6, color: C.muted },
@@ -729,3 +759,11 @@ const s = StyleSheet.create({
   },
   secondaryText: { fontFamily: 'Manrope_700Bold', fontSize: 19, color: C.textMid },
 });
+
+/** «30 мин», or «30 → 29 мин» for a step the correction shortens (R-74). */
+function stepMinutes(t: (k: string, o?: Record<string, unknown>) => string, part: StagePart): string {
+  const cut = part.cutSec ?? 0;
+  return cut > 0
+    ? t('conduct.flex.next', { from: part.minutes, to: minutesAfterCut(part.minutes, cut) })
+    : t('conduct.stage.min', { minutes: part.minutes });
+}
