@@ -69,16 +69,22 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
   const activityById = new Map<string, PublisherActivity>();
   for (const a of activityQuery.data ?? []) activityById.set(a.publisherId, a);
 
-  const showDutyWarnings = (warnings: string[]) => {
+  const showDutyWarnings = (warnings: string[], name?: string) => {
     if (warnings.length === 0) return;
-    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n");
+    const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n\n");
     // Every warning, in the app's own window, on every platform.
-    void confirm({ title: t("duties.warningsTitle"), body, confirmLabel: t("common.ok"), info: true });
+    void confirm({
+      // Whom it is about, when the screen knows (the layout pass of 23 November 2026).
+      title: name ? t("duties.warningsTitleNamed", { name }) : t("duties.warningsTitle"),
+      body,
+      confirmLabel: t("common.ok"),
+      info: true,
+    });
   };
   const assignDutyMutation = useMutation({
     // A place of a meeting with no sheet yet (a «virtual» row from the
     // template): the server cuts the sheet and fills the place in one call.
-    mutationFn: (vars: { id: string; publisherId: string | null; eventType?: EventType }) => {
+    mutationFn: (vars: { id: string; publisherId: string | null; eventType?: EventType; name?: string }) => {
       const place = parseVirtualDuty(vars.id);
       // «Не выбрано» on a place of a meeting with no sheet: there is nobody
       // to take off, and cutting a sheet for it would write a page of empty
@@ -98,9 +104,9 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
       }
       return dutiesApi.assign(vars.id, { publisherId: vars.publisherId });
     },
-    onSuccess: (res) => {
+    onSuccess: (res, vars) => {
       invalidateDuties();
-      showDutyWarnings(res.warnings);
+      showDutyWarnings(res.warnings, vars.name);
     },
   });
   const createCustomDutyMutation = useMutation({

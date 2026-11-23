@@ -208,6 +208,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
   const { canEditPublishers, canGenerateS21 } = usePermissions();
   const purgeMutation = useMutation({
     mutationFn: () => publishersApi.purge(id!),
+    // The refusal is said in its own window below; the strip under it showed
+    // the server's raw «publisher_has_history: assignments=12, …» on top
+    // (the layout pass of 23 November 2026).
+    meta: { inlineError: true },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
       goBack('/publishers');
@@ -227,7 +231,7 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
       // What holds the card can be a long list: the app's own window, which
       // shows all of it, on every platform — not the browser's alert, nor
       // the strip cut at three lines.
-      void confirm({ title: t('publishers.purge.title'), body, confirmLabel: t('common.ok'), info: true });
+      void confirm({ title: t('publishers.purge.refusedTitle'), body, confirmLabel: t('common.ok'), info: true });
     },
   });
   const handlePurge = async () => {

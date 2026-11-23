@@ -134,7 +134,7 @@ export function AssignmentSheet({
                       name: w.publisherName,
                     }),
           )
-          .join("\n");
+          .join("\n\n");
         // One line per brother: the app's own window shows them all, on
         // every platform (the strip was cut at three lines, the browser's
         // alert was not the app's).

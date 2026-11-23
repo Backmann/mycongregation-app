@@ -451,7 +451,8 @@
         "service_log_entries": "own hours log",
         "pioneer_meetings": "meeting with the pioneers",
         "publisher_distinct_pairs": "“different people” marks"
-      }
+      },
+      "refusedTitle": "Cannot delete permanently"
     },
     "departedCount": "{{count}} departed",
     "myGroupOnly": "Showing publishers from your service group",
@@ -1771,7 +1772,8 @@
     "renamePlace": "Rename",
     "removePlace": "Remove duty",
     "removePlaceAsk": "Remove “{{label}}” along with everyone assigned to it?",
-    "onlyThisMeeting": "Only at this meeting"
+    "onlyThisMeeting": "Only at this meeting",
+    "warningsTitleNamed": "{{name}} — worth a check"
   },
   "publisherActivity": {
     "thisMeeting": "This meeting:"
