@@ -38,14 +38,23 @@ export interface PartLike {
   streets: StreetLike[];
 }
 
-/** One colour per part, the same on every screen and on paper. */
+/**
+ * One colour per part, the same on every screen and on paper.
+ *
+ * Pairs 4–6 changed on 23 November 2026 (R-67): with the old green, pink and
+ * ochre, pairs 2 and 6 were nearly one colour for the commonest colour
+ * blindness (ΔE 3), and 1 and 4 for a rarer one (ΔE 9). With wine, magenta
+ * and crimson the closest two of six stay apart for every kind (ΔE 17, of
+ * four: 27). Colour is still never the only sign — each part carries its
+ * number on its lines. scripts/check-map-access.mjs holds these numbers.
+ */
 export const PART_COLORS = [
   '#0e7490',
   '#c2410c',
   '#7c3aed',
-  '#15803d',
-  '#db2777',
-  '#a16207',
+  '#831843',
+  '#a21caf',
+  '#e11d48',
   '#2563eb',
   '#475569',
 ];

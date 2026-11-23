@@ -141,6 +141,11 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (любое использование без ограничений): https://www.govdata.de/dl-de/zero-2-0',
           'Улица, номер дома и точка каждого главного здания с номером. Нужны, чтобы при делении участка дом попал на свою улицу.',
         ] },
+        { h: 'Аэрофото («Фото» на карте)' },
+        { li: [
+          'Digitale Orthophotos NRW (DOP), Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0: https://www.govdata.de/dl-de/zero-2-0',
+          'Снимки приходят через наш сервер: сервер земли NRW не видит адреса вашего телефона.',
+        ] },
         { h: 'Что остаётся на телефоне' },
         { p: 'Положение «Вы здесь» на карте видно только на этом телефоне и никуда не отправляется. Кто отметил улицу пройденной, не записывается.' },
       ],
@@ -254,6 +259,11 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (jede Nutzung ohne Einschränkungen): https://www.govdata.de/dl-de/zero-2-0',
           'Straße, Hausnummer und Lage jedes Hauptgebäudes mit Hausnummer. Damit kommt ein Haus beim Aufteilen eines Gebiets zu seiner eigenen Straße.',
         ] },
+        { h: 'Luftbild (Schaltfläche „Luftbild“ auf der Karte)' },
+        { li: [
+          'Digitale Orthophotos NRW (DOP), Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0: https://www.govdata.de/dl-de/zero-2-0',
+          'Die Bilder kommen über unseren Server: Der Server des Landes NRW sieht die Adresse Ihres Handys nicht.',
+        ] },
         { h: 'Was auf dem Handy bleibt' },
         { p: 'Der Standort „Sie sind hier“ ist nur auf diesem Handy sichtbar und wird nirgendwohin gesendet. Wer eine Straße als bearbeitet abhakt, wird nicht gespeichert.' },
       ],
@@ -366,6 +376,11 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { li: [
           'Gebäudereferenzen NW, Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0 (any use without restrictions): https://www.govdata.de/dl-de/zero-2-0',
           'Street, number and position of every main building with a house number, so that a house goes to its own street when a territory is divided.',
+        ] },
+        { h: 'Aerial photograph («Photo» on the map)' },
+        { li: [
+          'Digitale Orthophotos NRW (DOP), Geobasis NRW, Datenlizenz Deutschland – Zero – Version 2.0: https://www.govdata.de/dl-de/zero-2-0',
+          "The pictures come through our server: the Land NRW's server never sees your phone's address.",
         ] },
         { h: 'What stays on the phone' },
         { p: 'Your “You are here” position shows on this phone only and is sent nowhere. Who ticked a street as walked is not kept.' },

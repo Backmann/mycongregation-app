@@ -57,13 +57,21 @@ export interface MapLibreMap {
   remove: () => void;
   loaded: () => boolean;
   isStyleLoaded: () => boolean | void;
+  /* For the readable map (R-67): labels over the pairs' lines, the photograph, no turning. */
+  getLayer?: (id: string) => unknown;
+  moveLayer?: (id: string, beforeId?: string) => void;
+  setFilter?: (id: string, filter: unknown) => void;
+  setLayoutProperty?: (id: string, name: string, value: unknown) => void;
+  touchZoomRotate?: { disableRotation: () => void };
+  touchPitch?: { disable: () => void };
+  keyboard?: { disableRotation: () => void };
 }
 
 interface PmtilesGlobal {
   Protocol: new () => { tile: unknown };
 }
 
-interface BasemapsGlobal {
+export interface BasemapsGlobal {
   layers: (
     source: string,
     flavor: unknown,

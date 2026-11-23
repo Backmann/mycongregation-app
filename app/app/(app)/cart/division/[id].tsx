@@ -81,7 +81,8 @@ function mapOf(
       ),
     ),
     ...parts.flatMap((p) =>
-      p.streets.map((x) => ({ lines: x.lines, color: partColor(p.n), walked: !!x.walkedAt })),
+      // Its name over it, its pair's number on it (R-67).
+      p.streets.map((x) => ({ lines: x.lines, color: partColor(p.n), walked: !!x.walkedAt, name: x.name, n: p.n })),
     ),
   ];
   const dots: MapDot[] = parts.flatMap((p) =>
@@ -878,7 +879,8 @@ const s = StyleSheet.create({
   legendText: { fontFamily: 'Manrope_600SemiBold', fontSize: 12, color: MUTED },
   sourcesLink: { color: BRAND, textDecorationLine: 'underline' },
   legendNote: { width: '100%', fontFamily: 'Manrope_500Medium', fontSize: 11.5, color: MUTED },
-  hereBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 999, borderWidth: 1, borderColor: HERE, paddingHorizontal: 10, paddingVertical: 5, marginLeft: 'auto' },
+  // 44 px: a finger finds it outdoors (R-67).
+  hereBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: 999, borderWidth: 1, borderColor: HERE, paddingHorizontal: 14, minHeight: 44, marginLeft: 'auto' },
   hereOn: { backgroundColor: HERE },
-  hereText: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: HERE },
+  hereText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: HERE },
 });

@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { TerritoryGeometry } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { useQuery } from '@tanstack/react-query';
-import { territoriesApi } from '../../lib/api';
+import { api, territoriesApi } from '../../lib/api';
+import {
+  BASE_LABELS,
+  clearLayers,
+  MAP_CONTROLS_CSS,
+  pairBadges,
+  PAIR_NAME_SIZE,
+  PHOTO_ATTRIBUTION,
+  photoTilesUrl,
+  roadNameFilter,
+} from '../../lib/map-style';
 import {
   loadMapLibs,
   MAP_FILES,
@@ -67,6 +77,13 @@ export interface MapRoute {
   link?: boolean;
   /** A street for another day (after today's share): drawn fainter. */
   later?: boolean;
+  /**
+   * The street's name, written along it over the line (R-67): the
+   * background's own name may not find room, the pair's street always does.
+   */
+  name?: string;
+  /** The pair's number: a numbered circle on the line, so colour is never the only sign. */
+  n?: number;
 }
 
 /**
@@ -122,6 +139,7 @@ export function TerritoryMap({
   here,
   guide,
   onDot,
+  photoButton,
 }: {
   shapes: MapShape[];
   boundary?: TerritoryGeometry | null;
@@ -160,6 +178,8 @@ export function TerritoryMap({
   guide?: LonLat[] | null;
   /** A dot tapped: its index in `dots`. */
   onDot?: (i: number) => void;
+  /** «Фото»: the aerial photograph under the lines (R-67). On unless a screen says no. */
+  photoButton?: boolean;
 }) {
   if (Platform.OS !== 'web') return null;
   return (
@@ -180,6 +200,7 @@ export function TerritoryMap({
       fitKey={fitKey ?? ''}
       here={here ?? null}
       guide={guide ?? null}
+      photoButton={photoButton ?? true}
       onDot={onDot}
     />
   );
@@ -225,10 +246,36 @@ function routesOf(routes: MapRoute[]) {
         pale: !!r.pale,
         link: !!r.link,
         later: !!r.later,
+        name: r.name ?? '',
       },
       geometry: { type: 'MultiLineString', coordinates: r.lines },
     })),
   };
+}
+
+function badgesOf(routes: MapRoute[]) {
+  return {
+    type: 'FeatureCollection',
+    features: pairBadges(routes).map((b) => ({
+      type: 'Feature',
+      properties: { n: String(b.n), color: b.color, pale: b.pale, walked: b.walked },
+      geometry: { type: 'Point', coordinates: [b.lon, b.lat] },
+    })),
+  };
+}
+
+/** The pairs' street names the app writes itself: the background leaves them out. */
+function namedOf(routes: MapRoute[]): string[] {
+  return [...new Set(routes.filter((r) => !r.link && !r.pale && r.name).map((r) => r.name as string))];
+}
+
+/** Larger «+ / −» (R-67), once per page. */
+function largerControls() {
+  if (typeof document === 'undefined' || document.getElementById('territory-map-css')) return;
+  const el = document.createElement('style');
+  el.id = 'territory-map-css';
+  el.textContent = MAP_CONTROLS_CSS;
+  document.head.appendChild(el);
 }
 
 const HERE_BLUE = '#2563eb';
@@ -318,6 +365,7 @@ function WebMap({
   here,
   guide,
   onDot,
+  photoButton,
 }: {
   shapes: MapShape[];
   boundary: TerritoryGeometry | null;
@@ -336,8 +384,10 @@ function WebMap({
   here: MapHere | null;
   guide: LonLat[] | null;
   onDot?: (i: number) => void;
+  photoButton: boolean;
 }) {
   const { t } = useTranslation();
+  const [photo, setPhoto] = useState(false);
   const { user } = useAuth();
   const host = useRef<View>(null);
   const map = useRef<MapLibreMap | null>(null);
@@ -393,7 +443,7 @@ function WebMap({
               }
             : {},
           layers: streets
-            ? basemaps.layers('protomaps', basemaps.namedFlavor('light'), { lang: 'de' })
+            ? clearLayers(basemaps)
             : [{ id: 'background', type: 'background', paint: { 'background-color': '#eef2f3' } }],
         };
         const m = new maplibregl.Map({
@@ -407,8 +457,33 @@ function WebMap({
         });
         m.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
         m.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+        // North stays up (R-67): two fingers that pinch must not turn the map
+        // by accident — an older walker would lose which way is which.
+        m.touchZoomRotate?.disableRotation();
+        m.touchPitch?.disable();
+        m.keyboard?.disableRotation();
+        largerControls();
         m.on('load', () => {
           if (gone) return;
+          if (streets) {
+            // The aerial photograph (R-67), hidden until «Фото»: over the
+            // background's ground and roads, under every line and label.
+            m.addSource('photo', {
+              type: 'raster',
+              tiles: [photoTilesUrl(String(api.defaults.baseURL ?? ''))],
+              tileSize: 512,
+              minzoom: 12,
+              maxzoom: 19,
+              attribution: PHOTO_ATTRIBUTION,
+            });
+            m.addLayer({
+              id: 'photo',
+              type: 'raster',
+              source: 'photo',
+              layout: { visibility: 'none' },
+              paint: { 'raster-saturation': -0.2, 'raster-brightness-max': 0.9 },
+            });
+          }
           m.addSource('boundary', { type: 'geojson', data: boundaryOf(boundary) });
           m.addLayer({
             id: 'boundary-line',
@@ -568,6 +643,64 @@ function WebMap({
               'fill-opacity': ['match', ['get', 'part'], 'beam', 0.3, 0.1],
             },
           });
+          // The pairs' street names, over their lines (R-67).
+          m.addLayer({
+            id: 'routes-names',
+            type: 'symbol',
+            source: 'routes',
+            filter: ['all', ['!=', ['get', 'link'], true], ['!=', ['get', 'pale'], true], ['!=', ['get', 'name'], '']],
+            layout: {
+              'symbol-placement': 'line',
+              'text-field': ['get', 'name'],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': ['interpolate', ['linear'], ['zoom'], ...PAIR_NAME_SIZE.flat()],
+              'symbol-spacing': 260,
+              'text-max-angle': 35,
+              'text-padding': 4,
+            },
+            paint: {
+              'text-color': ['case', ['get', 'walked'], '#6b7280', '#111827'],
+              'text-halo-color': '#ffffff',
+              'text-halo-width': 2.6,
+            },
+          });
+          // The pair's number on its lines: never colour alone (R-67).
+          m.addSource('badges', { type: 'geojson', data: badgesOf(routes) });
+          m.addLayer({
+            id: 'badges-circle',
+            type: 'circle',
+            source: 'badges',
+            minzoom: 13.5,
+            paint: {
+              'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 9, 17, 12],
+              'circle-color': ['case', ['any', ['get', 'pale'], ['get', 'walked']], WALKED, ['get', 'color']],
+              'circle-opacity': ['case', ['get', 'pale'], 0.55, 1],
+              'circle-stroke-color': '#ffffff',
+              'circle-stroke-width': 2.5,
+            },
+          });
+          m.addLayer({
+            id: 'badges-label',
+            type: 'symbol',
+            source: 'badges',
+            minzoom: 13.5,
+            layout: {
+              'text-field': ['get', 'n'],
+              'text-font': [MAP_FILES.labelFont],
+              'text-size': ['interpolate', ['linear'], ['zoom'], 14, 12, 17, 15],
+              'text-allow-overlap': true,
+              'text-ignore-placement': true,
+            },
+            paint: { 'text-color': '#ffffff' },
+          });
+          // The background's names and house numbers over every line, under ours.
+          for (const id of BASE_LABELS) if (m.getLayer?.(id)) m.moveLayer?.(id, 'routes-names');
+          if (streets) {
+            const named = namedOf(routes);
+            for (const id of ['roads_labels_minor', 'roads_labels_major']) {
+              if (m.getLayer?.(id)) m.setFilter?.(id, roadNameFilter(id, named));
+            }
+          }
           m.addSource('points', { type: 'geojson', data: pointsOf(points) });
           m.addLayer({
             id: 'points-circle',
@@ -581,7 +714,7 @@ function WebMap({
                 10,
                 'here',
                 7,
-                ['case', ['get', 'wide'], 13, 9],
+                ['case', ['get', 'wide'], 15, 11],
               ],
               'circle-color': [
                 'case',
@@ -602,8 +735,10 @@ function WebMap({
             layout: {
               'text-field': ['get', 'label'],
               'text-font': [MAP_FILES.labelFont],
-              'text-size': 10,
+              'text-size': 12,
               'text-allow-overlap': true,
+              // A numbered circle never pushes a street's name off the map.
+              'text-ignore-placement': true,
             },
             paint: { 'text-color': '#ffffff' },
           });
@@ -680,11 +815,22 @@ function WebMap({
     map.current.getSource('spots')?.setData(spotsOf(spots));
     map.current.getSource('points')?.setData(pointsOf(points));
     map.current.getSource('routes')?.setData(routesOf(routes));
+    map.current.getSource('badges')?.setData(badgesOf(routes));
+    const named = namedOf(routes);
+    for (const id of ['roads_labels_minor', 'roads_labels_major']) {
+      if (map.current.getLayer?.(id)) map.current.setFilter?.(id, roadNameFilter(id, named));
+    }
     map.current.getSource('dots')?.setData(dotsOf(dots));
     map.current.getSource('guide')?.setData(guideOf(guide));
     map.current.getSource('here')?.setData(hereOf(here));
     map.current.getSource('here-dot')?.setData(hereDotOf(here));
   }, [ready, shapes, boundary, spots, points, routes, dots, guide, here]);
+
+  // «Фото» / «Карта» (R-67).
+  useEffect(() => {
+    if (!ready || !map.current?.getLayer?.('photo')) return;
+    map.current.setLayoutProperty?.('photo', 'visibility', photo ? 'visible' : 'none');
+  }, [ready, photo]);
 
   // The view of chosen points (a pair's streets, one street, the walker and
   // his next street), framed again only when the caller says what changed.
@@ -729,6 +875,18 @@ function WebMap({
           <Text style={s.coverText}>{t('territories.map.failed')}</Text>
         </View>
       ) : null}
+      {photoButton && ready && !noStreets && !failed ? (
+        <Pressable
+          onPress={() => setPhoto((v) => !v)}
+          style={[s.photoBtn, photo && s.photoOn]}
+          accessibilityRole="button"
+          accessibilityState={{ selected: photo }}
+        >
+          <Text style={[s.photoText, photo && s.photoTextOn]}>
+            {photo ? t('territories.map.plan') : t('territories.map.photo')}
+          </Text>
+        </Pressable>
+      ) : null}
       {noStreets && !failed ? (
         <View style={s.note} pointerEvents="none">
           <Text style={s.noteText}>{t('territories.map.noStreets')}</Text>
@@ -765,4 +923,25 @@ const s = StyleSheet.create({
     paddingVertical: 6,
   },
   noteText: { fontFamily: 'Manrope_500Medium', fontSize: 12, color: '#475569' },
+  // 48 px: a finger, even a shaky one, finds it (R-67).
+  // Bottom left: the top holds a screen's own notes («Ваши улицы · 3») and «+ / −».
+  photoBtn: {
+    position: 'absolute',
+    left: 10,
+    bottom: 10,
+    minHeight: 48,
+    minWidth: 48,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  photoOn: { backgroundColor: '#111827' },
+  photoText: { fontFamily: 'Manrope_600SemiBold', fontSize: 15, color: '#111827' },
+  photoTextOn: { color: '#ffffff' },
 });
