@@ -655,7 +655,9 @@ function Row({
         ? dayjs(`${ctx.title}-01`).locale(language).format('MMMM YYYY')
         : '';
   const what = sheetName || readerTitle(ctx?.title) || kindName;
-  if (what) contextBits.push(what);
+  // A publish is of the whole meeting: the part it is filed under (its first)
+  // is no part of the news (R-16, 22 November 2026).
+  if (what && entry.action !== 'PUBLISH') contextBits.push(what);
   const contextLine = contextBits.join(' · ');
 
   // The tail is what makes a line answer a question instead of merely

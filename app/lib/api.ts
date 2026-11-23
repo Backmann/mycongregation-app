@@ -5478,6 +5478,8 @@ export const assignmentsApi = {
     weekStartDate: string;
     eventType: EventType;
     notify?: boolean;
+    /** Places still empty when it was published, for the journal (R-16). */
+    emptySeats?: number;
   }): Promise<{ published: number }> {
     const { data } = await api.post<{ published: number }>(
       "/assignments/publish",
@@ -6775,7 +6777,7 @@ export interface JournalPerson {
 export interface JournalEntry {
   id: string;
   occurredAt: string;
-  action: "CREATE" | "UPDATE" | "DELETE" | "VIEW" | "DOWNLOAD" | "DENY";
+  action: "CREATE" | "UPDATE" | "DELETE" | "RESTORE" | "VIEW" | "DOWNLOAD" | "DENY" | "PUBLISH";
   source: "user" | "system";
   entityType: string;
   entityId: string;
