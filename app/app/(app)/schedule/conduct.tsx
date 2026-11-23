@@ -67,6 +67,7 @@ import {
   FLEX_FROM_SEC,
   flexKindOf,
   correctionOf,
+  quoteOnce,
   ownSecOf,
   startLagSec,
   stageCatchingUp,
@@ -2254,7 +2255,7 @@ export default function ConductScreen({
               </Text>
               {/* Every song by its number AND its name (25 October 2026). */}
               {v.song ? <Text style={styles.sheetSong}>{quotedSong(t, v.song, v.songLen)}</Text> : null}
-              {v.theme ? <Text style={styles.sheetSong}>{t('common.quoted', { text: v.theme })}</Text> : null}
+              {v.theme ? <Text style={styles.sheetSong}>{quoteOnce(t, v.theme)}</Text> : null}
               {person ? <Text style={styles.sheetPerson}>{person}</Text> : null}
               {s.key === 'public_talk_speaker' && mayReplaceSpeaker ? (
                 <Pressable
@@ -2616,7 +2617,7 @@ function SegmentHeadline({
       <View>
         <Text style={big ? styles.whatBig : styles.whatSmall}>{view.label}</Text>
         {view.setting ? <Text style={styles.subtitle}>{view.setting}</Text> : null}
-        {view.theme ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.theme })}</Text> : null}
+        {view.theme ? <Text style={big ? styles.songBig : styles.songSmall}>{quoteOnce(t, view.theme)}</Text> : null}
         {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{quotedSong(t, view.song, view.songLen)}</Text> : null}
         {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
         {view.person ? (
