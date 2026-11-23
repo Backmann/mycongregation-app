@@ -5801,6 +5801,23 @@
       "house": "House to house",
       "informal": "Informal witnessing",
       "public": "Public witnessing"
+    },
+    "flex": {
+      "cut": "corrected −{{cut}}",
+      "line": "behind {{lag}} · catching up: {{where}}",
+      "here": "here −{{cut}}",
+      "there": "{{part}} −{{cut}}",
+      "next": "{{from}} → {{to}} min",
+      "kind": {
+        "talk": "talk",
+        "gems": "gems",
+        "living": "living as Christians",
+        "study": "study",
+        "words": "chairman's words",
+        "watchtower": "Watchtower Study"
+      },
+      "more": "a little from the rest",
+      "stage": "catching up: {{lag}}"
     }
   },
   "serviceHub": {

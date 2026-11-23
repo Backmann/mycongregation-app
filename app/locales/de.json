@@ -5801,6 +5801,23 @@
       "house": "Von Haus zu Haus",
       "informal": "Informelles Zeugnisgeben",
       "public": "Öffentliches Zeugnisgeben"
+    },
+    "flex": {
+      "cut": "korrigiert −{{cut}}",
+      "line": "Verzug {{lag}} · aufholen: {{where}}",
+      "here": "hier −{{cut}}",
+      "there": "{{part}} −{{cut}}",
+      "next": "{{from}} → {{to}} Min.",
+      "kind": {
+        "talk": "Ansprache",
+        "gems": "Schätze",
+        "living": "Unser Leben als Christ",
+        "study": "Versammlungsbibelstudium",
+        "words": "Worte des Vorsitzenden",
+        "watchtower": "Wachtturm-Studium"
+      },
+      "more": "Rest jeweils etwas",
+      "stage": "Aufholen: {{lag}}"
     }
   },
   "serviceHub": {

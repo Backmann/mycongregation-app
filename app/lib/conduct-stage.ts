@@ -232,3 +232,191 @@ export function quotedSong(
 export function songLength(sec: number): string {
   return `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
 }
+
+/**
+ * TIME WITH A CORRECTION (R-74, Lionel 21 November 2026: «Давай попробуем»).
+ *
+ * Hard parts keep the programme's minutes: the student parts, the Bible
+ * reading, the public talk, the songs, the overseer's talks. The flexible
+ * ones take the meeting's lag — a late start included — in proportion to
+ * their length, none more than FLEX_CAP of its own: the talk of the week,
+ * the spiritual gems, the parts of «Христианская жизнь», the congregation
+ * Bible study, the chairman's words and the Watchtower study. Minutes are
+ * never added past the programme. What the cap leaves over is said as such.
+ */
+export const FLEX_CAP = 0.15;
+/** A lag shorter than this is not corrected. */
+export const FLEX_FROM_SEC = 60;
+
+export function isFlexible(seg: { key: string; chairmanWords?: boolean }): boolean {
+  return (
+    !!seg.chairmanWords ||
+    seg.key === 'treasures_talk' ||
+    seg.key === 'spiritual_gems' ||
+    /^living_christians_\d+$/.test(seg.key) ||
+    seg.key === 'cbs_conductor' ||
+    seg.key === 'watchtower_conductor'
+  );
+}
+
+/** A short word for a flexible step's kind, for the line that says where the lag is taken. */
+export function flexKindOf(seg: { key: string; chairmanWords?: boolean }): 'talk' | 'gems' | 'living' | 'study' | 'words' | 'watchtower' {
+  if (seg.chairmanWords) return 'words';
+  if (seg.key === 'treasures_talk') return 'talk';
+  if (seg.key === 'spiritual_gems') return 'gems';
+  if (seg.key === 'cbs_conductor') return 'study';
+  if (seg.key === 'watchtower_conductor') return 'watchtower';
+  return 'living';
+}
+
+export interface FlexPlan {
+  /** Seconds taken off each flexible step still ahead (by index), the current one included. */
+  cut: Map<number, number>;
+  /** The lag the cap could not take. */
+  uncoveredSec: number;
+}
+
+/**
+ * Lays `lagSec` over the flexible steps from `from` on. The step at `from`
+ * may be under way: `currentLeftSec` is what it has left of its own minutes,
+ * and it cannot give more than that. Cuts are whole multiples of 10 s, and a
+ * lag under FLEX_FROM_SEC is left alone: seconds are not worth a correction
+ * (stand, 23 November 2026: 34 s behind gave «−0:05» three times).
+ */
+export function flexPlan(
+  segments: readonly { key: string; partMin: number; chairmanWords?: boolean }[],
+  from: number,
+  currentLeftSec: number | null,
+  lagSec: number,
+): FlexPlan {
+  const cut = new Map<number, number>();
+  if (!(lagSec >= FLEX_FROM_SEC)) return { cut, uncoveredSec: 0 };
+  const room = new Map<number, { len: number; max: number }>();
+  for (let i = Math.max(0, from); i < segments.length; i++) {
+    const s = segments[i];
+    if (!isFlexible(s) || s.partMin <= 0) continue;
+    const len = s.partMin * 60;
+    let max = len * FLEX_CAP;
+    if (i === from && currentLeftSec !== null) max = Math.min(max, Math.max(0, currentLeftSec));
+    if (max > 0) room.set(i, { len, max });
+  }
+  // Proportional to length; what a capped step cannot take goes to the rest.
+  let left = lagSec;
+  let open = new Set(room.keys());
+  const raw = new Map<number, number>();
+  while (left > 0.5 && open.size > 0) {
+    const total = [...open].reduce((a, i) => a + room.get(i)!.len, 0);
+    const next = new Set<number>();
+    let given = 0;
+    for (const i of open) {
+      const r = room.get(i)!;
+      const had = raw.get(i) ?? 0;
+      const want = had + (left * r.len) / total;
+      const got = Math.min(want, r.max);
+      raw.set(i, got);
+      given += got - had;
+      if (got < r.max) next.add(i);
+    }
+    left -= given;
+    if (next.size === open.size) break;
+    open = next;
+  }
+  let sum = 0;
+  for (const [i, v] of raw) {
+    const c = Math.floor(v / 10) * 10;
+    if (c > 0) {
+      cut.set(i, c);
+      sum += c;
+    }
+  }
+  return { cut, uncoveredSec: Math.max(0, Math.round(lagSec - sum)) };
+}
+
+export interface Correction {
+  /** The lag the correction works with now (0 when not running or not ready). */
+  lagSec: number;
+  /** The cut of the step under way — one number for the whole step. */
+  curCut: number;
+  /** Cuts of the steps after it. */
+  rest: FlexPlan;
+  futureCut: number;
+  /** What of curCut is still ahead of the step's clock. */
+  curCutLeft: number;
+  hasCuts: boolean;
+}
+
+/**
+ * The seconds of the step under way that are its own and not the programme's
+ * (R-74): its overtime, and the pauses inside it — wall time since it began
+ * (`starts`, which a pause does not move) less the time on its clock. Taken
+ * off the end's lag, they give the lag as it stood when the step began.
+ * beganMs null (a run kept before `starts`): overtime only.
+ */
+export function ownSecOf(partMin: number, elapsedSec: number, beganMs: number | null, nowMs: number): number {
+  const over = Math.max(0, elapsedSec - partMin * 60);
+  const paused = beganMs === null ? 0 : Math.max(0, (nowMs - beganMs) / 1000 - elapsedSec);
+  return over + paused;
+}
+
+/**
+ * The end's lag as it stood when the step under way began: the end forecast
+ * now, less the step's own seconds (ownSecOf), from the UNROUNDED moment —
+ * inside the step that moment is its start plus the programme from there on,
+ * so the rounded lag does not wobble by a second (a cut on a 10 s edge would
+ * blink). partsOnlyRaw is the parts-only drift, unrounded, for when the
+ * programme's end is not known.
+ */
+export function startLagSec(
+  nowMs: number,
+  remainingSec: number,
+  ownSec: number,
+  plannedEndHHMM: string | null,
+  meetingDayISO: string | null,
+  partsOnlyRaw: number,
+): number {
+  return endDriftSec(nowMs + (remainingSec - ownSec) * 1000, plannedEndHHMM, meetingDayISO, Math.round(partsOnlyRaw - ownSec));
+}
+
+/**
+ * The correction at this second (R-74). lagNowSec is the end's lag as things
+ * go now; lagAtStartSec the lag as it stood when the step under way began
+ * (the end forecast less ownSecOf — the caller computes it from the unrounded
+ * end, so it does not wobble by a second). Both null while there is nothing
+ * to correct: not running, or the song lengths and averages not in yet (the
+ * forecast would jump under the cuts). The step under way gets its cut from
+ * lagAtStartSec — one number for the whole step, through its overtime and
+ * its pauses, after a reload too; what it adds goes to the steps after it.
+ */
+export function correctionOf(
+  segments: readonly { key: string; partMin: number; chairmanWords?: boolean }[],
+  index: number,
+  curFlex: boolean,
+  curElapsedSec: number,
+  lagNowSec: number | null,
+  lagAtStartSec: number | null,
+): Correction {
+  const cur = segments[index];
+  const lagSec = lagNowSec === null ? 0 : Math.max(0, lagNowSec);
+  const lagAtStart = lagNowSec === null || lagAtStartSec === null ? 0 : Math.max(0, lagAtStartSec);
+  const curCut = curFlex ? (flexPlan(segments, index, null, lagAtStart).cut.get(index) ?? 0) : 0;
+  const rest = flexPlan(segments, index + 1, null, Math.max(0, lagSec - curCut));
+  const futureCut = [...rest.cut.values()].reduce((a, b) => a + b, 0);
+  const curCutLeft = curFlex && cur ? Math.min(curCut, Math.max(0, cur.partMin * 60 - curElapsedSec)) : 0;
+  return { lagSec, curCut, rest, futureCut, curCutLeft, hasCuts: curCut + futureCut > 0 };
+}
+
+/**
+ * «нагоняем 1:47» on the stage only while the cuts do cover the lag: with
+ * cuts kept the end is less than a minute late. Otherwise the plain drift.
+ */
+export function stageCatchingUp(c: Correction, shownDriftSec: number): boolean {
+  return c.hasCuts && c.lagSec >= FLEX_FROM_SEC && shownDriftSec < 60;
+}
+
+/** «29», «14:30» — a step's minutes after its cut. */
+export function minutesAfterCut(partMin: number, cutSec: number): string {
+  const sec = partMin * 60 - cutSec;
+  const m = Math.floor(sec / 60);
+  const s = Math.round(sec % 60);
+  return s === 0 ? String(m) : `${m}:${String(s).padStart(2, '0')}`;
+}

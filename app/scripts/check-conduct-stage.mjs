@@ -158,4 +158,109 @@ check("a student part's setting is named by the screens' own words, an unknown o
   assert.equal(S.settingLabel(t, null), null);
 });
 
+check('time with a correction: the lag goes to the flexible parts by length, none past 15% (R-74)', () => {
+  const seg = (key, partMin, extra = {}) => ({ key, partMin, ...extra });
+  // A midweek meeting from the talk of the week on.
+  const mid = [
+    seg('treasures_talk', 10), seg('spiritual_gems', 10), seg('bible_reading', 4),
+    seg('apply_yourself_1', 3), seg('mid_song', 3, { soft: true }), seg('living_christians_1', 15),
+    seg('cbs_conductor', 30), seg('midweek_closing_words', 3, { chairmanWords: true }), seg('midweek_closing_prayer', 5, { soft: true }),
+  ];
+  // THE CASE: 1:47 behind before the talk of the week — 68 minutes of flexible
+  // parts share it by length; hard parts and songs give nothing.
+  const p = S.flexPlan(mid, 0, null, 107);
+  assert.equal(p.cut.has(2) || p.cut.has(3) || p.cut.has(4) || p.cut.has(8), false, 'reading, student part and songs stay');
+  assert.equal(p.cut.get(6), 40, 'the study, 30 of 68 minutes: 47 s, to 40');
+  assert.equal(p.cut.get(0), 10);
+  assert.ok(p.uncoveredSec <= 10 * p.cut.size, 'rounding only');
+  // Seconds are not worth it: under a minute behind, nothing is touched.
+  assert.equal(S.flexPlan(mid, 0, null, 59).cut.size, 0);
+  assert.equal(S.flexPlan(mid, 0, null, 60).cut.size > 0, true);
+  // No lag, or ahead: nothing is cut and nothing is added.
+  assert.equal(S.flexPlan(mid, 0, null, 0).cut.size, 0);
+  assert.equal(S.flexPlan(mid, 0, null, -300).cut.size, 0);
+  // A big lag: each flexible part gives 15% at most; the rest is said.
+  const big = S.flexPlan(mid, 0, null, 1800);
+  assert.equal(big.cut.get(6), 270, 'the study: 4:30 of 30 minutes');
+  assert.equal(big.cut.get(7), 20, 'the closing words: 27 s rounded down to 20');
+  assert.ok(big.uncoveredSec > 1800 - 0.15 * 68 * 60 - 1);
+  // The part under way gives no more than it has left.
+  const now = S.flexPlan(mid, 5, 20, 600);
+  assert.equal(now.cut.get(5), 20);
+  assert.equal(now.cut.has(0), false, 'parts behind are not touched');
+  // A capped part's share goes to the others.
+  // The talk under way has 10 s left: it gives 10, its share's rest goes to the study.
+  const two = S.flexPlan([seg('treasures_talk', 10), seg('cbs_conductor', 30)], 0, 10, 120);
+  assert.equal(two.cut.get(0), 10);
+  assert.equal(two.cut.get(1), 110);
+  // Overseer's talks and the public talk are hard.
+  assert.equal(S.isFlexible({ key: 'co_service_talk' }), false);
+  assert.equal(S.isFlexible({ key: 'public_talk_speaker' }), false);
+  assert.equal(S.isFlexible({ key: 'watchtower_conductor' }), true);
+  assert.equal(S.minutesAfterCut(30, 60), '29');
+  assert.equal(S.minutesAfterCut(15, 30), '14:30');
+});
+
+check('the part under way keeps one cut: the lag as it stood when it began (R-74, review of 23 November 2026)', () => {
+  const seg = (key, partMin, extra = {}) => ({ key, partMin, ...extra });
+  const mid = [seg('treasures_talk', 10), seg('bible_reading', 4), seg('cbs_conductor', 30)];
+  // Its own seconds: overtime, and pauses inside it (wall time since it began less its clock).
+  const T = 1_000_000;
+  assert.equal(S.ownSecOf(10, 300, T, T + 300_000), 0, 'running, no pause');
+  assert.equal(S.ownSecOf(10, 300, T, T + 420_000), 120, 'paused two minutes, five minutes in');
+  assert.equal(S.ownSecOf(10, 660, T, T + 660_000), 60, 'a minute over');
+  assert.equal(S.ownSecOf(10, 660, T, T + 720_000), 120, 'a minute over and a minute of pause');
+  assert.equal(S.ownSecOf(10, 660, null, T), 60, 'no start kept: overtime only');
+  // Second by second through a talk: begun 59.6 s behind the end, a pause of 47.3 s at 4:00,
+  // then 1:30.7 over its ten minutes. The lag at its start must not move by a second,
+  // and the cut must never blink (59.6 rounds to 60: one 10 s step on the edge).
+  {
+    const day = '2026-11-25';
+    const start = new Date(2026, 10, 25, 19, 0, 0).getTime();
+    const rest = 30 * 60 + 4 * 60; // the study and the reading after the talk
+    const plannedEnd = '19:44';
+    const began = start + 59_600; // begun 59.6 s late: the end runs as late
+    const seen = new Set();
+    const cuts = new Set();
+    for (let t = 0; t <= 790; t += 0.37) {
+      const now = began + t * 1000;
+      const pause = t < 240 ? 0 : t < 287.3 ? t - 240 : 47.3;
+      const elapsed = t - pause;
+      const remaining = Math.max(0, 600 - elapsed) + rest;
+      const own = S.ownSecOf(10, elapsed, began, now);
+      const lag0 = S.startLagSec(now, remaining, own, plannedEnd, day, 0);
+      seen.add(lag0);
+      const lagNow = S.endDriftSec(now + remaining * 1000, plannedEnd, day, 0);
+      cuts.add(S.correctionOf([{ key: 'treasures_talk', partMin: 10 }, { key: 'cbs_conductor', partMin: 30 }], 0, true, elapsed, lagNow, lag0).curCut);
+    }
+    assert.deepEqual([...seen], [60], 'the lag at its start, through the pause and the overtime');
+    assert.equal(cuts.size, 1, `one cut for the whole talk, saw ${[...cuts]}`);
+  }
+  // The lag at its start stands; the lag now goes to the parts after it.
+  const at0 = S.correctionOf(mid, 0, true, 0, 120, 120);
+  assert.equal(at0.curCut, 30);
+  const over = S.correctionOf(mid, 0, true, 660, 180, 120);
+  assert.equal(over.curCut, 30, 'overtime does not move the cut under way (from 3:00 it would be 0:40)');
+  assert.equal(over.curCutLeft, 0, 'its clock has run out');
+  assert.equal(over.rest.cut.get(2), at0.rest.cut.get(2) + 60, 'the study takes the minute');
+  // Not ready (song lengths or averages not in) or not running: no correction at all.
+  const none = S.correctionOf(mid, 0, true, 0, null, null);
+  assert.equal(none.hasCuts, false);
+  assert.equal(none.lagSec, 0);
+  // A hard part under way gives nothing; the parts after it take the lag.
+  const hard = S.correctionOf(mid, 1, false, 0, 120, 120);
+  assert.equal(hard.curCut, 0);
+  assert.ok(hard.rest.cut.get(2) > 0);
+  // Nothing flexible left: no cuts, no line, the plain drift.
+  const tail = S.correctionOf([seg('bible_reading', 4)], 0, false, 0, 300, 300);
+  assert.equal(tail.hasCuts, false);
+  assert.equal(S.stageCatchingUp(tail, 300), false);
+  assert.equal(S.stageCatchingUp(tail, 0), false, 'no cuts, no «нагоняем», whatever the end says');
+  // «нагоняем» only while the cuts cover the lag.
+  assert.equal(S.stageCatchingUp(at0, 0), true);
+  assert.equal(S.stageCatchingUp(at0, 59), true);
+  assert.equal(S.stageCatchingUp(at0, 60), false, 'a minute late even with the cuts: the plain drift');
+  assert.equal(S.stageCatchingUp(S.correctionOf(mid, 0, true, 0, 59, 59), 0), false, 'under a minute: nothing to say');
+});
+
 console.log(`conduct-stage: ${n} groups ok`);
