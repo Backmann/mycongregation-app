@@ -57,13 +57,21 @@ export interface MapLibreMap {
   remove: () => void;
   loaded: () => boolean;
   isStyleLoaded: () => boolean | void;
+  /* For the readable map (R-67): labels over the pairs' lines, the photograph, no turning. */
+  getLayer?: (id: string) => unknown;
+  moveLayer?: (id: string, beforeId?: string) => void;
+  setFilter?: (id: string, filter: unknown) => void;
+  setLayoutProperty?: (id: string, name: string, value: unknown) => void;
+  touchZoomRotate?: { disableRotation: () => void };
+  touchPitch?: { disable: () => void };
+  keyboard?: { disableRotation: () => void };
 }
 
 interface PmtilesGlobal {
   Protocol: new () => { tile: unknown };
 }
 
-interface BasemapsGlobal {
+export interface BasemapsGlobal {
   layers: (
     source: string,
     flavor: unknown,
@@ -99,11 +107,25 @@ function addStyle(href: string): void {
   document.head.appendChild(el);
 }
 
+/** «+ / −» a finger finds (R-67): MapLibre's own are 29 px. Every map, editors too. */
+export const MAP_CONTROLS_CSS =
+  '.maplibregl-ctrl-group button{width:44px;height:44px}' +
+  '.maplibregl-ctrl-group button .maplibregl-ctrl-icon{background-size:30px}';
+
+function largerControls(): void {
+  if (document.getElementById('map-controls-css')) return;
+  const el = document.createElement('style');
+  el.id = 'map-controls-css';
+  el.textContent = MAP_CONTROLS_CSS;
+  document.head.appendChild(el);
+}
+
 /** Loads the files once per page; later callers share the same promise. */
 export function loadMapLibs(): Promise<MapLibs> {
   if (loading) return loading;
   loading = (async () => {
     addStyle(MAP_FILES.maplibreCss);
+    largerControls();
     await Promise.all([
       addScript(MAP_FILES.maplibre),
       addScript(MAP_FILES.pmtiles),

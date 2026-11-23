@@ -7684,7 +7684,9 @@
     "route": "Route",
     "map": {
       "failed": "The map did not load. The list below works.",
-      "noStreets": "The street map is not loaded yet — only the territory outlines are shown."
+      "noStreets": "The street map is not loaded yet — only the territory outlines are shown.",
+      "photo": "Photo",
+      "plan": "Map"
     },
     "tone": {
       "held": "Checked out",

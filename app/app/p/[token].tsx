@@ -35,6 +35,7 @@ import {
   withTicks,
   type PartLike,
 } from '../../lib/division';
+import { along } from '../../lib/map-style';
 import { frameOf, goOn, metres, nearestOn, streetNow, walkOf, type LonLat } from '../../lib/way';
 import { useDistance } from '../../lib/useDistance';
 import { useStreetTicks } from '../../lib/useStreetTicks';
@@ -210,6 +211,8 @@ function Part({
     ...streets.map((x, i) => ({
       lines: x.lines,
       color,
+      // Its name over the line (R-67): the pair reads where to go.
+      name: x.name,
       walked: !!x.walkedAt,
       strong: x.key === nowKey && !first,
       later: today !== null && i >= today,
@@ -225,7 +228,9 @@ function Part({
     if (start) out.push({ label: '', lon: start[0], lat: start[1], done: false, color: INK, kind: 'start' });
     for (const x of walkingOrder(streets)) {
       const line = x.lines[0];
-      const mid = line?.[Math.floor(line.length / 2)];
+      // Near its beginning, not the middle: the middle is where the
+      // street's name stands over the line (R-67).
+      const mid = line && line.length > 1 ? along(line as [number, number][], 0.15) : line?.[0];
       if (mid && !x.walkedAt) out.push({ label: String(x.step), lon: mid[0], lat: mid[1], done: false, color });
     }
     return out;
@@ -317,7 +322,7 @@ function Part({
       <View style={s.mapRow}>
         {here.available ? (
           <Pressable onPress={here.toggle} style={[s.chip, s.hereBtn, here.on && s.hereOn]} accessibilityRole="button">
-            <Ionicons name="locate-outline" size={15} color={here.on ? '#fff' : HERE} />
+            <Ionicons name="locate-outline" size={18} color={here.on ? '#fff' : HERE} />
             <Text style={[s.chipText, { color: here.on ? '#fff' : HERE }]}>{t('territories.division.whereAmI.button')}</Text>
           </Pressable>
         ) : null}
@@ -327,7 +332,7 @@ function Part({
             style={s.chip}
             accessibilityRole="button"
           >
-            <Ionicons name={view === 'all' ? 'contract-outline' : 'expand-outline'} size={15} color={INK} />
+            <Ionicons name={view === 'all' ? 'contract-outline' : 'expand-outline'} size={18} color={INK} />
             <Text style={s.chipText}>{t(view === 'all' ? 'territories.part.way.mine' : 'territories.part.way.whole')}</Text>
           </Pressable>
         ) : null}
@@ -581,11 +586,12 @@ const s = StyleSheet.create({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: LINE,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    // 48 px: «Вы здесь» and «Весь участок» are pressed outdoors, by anyone (R-67).
+    minHeight: 48,
     backgroundColor: '#fff',
   },
-  chipText: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: INK },
+  chipText: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: INK },
   hereBtn: { borderColor: HERE },
   hereOn: { backgroundColor: HERE },
   hereNote: { fontFamily: 'Manrope_500Medium', fontSize: 11.5, color: MUTED, marginTop: -4 },
