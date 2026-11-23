@@ -4209,7 +4209,7 @@
     "untilCancelled": "Until canceled",
     "untilCancelledHint": "serves indefinitely until stopped",
     "badgeServing": "Auxiliary pioneer · {{period}}",
-    "badgeUpcoming": "Auxiliary pioneering from {{month}}",
+    "badgeUpcoming": "Auxiliary pioneer from {{month}}",
     "servesAsAux": "Serves as an auxiliary pioneer",
     "addTitle2": "Add an auxiliary pioneer",
     "startMonth": "Start month",
