@@ -1313,7 +1313,7 @@
         "new_other": "alle {{count}} Wochen sind neu",
         "partly_one": "neu: {{count}}, schon da: {{loaded}}",
         "partly_other": "neu: {{count}}, schon da: {{loaded}}",
-        "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist; Punkte mit Personen und nach dem Laden geänderte Titel bleiben.",
+        "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist. Bei eingeteilten Punkten ergänzt es nur Lektion und Situation der Schüleraufgaben; Personen und nach dem Laden geänderte Titel bleiben.",
         "sameAsOther": "Dieselben Wochen wie eine Datei weiter oben — diese wird übersprungen.",
         "nothing": "Nichts zu laden: In diesen Wochen gibt es keine Zusammenkünfte.",
         "unchecked": "Abgleich mit dem Programm nicht möglich. Laden ist trotzdem sicher: Programmpunkte mit eingeteilten Personen bleiben unverändert.",

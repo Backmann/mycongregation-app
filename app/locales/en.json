@@ -1313,7 +1313,7 @@
         "new_other": "all {{count}} weeks are new",
         "partly_one": "new: {{count}}, already in: {{loaded}}",
         "partly_other": "new: {{count}}, already in: {{loaded}}",
-        "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet; parts with people and titles changed after loading from a file stay.",
+        "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet. In parts with people it only adds a student part's lesson and setting; people and titles changed after loading from a file stay.",
         "sameAsOther": "The same weeks as a file above — this one will be skipped.",
         "nothing": "Nothing to load: there are no meetings in these weeks.",
         "unchecked": "Could not compare with the program. Loading is still safe: parts with people assigned are not touched.",
