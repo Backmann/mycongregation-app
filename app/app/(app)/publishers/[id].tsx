@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Modal,
   
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -33,7 +32,7 @@ import { MergeHistory } from '../../../components/MergeHistory';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
-import { reportError, notify } from '../../../lib/error-bus';
+import { reportError } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { confirm } from '../../../components/ConfirmHost';
@@ -225,11 +224,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           ? t('publishers.purge.hasHistoryNamed', { holders })
           : t('publishers.purge.hasHistory')
         : raw;
-      if (Platform.OS === 'web') {
-        window.alert(body);
-      } else {
-        notify(t('publishers.purge.title'), body);
-      }
+      // What holds the card can be a long list: the app's own window, which
+      // shows all of it, on every platform — not the browser's alert, nor
+      // the strip cut at three lines.
+      void confirm({ title: t('publishers.purge.title'), body, confirmLabel: t('common.ok'), info: true });
     },
   });
   const handlePurge = async () => {

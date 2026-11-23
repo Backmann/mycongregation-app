@@ -5,7 +5,6 @@ import type { SetAsideGuest, TalkAttentionItem } from "../../../lib/api";
 import {
   ActivityIndicator,
   Linking,
-  Platform,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -888,8 +887,9 @@ export default function TalkExchangeYearScreen() {
   };
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
-    if (Platform.OS === "web") window.alert(msg);
-    else notify(t("talkCoordinator.errorTitle"), msg);
+    // The strip, on every platform: the browser's own alert was the one
+    // window of the app's that was not the app's (22 November 2026).
+    notify(t("talkCoordinator.errorTitle"), msg);
   };
   const createMutation = useMutation({
     mutationFn: (input: TalkExchangeInput) => talkExchangeApi.create(input),

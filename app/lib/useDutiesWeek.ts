@@ -1,8 +1,7 @@
-import { Platform } from "react-native";
+import { confirm } from "../components/ConfirmHost";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { dutiesApi, EventType, publisherActivityApi, PublisherActivity } from "./api";
-import { notify } from "./error-bus";
 import { parseVirtualDuty } from "./duty-places";
 import { failsScreen } from "./screen-failure";
 
@@ -73,11 +72,8 @@ export function useDutiesWeek(weekStartISO: string, nextWeekISO: string) {
   const showDutyWarnings = (warnings: string[]) => {
     if (warnings.length === 0) return;
     const body = warnings.map((w) => t(`duties.warnings.${w}`)).join("\n");
-    if (Platform.OS === "web") {
-      window.alert(`${t("duties.warningsTitle")}\n\n${body}`);
-    } else {
-      notify(t("duties.warningsTitle"), body);
-    }
+    // Every warning, in the app's own window, on every platform.
+    void confirm({ title: t("duties.warningsTitle"), body, confirmLabel: t("common.ok"), info: true });
   };
   const assignDutyMutation = useMutation({
     // A place of a meeting with no sheet yet (a «virtual» row from the
