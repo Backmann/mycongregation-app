@@ -125,4 +125,29 @@ check('«Встреча началась в 19:00?» — asked up to three minut
   assert.equal(S.startQuestionAt(at(18, 31), '18:30', '2026-11-25'), at(18, 30));
 });
 
+check('a song step is its recording plus its prayer, not the programme\'s five minutes (R-76, R-77)', () => {
+  // 18.11: song 141 (2:23) and its prayer.
+  assert.equal(S.songStepSec('midweek_closing_prayer', 143, null), 143 + 90, 'until the congregation has its own: 1:30');
+  assert.equal(S.songStepSec('midweek_closing_prayer', 143, { prayer: 75, songLead: null }), 143 + 75);
+  assert.equal(S.songStepSec('weekend_opening_prayer', 141, null), 141 + 90);
+  // Song 90 (2:56) in the middle: its lead-in, no prayer.
+  assert.equal(S.songStepSec('mid_song', 176, { prayer: 75, songLead: 19 }), 176 + 19);
+  assert.equal(S.songStepSec('weekend_song', 173, null), 173 + 20);
+  // A song with no known length: the median of the recordings.
+  assert.equal(S.songStepSec('mid_song', null, null), 151 + 20);
+  // Not a song: the programme's minutes stand.
+  assert.equal(S.songStepSec('treasures_talk', 143, null), null);
+  // The overseer's week: he chooses the closing song, the programme's says nothing.
+  assert.equal(S.songIsProgrammes('midweek_closing_prayer', ['co_service_talk', 'midweek_closing_prayer']), false);
+  assert.equal(S.songIsProgrammes('weekend_closing_prayer', ['co_concluding_talk', 'weekend_closing_prayer']), false);
+  assert.equal(S.songIsProgrammes('weekend_song', ['weekend_song', 'co_concluding_talk']), true);
+  assert.equal(S.songIsProgrammes('midweek_closing_prayer', ['cbs_conductor', 'midweek_closing_prayer']), true);
+  assert.equal(S.songLength(176), '2:56');
+  // The length stands beside the quoted name, never inside its quotes.
+  const q = (_k, o) => `«${o.text}»`;
+  assert.equal(S.quotedSong(q, 'Name', '2:56'), '«Name» · 2:56');
+  assert.equal(S.quotedSong(q, 'Name', null), '«Name»');
+  assert.equal(S.songLength(301), '5:01');
+});
+
 console.log(`conduct-stage: ${n} groups ok`);

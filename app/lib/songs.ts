@@ -8,6 +8,26 @@ const EMPTY: Map<number, string> = new Map();
  * (the catalog changes rarely) and shared across all subscribers via the
  * react-query cache, so calling this in many rows triggers only one fetch.
  */
+const NO_LENGTHS = new Map<number, number>();
+
+/**
+ * Each song's recording length in seconds (R-77, 22 November 2026), by
+ * number — for the running meeting's forecast and its song cards.
+ */
+export function useSongLengths(): Map<number, number> {
+  const { data } = useQuery({
+    queryKey: ['songs', 'lengths'],
+    queryFn: async () => {
+      const res = await songsApi.list({ limit: 500 });
+      const map = new Map<number, number>();
+      for (const s of res.data) if (typeof s.durationSec === 'number') map.set(s.number, s.durationSec);
+      return map;
+    },
+    staleTime: 1000 * 60 * 60,
+  });
+  return data ?? NO_LENGTHS;
+}
+
 export function useSongsMap(): Map<number, string> {
   const { data } = useQuery({
     queryKey: ['songs', 'map'],

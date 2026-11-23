@@ -49,7 +49,7 @@ import { usePermissions } from '../../../lib/permissions';
 import { useAuth } from '../../../lib/auth';
 import { buildMidweekRunOrder, buildWeekendRunOrder, RunSegment, totalRunMinutes } from '../../../lib/run-order';
 import { partDisplay, songFromTitle } from '../../../lib/part-display';
-import { useSongsMap } from '../../../lib/songs';
+import { useSongLengths, useSongsMap } from '../../../lib/songs';
 import { failsScreen } from '../../../lib/screen-failure';
 import { keptMeetingRows } from '../../../lib/offline-keep-rules';
 import { keptMe, keptPieces } from '../../../lib/offline-keep';
@@ -64,6 +64,10 @@ import {
   demoFrame,
   endDriftSec,
   rehearsalAnchor,
+  quotedSong,
+  songIsProgrammes,
+  songLength,
+  songStepSec,
   stageTone,
   startQuestionAt,
   untilStartSec,
@@ -353,6 +357,15 @@ export default function ConductScreen({
   }, [segments, rows, byId, weekend]);
 
   const songTitles = useSongsMap();
+  // Each song's length and what finished meetings taught (R-76, R-77): a song
+  // step is counted as its recording plus its prayer, not as five minutes.
+  const songLengths = useSongLengths();
+  const averagesQuery = useQuery({
+    queryKey: ['conduct-averages', kind],
+    queryFn: () => conductRunsApi.averages(kind),
+    staleTime: 10 * 60 * 1000,
+    retry: false,
+  });
   const nameById = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of rosterQuery.data?.data ?? []) m.set(p.id, p.displayName);
@@ -825,11 +838,22 @@ export default function ConductScreen({
    * абстрактное «отстаём на 2 минуты». Рядом мелко — когда по программе:
    * время начала из настроек встреч плюс вся программа.
    */
+  // A song step by its song (R-77): the number from its programme row.
+  const songSecOf = (seg: RunSegment): number | null => {
+    if (!songIsProgrammes(seg.key, segKeys)) return null;
+    const title = seg.assignmentId ? byId.get(seg.assignmentId)?.partTitle : null;
+    const n = /(?:Песня|Song|Lied)\s*№?\s*(\d{1,3})/iu.exec(title ?? '')?.[1];
+    return n ? (songLengths.get(parseInt(n, 10)) ?? null) : null;
+  };
+  const stepSec = (seg: RunSegment): number =>
+    songStepSec(seg.key, songSecOf(seg), averagesQuery.data ?? null) ?? seg.minutes * 60;
   const remainingSec = current
     ? (counselling
         ? Math.max(0, current.counselMin * 60 - counselElapsed)
-        : Math.max(0, current.partMin * 60 - currentElapsed) + current.counselMin * 60) +
-      segments.slice(run.index + 1).reduce((sum, s) => sum + s.minutes * 60, 0)
+        : current.soft
+          ? Math.max(0, stepSec(current) - currentElapsed)
+          : Math.max(0, current.partMin * 60 - currentElapsed) + current.counselMin * 60) +
+      segments.slice(run.index + 1).reduce((sum, s) => sum + stepSec(s), 0)
     : 0;
   const endsAt = clockOf(new Date(now + remainingSec * 1000));
   // The hour the rules give — an event's changed hour included.
@@ -1463,7 +1487,9 @@ export default function ConductScreen({
     if (!seg.soft) return v;
     const n = /(\d{1,3})/.exec(v.label)?.[1];
     const name = n ? songTitles.get(parseInt(n, 10)) : undefined;
-    return name ? { ...v, song: name } : v;
+    // «Песня 90 «…» · 2:56» — its length beside its words (R-77).
+    const len = n && songIsProgrammes(seg.key, segKeys) ? songLengths.get(parseInt(n, 10)) : undefined;
+    return name ? { ...v, song: name, songLen: len ? songLength(len) : null } : v;
   };
   /**
    * How a step heads a card. A midweek song is the song first, then who
@@ -2130,7 +2156,7 @@ export default function ConductScreen({
                 ) : null}
               </Text>
               {/* Every song by its number AND its name (25 October 2026). */}
-              {v.song ? <Text style={styles.sheetSong}>{t('common.quoted', { text: v.song })}</Text> : null}
+              {v.song ? <Text style={styles.sheetSong}>{quotedSong(t, v.song, v.songLen)}</Text> : null}
               {v.theme ? <Text style={styles.sheetSong}>{t('common.quoted', { text: v.theme })}</Text> : null}
               {person ? <Text style={styles.sheetPerson}>{person}</Text> : null}
               {s.key === 'public_talk_speaker' && mayReplaceSpeaker ? (
@@ -2205,6 +2231,7 @@ export default function ConductScreen({
       minutes: seg.partMin,
       soft: !!seg.soft,
       song: v.song,
+      songLen: v.songLen ?? null,
     };
   };
   const stageHeading = (() => {
@@ -2434,6 +2461,8 @@ interface SegView {
   person: string | null;
   /** A song step: the song's name from the catalog. */
   song: string | null;
+  /** Its recording's length, «2:56» (R-77) — beside the quoted name, not in it. */
+  songLen?: string | null;
   /** The weekend talk's or study's own theme, under the part's name. */
   theme?: string | null;
 }
@@ -2460,7 +2489,7 @@ function SegmentHeadline({
       <View>
         <Text style={big ? styles.whatBig : styles.whatSmall}>{view.label}</Text>
         {view.theme ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.theme })}</Text> : null}
-        {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.song })}</Text> : null}
+        {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{quotedSong(t, view.song, view.songLen)}</Text> : null}
         {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
         {view.person ? (
           <Text style={big ? styles.whoBig : styles.whoSmall}>
@@ -2477,7 +2506,7 @@ function SegmentHeadline({
       <Text style={view.person ? (big ? styles.partBig : styles.partSmall) : big ? styles.personBig : styles.personSmall}>
         {view.label}
       </Text>
-      {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.song })}</Text> : null}
+      {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{quotedSong(t, view.song, view.songLen)}</Text> : null}
       {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
   );

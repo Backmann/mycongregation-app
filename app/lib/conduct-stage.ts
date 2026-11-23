@@ -173,3 +173,56 @@ export function startQuestionAt(tapMs: number, meetingTime: string | null, meeti
   const late = tapMs - planned;
   return late > 0 && late <= START_QUESTION_SEC * 1000 ? planned : null;
 }
+
+/** Until the congregation has its own (R-76): a prayer, the lead-in of a middle song. */
+export const DEFAULT_PRAYER_SEC = 90;
+export const DEFAULT_SONG_LEAD_SEC = 20;
+/** A song with no known length: the median of the recordings (R-77). */
+export const MEDIAN_SONG_SEC = 151;
+
+const WITH_PRAYER = new Set(['midweek_opening_prayer', 'midweek_closing_prayer', 'weekend_opening_prayer', 'weekend_closing_prayer']);
+const MIDDLE_SONG = new Set(['mid_song', 'weekend_song']);
+
+/**
+ * HOW LONG A SONG STEP WILL TAKE (R-77, 22 November 2026): the song's own
+ * recording, plus the prayer after it — or, for the middle song, its lead-in.
+ * The programme gives a song with its prayer five or six minutes; on 18.11
+ * they took 2:52–4:57. The congregation's own numbers when it has them
+ * (R-76), else 1:30 for a prayer (Lionel: «от 1 до 2 минут») and 0:20 for a
+ * lead-in. Null for a step that is not a song: the programme's minutes stand.
+ */
+export function songStepSec(
+  key: string,
+  songSec: number | null,
+  averages: { prayer: number | null; songLead: number | null } | null,
+): number | null {
+  if (!WITH_PRAYER.has(key) && !MIDDLE_SONG.has(key)) return null;
+  const song = songSec ?? MEDIAN_SONG_SEC;
+  if (MIDDLE_SONG.has(key)) return song + (averages?.songLead ?? DEFAULT_SONG_LEAD_SEC);
+  return song + (averages?.prayer ?? DEFAULT_PRAYER_SEC);
+}
+
+/**
+ * Whether the programme's song is the one sung at this step. In the week of
+ * the circuit overseer's visit he chooses the closing song (run-order), so the
+ * programme's number there says nothing of its length: the median is used.
+ */
+export function songIsProgrammes(key: string, keys: readonly string[]): boolean {
+  const closing = key === 'midweek_closing_prayer' || key === 'weekend_closing_prayer';
+  return !(closing && keys.some((k) => k === 'co_service_talk' || k === 'co_concluding_talk'));
+}
+
+/** «Name» · 2:56 — the length beside the quoted name, not inside its quotes. */
+export function quotedSong(
+  t: (key: string, o: { text: string }) => string,
+  name: string,
+  len: string | null | undefined,
+): string {
+  const q = t('common.quoted', { text: name });
+  return len ? `${q} · ${len}` : q;
+}
+
+/** «2:56». */
+export function songLength(sec: number): string {
+  return `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
+}
