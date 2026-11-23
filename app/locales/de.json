@@ -1056,9 +1056,9 @@
         "weekFrozen": "bereits aufgezeichnet",
         "keptByHand": "{{week}}: von Hand geänderte Titel wurden belassen – Programmpunkte: {{count}}",
         "emptyPartsRemoved": "{{week}}: leere Programmpunkte, die im Arbeitsheft fehlen, wurden entfernt – Programmpunkte: {{count}}",
-        "lessonsSet": "Lektion und Situation bei bereits zugeteilten Aufgaben eingetragen: {{count}} — Personen und Titel unverändert"
+        "lessonsSet": "Bei bereits zugeteilten Aufgaben Lektion, Situation und vollständigen Text ergänzt, abgeschnittene Titel wortweise gekürzt: {{count}} — Personen unverändert"
       },
-      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte, bei Schüleraufgaben auch Lektion und Situation.",
+      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel, Text und Dauer der Programmpunkte, bei Schüleraufgaben auch Lektion und Situation.",
       "parsing": "Datei wird ausgewertet…",
       "applying": "Wird importiert…",
       "preview": {
@@ -1109,7 +1109,8 @@
     },
     "sheet": {
       "next": "Weiter →",
-      "title": "Zuteilung"
+      "title": "Zuteilung",
+      "fileText": "Text aus dem Arbeitsheft"
     },
     "weekend": {
       "reader": "Leser"
@@ -1313,7 +1314,7 @@
         "new_other": "alle {{count}} Wochen sind neu",
         "partly_one": "neu: {{count}}, schon da: {{loaded}}",
         "partly_other": "neu: {{count}}, schon da: {{loaded}}",
-        "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist; Punkte mit Personen und nach dem Laden geänderte Titel bleiben.",
+        "repeat": "Schon geladen. Erneutes Laden aktualisiert Titel und Dauer der Programmpunkte, für die noch niemand eingeteilt ist. Bei eingeteilten Punkten ergänzt es nur Lektion, Situation und den vollständigen Text; Personen und von Hand geänderte Titel bleiben.",
         "sameAsOther": "Dieselben Wochen wie eine Datei weiter oben — diese wird übersprungen.",
         "nothing": "Nichts zu laden: In diesen Wochen gibt es keine Zusammenkünfte.",
         "unchecked": "Abgleich mit dem Programm nicht möglich. Laden ist trotzdem sicher: Programmpunkte mit eingeteilten Personen bleiben unverändert.",

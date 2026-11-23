@@ -27,6 +27,11 @@ export interface ParsedPart {
   partOrder: number;
   classifierConfidence: 'high' | 'medium' | 'low' | 'synthetic' | 'unknown';
   synthetic?: boolean;
+  /**
+   * The first paragraph uncut (23 November 2026): `notes` keep 120 characters,
+   * the title the beginning of this cut at a word (shortNote).
+   */
+  text?: string;
   /** A student part's lesson and setting, from its whole text (studentPartOf). */
   lesson?: string | null;
   setting?: StudentSetting | null;
@@ -523,6 +528,7 @@ function parseWeeklyDocument(
         durationMin,
         durationRawText,
         notes,
+        ...(whole[0] ? { text: whole[0] } : {}),
         partKey: cls.partKey,
         partOrder: cls.partOrder,
         ...studentPartOf(cls.partKey, whole),
@@ -631,12 +637,42 @@ export function extractPartTitle(part: ParsedPart): string | null {
   title = title.replace(/^\d+\.\s*/, '');
   title = title.replace(/\s*\(\s*\d+\s*мин\.?\s*\)\s*$/u, '').trim();
 
-  if (part.notes && part.notes.length > 0 && part.notes[0]) {
-    title = `${title}: ${part.notes[0]}`;
+  const note = part.text ? shortNote(part.text) : part.notes?.[0];
+  if (note) {
+    title = `${title}: ${note}`;
   }
 
   return title || null;
 }
+
+/** How much of a part's text its title keeps — as the import always did. */
+export const TITLE_NOTE_MAX = 120;
+
+/**
+ * A part's text as its title shows it (23 November 2026): whole when it is
+ * short, else cut at a word, never inside a bracket, with «…». Before, it was
+ * cut at 120 characters wherever they ended — «…(lmd ур». All of it is sent
+ * beside the title (partText) and shown where the part is read.
+ */
+export function shortNote(text: string, max = TITLE_NOTE_MAX): string {
+  const t = text.trim();
+  // A few characters over: nothing gained by cutting them off.
+  if (t.length <= max + SHORT_NOTE_SLACK) return t;
+  const openBracket = (c: string) => {
+    const open = c.lastIndexOf('(');
+    return open > c.lastIndexOf(')') ? c.slice(0, open) : c;
+  };
+  let cut = openBracket(t.slice(0, max));
+  // A word or a number that runs on past the cut goes whole.
+  if (!/[\s.,;:!?)»]/u.test(t[cut.length] ?? ' ')) {
+    const space = cut.lastIndexOf(' ');
+    if (space > max / 2) cut = cut.slice(0, space);
+  }
+  return `${cut.replace(/[\s,;:—–-]+$/u, '')}…`;
+}
+
+/** How far past the limit a text may run and still be kept whole. */
+export const SHORT_NOTE_SLACK = 15;
 
 /** True when the runtime can parse EPUBs locally (web build). */
 export function isClientParsingSupported(): boolean {
@@ -723,6 +759,8 @@ export interface ApplyParsedPartPayload {
   partOrder: number;
   partTitle: string | null;
   partDurationMin: number | null;
+  /** The part's whole first paragraph (server partText, 23 November 2026). */
+  partText?: string;
   /** Student parts only (the server refuses nothing else: it ignores them there). */
   lesson?: string | null;
   setting?: StudentSetting | null;
@@ -764,6 +802,8 @@ export function toApplyPayload(wb: ParsedWorkbook): ApplyParsedPayload {
             // trim: notes[0].slice(0,120) может оставить хвостовой пробел
             partTitle: title ? title.trim() : null,
             partDurationMin: p.durationMin ?? null,
+            // The part's whole text; its title keeps the beginning (shortNote).
+            ...(p.text && !p.synthetic ? { partText: p.text } : {}),
             // A student part's, from its whole text; none for the others.
             ...(isStudentPart(p.partKey) ? { lesson: p.lesson ?? null, setting: p.setting ?? null } : {}),
           };
