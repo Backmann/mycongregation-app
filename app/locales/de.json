@@ -1055,9 +1055,10 @@
         "weekFrozenNotice": "{{week}}: Das Programm dieser Woche ist bereits Teil der Aufzeichnungen – nicht geladene Programmpunkte: {{count}}",
         "weekFrozen": "bereits aufgezeichnet",
         "keptByHand": "{{week}}: von Hand geänderte Titel wurden belassen – Programmpunkte: {{count}}",
-        "emptyPartsRemoved": "{{week}}: leere Programmpunkte, die im Arbeitsheft fehlen, wurden entfernt – Programmpunkte: {{count}}"
+        "emptyPartsRemoved": "{{week}}: leere Programmpunkte, die im Arbeitsheft fehlen, wurden entfernt – Programmpunkte: {{count}}",
+        "lessonsSet": "Lektion und Situation bei bereits zugeteilten Aufgaben eingetragen: {{count}} — Personen und Titel unverändert"
       },
-      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte.",
+      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte, bei Schüleraufgaben auch Lektion und Situation.",
       "parsing": "Datei wird ausgewertet…",
       "applying": "Wird importiert…",
       "preview": {
@@ -5537,7 +5538,8 @@
       "took": "Aufgabe: {{time}}",
       "long": "Rat länger als eine Minute",
       "note": "zählt aufwärts · startet nichts von selbst",
-      "short": "Rat"
+      "short": "Rat",
+      "lesson": "Lektion für den Rat"
     },
     "practice": {
       "start": "Übung",
@@ -5793,6 +5795,11 @@
       "body": "Jetzt ist es {{now}}. Begann das Lied pünktlich, zählt die Zeit ab {{time}} – und der Bildschirm zeigt keine falsche Verspätung.",
       "yes": "Ja, um {{time}}",
       "no": "Nein – gerade eben, um {{now}}"
+    },
+    "setting": {
+      "house": "Von Haus zu Haus",
+      "informal": "Informelles Zeugnisgeben",
+      "public": "Öffentliches Zeugnisgeben"
     }
   },
   "serviceHub": {

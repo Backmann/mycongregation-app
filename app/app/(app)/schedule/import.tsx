@@ -879,6 +879,12 @@ function ResultSummary({
         />
       </View>
 
+      {(result.lessonsSet ?? 0) > 0 && (
+        <Text style={styles.footnote}>
+          {t('schedule.import.result.lessonsSet', { count: result.lessonsSet })}
+        </Text>
+      )}
+
       {result.unclassifiedParts > 0 && (
         <View style={styles.warningBox}>
           <Text style={styles.warningText}>

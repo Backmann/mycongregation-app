@@ -150,4 +150,12 @@ check('a song step is its recording plus its prayer, not the programme\'s five m
   assert.equal(S.songLength(301), '5:01');
 });
 
+check("a student part's setting is named by the screens' own words, an unknown one not at all", () => {
+  const t = (k) => `[${k}]`;
+  assert.equal(S.settingLabel(t, 'house'), '[conduct.setting.house]');
+  assert.equal(S.settingLabel(t, 'public'), '[conduct.setting.public]');
+  assert.equal(S.settingLabel(t, 'video'), null);
+  assert.equal(S.settingLabel(t, null), null);
+});
+
 console.log(`conduct-stage: ${n} groups ok`);

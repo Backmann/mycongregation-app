@@ -59,6 +59,9 @@ export interface StagePart {
   song?: string | null;
   /** Its recording's length, «2:56» (R-77). */
   songLen?: string | null;
+  /** A student part's setting and its lesson for the counsel (23 November 2026). */
+  setting?: string | null;
+  lesson?: string | null;
 }
 
 export interface StageControls {
@@ -83,7 +86,7 @@ export interface StageProps {
   untilStart: number | null;
   current: StagePart | null;
   /** The part whose counsel is being given. */
-  counselFor: { title: string; person: string | null } | null;
+  counselFor: { title: string; person: string | null; lesson?: string | null } | null;
   leftSec: number;
   /** The number cannot be trusted — grey, and words instead of a colour. */
   unsure: boolean;
@@ -313,6 +316,7 @@ export function ConductStage(p: StageProps) {
       <View style={s.mainCol}>
         <Text style={[s.overline, { color: C.entrance }]}>{t('conduct.stage.comesOut')}</Text>
         <Text style={s.title}>{p.current.title}</Text>
+        {p.current.setting ? <Text style={s.song}>{p.current.setting}</Text> : null}
         {p.current.song ? <Text style={s.song}>{quotedSong(t, p.current.song, p.current.songLen)}</Text> : null}
         {p.current.person ? <Text style={s.person}>{p.current.person}</Text> : null}
         <View style={{ flex: 1, minHeight: 16 }} />
@@ -332,6 +336,7 @@ export function ConductStage(p: StageProps) {
           {[p.counselFor.title, p.counselFor.person].filter(Boolean).join(' · ').toUpperCase()}
         </Text>
         <Text style={s.counselWord}>{t('conduct.stage.counsel')}</Text>
+        {p.counselFor.lesson ? <Text style={s.counselLesson}>{p.counselFor.lesson}</Text> : null}
       </View>
     );
   } else if (p.current) {
@@ -363,6 +368,7 @@ export function ConductStage(p: StageProps) {
         <Text style={[s.title, p.unsure && { color: C.textMid }]}>
           {p.current.title}
         </Text>
+        {p.current.setting ? <Text style={s.song}>{p.current.setting}</Text> : null}
         {p.current.song ? <Text style={s.song}>{quotedSong(t, p.current.song, p.current.songLen)}</Text> : null}
         {p.current.person ? (
           <Text style={s.person}>
@@ -426,6 +432,7 @@ export function ConductStage(p: StageProps) {
       <Text style={s.nextTitle}>
         {p.next.title}
       </Text>
+      {p.next.setting ? <Text style={s.nextSetting}>{p.next.setting}</Text> : null}
       <View style={s.nextRow}>
         <Text style={s.nextPerson}>
           {p.next.person ?? ''}
@@ -680,9 +687,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 44,
   },
   counselWord: { fontFamily: 'Manrope_800ExtraBold', fontSize: 112, lineHeight: 120, color: '#a5d8e6', marginTop: 14 },
+  counselLesson: { fontFamily: 'Manrope_600SemiBold', fontSize: 34, color: C.textMid, marginTop: 10 },
   nextCard: { backgroundColor: C.panel, borderWidth: 1, borderColor: C.line, borderRadius: 20, paddingVertical: 22, paddingHorizontal: 24 },
   small: { fontFamily: 'Manrope_700Bold', fontSize: 14, letterSpacing: 1.6, color: C.muted },
   nextTitle: { fontFamily: 'Manrope_700Bold', fontSize: 27, lineHeight: 33, color: '#f1f5f9', marginTop: 10 },
+  nextSetting: { fontFamily: 'Manrope_500Medium', fontSize: 19, color: C.textMid, marginTop: 4 },
   nextRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, marginTop: 8 },
   nextPerson: { flex: 1, fontFamily: 'Manrope_500Medium', fontSize: 19, color: C.muted },
   nextMin: { fontFamily: 'Manrope_600SemiBold', fontSize: 19, color: C.muted, fontVariant: ['tabular-nums'] },

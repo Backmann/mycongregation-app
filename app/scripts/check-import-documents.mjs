@@ -231,6 +231,39 @@ const sent = (workbook, i = 0) =>
   ]);
 }
 {
+  // A student part's lesson closes its text, past the 120 characters the title
+  // keeps (23 November 2026; on the live programme 30 of 175 had lost it).
+  const long = 'Вымышленный текст задания, достаточно длинный, чтобы название обрезалось на ста двадцати знаках задолго до конца.';
+  const week = page(
+    `<header><h1><strong>4—10 ЯНВАРЯ</strong></h1><h2><strong>ИСАЙЯ 1, 2</strong></h2></header><div class="bodyTxt">` +
+      `<p><a href="#"><strong>Песня 5</strong></a> <strong>и молитва | Вступительные слова</strong> (1 мин.)</p>` +
+      section('СОКРОВИЩА ИЗ СЛОВА БОГА') +
+      part('1. Вымышленная тема речи', 10, 'Текст (th урок 9).') +
+      `<h3><strong>3. Чтение Библии</strong></h3><div><p>(4 мин.) Иса 1:1—10 (th урок 5).</p></div>` +
+      section('ОТТАЧИВАЕМ НАВЫКИ СЛУЖЕНИЯ') +
+      part('4. Начинайте разговор', 3, `ПРОПОВЕДЬ ПО ДОМАМ. ${long} (lmd урок 2, пункт 3)`) +
+      part('5. Развивайте интерес', 4, 'ПРОПОВЕДЬ В ОБЩЕСТВЕННЫХ МЕСТАХ. Ответьте на возражение: «Я занят». (lmd урок 7, пункт 4)') +
+      part('6. Речь', 5, 'Вымышленная тема. (th урок 14)') +
+      part('7. Что бы вы сказали?', 4, 'ВИДЕО. Обсуждение.') +
+      section('ХРИСТИАНСКАЯ ЖИЗНЬ') +
+      `<p><a href="#"><strong>Песня 7</strong></a></p>` +
+      part('8. Вымышленная часть', 15) +
+      `<h3>Заключительные слова (3 мин.)</h3><p>Песня 9 и молитва</p></div>`,
+  );
+  const book = await mwb.parseMwbFile(await issue({ '1.xhtml': week }), 2027, 'mwb_U_202701.epub');
+  const parts = mwb.toApplyPayload(book).weeks[0].parts;
+  const of = (k) => parts.find((p) => p.partKey === k);
+  check('урок и обстановка учебных частей — из всего текста, не из названия', ['bible_reading', 'apply_yourself_1', 'apply_yourself_2', 'apply_yourself_3', 'apply_yourself_4'].map((k) => [k, of(k)?.lesson, of(k)?.setting]), [
+    ['bible_reading', 'th урок 5', null],
+    ['apply_yourself_1', 'lmd урок 2, пункт 3', 'house'],
+    ['apply_yourself_2', 'lmd урок 7, пункт 4', 'public'],
+    ['apply_yourself_3', 'th урок 14', null],
+    ['apply_yourself_4', null, null],
+  ]);
+  check('название по-прежнему обрезано, а урок не потерян', [of('apply_yourself_1').partTitle.includes('урок'), of('apply_yourself_1').lesson], [false, 'lmd урок 2, пункт 3']);
+  check('не учебной части урок не отправляется', 'lesson' in of('treasures_talk'), false);
+}
+{
   const book = await mwb.parseMwbFile(await issue({ '202026001.xhtml': weekOf2026 }), 2026, 'mwb_U_202605.epub');
   const parts = sent(book);
   check('вёрстка до конца 2026: песни в заголовках читаются по-прежнему', [

@@ -212,6 +212,12 @@ export function songIsProgrammes(key: string, keys: readonly string[]): boolean 
   return !(closing && keys.some((k) => k === 'co_service_talk' || k === 'co_concluding_talk'));
 }
 
+/** A student part's setting as the screens name it: «Проповедь по домам». */
+export function settingLabel(t: (key: string) => string, setting: string | null | undefined): string | null {
+  if (setting !== 'house' && setting !== 'informal' && setting !== 'public') return null;
+  return t(`conduct.setting.${setting}`);
+}
+
 /** «Name» · 2:56 — the length beside the quoted name, not inside its quotes. */
 export function quotedSong(
   t: (key: string, o: { text: string }) => string,
