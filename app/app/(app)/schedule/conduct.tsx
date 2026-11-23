@@ -67,6 +67,8 @@ import {
   FLEX_FROM_SEC,
   flexKindOf,
   correctionOf,
+  ownSecOf,
+  startLagSec,
   stageCatchingUp,
   isFlexible,
   minutesAfterCut,
@@ -851,7 +853,8 @@ export default function ConductScreen({
     actualSoFar += (run.spent[run.index] ?? 0) + counselElapsed;
   }
   const currentOverrun = current && !counselling ? Math.max(0, currentElapsed - current.partMin * 60) : 0;
-  const driftSec = Math.round(actualSoFar - plannedSoFar + currentOverrun);
+  const driftRaw = actualSoFar - plannedSoFar + currentOverrun;
+  const driftSec = Math.round(driftRaw);
   const started = run.meetingStartedAt !== null;
 
   /**
@@ -897,12 +900,18 @@ export default function ConductScreen({
    */
   const forecastReady = songLengthsReady && averagesQuery.isFetched;
   const curFlex = !!current && !counselling && isFlexible(current);
+  // Its overtime and its pauses, off the end: the lag when it began. From the
+  // unrounded end, so the cut does not flicker on a rounding edge.
+  const curOwnSec = curFlex && current ? ownSecOf(current.partMin, currentElapsed, run.starts[run.index] ?? null, now) : 0;
+  const lagAtStartDriftSec = startLagSec(now, remainingSec, curOwnSec, plannedEnd, anchor?.day ?? meetingDay, driftRaw);
+  const correcting = started && !finished && forecastReady;
   const correction = correctionOf(
     segments,
     run.index,
     curFlex,
     currentElapsed,
-    started && !finished && forecastReady ? lagDriftSec : null,
+    correcting ? lagDriftSec : null,
+    correcting ? lagAtStartDriftSec : null,
   );
   const { lagSec, curCut, rest: restPlan, futureCut, curCutLeft, hasCuts } = correction;
   const cutOf = (i: number): number => (i === run.index ? curCut : i > run.index ? (restPlan.cut.get(i) ?? 0) : 0);

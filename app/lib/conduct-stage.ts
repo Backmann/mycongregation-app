@@ -346,13 +346,46 @@ export interface Correction {
 }
 
 /**
+ * The seconds of the step under way that are its own and not the programme's
+ * (R-74): its overtime, and the pauses inside it — wall time since it began
+ * (`starts`, which a pause does not move) less the time on its clock. Taken
+ * off the end's lag, they give the lag as it stood when the step began.
+ * beganMs null (a run kept before `starts`): overtime only.
+ */
+export function ownSecOf(partMin: number, elapsedSec: number, beganMs: number | null, nowMs: number): number {
+  const over = Math.max(0, elapsedSec - partMin * 60);
+  const paused = beganMs === null ? 0 : Math.max(0, (nowMs - beganMs) / 1000 - elapsedSec);
+  return over + paused;
+}
+
+/**
+ * The end's lag as it stood when the step under way began: the end forecast
+ * now, less the step's own seconds (ownSecOf), from the UNROUNDED moment —
+ * inside the step that moment is its start plus the programme from there on,
+ * so the rounded lag does not wobble by a second (a cut on a 10 s edge would
+ * blink). partsOnlyRaw is the parts-only drift, unrounded, for when the
+ * programme's end is not known.
+ */
+export function startLagSec(
+  nowMs: number,
+  remainingSec: number,
+  ownSec: number,
+  plannedEndHHMM: string | null,
+  meetingDayISO: string | null,
+  partsOnlyRaw: number,
+): number {
+  return endDriftSec(nowMs + (remainingSec - ownSec) * 1000, plannedEndHHMM, meetingDayISO, Math.round(partsOnlyRaw - ownSec));
+}
+
+/**
  * The correction at this second (R-74). lagNowSec is the end's lag as things
- * go now, or null while there is nothing to correct (not running, or the
- * song lengths and averages not in yet — the forecast would jump under the
- * cuts). The step under way gets its cut from the lag AS IT STOOD WHEN IT
- * BEGAN: the lag now less its own overtime. Inside its time that lag does not
- * move, so the countdown does not drift with the clock, and a reload gives
- * the same number. Its overtime goes to the steps after it.
+ * go now; lagAtStartSec the lag as it stood when the step under way began
+ * (the end forecast less ownSecOf — the caller computes it from the unrounded
+ * end, so it does not wobble by a second). Both null while there is nothing
+ * to correct: not running, or the song lengths and averages not in yet (the
+ * forecast would jump under the cuts). The step under way gets its cut from
+ * lagAtStartSec — one number for the whole step, through its overtime and
+ * its pauses, after a reload too; what it adds goes to the steps after it.
  */
 export function correctionOf(
   segments: readonly { key: string; partMin: number; chairmanWords?: boolean }[],
@@ -360,11 +393,11 @@ export function correctionOf(
   curFlex: boolean,
   curElapsedSec: number,
   lagNowSec: number | null,
+  lagAtStartSec: number | null,
 ): Correction {
   const cur = segments[index];
   const lagSec = lagNowSec === null ? 0 : Math.max(0, lagNowSec);
-  const overSec = curFlex && cur ? Math.max(0, curElapsedSec - cur.partMin * 60) : 0;
-  const lagAtStart = lagNowSec === null ? 0 : Math.max(0, lagNowSec - overSec);
+  const lagAtStart = lagNowSec === null || lagAtStartSec === null ? 0 : Math.max(0, lagAtStartSec);
   const curCut = curFlex ? (flexPlan(segments, index, null, lagAtStart).cut.get(index) ?? 0) : 0;
   const rest = flexPlan(segments, index + 1, null, Math.max(0, lagSec - curCut));
   const futureCut = [...rest.cut.values()].reduce((a, b) => a + b, 0);

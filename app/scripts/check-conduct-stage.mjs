@@ -204,28 +204,55 @@ check('time with a correction: the lag goes to the flexible parts by length, non
 check('the part under way keeps one cut: the lag as it stood when it began (R-74, review of 23 November 2026)', () => {
   const seg = (key, partMin, extra = {}) => ({ key, partMin, ...extra });
   const mid = [seg('treasures_talk', 10), seg('bible_reading', 4), seg('cbs_conductor', 30)];
-  // 2:00 behind when the talk begins; inside its ten minutes the lag stands still.
-  const at0 = S.correctionOf(mid, 0, true, 0, 120);
-  const at5 = S.correctionOf(mid, 0, true, 300, 120);
-  assert.ok(at0.curCut > 0, 'the talk gives its share');
-  assert.equal(at5.curCut, at0.curCut, 'same cut five minutes in');
-  // A minute over its own ten minutes: the lag now is 3:00, but the cut is the one it began with
-  // (from 3:00 it would be 0:40, not 0:30), and the minute goes to the study.
-  const over = S.correctionOf(mid, 0, true, 660, 180);
+  // Its own seconds: overtime, and pauses inside it (wall time since it began less its clock).
+  const T = 1_000_000;
+  assert.equal(S.ownSecOf(10, 300, T, T + 300_000), 0, 'running, no pause');
+  assert.equal(S.ownSecOf(10, 300, T, T + 420_000), 120, 'paused two minutes, five minutes in');
+  assert.equal(S.ownSecOf(10, 660, T, T + 660_000), 60, 'a minute over');
+  assert.equal(S.ownSecOf(10, 660, T, T + 720_000), 120, 'a minute over and a minute of pause');
+  assert.equal(S.ownSecOf(10, 660, null, T), 60, 'no start kept: overtime only');
+  // Second by second through a talk: begun 59.6 s behind the end, a pause of 47.3 s at 4:00,
+  // then 1:30.7 over its ten minutes. The lag at its start must not move by a second,
+  // and the cut must never blink (59.6 rounds to 60: one 10 s step on the edge).
+  {
+    const day = '2026-11-25';
+    const start = new Date(2026, 10, 25, 19, 0, 0).getTime();
+    const rest = 30 * 60 + 4 * 60; // the study and the reading after the talk
+    const plannedEnd = '19:44';
+    const began = start + 59_600; // begun 59.6 s late: the end runs as late
+    const seen = new Set();
+    const cuts = new Set();
+    for (let t = 0; t <= 790; t += 0.37) {
+      const now = began + t * 1000;
+      const pause = t < 240 ? 0 : t < 287.3 ? t - 240 : 47.3;
+      const elapsed = t - pause;
+      const remaining = Math.max(0, 600 - elapsed) + rest;
+      const own = S.ownSecOf(10, elapsed, began, now);
+      const lag0 = S.startLagSec(now, remaining, own, plannedEnd, day, 0);
+      seen.add(lag0);
+      const lagNow = S.endDriftSec(now + remaining * 1000, plannedEnd, day, 0);
+      cuts.add(S.correctionOf([{ key: 'treasures_talk', partMin: 10 }, { key: 'cbs_conductor', partMin: 30 }], 0, true, elapsed, lagNow, lag0).curCut);
+    }
+    assert.deepEqual([...seen], [60], 'the lag at its start, through the pause and the overtime');
+    assert.equal(cuts.size, 1, `one cut for the whole talk, saw ${[...cuts]}`);
+  }
+  // The lag at its start stands; the lag now goes to the parts after it.
+  const at0 = S.correctionOf(mid, 0, true, 0, 120, 120);
   assert.equal(at0.curCut, 30);
-  assert.equal(over.curCut, 30, 'overtime does not move the cut under way');
+  const over = S.correctionOf(mid, 0, true, 660, 180, 120);
+  assert.equal(over.curCut, 30, 'overtime does not move the cut under way (from 3:00 it would be 0:40)');
   assert.equal(over.curCutLeft, 0, 'its clock has run out');
   assert.equal(over.rest.cut.get(2), at0.rest.cut.get(2) + 60, 'the study takes the minute');
   // Not ready (song lengths or averages not in) or not running: no correction at all.
-  const none = S.correctionOf(mid, 0, true, 0, null);
+  const none = S.correctionOf(mid, 0, true, 0, null, null);
   assert.equal(none.hasCuts, false);
   assert.equal(none.lagSec, 0);
   // A hard part under way gives nothing; the parts after it take the lag.
-  const hard = S.correctionOf(mid, 1, false, 0, 120);
+  const hard = S.correctionOf(mid, 1, false, 0, 120, 120);
   assert.equal(hard.curCut, 0);
   assert.ok(hard.rest.cut.get(2) > 0);
   // Nothing flexible left: no cuts, no line, the plain drift.
-  const tail = S.correctionOf([seg('bible_reading', 4)], 0, false, 0, 300);
+  const tail = S.correctionOf([seg('bible_reading', 4)], 0, false, 0, 300, 300);
   assert.equal(tail.hasCuts, false);
   assert.equal(S.stageCatchingUp(tail, 300), false);
   assert.equal(S.stageCatchingUp(tail, 0), false, 'no cuts, no «нагоняем», whatever the end says');
@@ -233,7 +260,7 @@ check('the part under way keeps one cut: the lag as it stood when it began (R-74
   assert.equal(S.stageCatchingUp(at0, 0), true);
   assert.equal(S.stageCatchingUp(at0, 59), true);
   assert.equal(S.stageCatchingUp(at0, 60), false, 'a minute late even with the cuts: the plain drift');
-  assert.equal(S.stageCatchingUp(S.correctionOf(mid, 0, true, 0, 59), 0), false, 'under a minute: nothing to say');
+  assert.equal(S.stageCatchingUp(S.correctionOf(mid, 0, true, 0, 59, 59), 0), false, 'under a minute: nothing to say');
 });
 
 console.log(`conduct-stage: ${n} groups ok`);
