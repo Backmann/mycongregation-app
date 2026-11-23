@@ -23,7 +23,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from 're
 import { Animated, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { COUNTDOWN_FROM_SEC, stageTone, warnSecFor, type StageTone } from '../lib/conduct-stage';
+import { COUNTDOWN_FROM_SEC, quotedSong, stageTone, warnSecFor, type StageTone } from '../lib/conduct-stage';
 
 /**
  * What the screen on the stage adds around this screen (app/stage.tsx,
@@ -57,6 +57,8 @@ export interface StagePart {
   soft?: boolean;
   /** A song's name from the catalog. */
   song?: string | null;
+  /** Its recording's length, «2:56» (R-77). */
+  songLen?: string | null;
 }
 
 export interface StageControls {
@@ -311,7 +313,7 @@ export function ConductStage(p: StageProps) {
       <View style={s.mainCol}>
         <Text style={[s.overline, { color: C.entrance }]}>{t('conduct.stage.comesOut')}</Text>
         <Text style={s.title}>{p.current.title}</Text>
-        {p.current.song ? <Text style={s.song}>{t('common.quoted', { text: p.current.song })}</Text> : null}
+        {p.current.song ? <Text style={s.song}>{quotedSong(t, p.current.song, p.current.songLen)}</Text> : null}
         {p.current.person ? <Text style={s.person}>{p.current.person}</Text> : null}
         <View style={{ flex: 1, minHeight: 16 }} />
         <Text style={[s.digits, { fontSize: digits, lineHeight: digits * 1.02, color: C.muted }]} numberOfLines={1}>
@@ -361,7 +363,7 @@ export function ConductStage(p: StageProps) {
         <Text style={[s.title, p.unsure && { color: C.textMid }]}>
           {p.current.title}
         </Text>
-        {p.current.song ? <Text style={s.song}>{t('common.quoted', { text: p.current.song })}</Text> : null}
+        {p.current.song ? <Text style={s.song}>{quotedSong(t, p.current.song, p.current.songLen)}</Text> : null}
         {p.current.person ? (
           <Text style={s.person}>
             {p.current.person}

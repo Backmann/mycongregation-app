@@ -713,6 +713,8 @@ export interface Song {
   number: number;
   title: string;
   isActive: boolean;
+  /** The recording's length in seconds (R-77); null — counted by the median. */
+  durationSec?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -7195,7 +7197,22 @@ export interface ConductRun {
   keepUntil?: string;
 }
 
+/** What finished meetings taught the forecast (R-76): seconds, no names. */
+export interface ConductAverages {
+  prayer: number | null;
+  songLead: number | null;
+  walk: number | null;
+  counsel: number | null;
+  meetings: number;
+}
+
 export const conductRunsApi = {
+  async averages(kind: ConductKindWire = "midweek"): Promise<ConductAverages> {
+    const { data } = await api.get<{ averages: ConductAverages }>("/conduct-runs/averages", {
+      params: { kind },
+    });
+    return data.averages;
+  },
   /**
    * «Это была проба»: the result and the run of that week go, on the server,
    * until the meeting's day is over (25 October 2026).
