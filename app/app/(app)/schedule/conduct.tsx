@@ -66,7 +66,8 @@ import {
   rehearsalAnchor,
   FLEX_FROM_SEC,
   flexKindOf,
-  flexPlan,
+  correctionOf,
+  stageCatchingUp,
   isFlexible,
   minutesAfterCut,
   quotedSong,
@@ -365,7 +366,7 @@ export default function ConductScreen({
   const songTitles = useSongsMap();
   // Each song's length and what finished meetings taught (R-76, R-77): a song
   // step is counted as its recording plus its prayer, not as five minutes.
-  const songLengths = useSongLengths();
+  const { lengths: songLengths, ready: songLengthsReady } = useSongLengths();
   const averagesQuery = useQuery({
     queryKey: ['conduct-averages', kind],
     queryFn: () => conductRunsApi.averages(kind),
@@ -888,28 +889,23 @@ export default function ConductScreen({
 
   /**
    * TIME WITH A CORRECTION (R-74). The lag goes to the flexible parts still
-   * ahead (flexPlan). The part under way keeps the cut it got when it began —
-   * recomputed every second, its countdown would drift with the clock — and
-   * the rest of the lag goes to those after it.
+   * ahead (flexPlan). The part under way keeps the cut it got when it began:
+   * the lag as it stood then is the lag now less the part's own overtime —
+   * one number for the whole part, after a reload too. The rest of the lag
+   * goes to the parts after it. No correction until the song lengths and the
+   * averages are in: without them the forecast, and every cut, would jump.
    */
-  const flexCuts = useRef(new Map<string, number>());
-  const lagSec = started && !finished ? Math.max(0, lagDriftSec) : 0;
+  const forecastReady = songLengthsReady && averagesQuery.isFetched;
   const curFlex = !!current && !counselling && isFlexible(current);
-  const curBegun = curFlex && !entering && (run.startedAt !== null || run.carried > 0 || run.pausedAt !== null);
-  const cutKey = `${run.meetingStartedAt ?? 0}|${run.index}`;
-  let curCut = 0;
-  if (curFlex && current) {
-    const fresh = flexPlan(segments, run.index, null, lagSec).cut.get(run.index) ?? 0;
-    if (curBegun) {
-      if (!flexCuts.current.has(cutKey)) flexCuts.current.set(cutKey, fresh);
-      curCut = flexCuts.current.get(cutKey) ?? 0;
-    } else curCut = fresh;
-  }
-  const restPlan = flexPlan(segments, run.index + 1, null, Math.max(0, lagSec - curCut));
+  const correction = correctionOf(
+    segments,
+    run.index,
+    curFlex,
+    currentElapsed,
+    started && !finished && forecastReady ? lagDriftSec : null,
+  );
+  const { lagSec, curCut, rest: restPlan, futureCut, curCutLeft, hasCuts } = correction;
   const cutOf = (i: number): number => (i === run.index ? curCut : i > run.index ? (restPlan.cut.get(i) ?? 0) : 0);
-  const futureCut = [...restPlan.cut.values()].reduce((a, b) => a + b, 0);
-  // What the correction takes off the rest of the meeting, the part under way included.
-  const curCutLeft = curFlex && current ? Math.min(curCut, Math.max(0, current.partMin * 60 - currentElapsed)) : 0;
   const remainingAdjSec = Math.max(0, remainingSec - curCutLeft - futureCut);
   const endsAtAdj = clockOf(new Date(now + remainingAdjSec * 1000));
   // The end as it will be if the cuts are kept — what the chairman works to.
@@ -917,7 +913,9 @@ export default function ConductScreen({
   // «отставание 1:47 · здесь −0:30, изучение −1:00»: where the lag is taken.
   // Called at render: keyLabel is declared further down.
   const correctionLineOf = (): string | null => {
-    if (lagSec < FLEX_FROM_SEC) return null;
+    // Nothing to take it from (no flexible parts left, or seconds only): the
+    // plain «позже на …» says it all.
+    if (lagSec < FLEX_FROM_SEC || !hasCuts) return null;
     const where: string[] = [];
     if (curCut > 0) where.push(t('conduct.flex.here', { cut: mmss(curCut) }));
     // The two largest, by a short word of their kind: «изучение −2:10».
@@ -926,7 +924,7 @@ export default function ConductScreen({
       where.push(t('conduct.flex.there', { part: t(`conduct.flex.kind.${flexKindOf(segments[i])}`), cut: mmss(c) }));
     }
     if (restPlan.cut.size > biggest.length) where.push(t('conduct.flex.more'));
-    return t('conduct.flex.line', { lag: mmss(lagSec), where: where.join(', ') || t('conduct.flex.nowhere') });
+    return t('conduct.flex.line', { lag: mmss(lagSec), where: where.join(', ') });
   };
 
   // ONE TAP, ONE STEP. The big button changes its meaning under the finger
@@ -2487,10 +2485,11 @@ export default function ConductScreen({
         plannedEnd={plannedEnd}
         drift={
           started
-            ? correctionLineOf()
+            ? stageCatchingUp(correction, shownDriftSec)
               ? // On the stage only the word and the figure: the cuts stand on
                 // the parts themselves (23 November 2026: the whole line
-                // squeezed «по программе» into a column, in red).
+                // squeezed «по программе» into a column, in red). Only while
+                // the cuts do cover the lag; past that the plain «позже на …».
                 { text: t('conduct.flex.stage', { lag: mmss(lagSec) }), tone: 'ok' as const }
               : stageDrift(shownDriftSec)
             : null

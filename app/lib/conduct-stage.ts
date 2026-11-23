@@ -332,6 +332,54 @@ export function flexPlan(
   return { cut, uncoveredSec: Math.max(0, Math.round(lagSec - sum)) };
 }
 
+export interface Correction {
+  /** The lag the correction works with now (0 when not running or not ready). */
+  lagSec: number;
+  /** The cut of the step under way — one number for the whole step. */
+  curCut: number;
+  /** Cuts of the steps after it. */
+  rest: FlexPlan;
+  futureCut: number;
+  /** What of curCut is still ahead of the step's clock. */
+  curCutLeft: number;
+  hasCuts: boolean;
+}
+
+/**
+ * The correction at this second (R-74). lagNowSec is the end's lag as things
+ * go now, or null while there is nothing to correct (not running, or the
+ * song lengths and averages not in yet — the forecast would jump under the
+ * cuts). The step under way gets its cut from the lag AS IT STOOD WHEN IT
+ * BEGAN: the lag now less its own overtime. Inside its time that lag does not
+ * move, so the countdown does not drift with the clock, and a reload gives
+ * the same number. Its overtime goes to the steps after it.
+ */
+export function correctionOf(
+  segments: readonly { key: string; partMin: number; chairmanWords?: boolean }[],
+  index: number,
+  curFlex: boolean,
+  curElapsedSec: number,
+  lagNowSec: number | null,
+): Correction {
+  const cur = segments[index];
+  const lagSec = lagNowSec === null ? 0 : Math.max(0, lagNowSec);
+  const overSec = curFlex && cur ? Math.max(0, curElapsedSec - cur.partMin * 60) : 0;
+  const lagAtStart = lagNowSec === null ? 0 : Math.max(0, lagNowSec - overSec);
+  const curCut = curFlex ? (flexPlan(segments, index, null, lagAtStart).cut.get(index) ?? 0) : 0;
+  const rest = flexPlan(segments, index + 1, null, Math.max(0, lagSec - curCut));
+  const futureCut = [...rest.cut.values()].reduce((a, b) => a + b, 0);
+  const curCutLeft = curFlex && cur ? Math.min(curCut, Math.max(0, cur.partMin * 60 - curElapsedSec)) : 0;
+  return { lagSec, curCut, rest, futureCut, curCutLeft, hasCuts: curCut + futureCut > 0 };
+}
+
+/**
+ * «нагоняем 1:47» on the stage only while the cuts do cover the lag: with
+ * cuts kept the end is less than a minute late. Otherwise the plain drift.
+ */
+export function stageCatchingUp(c: Correction, shownDriftSec: number): boolean {
+  return c.hasCuts && c.lagSec >= FLEX_FROM_SEC && shownDriftSec < 60;
+}
+
 /** «29», «14:30» — a step's minutes after its cut. */
 export function minutesAfterCut(partMin: number, cutSec: number): string {
   const sec = partMin * 60 - cutSec;

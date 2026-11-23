@@ -14,8 +14,8 @@ const NO_LENGTHS = new Map<number, number>();
  * Each song's recording length in seconds (R-77, 22 November 2026), by
  * number — for the running meeting's forecast and its song cards.
  */
-export function useSongLengths(): Map<number, number> {
-  const { data } = useQuery({
+export function useSongLengths(): { lengths: Map<number, number>; ready: boolean } {
+  const { data, isFetched } = useQuery({
     queryKey: ['songs', 'lengths'],
     queryFn: async () => {
       const res = await songsApi.list({ limit: 500 });
@@ -25,7 +25,8 @@ export function useSongLengths(): Map<number, number> {
     },
     staleTime: 1000 * 60 * 60,
   });
-  return data ?? NO_LENGTHS;
+  // ready: the answer came (or failed) — the forecast stops changing under it.
+  return { lengths: data ?? NO_LENGTHS, ready: isFetched };
 }
 
 export function useSongsMap(): Map<number, string> {

@@ -201,4 +201,39 @@ check('time with a correction: the lag goes to the flexible parts by length, non
   assert.equal(S.minutesAfterCut(15, 30), '14:30');
 });
 
+check('the part under way keeps one cut: the lag as it stood when it began (R-74, review of 23 November 2026)', () => {
+  const seg = (key, partMin, extra = {}) => ({ key, partMin, ...extra });
+  const mid = [seg('treasures_talk', 10), seg('bible_reading', 4), seg('cbs_conductor', 30)];
+  // 2:00 behind when the talk begins; inside its ten minutes the lag stands still.
+  const at0 = S.correctionOf(mid, 0, true, 0, 120);
+  const at5 = S.correctionOf(mid, 0, true, 300, 120);
+  assert.ok(at0.curCut > 0, 'the talk gives its share');
+  assert.equal(at5.curCut, at0.curCut, 'same cut five minutes in');
+  // A minute over its own ten minutes: the lag now is 3:00, but the cut is the one it began with
+  // (from 3:00 it would be 0:40, not 0:30), and the minute goes to the study.
+  const over = S.correctionOf(mid, 0, true, 660, 180);
+  assert.equal(at0.curCut, 30);
+  assert.equal(over.curCut, 30, 'overtime does not move the cut under way');
+  assert.equal(over.curCutLeft, 0, 'its clock has run out');
+  assert.equal(over.rest.cut.get(2), at0.rest.cut.get(2) + 60, 'the study takes the minute');
+  // Not ready (song lengths or averages not in) or not running: no correction at all.
+  const none = S.correctionOf(mid, 0, true, 0, null);
+  assert.equal(none.hasCuts, false);
+  assert.equal(none.lagSec, 0);
+  // A hard part under way gives nothing; the parts after it take the lag.
+  const hard = S.correctionOf(mid, 1, false, 0, 120);
+  assert.equal(hard.curCut, 0);
+  assert.ok(hard.rest.cut.get(2) > 0);
+  // Nothing flexible left: no cuts, no line, the plain drift.
+  const tail = S.correctionOf([seg('bible_reading', 4)], 0, false, 0, 300);
+  assert.equal(tail.hasCuts, false);
+  assert.equal(S.stageCatchingUp(tail, 300), false);
+  assert.equal(S.stageCatchingUp(tail, 0), false, 'no cuts, no «нагоняем», whatever the end says');
+  // «нагоняем» only while the cuts cover the lag.
+  assert.equal(S.stageCatchingUp(at0, 0), true);
+  assert.equal(S.stageCatchingUp(at0, 59), true);
+  assert.equal(S.stageCatchingUp(at0, 60), false, 'a minute late even with the cuts: the plain drift');
+  assert.equal(S.stageCatchingUp(S.correctionOf(mid, 0, true, 0, 59), 0), false, 'under a minute: nothing to say');
+});
+
 console.log(`conduct-stage: ${n} groups ok`);
