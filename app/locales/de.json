@@ -1056,9 +1056,9 @@
         "weekFrozen": "bereits aufgezeichnet",
         "keptByHand": "{{week}}: von Hand geänderte Titel wurden belassen – Programmpunkte: {{count}}",
         "emptyPartsRemoved": "{{week}}: leere Programmpunkte, die im Arbeitsheft fehlen, wurden entfernt – Programmpunkte: {{count}}",
-        "lessonsSet": "Lektion, Situation und vollständiger Text bei bereits zugeteilten Aufgaben ergänzt: {{count}} — Personen unverändert"
+        "lessonsSet": "Bei bereits zugeteilten Aufgaben Lektion, Situation und vollständigen Text ergänzt, abgeschnittene Titel wortweise gekürzt: {{count}} — Personen unverändert"
       },
-      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel und Dauer der Programmpunkte, bei Schüleraufgaben auch Lektion und Situation.",
+      "privacyNote": "Die Datei wird auf diesem Bildschirm im Browser gelesen und nirgendwohin gesendet — in den Plan gelangen nur Titel, Text und Dauer der Programmpunkte, bei Schüleraufgaben auch Lektion und Situation.",
       "parsing": "Datei wird ausgewertet…",
       "applying": "Wird importiert…",
       "preview": {

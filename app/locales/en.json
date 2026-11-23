@@ -1056,9 +1056,9 @@
         "weekFrozen": "already locked",
         "keptByHand": "{{week}}: titles changed by hand were kept as they were — parts: {{count}}",
         "emptyPartsRemoved": "{{week}}: empty parts the workbook does not have were removed — parts: {{count}}",
-        "lessonsSet": "Lesson, setting and whole text added to parts already assigned: {{count}} — people unchanged"
+        "lessonsSet": "Lesson, setting and whole text added to parts already assigned, cut titles shortened at a word: {{count}} — people unchanged"
       },
-      "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule, and for student parts their lesson and setting.",
+      "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles, their text from the workbook and durations reach the schedule, and for student parts their lesson and setting.",
       "parsing": "Parsing the file…",
       "applying": "Importing…",
       "preview": {
