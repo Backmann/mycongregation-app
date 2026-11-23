@@ -543,6 +543,12 @@ export interface Assignment {
    * gives them (23 November 2026; server assignments.lesson / .setting).
    * Absent from a server before that day.
    */
+  /**
+   * The part's whole text from the workbook (23 November 2026): the title
+   * keeps its beginning, cut at a word. Absent from a server before that day.
+   */
+  partText?: string | null;
+  importedTitle?: string | null;
   lesson?: string | null;
   setting?: 'house' | 'informal' | 'public' | null;
   partDurationMin: number | null;
@@ -4347,6 +4353,8 @@ export interface MyAssignmentItem {
    * from servers before 9 November 2026.
    */
   agendaId?: string;
+  /** A part's whole text, when its title keeps only the beginning (23.11.2026). */
+  text?: string;
   sortDate: string;
   weekStartDate?: string;
   dayOfWeek?: number;

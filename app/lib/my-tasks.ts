@@ -355,6 +355,8 @@ export function myPartLine(
 export function partNote(it: MyAssignmentItem): string | null {
   if (it.kind !== 'meeting' || !it.partKey) return null;
   if (SONG_TASK_KEYS.has(it.partKey) || PRAYER_TASK_KEYS.has(it.partKey)) return null;
+  // The whole text, where the title keeps only its beginning (23 November 2026).
+  if (it.text?.trim()) return it.text.trim();
   const idx = it.label.indexOf(': ');
   if (idx <= 0) return null;
   return it.label.slice(idx + 2).trim() || null;

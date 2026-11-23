@@ -4,8 +4,10 @@ import {
   StyleSheet,
   Text,
   useWindowDimensions,
+  View,
 } from "react-native";
 import { readerTitle } from "../lib/reader-titles";
+import { partFullText } from "../lib/part-text";
 import { useProgrammeRetro } from "./ProgrammeLockNote";
 import { useEffect, useState } from "react";
 import { Sheet } from "./Sheet";
@@ -274,6 +276,17 @@ export function AssignmentSheet({
           />
         ) : (
           <>
+            {(() => {
+              // The workbook's whole text (23 November 2026): the title above
+              // keeps its beginning only.
+              const full = partFullText(active);
+              return full ? (
+                <View style={styles.fileText}>
+                  <Text style={styles.fileTextLabel}>{t("schedule.sheet.fileText")}</Text>
+                  <Text style={styles.fileTextBody}>{full}</Text>
+                </View>
+              ) : null;
+            })()}
             <AssignmentForm
               key={active.id}
               // The part itself (20 November 2026): without it the pickers
@@ -359,6 +372,19 @@ export function AssignmentSheet({
 }
 
 const styles = StyleSheet.create({
+  // The workbook's whole text above the form (23 November 2026).
+  fileText: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    gap: 4,
+  },
+  fileTextLabel: { fontFamily: "Manrope_600SemiBold", fontSize: 12, color: "#64748b" },
+  fileTextBody: { fontFamily: "Manrope_400Regular", fontSize: 14, lineHeight: 20, color: "#0f172a" },
   // flex: 1, НЕ absoluteFillObject.
   //
   // Растянутый слой получает размеры от родителя, а на Android приложение

@@ -1056,7 +1056,7 @@
         "weekFrozen": "already locked",
         "keptByHand": "{{week}}: titles changed by hand were kept as they were — parts: {{count}}",
         "emptyPartsRemoved": "{{week}}: empty parts the workbook does not have were removed — parts: {{count}}",
-        "lessonsSet": "Lesson and setting added to parts already assigned: {{count}} — people and titles unchanged"
+        "lessonsSet": "Lesson, setting and whole text added to parts already assigned: {{count}} — people unchanged"
       },
       "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule, and for student parts their lesson and setting.",
       "parsing": "Parsing the file…",
@@ -1109,7 +1109,8 @@
     },
     "sheet": {
       "next": "Next →",
-      "title": "Assignment"
+      "title": "Assignment",
+      "fileText": "Text from the workbook"
     },
     "weekend": {
       "reader": "Reader"
@@ -1313,7 +1314,7 @@
         "new_other": "all {{count}} weeks are new",
         "partly_one": "new: {{count}}, already in: {{loaded}}",
         "partly_other": "new: {{count}}, already in: {{loaded}}",
-        "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet; parts with people and titles changed after loading from a file stay.",
+        "repeat": "Already loaded. Loading it again updates titles and durations of parts nobody is assigned to yet. In parts with people it only adds the lesson, the setting and the whole text; people and titles changed by hand stay.",
         "sameAsOther": "The same weeks as a file above — this one will be skipped.",
         "nothing": "Nothing to load: there are no meetings in these weeks.",
         "unchecked": "Could not compare with the program. Loading is still safe: parts with people assigned are not touched.",

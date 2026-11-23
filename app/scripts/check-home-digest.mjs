@@ -39,6 +39,7 @@ const MODULES = [
   'home-changes',
   'date-range',
   'route-link',
+  'part-text',
 ];
 for (const name of MODULES) {
   const src = readFileSync(join(ROOT, 'lib', `${name}.ts`), 'utf8');
@@ -943,6 +944,22 @@ const labels = (en) => (en ? en.myParts.map((p) => p.label) : null);
     check('28р «для служебных помощников» в названии школы нет', /Служения для служебных помощников/.test(JSON.stringify(ru)), false);
   }
   check('28м старого названия нигде нет', /царственного служения/i.test(readFileSync(join(ROOT, 'locales', 'ru.json'), 'utf8')), false);
+}
+
+// --- A part's whole text (23 November 2026) -------------------------------
+// The title keeps the beginning cut at a word; his own line and the part's
+// window show all of it — unless the title was changed by hand.
+{
+  const { partNote } = await import(pathToFileURL(join(out, 'my-tasks.mjs')));
+  const { partFullText } = await import(pathToFileURL(join(out, 'part-text.mjs')));
+  const FULL = 'ПРОПОВЕДЬ ПО ДОМАМ. Придуманное задание целиком (lmd урок 3, пункт 3)';
+  const SHORT = 'Начинайте разговор: ПРОПОВЕДЬ ПО ДОМАМ. Придуманное…';
+  const item = (x) => ({ kind: 'meeting', sortDate: '2030-01-07', partKey: 'apply_yourself_1', label: SHORT, ...x });
+  check('текст части: на его строке — весь', partNote(item({ text: FULL })), FULL);
+  check('текст части: без полного — как прежде, из названия', partNote(item({})), 'ПРОПОВЕДЬ ПО ДОМАМ. Придуманное…');
+  check('текст части: в окне — весь, пока название от загрузки', partFullText({ partTitle: SHORT, importedTitle: SHORT, partText: FULL }), FULL);
+  check('текст части: название изменено вручную — текста из файла нет', partFullText({ partTitle: 'Своё', importedTitle: SHORT, partText: FULL }), null);
+  check('текст части: название уже всё вмещает — добавлять нечего', partFullText({ partTitle: `Часть: ${FULL}`, importedTitle: `Часть: ${FULL}`, partText: FULL }), null);
 }
 
 if (failures) {

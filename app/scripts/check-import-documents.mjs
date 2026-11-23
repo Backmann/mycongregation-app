@@ -264,6 +264,40 @@ const sent = (workbook, i = 0) =>
   check('не учебной части урок не отправляется', 'lesson' in of('treasures_talk'), false);
 }
 {
+  // A part's text in its title (23 November 2026): cut at a word, never in a
+  // bracket, «…» at the end — and all of it sent beside. On the workbooks of
+  // January and March 2027 the first paragraph runs up to 264 characters.
+  const words = 'Придуманный текст части из многих слов, чтобы он был длиннее ста двадцати знаков и его пришлось бы сокращать по слову';
+  const cases = [
+    ['короткий — целиком', 'Короткий текст части.', 'Короткий текст части.'],
+    ['на несколько знаков длиннее — целиком', 'а'.repeat(118) + ' (rr 14).', 'а'.repeat(118) + ' (rr 14).'],
+    ['длинный — по слову, с «…»', `${words} и ещё немного слов в конце.`, null],
+    ['скобка не остаётся открытой', `${'Текст '.repeat(17)}(rr 114, абз. 9; 117, абз. 14 и ещё ссылки).`, null],
+    // The cut falls on a space inside a bracket: no word to drop, the bracket goes.
+    ['обрыв на пробеле внутри скобки', `${'а'.repeat(55)} (rr 114, абз. 9; 117, абз. 14 и ещё ссылки на другие места в той же книге и в другой).`, null],
+  ];
+  for (const [name, text, want] of cases) {
+    const got = mwb.shortNote(text);
+    if (want !== null) check(`название части: ${name}`, got, want);
+    else {
+      const body = got.slice(0, -1);
+      check(`название части: ${name}`, [got.endsWith('…'), text.startsWith(body), /[\s.,;:!?)»]/u.test(text[body.length] ?? ' '), body.lastIndexOf('(') > body.lastIndexOf(')'), got.length <= 121], [true, true, true, false, true]);
+    }
+  }
+  const week = page(
+    `<header><h1><strong>4—10 ЯНВАРЯ</strong></h1><h2><strong>ИСАЙЯ 1, 2</strong></h2></header><div class="bodyTxt">` +
+      section('СОКРОВИЩА ИЗ СЛОВА БОГА') +
+      part('1. Вымышленная тема речи', 10, `${words} и ещё немного слов в конце.`) +
+      part('2. Духовные жемчужины', 10, 'Коротко.') +
+      `</div>`,
+  );
+  const book = await mwb.parseMwbFile(await issue({ '1.xhtml': week }), 2027, 'mwb_U_202701.epub');
+  const ps = mwb.toApplyPayload(book).weeks[0].parts;
+  const talk = ps.find((p) => p.partKey === 'treasures_talk');
+  check('весь текст части уходит рядом с коротким названием', [talk.partTitle.endsWith('…'), talk.partText, ps.find((p) => p.partKey === 'spiritual_gems').partText], [true, `${words} и ещё немного слов в конце.`, 'Коротко.']);
+  check('у части без текста его нет', 'partText' in ps.find((p) => p.partKey === 'midweek_chairman'), false);
+}
+{
   const book = await mwb.parseMwbFile(await issue({ '202026001.xhtml': weekOf2026 }), 2026, 'mwb_U_202605.epub');
   const parts = sent(book);
   check('вёрстка до конца 2026: песни в заголовках читаются по-прежнему', [
