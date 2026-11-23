@@ -27,6 +27,9 @@ export interface ParsedPart {
   partOrder: number;
   classifierConfidence: 'high' | 'medium' | 'low' | 'synthetic' | 'unknown';
   synthetic?: boolean;
+  /** A student part's lesson and setting, from its whole text (studentPartOf). */
+  lesson?: string | null;
+  setting?: StudentSetting | null;
 }
 
 export interface ParsedWeek {
@@ -466,6 +469,9 @@ function parseWeeklyDocument(
       // until the next h2/h3 (first 3, identical to server). Strip the
       // leading "(N мин.)" marker — duration is captured separately.
       const notes: string[] = [];
+      // The same paragraphs uncut: a student part's lesson closes its text,
+      // past the 120 characters a note keeps (23 November 2026).
+      const whole: string[] = [];
       outer: for (const sib of siblings) {
         const ps = sib.querySelectorAll('p');
         for (let i = 0; i < ps.length; i++) {
@@ -475,6 +481,7 @@ function parseWeeklyDocument(
           nt = nt.replace(/^\(\s*\d+\s*мин\.?\s*\)\s*/u, '').trim();
           if (nt) {
             notes.push(nt.slice(0, 120));
+            whole.push(nt);
           }
         }
       }
@@ -518,6 +525,7 @@ function parseWeeklyDocument(
         notes,
         partKey: cls.partKey,
         partOrder: cls.partOrder,
+        ...studentPartOf(cls.partKey, whole),
         classifierConfidence: cls.confidence,
       });
     }
@@ -564,6 +572,50 @@ function parseWeeklyDocument(
     biblePassage,
     parts,
   };
+}
+
+// ---------- A student part's lesson and setting ----------
+
+/**
+ * WHAT A STUDENT PART IS GIVEN TO WORK ON (23 November 2026): the setting at
+ * the start of its text, in capitals («ПРОПОВЕДЬ ПО ДОМАМ.»), the lesson for
+ * the counsel at its end, in brackets («(lmd урок 2, пункт 3)»,
+ * «(th урок 10)»). The title keeps only the first 120 characters, and on the
+ * live programme 30 of 175 student parts had lost their lesson with the rest.
+ * Kept the same as server/src/mwb-import/student-part.ts, which fills stored
+ * titles by the same rules.
+ */
+export type StudentSetting = 'house' | 'informal' | 'public';
+
+export function isStudentPart(partKey: string): boolean {
+  return partKey === 'bible_reading' || /^apply_yourself_\d+$/.test(partKey);
+}
+
+/** The last bracketed reference to a lesson: «lmd урок 2, пункт 3». */
+export function lessonOf(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const all = [...text.matchAll(/\(((?:lmd|th)\s[^()]{1,60}?)\)/gu)];
+  const last = all[all.length - 1]?.[1]?.replace(/\s+/g, ' ').trim();
+  return last || null;
+}
+
+/** The setting, from the capitals the text begins with (after «Part: » in a title). */
+export function settingOf(text: string | null | undefined): StudentSetting | null {
+  if (!text) return null;
+  // The text's own capitals first: an assignment may hold a colon of its own.
+  const capsAt = (t: string) => /^\s*([A-ZА-ЯЁÄÖÜ][A-ZА-ЯЁÄÖÜ ,-]{2,60})\./u.exec(t)?.[1] ?? null;
+  const caps = capsAt(text) ?? (text.includes(': ') ? capsAt(text.slice(text.indexOf(': ') + 2)) : null);
+  if (!caps) return null;
+  if (/ДОМАМ/u.test(caps)) return 'house';
+  if (/НЕФОРМАЛЬН/u.test(caps)) return 'informal';
+  if (/ОБЩЕСТВЕНН/u.test(caps)) return 'public';
+  return null;
+}
+
+/** Both, for a student part; nothing for any other. */
+function studentPartOf(partKey: string, whole: string[]): Pick<ParsedPart, 'lesson' | 'setting'> {
+  if (!isStudentPart(partKey)) return {};
+  return { lesson: lessonOf(whole.join(' ')), setting: settingOf(whole[0]) };
 }
 
 // ---------- Public API ----------
@@ -671,6 +723,9 @@ export interface ApplyParsedPartPayload {
   partOrder: number;
   partTitle: string | null;
   partDurationMin: number | null;
+  /** Student parts only (the server refuses nothing else: it ignores them there). */
+  lesson?: string | null;
+  setting?: StudentSetting | null;
 }
 
 export interface ApplyParsedWeekPayload {
@@ -709,6 +764,8 @@ export function toApplyPayload(wb: ParsedWorkbook): ApplyParsedPayload {
             // trim: notes[0].slice(0,120) может оставить хвостовой пробел
             partTitle: title ? title.trim() : null,
             partDurationMin: p.durationMin ?? null,
+            // A student part's, from its whole text; none for the others.
+            ...(isStudentPart(p.partKey) ? { lesson: p.lesson ?? null, setting: p.setting ?? null } : {}),
           };
         }),
     })),

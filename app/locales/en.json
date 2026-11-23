@@ -1055,9 +1055,10 @@
         "weekFrozenNotice": "{{week}}: this week’s program is already locked as a record — parts not loaded: {{count}}",
         "weekFrozen": "already locked",
         "keptByHand": "{{week}}: titles changed by hand were kept as they were — parts: {{count}}",
-        "emptyPartsRemoved": "{{week}}: empty parts the workbook does not have were removed — parts: {{count}}"
+        "emptyPartsRemoved": "{{week}}: empty parts the workbook does not have were removed — parts: {{count}}",
+        "lessonsSet": "Lesson and setting added to parts already assigned: {{count}} — people and titles unchanged"
       },
-      "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule.",
+      "privacyNote": "The file is read on this screen, in the browser, and is not sent anywhere — only part titles and durations reach the schedule, and for student parts their lesson and setting.",
       "parsing": "Parsing the file…",
       "applying": "Importing…",
       "preview": {
@@ -5537,7 +5538,8 @@
       "took": "part: {{time}}",
       "long": "counsel over a minute",
       "note": "counts up · does not start anything automatically",
-      "short": "counsel"
+      "short": "counsel",
+      "lesson": "lesson for the counsel"
     },
     "practice": {
       "start": "Practice",
@@ -5793,6 +5795,11 @@
       "body": "It is {{now}} now. If the song began on time, the count runs from {{time}} — and the screen shows no false lateness.",
       "yes": "Yes, at {{time}}",
       "no": "No — it just began, at {{now}}"
+    },
+    "setting": {
+      "house": "House to house",
+      "informal": "Informal witnessing",
+      "public": "Public witnessing"
     }
   },
   "serviceHub": {

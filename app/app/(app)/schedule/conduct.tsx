@@ -65,6 +65,7 @@ import {
   endDriftSec,
   rehearsalAnchor,
   quotedSong,
+  settingLabel,
   songIsProgrammes,
   songLength,
   songStepSec,
@@ -1483,7 +1484,9 @@ export default function ConductScreen({
    * number in its label; the catalog (Программа → песни) gives the words.
    */
   const runView = (seg: RunSegment): SegView => {
-    const v = runViewBase(seg);
+    const base = runViewBase(seg);
+    const row = seg.assignmentId ? byId.get(seg.assignmentId) : undefined;
+    const v = row?.setting ? { ...base, setting: settingLabel(t, row.setting) } : base;
     if (!seg.soft) return v;
     const n = /(\d{1,3})/.exec(v.label)?.[1];
     const name = n ? songTitles.get(parseInt(n, 10)) : undefined;
@@ -1919,6 +1922,15 @@ export default function ConductScreen({
           {t('conduct.counsel.title', { part: keyLabel(current.key) })}
         </Text>
         <CounselledHeadline row={current.assignmentId ? byId.get(current.assignmentId) : undefined} nameById={nameById} />
+        {(() => {
+          const lesson = current.assignmentId ? byId.get(current.assignmentId)?.lesson : null;
+          return lesson ? (
+            <View style={styles.lessonRow}>
+              <Text style={styles.lessonLabel}>{t('conduct.counsel.lesson')}</Text>
+              <Text style={styles.lessonValue}>{lesson}</Text>
+            </View>
+          ) : null;
+        })()}
         <Text style={styles.subtitle}>
           {t('conduct.counsel.took', { time: mmss(run.spent[run.index] ?? 0) })}
         </Text>
@@ -2232,6 +2244,8 @@ export default function ConductScreen({
       soft: !!seg.soft,
       song: v.song,
       songLen: v.songLen ?? null,
+      setting: v.setting ?? null,
+      lesson: row?.lesson ?? null,
     };
   };
   const stageHeading = (() => {
@@ -2369,7 +2383,7 @@ export default function ConductScreen({
         startAt={meetingTime}
         untilStart={!started ? untilStartSec(meetingTime, meetingDay, now) : null}
         current={stagePart(current)}
-        counselFor={counselling ? (() => { const sp = stagePart(current); return sp ? { title: sp.title, person: sp.person } : null; })() : null}
+        counselFor={counselling ? (() => { const sp = stagePart(current); return sp ? { title: sp.title, person: sp.person, lesson: sp.lesson ?? null } : null; })() : null}
         leftSec={left}
         unsure={unsure}
         paused={pausedText}
@@ -2465,6 +2479,8 @@ interface SegView {
   songLen?: string | null;
   /** The weekend talk's or study's own theme, under the part's name. */
   theme?: string | null;
+  /** A student part's setting, «Проповедь по домам» (23 November 2026). */
+  setting?: string | null;
 }
 
 function SegmentHeadline({
@@ -2488,6 +2504,7 @@ function SegmentHeadline({
     return (
       <View>
         <Text style={big ? styles.whatBig : styles.whatSmall}>{view.label}</Text>
+        {view.setting ? <Text style={styles.subtitle}>{view.setting}</Text> : null}
         {view.theme ? <Text style={big ? styles.songBig : styles.songSmall}>{t('common.quoted', { text: view.theme })}</Text> : null}
         {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{quotedSong(t, view.song, view.songLen)}</Text> : null}
         {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
@@ -2506,6 +2523,7 @@ function SegmentHeadline({
       <Text style={view.person ? (big ? styles.partBig : styles.partSmall) : big ? styles.personBig : styles.personSmall}>
         {view.label}
       </Text>
+      {view.setting ? <Text style={styles.subtitle}>{view.setting}</Text> : null}
       {view.song ? <Text style={big ? styles.songBig : styles.songSmall}>{quotedSong(t, view.song, view.songLen)}</Text> : null}
       {view.subtitle ? <Text style={styles.subtitle}>{view.subtitle}</Text> : null}
     </View>
@@ -2596,6 +2614,10 @@ const styles = StyleSheet.create({
   partBig: { fontFamily: 'Manrope_400Regular', fontSize: 26, color: '#334155', marginTop: 4 },
   partSmall: { fontFamily: 'Manrope_400Regular', fontSize: 16, color: '#475569', marginTop: 2 },
   subtitle: { fontFamily: 'Manrope_400Regular', fontSize: 14, color: '#64748b', marginTop: 4 },
+  // The counsel's lesson (23 November 2026): what the counsellor speaks on.
+  lessonRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8, marginTop: 8 },
+  lessonLabel: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: '#64748b' },
+  lessonValue: { fontFamily: 'Manrope_700Bold', fontSize: 20, color: '#0f172a' },
   songBig: { fontFamily: 'Manrope_500Medium', fontSize: 17, color: '#334155', marginTop: 4 },
   songSmall: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: '#334155', marginTop: 2 },
   // Half as big again as on 14 October: read at a glance from the lectern.

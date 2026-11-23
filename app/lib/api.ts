@@ -538,6 +538,13 @@ export interface Assignment {
   partKey: string;
   partOrder: number;
   partTitle: string | null;
+  /**
+   * A student part's lesson for the counsel and its setting, as the workbook
+   * gives them (23 November 2026; server assignments.lesson / .setting).
+   * Absent from a server before that day.
+   */
+  lesson?: string | null;
+  setting?: 'house' | 'informal' | 'public' | null;
   partDurationMin: number | null;
   publisherId: string | null;
   assistantPublisherId: string | null;
@@ -663,6 +670,8 @@ export interface ImportResult {
   partsCreated: number;
   partsUpdated: number;
   partsSkipped: number;
+  /** Of the skipped, assigned parts that took their lesson or setting (23.11.2026). */
+  lessonsSet?: number;
   unclassifiedParts: number;
   weeks: WeekImportSummary[];
   errors: string[];
