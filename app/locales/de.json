@@ -451,7 +451,8 @@
         "service_log_entries": "eigene Stundenerfassung",
         "pioneer_meetings": "Zusammenkunft mit den Pionieren",
         "publisher_distinct_pairs": "Vermerke „verschiedene Personen“"
-      }
+      },
+      "refusedTitle": "Endgültiges Löschen nicht möglich"
     },
     "departedCount": "{{count}} ausgeschieden",
     "myGroupOnly": "Angezeigt werden Verkündiger Ihrer Gruppe",
@@ -1771,7 +1772,8 @@
     "renamePlace": "Umbenennen",
     "removePlace": "Dienst entfernen",
     "removePlaceAsk": "„{{label}}“ mitsamt allen Zugeteilten entfernen?",
-    "onlyThisMeeting": "Nur bei dieser Zusammenkunft"
+    "onlyThisMeeting": "Nur bei dieser Zusammenkunft",
+    "warningsTitleNamed": "{{name}} – bitte prüfen"
   },
   "publisherActivity": {
     "thisMeeting": "Diese Zusammenkunft:"

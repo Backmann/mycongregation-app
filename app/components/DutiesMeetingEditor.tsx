@@ -178,7 +178,13 @@ export function DutiesMeetingEditor({
             hideHeader
             onGenerate={(eventType) => generateDutiesMutation.mutate(eventType)}
             onAssign={(id, publisherId) =>
-              assignDutyMutation.mutate({ id, publisherId, eventType: meeting as EventType })
+              assignDutyMutation.mutate({
+                id,
+                publisherId,
+                eventType: meeting as EventType,
+                // Said in the warning's title: whom it is about.
+                name: publisherId ? publishersById.get(publisherId)?.displayName : undefined,
+              })
             }
             onAddCustom={(eventType, customLabel) => createCustomDutyMutation.mutate({ eventType, customLabel })}
             onRemoveDuty={(id) => removeDutyMutation.mutate(id)}

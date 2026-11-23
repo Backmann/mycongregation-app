@@ -3,7 +3,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   
-  Platform,
   Pressable,
   SafeAreaView,
   StyleSheet,
@@ -65,8 +64,9 @@ export default function CongregationsScreen() {
   const invalidate = () => qc.invalidateQueries({ queryKey: QK });
   const showError = (e: unknown) => {
     const msg = extractErrorMessage(e);
-    if (Platform.OS === 'web') window.alert(msg);
-    else notify(t('talkCoordinator.errorTitle'), msg);
+    // The strip, on every platform: the browser's own alert was the one
+    // window of the app's that was not the app's (22 November 2026).
+    notify(t('talkCoordinator.errorTitle'), msg);
   };
 
   const createMutation = useMutation({

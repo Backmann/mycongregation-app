@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Modal,
   
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -33,7 +32,7 @@ import { MergeHistory } from '../../../components/MergeHistory';
 import { useAuth } from '../../../lib/auth';
 import { usePermissions } from '../../../lib/permissions';
 import { Dialog } from '../../../components/Dialog';
-import { reportError, notify } from '../../../lib/error-bus';
+import { reportError } from '../../../lib/error-bus';
 import { buildS21Html, availableServiceYears } from '../../../lib/s21';
 import { exportHtmlAsPdf, openPrintWindow } from '../../../lib/pdf';
 import { confirm } from '../../../components/ConfirmHost';
@@ -209,6 +208,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
   const { canEditPublishers, canGenerateS21 } = usePermissions();
   const purgeMutation = useMutation({
     mutationFn: () => publishersApi.purge(id!),
+    // The refusal is said in its own window below; the strip under it showed
+    // the server's raw «publisher_has_history: assignments=12, …» on top
+    // (the layout pass of 23 November 2026).
+    meta: { inlineError: true },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['publishers'] });
       goBack('/publishers');
@@ -225,11 +228,10 @@ export function PublisherDetail({ id }: { id: string | undefined }) {
           ? t('publishers.purge.hasHistoryNamed', { holders })
           : t('publishers.purge.hasHistory')
         : raw;
-      if (Platform.OS === 'web') {
-        window.alert(body);
-      } else {
-        notify(t('publishers.purge.title'), body);
-      }
+      // What holds the card can be a long list: the app's own window, which
+      // shows all of it, on every platform — not the browser's alert, nor
+      // the strip cut at three lines.
+      void confirm({ title: t('publishers.purge.refusedTitle'), body, confirmLabel: t('common.ok'), info: true });
     },
   });
   const handlePurge = async () => {

@@ -20,7 +20,6 @@ import {
 } from "../lib/api";
 import { AssignmentForm, AssignmentFormCoPicker } from "./AssignmentForm";
 import { SongPicker } from "./SongPicker";
-import { notify } from "../lib/error-bus";
 import { confirm } from "../components/ConfirmHost";
 
 interface Props {
@@ -135,12 +134,11 @@ export function AssignmentSheet({
                       name: w.publisherName,
                     }),
           )
-          .join("\n");
-        if (Platform.OS === "web") {
-          window.alert(msg);
-        } else {
-          notify(t("rules.warn.title"), msg);
-        }
+          .join("\n\n");
+        // One line per brother: the app's own window shows them all, on
+        // every platform (the strip was cut at three lines, the browser's
+        // alert was not the app's).
+        void confirm({ title: t("rules.warn.title"), body: msg, confirmLabel: t("common.ok"), info: true });
       }
     },
     onSettled: () => {

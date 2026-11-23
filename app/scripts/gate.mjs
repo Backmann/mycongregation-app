@@ -35,6 +35,9 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** Every step, in the order CI runs them. */
 const STEPS = [
   ['Пути для Windows', 'node', ['scripts/check-windows-paths.mjs']],
+  // The app's own windows only, never the browser's (23 November 2026).
+  ['Окна приложения', 'node', ['scripts/check-no-browser-dialogs.mjs', '--self-test']],
+  ['Окна приложения', 'node', ['scripts/check-no-browser-dialogs.mjs']],
   // A part's or a talk's name is never cut with «…» (10 November 2026).
   ['Названия целиком', 'node', ['scripts/check-whole-titles.mjs']],
   // The edit screen must hand the form every field it keeps, or a save
