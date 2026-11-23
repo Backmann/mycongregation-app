@@ -4209,7 +4209,7 @@
     "untilCancelled": "Bis auf Widerruf",
     "untilCancelledHint": "dient unbefristet, bis es beendet wird",
     "badgeServing": "Hilfspionier · {{period}}",
-    "badgeUpcoming": "Hilfspionierdienst ab {{month}}",
+    "badgeUpcoming": "Hilfspionier ab {{month}}",
     "servesAsAux": "Dient als Hilfspionier",
     "addTitle2": "Hilfspionier hinzufügen",
     "startMonth": "Startmonat",
