@@ -218,13 +218,24 @@ export function settingLabel(t: (key: string) => string, setting: string | null 
   return t(`conduct.setting.${setting}`);
 }
 
+/**
+ * «Name» — unless the name already is one quotation: 16 of 164 song titles in
+ * the catalog are («„…“» would be right, ««…»» is what showed, live
+ * 23 November 2026). «A» и «B» is not one quotation and gets its own quotes.
+ */
+export function quoteOnce(t: (key: string, o: { text: string }) => string, text: string): string {
+  const s = text.trim();
+  const whole = /^[«"„“]/.test(s) && /[»"“”]$/.test(s) && !/[»"“”]/.test(s.slice(1, -1));
+  return whole ? s : t('common.quoted', { text });
+}
+
 /** «Name» · 2:56 — the length beside the quoted name, not inside its quotes. */
 export function quotedSong(
   t: (key: string, o: { text: string }) => string,
   name: string,
   len: string | null | undefined,
 ): string {
-  const q = t('common.quoted', { text: name });
+  const q = quoteOnce(t, name);
   return len ? `${q} · ${len}` : q;
 }
 

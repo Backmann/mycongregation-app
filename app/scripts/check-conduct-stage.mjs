@@ -147,6 +147,11 @@ check('a song step is its recording plus its prayer, not the programme\'s five m
   const q = (_k, o) => `«${o.text}»`;
   assert.equal(S.quotedSong(q, 'Name', '2:56'), '«Name» · 2:56');
   assert.equal(S.quotedSong(q, 'Name', null), '«Name»');
+  // A title that already is one quotation keeps its own quotes (16 of 164 songs, 23 November 2026).
+  assert.equal(S.quotedSong(q, '«Love one another»', '1:50'), '«Love one another» · 1:50');
+  assert.equal(S.quoteOnce(q, ' «Love one another» '), '«Love one another»');
+  assert.equal(S.quoteOnce(q, '«A» and «B»'), '««A» and «B»»', 'two quotations are not one');
+  assert.equal(S.quoteOnce(q, 'Plain'), '«Plain»');
   assert.equal(S.songLength(301), '5:01');
 });
 
