@@ -5,6 +5,7 @@ import * as Localization from 'expo-localization';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { installPluralRules } from './plural-rules';
+import { punctuationProcessor } from './punctuation';
 // Month and weekday names for dayjs, before any screen asks for a date.
 import './dayjs-locales';
 import en from '../locales/en.json';
@@ -48,7 +49,8 @@ export function getDeviceLanguage(): SupportedLanguage {
 installPluralRules();
 
 // Synchronous init at module load — uses device language as initial
-i18n.use(initReactI18next).init({
+// One stop at the end of a sentence, whatever value was put into it (lib/punctuation.ts).
+i18n.use(initReactI18next).use(punctuationProcessor).init({
   resources: {
     en: { translation: en },
     ru: { translation: ru },
@@ -58,6 +60,7 @@ i18n.use(initReactI18next).init({
   fallbackLng: 'en',
   interpolation: { escapeValue: false },
   compatibilityJSON: 'v4',
+  postProcess: ['punctuation'],
 });
 
 /**
