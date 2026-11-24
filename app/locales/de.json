@@ -7684,7 +7684,9 @@
     "route": "Route",
     "map": {
       "failed": "Die Karte wurde nicht geladen. Die Liste unten funktioniert.",
-      "noStreets": "Die Straßenkarte ist noch nicht geladen — nur die Gebietsumrisse sind zu sehen."
+      "noStreets": "Die Straßenkarte ist noch nicht geladen — nur die Gebietsumrisse sind zu sehen.",
+      "photo": "Luftbild",
+      "plan": "Karte"
     },
     "tone": {
       "held": "Ausgegeben",

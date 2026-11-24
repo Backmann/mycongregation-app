@@ -12,6 +12,7 @@ import type { TerritoryGeometry } from './api';
 import { loadMapLibs, MAP_FILES, mapFileUrl, type MapLibreMap } from './map-libs';
 import { boxOf } from './territory-view';
 import { streetsInside } from './territory-sheet';
+import { clearLayers } from './map-style';
 
 const RATIO = 2;
 const WAIT_MS = 25_000;
@@ -111,7 +112,7 @@ export async function snapshotTerritory(input: SnapshotInput): Promise<Snapshot>
         ? { protomaps: { type: 'vector', url: `pmtiles://${fileUrl}` } }
         : {},
       layers: input.mapReady
-        ? basemaps.layers('protomaps', basemaps.namedFlavor('light'), { lang: 'de' })
+        ? clearLayers(basemaps)
         : [{ id: 'background', type: 'background', paint: { 'background-color': '#f1f5f9' } }],
     },
     interactive: false,

@@ -12,6 +12,7 @@ import {
 } from '../../lib/map-libs';
 import { metres, snapToLines, type Pt } from '../../lib/outline-edit';
 import { boxOf } from '../../lib/territory-view';
+import { clearLayers } from '../../lib/map-style';
 
 /** What the mouse does on the map of a cut's lines (16 November 2026). */
 export type LineTool = 'points' | 'redraw' | 'add';
@@ -221,7 +222,7 @@ export const LineEditor = forwardRef<
               }
             : {},
           layers: streetsReady
-            ? basemaps.layers('protomaps', basemaps.namedFlavor('light'), { lang: 'de' })
+            ? clearLayers(basemaps)
             : [{ id: 'background', type: 'background', paint: { 'background-color': '#eef2f3' } }],
         };
         m = new maplibregl.Map({

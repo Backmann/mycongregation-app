@@ -28,6 +28,7 @@ import {
   type Ring,
 } from '../../lib/outline-edit';
 import { boxOf } from '../../lib/territory-view';
+import { clearLayers } from '../../lib/map-style';
 
 export interface EditShape {
   id: string;
@@ -237,7 +238,7 @@ export const OutlineEditor = forwardRef<
               }
             : {},
           layers: streetsReady
-            ? basemaps.layers('protomaps', basemaps.namedFlavor('light'), { lang: 'de' })
+            ? clearLayers(basemaps)
             : [{ id: 'background', type: 'background', paint: { 'background-color': '#eef2f3' } }],
         };
         m = new maplibregl.Map({
