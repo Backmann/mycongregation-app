@@ -144,6 +144,8 @@ const STEPS = [
   // A map anyone reads (R-67, 23 November 2026): pair colours apart for every
   // kind of sight, dark names, numbers on the lines, no turning.
   ['Карта для всех', 'node', ['scripts/check-map-access.mjs']],
+  // One stop at the end of a sentence, whatever value was put in (24 November 2026).
+  ['Одна точка в конце', 'node', ['scripts/check-punctuation.mjs']],
   ['Назад туда, откуда пришли', 'node', ['scripts/check-nav-history.mjs']],
   ['Подробный итог встречи', 'node', ['scripts/check-conduct-report.mjs']],
   ['Перенос встречи для проповеди', 'node', ['scripts/check-field-moves.mjs']],
