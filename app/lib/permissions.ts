@@ -111,6 +111,14 @@ export interface Permissions {
   /** Special events — admin OR body coordinator (совет старейшин). */
   canManageEvents: boolean;
 
+  /**
+   * Announcements read at the meetings (R-02, 24 November 2026): the
+   * coordinator of the body of elders, his assistant and the administrators
+   * write them. The chairman of a meeting reads its own list — that is the
+   * server's answer for that meeting, not a flag here.
+   */
+  canWriteAnnouncements: boolean;
+
   /** Absences — admin OR body coordinator / midweek overseer / secretary. */
   canManageAbsences: boolean;
 
@@ -255,6 +263,8 @@ export function usePermissions(): Permissions {
 
       // Secretary + admin only.
       canManageEvents: isAdmin || holds("body_coordinator"),
+      canWriteAnnouncements:
+        isAdmin || holds("body_coordinator") || holds("body_coordinator_assistant"),
       canManageAbsences:
         isAdmin ||
         holds("body_coordinator") ||

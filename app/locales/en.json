@@ -4439,7 +4439,8 @@
       "territory_settings": "Territories: confirmed",
       "territory_assignment": "Territories: assignments",
       "territory": "Territories",
-      "territory_no_call": "Territories: do not call"
+      "territory_no_call": "Territories: do not call",
+      "meeting_announcement": "Announcements"
     },
     "actions": {
       "CREATE": "added",
@@ -4692,7 +4693,9 @@
       "wifeRestored": "Wife's rows put back",
       "publishedParts": "Parts published",
       "notified": "With a notification",
-      "emptySeats": "Empty places"
+      "emptySeats": "Empty places",
+      "letter": "Letter",
+      "carried": "Moved"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -5884,7 +5887,8 @@
       "responsibilities": "Who is responsible for what",
       "localNeeds": "The elders’ topics for the weeks ahead",
       "events": "Conventions, visits, schools, the Memorial",
-      "eventsNext": "Next — {{date}}"
+      "eventsNext": "Next — {{date}}",
+      "announcements": "What the chairman reads at the meetings"
     },
     "cleaning": "Hall cleaning",
     "duties": "Meeting duties",
@@ -6572,7 +6576,13 @@
       "PART_NOT_IN_MEETING": "This part belongs to the other meeting.",
       "CONDUCT_NOT_TODAY": "The meeting is run on its day. Before it — a practice: it shows on the stage screen and is not saved.",
       "CONDUCT_PRACTICE_AFTER_START": "The meeting is already running — practice is only before it starts.",
-      "CONDUCT_RESULT_EARLY": "The meeting has not been held yet — a run before its day is not saved as its result."
+      "CONDUCT_RESULT_EARLY": "The meeting has not been held yet — a run before its day is not saved as its result.",
+      "ANNOUNCEMENT_NOT_FOUND": "This announcement is no longer there. Please refresh the screen.",
+      "ANNOUNCEMENT_CHAIRMAN_ONLY": "The announcements of this meeting are for its chairman.",
+      "ANNOUNCEMENT_ALREADY_ADDED": "This has already been added to the announcements.",
+      "ANNOUNCEMENT_ORDER_INCOMPLETE": "The list has changed — refresh the screen and set the order again.",
+      "ANNOUNCEMENT_MEETING_NOT_AHEAD": "An announcement can only be moved to a meeting still to come.",
+      "ANNOUNCEMENT_WEEK_GONE": "That week is past the time announcements are kept."
     }
   },
   "stage": {
@@ -9262,6 +9272,90 @@
       "s62Done": "S-62 sent {{date}} — due {{due}}",
       "s62Open": "S-62 — by {{due}}",
       "handedOver": "Folder given {{date}}"
+    }
+  },
+  "announcements": {
+    "title": "Announcements",
+    "thisWeek": "This week",
+    "nextWeek": "Next week",
+    "otherWeek": "Week",
+    "prevWeek": "Previous week",
+    "nextWeekBtn": "Next week",
+    "kind": {
+      "midweek": "midweek meeting",
+      "weekend": "weekend meeting"
+    },
+    "where": {
+      "midweek": "read in the concluding comments",
+      "weekend": "read after the public talk"
+    },
+    "chairman": "Chairman · {{name}}",
+    "noChairman": "No chairman assigned yet",
+    "notPublished": "not told yet",
+    "emptyMeeting": "No announcements yet",
+    "editHint": "Opens the announcement to change it",
+    "tag": {
+      "letter": "branch letter",
+      "carried": "from {{date}}",
+      "read": "read"
+    },
+    "up": "Move up",
+    "down": "Move down",
+    "addFor": "Add · {{day}}",
+    "unread": {
+      "title": "Not read · {{day}}",
+      "to": "To {{day}}",
+      "dismiss": "Remove",
+      "carried": "Moved to the next meeting"
+    },
+    "noMeetings": "No meetings this week",
+    "noMeetingsSub": "Convention week: the congregation does not meet.",
+    "unplaced": "Written for a meeting that will not take place",
+    "unplacedSub": "The week has become a convention week. These announcements are kept — move them to another meeting or delete them.",
+    "foot": "Seen by the chairman of that meeting, the coordinator of the body of elders, his assistant and the administrators. The text is stored encrypted and deleted 30 days after the meeting week.",
+    "edit": {
+      "titleNew": "New announcement",
+      "titleEdit": "Announcement",
+      "meeting": "Meeting",
+      "both": "Both",
+      "text": "Text — as it will be read aloud",
+      "placeholder": "For example: Thorough hall cleaning — Saturday, 9:00.",
+      "letter": "Branch letter",
+      "letterSub": "The chairman reads it whole, in large print",
+      "privacy": "Seen by the chairman of that meeting, the coordinator, his assistant and the administrators. Stored encrypted, deleted 30 days after the meeting.",
+      "save": "Save",
+      "saved": "Announcement saved",
+      "added": "Announcement added",
+      "delete": "Delete",
+      "deleteTitle": "Delete the announcement?",
+      "deleteBody": "The chairman will no longer see it.",
+      "deleted": "Announcement deleted"
+    },
+    "read": {
+      "screenTitle": "Announcements",
+      "title": "Announcements",
+      "count": "{{read}} of {{all}}",
+      "empty": "No announcements for this meeting.",
+      "byRule": "per the guidelines · an action",
+      "carried": "not read on {{date}}",
+      "letterOpen": "Read it in full",
+      "letterClose": "Collapse",
+      "hint": "Tap an announcement once it is read — it turns grey. What is left unread, the coordinator sees after the meeting.",
+      "hintAhead": "You can tick them off on the day of the meeting — for now the list is only to read.",
+      "where": {
+        "midweek": "in the concluding comments",
+        "weekend": "after the public talk"
+      }
+    },
+    "home": {
+      "title_one": "Announcements · {{count}}",
+      "title_other": "Announcements · {{count}}",
+      "where": {
+        "midweek": "{{day}} · in the concluding comments",
+        "weekend": "{{day}} · after the talk"
+      },
+      "letters_one": "{{count}} branch letter",
+      "letters_other": "{{count}} branch letters"
     }
   }
 }

@@ -4439,7 +4439,8 @@
       "territory_settings": "Gebiete: bestätigt",
       "territory_assignment": "Gebiete: Ausgaben",
       "territory": "Gebiete",
-      "territory_no_call": "Gebiete: Nicht besuchen"
+      "territory_no_call": "Gebiete: Nicht besuchen",
+      "meeting_announcement": "Bekanntmachungen"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -4692,7 +4693,9 @@
       "wifeRestored": "Einträge der Frau zurückgeholt",
       "publishedParts": "Veröffentlichte Programmpunkte",
       "notified": "Mit Benachrichtigung",
-      "emptySeats": "Leere Plätze"
+      "emptySeats": "Leere Plätze",
+      "letter": "Brief",
+      "carried": "Verschoben"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5884,7 +5887,8 @@
       "responsibilities": "Wer wofür zuständig ist",
       "localNeeds": "Themen der Ältestenschaft für die nächsten Wochen",
       "events": "Kongresse, Besuche, Schulen, Gedächtnismahl",
-      "eventsNext": "Nächstes — {{date}}"
+      "eventsNext": "Nächstes — {{date}}",
+      "announcements": "Was der Vorsitzende in den Zusammenkünften vorliest"
     },
     "cleaning": "Saalreinigung",
     "duties": "Dienste bei Zusammenkünften",
@@ -6572,7 +6576,13 @@
       "PART_NOT_IN_MEETING": "Dieser Programmpunkt gehört zur anderen Zusammenkunft.",
       "CONDUCT_NOT_TODAY": "Die Zusammenkunft wird an ihrem Tag geführt. Davor – eine Übung: sie ist auf dem Bühnenbildschirm zu sehen und wird nicht gespeichert.",
       "CONDUCT_PRACTICE_AFTER_START": "Die Zusammenkunft läuft schon – geübt wird nur vor ihrem Beginn.",
-      "CONDUCT_RESULT_EARLY": "Die Zusammenkunft hat noch nicht stattgefunden – ein Ablauf vor ihrem Tag wird nicht als Ergebnis gespeichert."
+      "CONDUCT_RESULT_EARLY": "Die Zusammenkunft hat noch nicht stattgefunden – ein Ablauf vor ihrem Tag wird nicht als Ergebnis gespeichert.",
+      "ANNOUNCEMENT_NOT_FOUND": "Diese Bekanntmachung gibt es nicht mehr. Bitte die Ansicht aktualisieren.",
+      "ANNOUNCEMENT_CHAIRMAN_ONLY": "Die Bekanntmachungen dieser Zusammenkunft sieht ihr Vorsitzender.",
+      "ANNOUNCEMENT_ALREADY_ADDED": "Das ist bereits bei den Bekanntmachungen.",
+      "ANNOUNCEMENT_ORDER_INCOMPLETE": "Die Liste hat sich geändert — bitte aktualisieren und die Reihenfolge neu setzen.",
+      "ANNOUNCEMENT_MEETING_NOT_AHEAD": "Verschieben geht nur auf eine Zusammenkunft, die noch bevorsteht.",
+      "ANNOUNCEMENT_WEEK_GONE": "Diese Woche liegt außerhalb der Aufbewahrungszeit."
     }
   },
   "stage": {
@@ -9262,6 +9272,90 @@
       "s62Done": "S-62 gesendet am {{date}} — Frist {{due}}",
       "s62Open": "S-62 — bis {{due}}",
       "handedOver": "Unterlagen übergeben am {{date}}"
+    }
+  },
+  "announcements": {
+    "title": "Bekanntmachungen",
+    "thisWeek": "Diese Woche",
+    "nextWeek": "Nächste Woche",
+    "otherWeek": "Woche",
+    "prevWeek": "Vorige Woche",
+    "nextWeekBtn": "Nächste Woche",
+    "kind": {
+      "midweek": "Zusammenkunft unter der Woche",
+      "weekend": "Wochenendzusammenkunft"
+    },
+    "where": {
+      "midweek": "liest in den Schlussworten",
+      "weekend": "liest nach dem öffentlichen Vortrag"
+    },
+    "chairman": "Vorsitz · {{name}}",
+    "noChairman": "Vorsitz noch nicht eingeteilt",
+    "notPublished": "weiß es noch nicht",
+    "emptyMeeting": "Noch keine Bekanntmachungen",
+    "editHint": "Öffnet die Bekanntmachung zum Bearbeiten",
+    "tag": {
+      "letter": "Brief",
+      "carried": "vom {{date}}",
+      "read": "gelesen"
+    },
+    "up": "Nach oben",
+    "down": "Nach unten",
+    "addFor": "Hinzufügen · {{day}}",
+    "unread": {
+      "title": "Nicht gelesen · {{day}}",
+      "to": "Auf {{day}}",
+      "dismiss": "Entfernen",
+      "carried": "Auf die nächste Zusammenkunft verschoben"
+    },
+    "noMeetings": "Diese Woche keine Zusammenkünfte",
+    "noMeetingsSub": "Kongresswoche: Die Versammlung kommt nicht zusammen.",
+    "unplaced": "Für eine Zusammenkunft geschrieben, die nicht stattfindet",
+    "unplacedSub": "Die Woche ist eine Kongresswoche geworden. Die Bekanntmachungen sind erhalten — verschieben oder löschen Sie sie.",
+    "foot": "Sichtbar für den Vorsitzenden dieser Zusammenkunft, den Koordinator der Ältestenschaft, seinen Gehilfen und die Administratoren. Der Text wird verschlüsselt gespeichert und 30 Tage nach der Woche gelöscht.",
+    "edit": {
+      "titleNew": "Neue Bekanntmachung",
+      "titleEdit": "Bekanntmachung",
+      "meeting": "Zusammenkunft",
+      "both": "Beide",
+      "text": "Text — so, wie er vorgelesen wird",
+      "placeholder": "Zum Beispiel: Grundreinigung des Saals — Samstag, 9:00 Uhr.",
+      "letter": "Das ist ein Brief",
+      "letterSub": "Der Vorsitzende liest ihn ganz, in großer Schrift",
+      "privacy": "Sichtbar für den Vorsitzenden dieser Zusammenkunft, den Koordinator, seinen Gehilfen und die Administratoren. Verschlüsselt gespeichert, 30 Tage nach der Zusammenkunft gelöscht.",
+      "save": "Speichern",
+      "saved": "Bekanntmachung gespeichert",
+      "added": "Bekanntmachung hinzugefügt",
+      "delete": "Löschen",
+      "deleteTitle": "Bekanntmachung löschen?",
+      "deleteBody": "Der Vorsitzende sieht sie dann nicht mehr.",
+      "deleted": "Bekanntmachung gelöscht"
+    },
+    "read": {
+      "screenTitle": "Bekanntmachungen",
+      "title": "Bekanntmachungen",
+      "count": "{{read}} von {{all}}",
+      "empty": "Für diese Zusammenkunft gibt es keine Bekanntmachungen.",
+      "byRule": "laut Anleitung · Handlung",
+      "carried": "nicht gelesen am {{date}}",
+      "letterOpen": "Brief ganz lesen",
+      "letterClose": "Brief einklappen",
+      "hint": "Tippen Sie auf eine Bekanntmachung, wenn sie gelesen ist — sie wird grau. Was nicht gelesen wurde, sieht der Koordinator nach der Zusammenkunft.",
+      "hintAhead": "Abhaken lässt sich am Tag der Zusammenkunft — jetzt ist die Liste nur zum Lesen.",
+      "where": {
+        "midweek": "in den Schlussworten",
+        "weekend": "nach dem öffentlichen Vortrag"
+      }
+    },
+    "home": {
+      "title_one": "Bekanntmachungen · {{count}}",
+      "title_other": "Bekanntmachungen · {{count}}",
+      "where": {
+        "midweek": "{{day}} · in den Schlussworten",
+        "weekend": "{{day}} · nach dem Vortrag"
+      },
+      "letters_one": "{{count}} Brief",
+      "letters_other": "{{count}} Briefe"
     }
   }
 }

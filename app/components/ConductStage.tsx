@@ -115,6 +115,11 @@ export interface StageProps {
   onTake: (() => void) | null;
   /** After «Взять ведение»: this device taps. */
   controls: StageControls | null;
+  /**
+   * Under the part, for the chairman: the announcements at the closing words
+   * (R-01, 24 November 2026). Absent everywhere else.
+   */
+  extra?: ReactNode;
   /** «Проверить экран». */
   check: {
     online: boolean | null;
@@ -571,7 +576,10 @@ export function ConductStage(p: StageProps) {
         {banner}
         {wide ? (
           <View style={s.columns}>
-            <View style={{ flex: 1.75, minWidth: 0 }}>{main}</View>
+            <View style={{ flex: 1.75, minWidth: 0 }}>
+              {main}
+              {p.extra ? <View style={{ marginTop: 24 }}>{p.extra}</View> : null}
+            </View>
             <View style={s.side}>
               {nextCard}
               {thenLine}
@@ -582,6 +590,7 @@ export function ConductStage(p: StageProps) {
         ) : (
           <View style={{ marginTop: 28, gap: 28 }}>
             <View style={{ minHeight: digits * 2 }}>{main}</View>
+            {p.extra ?? null}
             {nextCard}
             {endBlock}
           </View>
