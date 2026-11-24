@@ -8289,6 +8289,7 @@
       "noCallsPaper_other": "Im Gebiet sind {{count}} Adressen «nicht besuchen» — sie stehen auf dem Ausdruck."
     },
     "division": {
+      "openMap": "Karte",
       "entry": "Gebiet auf Paare",
       "entryHint": "Jedes Paar eigene Straßen, gleich viele Häuser",
       "title": "{{number}} · auf Paare",

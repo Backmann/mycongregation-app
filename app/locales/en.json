@@ -8289,6 +8289,7 @@
       "noCallsPaper_other": "The territory has {{count}} do-not-call addresses — they are on the printout."
     },
     "division": {
+      "openMap": "Map",
       "entry": "Territory for pairs",
       "entryHint": "Each pair its own streets, even by houses",
       "title": "{{number}} · for pairs",

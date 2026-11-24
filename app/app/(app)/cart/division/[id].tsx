@@ -1,3 +1,4 @@
+import * as WebBrowser from 'expo-web-browser';
 import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -685,6 +686,15 @@ function PartCard({
       if (e instanceof AxiosError) setLinkNote(extractErrorMessage(e));
     }
   };
+  // The phone app has no map of its own yet (R-13): the pair's page, which
+  // shows the whole division too, opens in the phone's browser — no login.
+  const openMap = async () => {
+    try {
+      await WebBrowser.openBrowserAsync(await urlOf());
+    } catch (e) {
+      setLinkNote(extractErrorMessage(e));
+    }
+  };
   const showQr = async () => {
     if (qr) {
       setQr(null);
@@ -762,6 +772,12 @@ function PartCard({
       ) : null}
 
       <View style={s.partActions}>
+        {Platform.OS !== 'web' ? (
+          <Pressable onPress={() => void openMap()} style={s.chip} accessibilityRole="link">
+            <Ionicons name="map-outline" size={15} color={BRAND} />
+            <Text style={s.chipText}>{t('territories.division.openMap')}</Text>
+          </Pressable>
+        ) : null}
         <Pressable onPress={() => void send()} style={s.chip} accessibilityRole="button">
           <Ionicons name="share-outline" size={15} color={BRAND} />
           <Text style={s.chipText}>{t('territories.division.link')}</Text>
