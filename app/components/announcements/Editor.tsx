@@ -14,6 +14,7 @@ import {
 import { reportSuccess } from '../../lib/error-bus';
 import { BRAND } from '../../lib/header';
 import { ANN } from './ReadList';
+import { afterFirstLine, firstLine } from '../../lib/announcements';
 
 /** Which meeting a new announcement goes to: one of the week's, or both. */
 type Target = AnnouncementKind | 'both';
@@ -46,12 +47,16 @@ export function Editor({
   const qc = useQueryClient();
   const [text, setText] = useState('');
   const [letter, setLetter] = useState(false);
+  /** A letter's title, kept apart while editing; saved as its first line. */
+  const [title, setTitle] = useState('');
   const [target, setTarget] = useState<Target>('midweek');
 
   useEffect(() => {
     if (!visible) return;
-    setText(editing?.text ?? '');
-    setLetter(editing?.isLetter ?? false);
+    const isLetter = editing?.isLetter ?? false;
+    setLetter(isLetter);
+    setTitle(isLetter && editing ? firstLine(editing.text) : '');
+    setText(isLetter && editing ? afterFirstLine(editing.text) : (editing?.text ?? ''));
     setTarget(editing?.kind ?? initialKind ?? meetings[0]?.kind ?? 'midweek');
   }, [visible, editing, initialKind, meetings]);
 
@@ -62,7 +67,8 @@ export function Editor({
 
   const save = useMutation({
     mutationFn: async () => {
-      const words = text.trim();
+      // A letter is stored as its title on the first line, then the letter.
+      const words = letter ? `${title.trim()}\n${text.trim()}`.trim() : text.trim();
       if (editing) {
         await announcementsApi.update(editing.id, { text: words, isLetter: letter });
         return;
@@ -96,7 +102,19 @@ export function Editor({
     if (ok) remove.mutate(editing.id);
   };
 
-  const canSave = text.trim().length > 0 && !save.isPending;
+  const canSave = (letter ? title.trim().length > 0 && text.trim().length > 0 : text.trim().length > 0) && !save.isPending;
+  /** Switching the letter off keeps every word: the title goes back on top. */
+  const switchLetter = (on: boolean) => {
+    if (!on && title.trim()) {
+      setText((x) => `${title.trim()}\n${x}`.trim());
+      setTitle('');
+    }
+    if (on && !title && text.includes('\n')) {
+      setTitle(firstLine(text));
+      setText(afterFirstLine(text));
+    }
+    setLetter(on);
+  };
   const choices: { key: Target; label: string }[] = [
     ...meetings.map((m) => ({ key: m.kind as Target, label: dayLabel(m) })),
     ...(meetings.length > 1 && !editing ? [{ key: 'both' as Target, label: t('announcements.edit.both') }] : []),
@@ -149,37 +167,63 @@ export function Editor({
                 </Pressable>
               ))}
             </View>
+            {target === 'both' ? <Text style={s.hintLine}>{t('announcements.edit.bothHint')}</Text> : null}
           </View>
         ) : null}
 
-        <View style={{ gap: 8 }}>
-          <Text style={s.label} nativeID="ann-text-label">
-            {t('announcements.edit.text')}
-          </Text>
-          <TextInput
-            accessibilityLabelledBy="ann-text-label"
-            style={s.input}
-            value={text}
-            onChangeText={setText}
-            multiline
-            textAlignVertical="top"
-            placeholder={t('announcements.edit.placeholder')}
-            placeholderTextColor="#64748b"
-            maxLength={20000}
-          />
-        </View>
-
-        <View style={s.letterRow}>
+        <View style={[s.letterRow, letter && s.letterRowOn]}>
+          <Ionicons name="mail-open-outline" size={22} color={letter ? ANN.fg : '#64748b'} />
           <View style={{ flex: 1 }}>
             <Text style={s.letterTitle}>{t('announcements.edit.letter')}</Text>
             <Text style={s.letterSub}>{t('announcements.edit.letterSub')}</Text>
           </View>
           <Switch
             value={letter}
-            onValueChange={setLetter}
+            onValueChange={switchLetter}
             trackColor={{ true: BRAND, false: '#cbd5e1' }}
             accessibilityLabel={t('announcements.edit.letter')}
           />
+        </View>
+
+        {letter ? (
+          <View style={{ gap: 8 }}>
+            <Text style={s.label} nativeID="ann-title-label">
+              {t('announcements.edit.letterTitle')}
+            </Text>
+            <TextInput
+              accessibilityLabelledBy="ann-title-label"
+              style={[s.input, s.titleInput]}
+              value={title}
+              onChangeText={(x) => setTitle(x.replace(/\n/g, ' '))}
+              placeholder={t('announcements.edit.letterTitlePlaceholder')}
+              placeholderTextColor="#64748b"
+              maxLength={200}
+            />
+          </View>
+        ) : null}
+
+        <View style={{ gap: 8 }}>
+          <Text style={s.label} nativeID="ann-text-label">
+            {letter ? t('announcements.edit.letterText') : t('announcements.edit.text')}
+          </Text>
+          <TextInput
+            accessibilityLabelledBy="ann-text-label"
+            style={[s.input, letter && s.letterInput]}
+            value={text}
+            onChangeText={setText}
+            multiline
+            textAlignVertical="top"
+            placeholder={letter ? t('announcements.edit.letterPlaceholder') : t('announcements.edit.placeholder')}
+            placeholderTextColor="#64748b"
+            maxLength={19800}
+          />
+        </View>
+
+        <View style={s.preview}>
+          <Text style={s.previewLbl}>{t('announcements.edit.preview')}</Text>
+          <Text style={s.previewText}>
+            {letter ? t('announcements.edit.previewLetter') : t('announcements.edit.previewPlain')}
+          </Text>
         </View>
 
         <View style={s.note}>
@@ -216,6 +260,13 @@ const s = StyleSheet.create({
     lineHeight: 25,
     color: '#0f172a',
   },
+  letterRowOn: { backgroundColor: ANN.bg },
+  titleInput: { minHeight: 52, fontFamily: 'Manrope_700Bold' },
+  letterInput: { minHeight: 240 },
+  hintLine: { fontFamily: 'Manrope_500Medium', fontSize: 13, lineHeight: 19, color: '#475569' },
+  preview: { gap: 4, padding: 12, borderRadius: 14, borderWidth: 1, borderColor: '#e2e8f0' },
+  previewLbl: { fontFamily: 'Manrope_800ExtraBold', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: '#475569' },
+  previewText: { fontFamily: 'Manrope_500Medium', fontSize: 13, lineHeight: 19, color: '#334155' },
   letterRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 14, borderRadius: 14, backgroundColor: '#f6f8fb' },
   letterTitle: { fontFamily: 'Manrope_700Bold', fontSize: 15, color: '#0f172a' },
   letterSub: { fontFamily: 'Manrope_400Regular', fontSize: 13, color: '#475569' },

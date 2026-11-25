@@ -138,7 +138,9 @@ export default function AnnouncementsScreen() {
           <View>
             {m.items.map((a, i) => (
               <View key={a.id} style={[s.item, i > 0 && s.itemLine]}>
-                <Text style={s.itemNum}>{i + 1}</Text>
+                <View style={[s.itemNum, a.read && s.itemNumRead]}>
+                  <Text style={s.itemNumText}>{i + 1}</Text>
+                </View>
                 <Pressable
                   style={{ flex: 1, gap: 6 }}
                   onPress={() => setEditor({ kind: m.kind, editing: { ...a, kind: m.kind } })}
@@ -344,9 +346,19 @@ const s = StyleSheet.create({
   chairText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: '#0f172a' },
   draftTag: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: '#92400e', backgroundColor: '#fef3c7', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2, overflow: 'hidden' },
   emptyBox: { fontFamily: 'Manrope_500Medium', fontSize: 14, color: '#475569', textAlign: 'center', padding: 14, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#cbd5e1' },
-  item: { flexDirection: 'row', gap: 12, paddingVertical: 12, alignItems: 'flex-start' },
-  itemLine: { borderTopWidth: 1, borderTopColor: '#eef1f5' },
-  itemNum: { width: 22, fontFamily: 'Manrope_800ExtraBold', fontSize: 15, color: ANN.fg, paddingTop: 1 },
+  item: {
+    flexDirection: 'row',
+    gap: 12,
+    padding: 12,
+    alignItems: 'flex-start',
+    borderRadius: 16,
+    backgroundColor: '#f6f8fb',
+    marginTop: 8,
+  },
+  itemLine: {},
+  itemNum: { width: 30, height: 30, borderRadius: 15, backgroundColor: ANN.fg, alignItems: 'center', justifyContent: 'center' },
+  itemNumRead: { backgroundColor: '#15803d' },
+  itemNumText: { fontFamily: 'Manrope_800ExtraBold', fontSize: 14, color: '#fff' },
   itemText: { fontFamily: 'Manrope_500Medium', fontSize: 15, lineHeight: 22, color: '#0f172a' },
   itemLetter: { fontFamily: 'Manrope_700Bold' },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

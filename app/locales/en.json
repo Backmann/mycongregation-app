@@ -9320,8 +9320,8 @@
       "both": "Both",
       "text": "Text — as it will be read aloud",
       "placeholder": "For example: Thorough hall cleaning — Saturday, 9:00.",
-      "letter": "Branch letter",
-      "letterSub": "The chairman reads it whole, in large print",
+      "letter": "This is a branch letter",
+      "letterSub": "Title apart, text in full — the chairman reads it from the screen",
       "privacy": "Seen by the chairman of that meeting, the coordinator, his assistant and the administrators. Stored encrypted, deleted 30 days after the meeting.",
       "save": "Save",
       "saved": "Announcement saved",
@@ -9329,7 +9329,15 @@
       "delete": "Delete",
       "deleteTitle": "Delete the announcement?",
       "deleteBody": "The chairman will no longer see it.",
-      "deleted": "Announcement deleted"
+      "deleted": "Announcement deleted",
+      "letterTitle": "Title of the branch letter",
+      "letterTitlePlaceholder": "For example: Letter about the circuit assembly",
+      "letterText": "Text of the branch letter — in full",
+      "letterPlaceholder": "Paste the whole letter.",
+      "bothHint": "Two copies are made — one for each meeting. Changing one does not change the other.",
+      "preview": "What the chairman sees",
+      "previewPlain": "Its own card with its number, the text large and in full.",
+      "previewLetter": "A “Branch letter” card: the title large and the whole letter. When its turn comes, it opens in full."
     },
     "read": {
       "screenTitle": "Announcements",
@@ -9340,12 +9348,22 @@
       "carried": "not read on {{date}}",
       "letterOpen": "Read it in full",
       "letterClose": "Collapse",
-      "hint": "Tap an announcement once it is read — it turns grey. What is left unread, the coordinator sees after the meeting.",
+      "hint": "Once read, tap “Read out” under it — it folds into a green line and “Now” moves on to the next. What is left unread, the coordinator sees after the meeting.",
       "hintAhead": "You can tick them off on the day of the meeting — for now the list is only to read.",
       "where": {
         "midweek": "in the concluding comments",
         "weekend": "after the public talk"
-      }
+      },
+      "total_one": "{{count}} announcement",
+      "total_other": "{{count}} announcements",
+      "kindPlain": "Announcement",
+      "kindLetter": "Branch letter",
+      "now": "Now",
+      "markRead": "Read out",
+      "undo": "Undo — not read yet",
+      "readDone": "read",
+      "markLabel": "Mark announcement {{n}} as read",
+      "foldedLabel": "Announcement {{n}} read — open"
     },
     "home": {
       "title_one": "Announcements · {{count}}",

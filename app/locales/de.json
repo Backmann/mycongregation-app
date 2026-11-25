@@ -9320,8 +9320,8 @@
       "both": "Beide",
       "text": "Text — so, wie er vorgelesen wird",
       "placeholder": "Zum Beispiel: Grundreinigung des Saals — Samstag, 9:00 Uhr.",
-      "letter": "Das ist ein Brief",
-      "letterSub": "Der Vorsitzende liest ihn ganz, in großer Schrift",
+      "letter": "Das ist ein Brief des Zweigbüros",
+      "letterSub": "Titel getrennt, Text vollständig — der Vorsitzende liest ihn vom Bildschirm",
       "privacy": "Sichtbar für den Vorsitzenden dieser Zusammenkunft, den Koordinator, seinen Gehilfen und die Administratoren. Verschlüsselt gespeichert, 30 Tage nach der Zusammenkunft gelöscht.",
       "save": "Speichern",
       "saved": "Bekanntmachung gespeichert",
@@ -9329,7 +9329,15 @@
       "delete": "Löschen",
       "deleteTitle": "Bekanntmachung löschen?",
       "deleteBody": "Der Vorsitzende sieht sie dann nicht mehr.",
-      "deleted": "Bekanntmachung gelöscht"
+      "deleted": "Bekanntmachung gelöscht",
+      "letterTitle": "Titel des Briefs",
+      "letterTitlePlaceholder": "Zum Beispiel: Brief zum Kreiskongress",
+      "letterText": "Text des Briefs — vollständig",
+      "letterPlaceholder": "Den ganzen Brief einfügen.",
+      "bothHint": "Es entstehen zwei Kopien — eine für jede Zusammenkunft. Eine Änderung an einer ändert die andere nicht.",
+      "preview": "So sieht es der Vorsitzende",
+      "previewPlain": "Als eigene Karte mit Nummer, der Text groß und vollständig.",
+      "previewLetter": "Als Karte „Brief des Zweigbüros“: Titel groß und der ganze Brief. Wenn er an der Reihe ist, öffnet er sich vollständig."
     },
     "read": {
       "screenTitle": "Bekanntmachungen",
@@ -9340,12 +9348,22 @@
       "carried": "nicht gelesen am {{date}}",
       "letterOpen": "Brief ganz lesen",
       "letterClose": "Brief einklappen",
-      "hint": "Tippen Sie auf eine Bekanntmachung, wenn sie gelesen ist — sie wird grau. Was nicht gelesen wurde, sieht der Koordinator nach der Zusammenkunft.",
+      "hint": "Gelesen? Tippen Sie unter der Bekanntmachung auf „Vorgelesen“ — sie klappt zu einer grünen Zeile zusammen, „Jetzt“ geht zur nächsten. Was nicht gelesen wurde, sieht der Koordinator nach der Zusammenkunft.",
       "hintAhead": "Abhaken lässt sich am Tag der Zusammenkunft — jetzt ist die Liste nur zum Lesen.",
       "where": {
         "midweek": "in den Schlussworten",
         "weekend": "nach dem öffentlichen Vortrag"
-      }
+      },
+      "total_one": "{{count}} Bekanntmachung",
+      "total_other": "{{count}} Bekanntmachungen",
+      "kindPlain": "Bekanntmachung",
+      "kindLetter": "Brief des Zweigbüros",
+      "now": "Jetzt",
+      "markRead": "Vorgelesen",
+      "undo": "Zurück — noch nicht gelesen",
+      "readDone": "gelesen",
+      "markLabel": "Bekanntmachung {{n}} als gelesen markieren",
+      "foldedLabel": "Bekanntmachung {{n}} gelesen — öffnen"
     },
     "home": {
       "title_one": "Bekanntmachungen · {{count}}",
