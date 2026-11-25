@@ -36,6 +36,7 @@ export type KindKey =
   | 'kingdom_ministry_school_elders'
   | 'kingdom_ministry_school_servants'
   | 'pioneer_special_meeting'
+  | 'general_cleaning'
   | 'other';
 
 export function kindOf(item: EventListItem): KindKey {
@@ -52,6 +53,7 @@ export function kindOf(item: EventListItem): KindKey {
     case 'kingdom_ministry_school_elders':
     case 'kingdom_ministry_school_servants':
     case 'pioneer_special_meeting':
+    case 'general_cleaning':
       return type;
     default:
       return 'other';
@@ -72,6 +74,9 @@ export const KIND_LOOK: Record<KindKey, { icon: string; color: string; soft: str
   kingdom_ministry_school_elders: { icon: 'school-outline', color: '#4338ca', soft: '#e0e7ff' },
   kingdom_ministry_school_servants: { icon: 'school-outline', color: '#4338ca', soft: '#e0e7ff' },
   pioneer_special_meeting: { icon: 'people-outline', color: '#4338ca', soft: '#e0e7ff' },
+  // The whole congregation cleans the hall (25 November 2026, R-09): the
+  // green of the cleaning section.
+  general_cleaning: { icon: 'sparkles-outline', color: '#047857', soft: '#d1fae5' },
   other: { icon: 'calendar-outline', color: '#475569', soft: '#f1f5f9' },
 };
 
@@ -199,4 +204,16 @@ export function listItems(events: SpecialEvent[], talks: SpecialTalkItem[]): Eve
     })),
   ];
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.key.localeCompare(b.key));
+}
+
+/**
+ * Whether these rights keep an event of this kind (25 November 2026, R-09):
+ * the events' keepers every kind; the cleaning coordinator the general
+ * cleaning only. The server asks the same (assertKeeps).
+ */
+export function mayKeepEvent(
+  p: { canManageEvents: boolean; canKeepGeneralCleaning: boolean },
+  type: string | null | undefined,
+): boolean {
+  return p.canManageEvents || (p.canKeepGeneralCleaning && type === 'general_cleaning');
 }

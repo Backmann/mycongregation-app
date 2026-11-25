@@ -12,6 +12,8 @@ import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyPublisher } from '../lib/useMyPublisher';
+import { useMayOpen } from '../lib/useMayOpen';
+import { addDays, formatDateISO, parseISODate } from '../lib/dates';
 import { HallPlan } from './HallPlan';
 import { TimeField } from './TimeField';
 import { MyDot } from './MyDot';
@@ -27,6 +29,7 @@ import {
   cleaningApi,
   extractErrorMessage,
   serviceGroupsApi,
+  specialEventsApi,
 } from '../lib/api';
 
 const GROUP_SLOTS: CleaningSlotType[] = ['after_meeting', 'thorough'];
@@ -91,8 +94,6 @@ export function CleaningSection({
 
   const bySlot = new Map<CleaningSlotType, CleaningAssignment>();
   for (const a of assignments) bySlot.set(a.slotType, a);
-
-  const generalOn = bySlot.has('general');
 
   if (!canEdit && assignments.length === 0) return null;
 
@@ -207,60 +208,76 @@ export function CleaningSection({
           );
         })}
 
-        {/* General cleaning — once a year, whole congregation */}
-        <View style={styles.slotCard}>
-          <View style={styles.slotCardHead}>
-            <View style={[styles.slotIcon, { backgroundColor: '#f59e0b14' }]}>
-              <Ionicons name="calendar-outline" size={16} color="#d97706" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.slotCardTitle}>
-                {t('cleaning.slots.general')}
-              </Text>
-              <Text style={styles.slotCardHint}>
-                {t('cleaning.allCongregation')}
-              </Text>
-            </View>
-            {canEdit ? (
-              <Switch
-                value={generalOn}
-                disabled={pending}
-                onValueChange={(on) =>
-                  on ? onSetSlot('general', null) : onClearSlot('general')
-                }
-              />
-            ) : (
-              <View
-                style={[
-                  styles.generalBadge,
-                  !generalOn && styles.generalBadgeOff,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.generalBadgeText,
-                    !generalOn && styles.generalBadgeTextOff,
-                  ]}
-                >
-                  {generalOn
-                    ? t('cleaning.scheduled')
-                    : t('cleaning.empty')}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {generalOn ? (
-            <GeneralExtras
-              assignment={bySlot.get('general') ?? null}
-              canEdit={canEdit}
-              pending={pending}
-              weekStart={weekStart}
-            />
-          ) : null}
-        </View>
+        {/* The general cleaning is an event since 25 November 2026 (R-09):
+            here only where it stands, and the way to it. */}
+        <GeneralCleaningLine weekStart={weekStart} />
       </View>
     </View>
+  );
+}
+
+/**
+ * THE GENERAL CLEANING OF THIS WEEK, as an event (25 November 2026, R-09).
+ * Kept in the events — this line only says when it is and opens it; whoever
+ * keeps it is offered to set one where there is none.
+ */
+function GeneralCleaningLine({ weekStart }: { weekStart: string }) {
+  const { t, i18n } = useTranslation();
+  const mayOpen = useMayOpen();
+  const eventsQ = useQuery({
+    queryKey: ['special-events', 'all'],
+    queryFn: () => specialEventsApi.list({ all: true }),
+    staleTime: 5 * 60 * 1000,
+  });
+  const weekEnd = formatDateISO(addDays(parseISODate(weekStart), 6));
+  const ev = (eventsQ.data ?? []).find(
+    (e) =>
+      e.type === 'general_cleaning' &&
+      !e.deletedAt &&
+      e.date.slice(0, 10) >= weekStart &&
+      e.date.slice(0, 10) <= weekEnd,
+  );
+  if (!ev && !mayOpen('/special-events/new')) return null;
+  const when = ev
+    ? [
+        parseISODate(ev.date.slice(0, 10)).toLocaleDateString(i18n.language, {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'long',
+        }),
+        ev.time?.trim() || null,
+      ]
+        .filter(Boolean)
+        .join(', ')
+    : null;
+  return (
+    <Pressable
+      style={styles.slotCard}
+      onPress={() =>
+        router.push(
+          (ev
+            ? `/special-events/${ev.id}`
+            : `/special-events/new?kind=general_cleaning&date=${formatDateISO(addDays(parseISODate(weekStart), 5))}`) as never,
+        )
+      }
+      accessibilityRole="button"
+    >
+      <View style={styles.slotCardHead}>
+        <View style={[styles.slotIcon, { backgroundColor: '#d1fae5' }]}>
+          <Ionicons name="sparkles-outline" size={16} color="#047857" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.slotCardTitle}>{t('cleaning.slots.general')}</Text>
+          <Text style={styles.slotCardHint}>
+            {when ?? t('cleaning.generalEvent.none')}
+          </Text>
+        </View>
+        <Text style={styles.generalLink}>
+          {ev ? t('cleaning.generalEvent.open') : t('cleaning.generalEvent.set')}
+        </Text>
+        <Ionicons name="chevron-forward" size={16} color="#94a3b8" />
+      </View>
+    </Pressable>
   );
 }
 
@@ -282,178 +299,6 @@ function GuideLink({ freq }: { freq: 'zsk' | 'weekly' | 'yearly' }) {
   );
 }
 
-/**
- * Extras under the general (annual) cleaning row: the congregation-wide date
- * and time. Set by the cleaning coordinator; drives a 2h-before push to the
- * whole congregation. Reuses the week-day-chips + time-wheel pattern of the
- * thorough plan modal.
- */
-function GeneralExtras({
-  assignment,
-  canEdit,
-  pending,
-  weekStart,
-}: {
-  assignment: CleaningAssignment | null;
-  canEdit: boolean;
-  pending?: boolean;
-  weekStart: string;
-}) {
-  const { t, i18n } = useTranslation();
-  const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [draftDay, setDraftDay] = useState<string>('');
-  const [draftTime, setDraftTime] = useState<string>('10:00');
-  const [planError, setPlanError] = useState<string | null>(null);
-
-  const plannedAt = assignment?.thoroughPlannedAt ?? null;
-
-  const mutation = useMutation({
-    // Shown in place by this form — keep it out of the error strip.
-    meta: { inlineError: true },
-    mutationFn: (plannedAtIso: string | null) =>
-      cleaningApi.planGeneral({
-        weekStartDate: weekStart,
-        plannedAt: plannedAtIso,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['cleaning', weekStart] });
-      setOpen(false);
-      setPlanError(null);
-    },
-    onError: (e) => setPlanError(extractErrorMessage(e)),
-  });
-
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(`${weekStart}T00:00:00`);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
-
-  const openModal = () => {
-    if (plannedAt) {
-      const d = new Date(plannedAt);
-      setDraftDay(isoDate(d));
-      setDraftTime(
-        `${String(d.getHours()).padStart(2, '0')}:${String(
-          d.getMinutes(),
-        ).padStart(2, '0')}`,
-      );
-    } else {
-      setDraftDay('');
-      setDraftTime('10:00');
-    }
-    setPlanError(null);
-    setOpen(true);
-  };
-
-  const fmtPlanned = (iso: string) => {
-    const d = new Date(iso);
-    const day = d.toLocaleDateString(i18n.language, {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short',
-    });
-    const time = d.toLocaleTimeString(i18n.language, {
-      hour: '2-digit', hour12: false,
-      minute: '2-digit',
-    });
-    return `${day}, ${time}`;
-  };
-
-  return (
-    <View style={styles.slotCardBody}>
-      <View style={styles.extras}>
-        <View style={styles.extraItem}>
-          <Text style={styles.extraLabel}>
-            {t('cleaning.plan.generalLabel')}
-          </Text>
-          <View style={styles.extraContent}>
-            {plannedAt ? (
-              <Text style={styles.extraValue}>{fmtPlanned(plannedAt)}</Text>
-            ) : (
-              <Text style={styles.extraMuted}>{t('cleaning.plan.tbd')}</Text>
-            )}
-            {canEdit ? (
-              <Pressable
-                disabled={pending}
-                onPress={openModal}
-                hitSlop={8}
-                style={styles.extraBtn}
-              >
-                <Ionicons
-                  name="calendar-clear-outline"
-                  size={13}
-                  color="#0369a1"
-                />
-                <Text style={styles.extraAction}>
-                  {plannedAt ? t('common.edit') : t('cleaning.plan.set')}
-                </Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-      </View>
-
-      <GuideLink freq="yearly" />
-
-      <Dialog
-        visible={open}
-        title={t('cleaning.plan.generalTitle')}
-        icon="calendar-outline"
-        iconTint="#0284c7"
-        iconBg="#e0f2fe"
-        cancelLabel={t('common.cancel')}
-        confirmLabel={t('common.save')}
-        confirmDisabled={!draftDay || !draftTime}
-        pending={mutation.isPending}
-        extraLabel={plannedAt ? t('cleaning.plan.clear') : undefined}
-        onExtra={plannedAt ? () => mutation.mutate(null) : undefined}
-        onConfirm={() =>
-          mutation.mutate(new Date(`${draftDay}T${draftTime}:00`).toISOString())
-        }
-        onCancel={() => setOpen(false)}
-      >
-            <View style={styles.dayRow}>
-              {weekDays.map((d) => {
-                const iso = isoDate(d);
-                const active = iso === draftDay;
-                return (
-                  <Pressable
-                    key={iso}
-                    style={[styles.dayChip, active && styles.dayChipActive]}
-                    onPress={() => setDraftDay(iso)}
-                  >
-                    <Text
-                      style={[
-                        styles.dayChipText,
-                        active && styles.dayChipTextActive,
-                      ]}
-                    >
-                      {d.toLocaleDateString(i18n.language, {
-                        weekday: 'short',
-                      })}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.dayChipNum,
-                        active && styles.dayChipTextActive,
-                      ]}
-                    >
-                      {d.getDate()}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <TimeField value={draftTime} onChange={setDraftTime} />
-            {planError ? (
-              <Text style={styles.planError}>{planError}</Text>
-            ) : null}
-      </Dialog>
-    </View>
-  );
-}
 
 /** Local YYYY-MM-DD for a Date. */
 function isoDate(d: Date): string {
@@ -836,6 +681,7 @@ export function GroupSelect({
 }
 
 const styles = StyleSheet.create({
+  generalLink: { fontFamily: 'Manrope_700Bold', fontSize: 13, color: '#047857' },
   section: { marginTop: 16 },
   header: {
     flexDirection: 'row',

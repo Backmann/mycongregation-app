@@ -119,6 +119,12 @@ export interface Permissions {
    */
   canWriteAnnouncements: boolean;
 
+  /**
+   * The general cleaning is an event (25 November 2026, special-events
+   * R-09): kept by the cleaning coordinator too — that kind only.
+   */
+  canKeepGeneralCleaning: boolean;
+
   /** Absences — admin OR body coordinator / midweek overseer / secretary. */
   canManageAbsences: boolean;
 
@@ -265,6 +271,8 @@ export function usePermissions(): Permissions {
       canManageEvents: isAdmin || holds("body_coordinator"),
       canWriteAnnouncements:
         isAdmin || holds("body_coordinator") || holds("body_coordinator_assistant"),
+      canKeepGeneralCleaning:
+        isAdmin || holds("body_coordinator") || holds("cleaning_coordinator"),
       canManageAbsences:
         isAdmin ||
         holds("body_coordinator") ||

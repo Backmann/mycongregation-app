@@ -31,7 +31,9 @@ import {
   mondayOfISO,
   serviceYearOf,
   visitMidweekDay,
+  mayKeepEvent,
 } from '../lib/event-view';
+import { usePermissions } from '../lib/permissions';
 import { useEffectText } from '../lib/event-effect-text';
 import { MonthCalendar } from './MonthCalendar';
 import { TimeField } from './TimeField';
@@ -49,6 +51,8 @@ export const EVENT_TYPES = [
   'kingdom_ministry_school_elders',
   'kingdom_ministry_school_servants',
   'pioneer_special_meeting',
+  // The general cleaning of the hall (25 November 2026, R-09).
+  'general_cleaning',
   // The special talk is not made here any more: it is a talk of the talk
   // journal, with a theme in place of a number (27 September). Its label stays
   // in the translations for the events already in the bin.
@@ -70,6 +74,7 @@ const START_PRESETS: Record<string, string[]> = {
   regional_convention: ['09:20', '09:30', '09:40'],
   circuit_assembly: ['09:20', '09:30', '09:40'],
   memorial: ['18:30', '19:00', '19:30', '20:00', '20:30'],
+  general_cleaning: ['08:00', '09:00', '10:00'],
 };
 
 export interface EventFormValue {
@@ -408,6 +413,12 @@ export function SpecialEventForm({
   // A congress length chosen before its first day, used when the day is.
   const [pendingLength, setPendingLength] = useState<number | null>(null);
   const [showKinds, setShowKinds] = useState(false);
+  // The kinds these rights may give an event: the cleaning coordinator the
+  // general cleaning only (R-09).
+  const perms = usePermissions();
+  const kindsHere = EVENT_TYPES.filter(
+    (key) => (isNew || !inviteesOf(key)) && mayKeepEvent(perms, key),
+  );
 
   const settingsQ = useQuery({
     queryKey: ['meeting-settings'],
@@ -651,7 +662,7 @@ export function SpecialEventForm({
         {/* The kind of an event for the invited is not changed once saved
             (10 November 2026): the invitations already went to those it
             names. The server refuses it too (EVENT_TYPE_LOCKED). */}
-        {pastLocked || (!isNew && inviteesOf(kind)) ? null : (
+        {pastLocked || (!isNew && inviteesOf(kind)) || kindsHere.length < 2 ? null : (
           <Pressable
             hitSlop={8}
             onPress={() => setShowKinds((s) => !s)}
@@ -667,7 +678,7 @@ export function SpecialEventForm({
       </View>
       {showKinds ? (
         <View style={styles.inlineCard}>
-          {EVENT_TYPES.filter((key) => isNew || !inviteesOf(key)).map((key) => {
+          {kindsHere.map((key) => {
             const active = kind === key;
             const kl = KIND_LOOK[key as KindKey];
             return (

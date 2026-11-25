@@ -11,7 +11,7 @@ import {
   serviceGroupsApi,
   specialEventsApi,
 } from '../../../lib/api';
-import { addDays, addWeeks, formatDateISO, startOfWeekMonday } from '../../../lib/dates';
+import { addDays, addWeeks, formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
 import { effectiveVersionFor } from '../../../lib/meeting-schedule';
 import { usePermissions } from '../../../lib/permissions';
 import { useMyPublisher } from '../../../lib/useMyPublisher';
@@ -172,7 +172,15 @@ export default function CleaningScreen() {
     const list = byWeek.get(week) ?? [];
     const after = list.find((a) => a.slotType === 'after_meeting' && a.serviceGroupId);
     const weekly = list.find((a) => a.slotType === 'thorough' && a.serviceGroupId);
-    const general = list.find((a) => a.slotType === 'general');
+    // The general cleaning is an event since 25 November 2026 (R-09).
+    const weekEnd = formatDateISO(addDays(parseISODate(week), 6));
+    const general = (eventsQ.data ?? []).find(
+      (e) =>
+        e.type === 'general_cleaning' &&
+        !e.deletedAt &&
+        e.date.slice(0, 10) >= week &&
+        e.date.slice(0, 10) <= weekEnd,
+    );
 
     let title: string;
     let titleStyle: TextStyle = styles.title;
@@ -196,7 +204,9 @@ export default function CleaningScreen() {
       lines.push({ text: t('cleaningHall.weeklyMissing'), style: styles.sub });
     }
     if (general) {
-      const when = general.thoroughPlannedAt ? dayOf(general.thoroughPlannedAt) : t('cleaningHall.dateTbd');
+      const when = [dayOf(`${general.date.slice(0, 10)}T12:00:00`), general.time?.trim() || null]
+        .filter(Boolean)
+        .join(', ');
       lines.push({ text: t('cleaningHall.general', { when }), style: styles.sub });
     }
     // «Yours» — the group's own weeks, and the overseer's day to set.

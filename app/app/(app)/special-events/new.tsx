@@ -7,8 +7,9 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { KIND_LOOK, KindKey } from '../../../lib/event-view';
-import { router } from 'expo-router';
+import { KIND_LOOK, KindKey, mayKeepEvent } from '../../../lib/event-view';
+import { usePermissions } from '../../../lib/permissions';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useMayOpen } from '../../../lib/useMayOpen';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -29,21 +30,26 @@ export default function NewSpecialEventScreen() {
   const { t } = useTranslation();
   const mayOpen = useMayOpen();
   const qc = useQueryClient();
-  const [form, setForm] = useState<EventFormValue>(emptyEventForm());
+  const perms = usePermissions();
+  // The kinds these rights may make: the cleaning coordinator the general
+  // cleaning only (R-09) — then there is nothing to choose.
+  const choices = CHOICES.filter((k) => mayKeepEvent(perms, k));
+  // A door may name the kind and the day — the cleaning week opens the
+  // general cleaning on its own Saturday. Read only when these rights may make it.
+  const params = useLocalSearchParams<{ kind?: string; date?: string }>();
+  const asked = choices.find((k) => k === params.kind) ?? null;
+  const only = asked ?? (choices.length === 1 ? choices[0] : null);
+  const askedDate =
+    typeof params.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.date) ? params.date : '';
+  const [form, setForm] = useState<EventFormValue>(() =>
+    only ? { ...startForm(only, t), date: askedDate } : emptyEventForm(),
+  );
   // The kind first (27 September): what follows depends on it, and a form
   // that asked everything of everyone made the visit and the convention look
   // alike.
-  const [picked, setPicked] = useState(false);
+  const [picked, setPicked] = useState(!!only);
   const pick = (kind: (typeof CHOICES)[number]) => {
-    const isOther = kind === 'other';
-    setForm({
-      ...emptyEventForm(),
-      type: isOther ? '' : kind,
-      title: isOther ? '' : t(`specialEvents.types.${kind}`),
-      // A branch representative's day usually changes the meeting rather
-      // than cancelling it — the form opens on that answer.
-      meetingMode: kind === 'branch_representative_visit' ? 'changed' : 'usual',
-    });
+    setForm(startForm(kind, t));
     setPicked(true);
   };
 
@@ -95,7 +101,7 @@ export default function NewSpecialEventScreen() {
         <Text style={styles.chooseTitle}>{t('specialEvents.create.title')}</Text>
         <Text style={styles.chooseSub}>{t('specialEvents.create.subtitle')}</Text>
         <View style={styles.choices}>
-          {CHOICES.map((k, i) => {
+          {choices.map((k, i) => {
             const look = KIND_LOOK[k as KindKey];
             return (
               <Pressable
@@ -163,6 +169,19 @@ export default function NewSpecialEventScreen() {
   );
 }
 
+/** The form as a kind opens it. */
+function startForm(kind: (typeof CHOICES)[number], t: (k: string) => string): EventFormValue {
+  const isOther = kind === 'other';
+  return {
+    ...emptyEventForm(),
+    type: isOther ? '' : kind,
+    title: isOther ? '' : t(`specialEvents.types.${kind}`),
+    // A branch representative's day usually changes the meeting rather
+    // than cancelling it — the form opens on that answer.
+    meetingMode: kind === 'branch_representative_visit' ? 'changed' : 'usual',
+  };
+}
+
 const CHOICES = [
   'circuit_overseer_visit',
   'circuit_assembly',
@@ -174,6 +193,7 @@ const CHOICES = [
   'kingdom_ministry_school_elders',
   'kingdom_ministry_school_servants',
   'pioneer_special_meeting',
+  'general_cleaning',
   'other',
 ] as const;
 

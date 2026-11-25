@@ -42,6 +42,8 @@ export type AccessRule =
   | 'localNeeds'
   /** The announcements' writers (R-02). */
   | 'announcements'
+  /** A new event, or the general cleaning for its coordinator (R-09). */
+  | 'eventsOrCleaning'
   | 'pioneerSchool'
   | 'coSchedule'
   /** Whoever arranges the stand: the day's timeline, the archive. */
@@ -74,6 +76,9 @@ export const ACCESS_RULES: Record<
   // «Файлы программы»: the elders read it; loading asks its own right.
   importsProgramme: (p) => p.canViewProgrammeFiles,
   events: (p) => p.canManageEvents,
+  // A new event: the events' keepers, and the cleaning coordinator for the
+  // general cleaning (R-09).
+  eventsOrCleaning: (p) => p.canManageEvents || p.canKeepGeneralCleaning,
   publisherCards: (p) => p.canEditPublishers,
   publicTalks: (p) => p.canCoordinatePublicTalks,
   // Setting talks aside and bringing them back. The letter that says so
@@ -127,7 +132,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   '/schedule/students': 'editsProgramme',
   '/special-events': 'all',
   '/special-events/[id]': 'all',
-  '/special-events/new': 'events',
+  '/special-events/new': 'eventsOrCleaning',
   // The folder for the circuit overseer (S-61): elders; the server narrows
   // it to section 1 for those not in the service committee's three.
   '/special-events/folder/[id]': 'elders',

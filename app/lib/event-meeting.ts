@@ -22,6 +22,8 @@ const OWN_RULE_TYPES = new Set([
   'kingdom_ministry_school_elders',
   'kingdom_ministry_school_servants',
   'pioneer_special_meeting',
+  // The general cleaning changes no meeting (25 November 2026).
+  'general_cleaning',
 ]);
 
 export function takesMeetingMode(type: string | null | undefined): boolean {
