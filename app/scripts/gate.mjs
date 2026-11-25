@@ -156,6 +156,9 @@ const STEPS = [
   ['Русские слова в коде', 'node', ['scripts/check-no-cyrillic-in-code.mjs']],
   ['Словарь терминов', 'node', ['scripts/check-glossary.mjs']],
   ['Маршруты уведомлений', 'node', ['scripts/check-notification-routes.mjs']],
+  // A key built from the kind is invisible to the usage scan (raw key on the
+  // save button of the general cleaning, 25 November 2026).
+  ['Слова видов событий', 'node', ['scripts/check-event-kind-words.mjs']],
   // What a browser says its device is decides whether the server sends to it
   // at all: an iPad taken for a Mac stays silent while a phone is registered.
   ['Устройство подписки', 'node', ['scripts/check-web-device-kind.mjs']],

@@ -33,7 +33,7 @@ import {
   VisitTools,
   VisitWeek,
 } from './EventDetailSections';
-import { programmeLinkOf } from '../lib/event-view';
+import { programmeLinkOf, mayKeepEvent } from '../lib/event-view';
 import { routeLink } from '../lib/route-link';
 import { inviteesOf } from '../lib/invitations';
 import { usePermissions } from '../lib/permissions';
@@ -95,7 +95,8 @@ export function SpecialEventDetail({
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { canManageEvents, isAdmin } = usePermissions();
+  const perms = usePermissions();
+  const { canManageEvents, isAdmin } = perms;
   const settingsQ = useQuery({
     queryKey: ['meeting-settings'],
     queryFn: () => meetingSettingsApi.getOverview(),
@@ -466,7 +467,7 @@ export function SpecialEventDetail({
         />
       ) : null}
 
-      {canManageEvents && (
+      {mayKeepEvent(perms, event.type) && (
         <View style={styles.actions}>
           {isRemoved ? (
             <>

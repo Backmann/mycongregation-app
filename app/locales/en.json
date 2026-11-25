@@ -2173,7 +2173,6 @@
     "notSelected": "Not selected",
     "noGroups": "No service groups",
     "allCongregation": "Whole congregation",
-    "scheduled": "Scheduled",
     "slots": {
       "after_meeting": "Cleaning after meetings",
       "thorough": "Weekly cleaning",
@@ -2201,9 +2200,7 @@
       "tbd": "Day to be agreed",
       "set": "Pick a day",
       "clear": "Clear",
-      "label": "Cleaning day",
-      "generalLabel": "Date and time",
-      "generalTitle": "When is the general cleaning?"
+      "label": "Cleaning day"
     },
     "slotHints": {
       "after_meeting": "After the midweek and weekend meeting",
@@ -2215,7 +2212,12 @@
       "yearly": "Guide: general cleaning"
     },
     "slotColumn": "Cleaning",
-    "cleared": "The week’s cleaning was cleared"
+    "cleared": "The week’s cleaning was cleared",
+    "generalEvent": {
+      "none": "No date set yet",
+      "open": "Open event",
+      "set": "Set a date"
+    }
   },
   "cleaningGuide": {
     "title": "How to clean",
@@ -2838,7 +2840,8 @@
         "campaign": "Save campaign",
         "kingdom_ministry_school_elders": "Save the school",
         "kingdom_ministry_school_servants": "Save the school",
-        "pioneer_special_meeting": "Save the meeting"
+        "pioneer_special_meeting": "Save the meeting",
+        "general_cleaning": "Save the cleaning"
       },
       "sum": {
         "title": "What will happen",
@@ -2846,7 +2849,8 @@
         "visitProgramme": "At the midweek meeting, his service talk replaces the Congregation Bible Study; at the weekend meeting, he gives the public talk and the concluding talk",
         "noMeetings": "No meeting on: {{days}}",
         "notifyNew": "Everyone is notified, and reminded the evening before",
-        "notifyEdit": "If the days, time, place or meeting change, everyone is notified"
+        "notifyEdit": "If the days, time, place or meeting change, everyone is notified",
+        "twoHoursBefore": "2 hours before the start, one more reminder to everyone — when a time is set"
       },
       "titleExample": "For example, grounds cleaning",
       "midweekHeld": "The midweek meeting ({{day}}) is already past — its program stays as it was.",
@@ -2868,7 +2872,8 @@
       "campaign": "Campaign",
       "kingdom_ministry_school_elders": "Kingdom Ministry School for elders",
       "kingdom_ministry_school_servants": "Kingdom Ministry School for ministerial servants",
-      "pioneer_special_meeting": "Special meeting with the pioneers of the circuit"
+      "pioneer_special_meeting": "Special meeting with the pioneers of the circuit",
+      "general_cleaning": "General cleaning"
     },
     "weekTitle": "This week's events",
     "replaced": {
@@ -2976,7 +2981,8 @@
         "campaign": "Days or weeks; meetings stay as they are. Can let auxiliary pioneers take 15 hours",
         "kingdom_ministry_school_elders": "Seen and announced to the elders only; marked as away on the school days",
         "kingdom_ministry_school_servants": "Seen and announced to the ministerial servants only; marked as away on the school days",
-        "pioneer_special_meeting": "For regular and special pioneers and missionaries; meetings unchanged"
+        "pioneer_special_meeting": "For regular and special pioneers and missionaries; meetings unchanged",
+        "general_cleaning": "The whole congregation cleans the Kingdom Hall; meetings are not affected"
       },
       "specialTalk": "A special talk is recorded by the talk coordinator — in the Incoming / Outgoing log, with its speaker.",
       "openLog": "Open the log ›"
@@ -5942,7 +5948,6 @@
     "dayNotSet": "day not set",
     "weeklyMissing": "Weekly — not assigned",
     "general": "General cleaning — {{when}}",
-    "dateTbd": "date to be set",
     "mineAfter": "Your group cleans — after meetings",
     "mineWeekly": "Your group — weekly cleaning",
     "mineWeeklyPlan": "Your group — weekly · set the day",
@@ -6582,7 +6587,9 @@
       "ANNOUNCEMENT_ALREADY_ADDED": "This has already been added to the announcements.",
       "ANNOUNCEMENT_ORDER_INCOMPLETE": "The list has changed — refresh the screen and set the order again.",
       "ANNOUNCEMENT_MEETING_NOT_AHEAD": "An announcement can only be moved to a meeting still to come.",
-      "ANNOUNCEMENT_WEEK_GONE": "That week is past the time announcements are kept."
+      "ANNOUNCEMENT_WEEK_GONE": "That week is past the time announcements are kept.",
+      "CLEANING_GENERAL_IS_EVENT": "The general cleaning is now planned as an event under Events",
+      "EVENT_GENERAL_CLEANING_ONLY": "The general cleaning is kept by the cleaning coordinator, the body coordinator and administrators"
     }
   },
   "stage": {

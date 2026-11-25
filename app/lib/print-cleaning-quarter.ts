@@ -123,11 +123,23 @@ export async function printCleaningQuarter({
         mondays.forEach((mon) => {
           const iso = formatDateISO(mon);
           const wk = weekByISO.get(iso);
+          // The general cleaning is an event since 25 November 2026 (R-09):
+          // its week is the event's, the rest the cleaning's.
+          if (slot === "general") {
+            const sun = formatDateISO(addDays(mon, 6));
+            const ev = (events ?? []).find(
+              (e) =>
+                e.type === "general_cleaning" &&
+                !e.deletedAt &&
+                e.date.slice(0, 10) >= iso &&
+                e.date.slice(0, 10) <= sun,
+            );
+            valueByWeek[iso] = ev ? t("cleaning.allCongregation") : null;
+            return;
+          }
           const a = (wk?.assignments ?? []).find((x) => x.slotType === slot);
           if (!a) {
             valueByWeek[iso] = null;
-          } else if (slot === "general") {
-            valueByWeek[iso] = t("cleaning.allCongregation");
           } else {
             const g = a.serviceGroupId
               ? groupsById.get(a.serviceGroupId)

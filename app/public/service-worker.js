@@ -212,11 +212,19 @@ function routeForNotification(data) {
     case 'cleaning_after_meeting':
     case 'cleaning_weekly_monday':
     case 'cleaning_weekly_planned':
-    case 'cleaning_general_planned':
       return {
         path: '/publishers/cleaning-week',
         params: data.weekStart ? { week: data.weekStart } : {},
       };
+    // The general cleaning is an event since 25 November 2026 (R-09): its
+    // reminder opens it. An older server still sent the week.
+    case 'cleaning_general_planned':
+      return data.eventId
+        ? { path: `/special-events/${data.eventId}`, params: {} }
+        : {
+            path: '/publishers/cleaning-week',
+            params: data.weekStart ? { week: data.weekStart } : {},
+          };
     // The evening digest is about the reader's own assignments.
     case 'assignment_reminder':
       return { path: '/home/my-assignments', params: {} };

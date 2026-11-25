@@ -2173,7 +2173,6 @@
     "notSelected": "Nicht ausgewählt",
     "noGroups": "Keine Predigtdienstgruppen",
     "allCongregation": "Ganze Versammlung",
-    "scheduled": "Geplant",
     "slots": {
       "after_meeting": "Reinigung nach den Zusammenkünften",
       "thorough": "Wöchentliche Reinigung",
@@ -2201,9 +2200,7 @@
       "tbd": "Tag wird abgestimmt",
       "set": "Tag wählen",
       "clear": "Zurücksetzen",
-      "label": "Reinigungstag",
-      "generalLabel": "Datum und Uhrzeit",
-      "generalTitle": "Wann ist die Grundreinigung?"
+      "label": "Reinigungstag"
     },
     "slotHints": {
       "after_meeting": "Nach der Zusammenkunft (unter der Woche + Wochenende)",
@@ -2215,7 +2212,12 @@
       "yearly": "Anleitung: Grundreinigung"
     },
     "slotColumn": "Reinigung",
-    "cleared": "Reinigung für die Woche entfernt"
+    "cleared": "Reinigung für die Woche entfernt",
+    "generalEvent": {
+      "none": "Noch kein Termin",
+      "open": "Ereignis öffnen",
+      "set": "Termin festlegen"
+    }
   },
   "cleaningGuide": {
     "title": "Richtig reinigen",
@@ -2838,7 +2840,8 @@
         "campaign": "Kampagne speichern",
         "kingdom_ministry_school_elders": "Schule speichern",
         "kingdom_ministry_school_servants": "Schule speichern",
-        "pioneer_special_meeting": "Zusammenkunft speichern"
+        "pioneer_special_meeting": "Zusammenkunft speichern",
+        "general_cleaning": "Reinigung speichern"
       },
       "sum": {
         "title": "Was geschieht",
@@ -2846,7 +2849,8 @@
         "visitProgramme": "Unter der Woche ersetzt seine Dienstansprache das Versammlungsbibelstudium; am Wochenende hält er den öffentlichen Vortrag und den Schlussvortrag",
         "noMeetings": "Keine Zusammenkunft: {{days}}",
         "notifyNew": "Alle werden benachrichtigt und am Vorabend erinnert",
-        "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
+        "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt",
+        "twoHoursBefore": "2 Stunden vor Beginn noch eine Erinnerung an alle — wenn eine Uhrzeit angegeben ist"
       },
       "titleExample": "Zum Beispiel Grundstückspflege",
       "midweekHeld": "Die Zusammenkunft unter der Woche ({{day}}) ist schon vorbei – ihr Programm bleibt unverändert.",
@@ -2868,7 +2872,8 @@
       "campaign": "Kampagne",
       "kingdom_ministry_school_elders": "Königreichsdienstschule für Älteste",
       "kingdom_ministry_school_servants": "Königreichsdienstschule für Dienstamtgehilfen",
-      "pioneer_special_meeting": "Sonderzusammenkunft mit den Pionieren des Kreises"
+      "pioneer_special_meeting": "Sonderzusammenkunft mit den Pionieren des Kreises",
+      "general_cleaning": "Grundreinigung"
     },
     "weekTitle": "Termine diese Woche",
     "replaced": {
@@ -2976,7 +2981,8 @@
         "campaign": "Tage oder Wochen; die Zusammenkünfte bleiben, wie sie sind. Hilfspioniere können 15 Stunden wählen dürfen",
         "kingdom_ministry_school_elders": "Nur für Älteste sichtbar und angekündigt; an den Schultagen als abwesend eingetragen",
         "kingdom_ministry_school_servants": "Nur für Dienstamtgehilfen sichtbar und angekündigt; an den Schultagen als abwesend eingetragen",
-        "pioneer_special_meeting": "Für allgemeine und Sonderpioniere und Missionare; Zusammenkünfte wie üblich"
+        "pioneer_special_meeting": "Für allgemeine und Sonderpioniere und Missionare; Zusammenkünfte wie üblich",
+        "general_cleaning": "Die ganze Versammlung reinigt den Königreichssaal; Zusammenkünfte bleiben unberührt"
       },
       "specialTalk": "Einen Sondervortrag trägt der Vortragskoordinator ein – im Vortragsplan unter „Zu uns“, mit dem Redner.",
       "openLog": "Protokoll öffnen ›"
@@ -5942,7 +5948,6 @@
     "dayNotSet": "Tag nicht festgelegt",
     "weeklyMissing": "Wöchentlich — nicht eingeteilt",
     "general": "Grundreinigung — {{when}}",
-    "dateTbd": "Datum folgt",
     "mineAfter": "Ihre Gruppe reinigt — nach den Zusammenkünften",
     "mineWeekly": "Ihre Gruppe — wöchentliche Reinigung",
     "mineWeeklyPlan": "Ihre Gruppe — wöchentlich · Tag festlegen",
@@ -6582,7 +6587,9 @@
       "ANNOUNCEMENT_ALREADY_ADDED": "Das ist bereits bei den Bekanntmachungen.",
       "ANNOUNCEMENT_ORDER_INCOMPLETE": "Die Liste hat sich geändert — bitte aktualisieren und die Reihenfolge neu setzen.",
       "ANNOUNCEMENT_MEETING_NOT_AHEAD": "Verschieben geht nur auf eine Zusammenkunft, die noch bevorsteht.",
-      "ANNOUNCEMENT_WEEK_GONE": "Diese Woche liegt außerhalb der Aufbewahrungszeit."
+      "ANNOUNCEMENT_WEEK_GONE": "Diese Woche liegt außerhalb der Aufbewahrungszeit.",
+      "CLEANING_GENERAL_IS_EVENT": "Die Grundreinigung wird jetzt als Ereignis unter „Ereignisse“ geplant",
+      "EVENT_GENERAL_CLEANING_ONLY": "Die Grundreinigung planen der Reinigungskoordinator, der Koordinator der Ältestenschaft und Administratoren"
     }
   },
   "stage": {
