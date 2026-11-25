@@ -1348,10 +1348,6 @@ function Summary({
         ? t('specialEvents.form.sum.notifyNew')
         : t('specialEvents.form.sum.notifyEdit'),
   });
-  // The general cleaning keeps the old cleaning reminder, 2 hours before the
-  // start, to everyone (R-09) — sent only when the event has a time.
-  if (kind === 'general_cleaning' && !past)
-    lines.push({ icon: 'alarm-outline', text: t('specialEvents.form.sum.twoHoursBefore') });
 
   return (
     <View style={styles.summary}>

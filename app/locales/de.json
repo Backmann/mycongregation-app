@@ -2849,8 +2849,7 @@
         "visitProgramme": "Unter der Woche ersetzt seine Dienstansprache das Versammlungsbibelstudium; am Wochenende hält er den öffentlichen Vortrag und den Schlussvortrag",
         "noMeetings": "Keine Zusammenkunft: {{days}}",
         "notifyNew": "Alle werden benachrichtigt und am Vorabend erinnert",
-        "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt",
-        "twoHoursBefore": "2 Stunden vor Beginn noch eine Erinnerung an alle — wenn eine Uhrzeit angegeben ist"
+        "notifyEdit": "Ändern sich Tage, Uhrzeit, Ort oder Zusammenkunft, werden alle benachrichtigt"
       },
       "titleExample": "Zum Beispiel Grundstückspflege",
       "midweekHeld": "Die Zusammenkunft unter der Woche ({{day}}) ist schon vorbei – ihr Programm bleibt unverändert.",

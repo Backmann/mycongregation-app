@@ -2849,8 +2849,7 @@
         "visitProgramme": "At the midweek meeting, his service talk replaces the Congregation Bible Study; at the weekend meeting, he gives the public talk and the concluding talk",
         "noMeetings": "No meeting on: {{days}}",
         "notifyNew": "Everyone is notified, and reminded the evening before",
-        "notifyEdit": "If the days, time, place or meeting change, everyone is notified",
-        "twoHoursBefore": "2 hours before the start, one more reminder to everyone — when a time is set"
+        "notifyEdit": "If the days, time, place or meeting change, everyone is notified"
       },
       "titleExample": "For example, grounds cleaning",
       "midweekHeld": "The midweek meeting ({{day}}) is already past — its program stays as it was.",
