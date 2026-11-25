@@ -167,6 +167,16 @@ export default function CongregationScreen() {
     subtitle: t('congregationHub.sub.duties'),
     href: '/publishers/duties',
   });
+  // Announcements (R-01, 24 November 2026): for whoever writes them; the
+  // chairman finds his list on the home screen instead.
+  if (perms.canWriteAnnouncements) {
+    meetings.push({
+      key: 'announcements',
+      title: t('announcements.title'),
+      subtitle: t('congregationHub.sub.announcements'),
+      href: '/announcements',
+    });
+  }
   meetings.push({
     key: 'talks',
     title: t('talkCoordinator.title'),

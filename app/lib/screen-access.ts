@@ -40,6 +40,8 @@ export type AccessRule =
   | 'publicTalks'
   | 'talkCatalogue'
   | 'localNeeds'
+  /** The announcements' writers (R-02). */
+  | 'announcements'
   | 'pioneerSchool'
   | 'coSchedule'
   /** Whoever arranges the stand: the day's timeline, the archive. */
@@ -84,6 +86,7 @@ export const ACCESS_RULES: Record<
   talkCatalogue: (p) =>
     p.isAdmin || p.isElder || p.canCoordinatePublicTalks,
   localNeeds: (p) => p.canViewLocalNeeds,
+  announcements: (p) => p.canWriteAnnouncements,
   pioneerSchool: (p) => p.canViewPioneerSchool,
   coSchedule: (p) => p.canViewCoSchedule,
   cartArrange: (p) => p.canEditCartWitnessing || p.canEditFieldServiceMeetings,
@@ -129,6 +132,10 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // it to section 1 for those not in the service committee's three.
   '/special-events/folder/[id]': 'elders',
   '/local-needs': 'localNeeds',
+  // Announcements (24 November 2026): the writers' weeks; one meeting's list
+  // is for its chairman too, which only the server knows.
+  '/announcements': 'announcements',
+  '/announcements/meeting': 'self',
 
   // ── Собрание ─────────────────────────────────────────────────────────
   '/publishers': 'all',

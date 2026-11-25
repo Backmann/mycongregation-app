@@ -59,6 +59,8 @@ import { ConductReport } from '../../../components/ConductReport';
 import { QuickReplaceSheet } from '../../../components/QuickReplaceSheet';
 import { confirm } from '../../../components/ConfirmHost';
 import { formatDateISO, parseISODate, startOfWeekMonday } from '../../../lib/dates';
+import { ReadList } from '../../../components/announcements/ReadList';
+import { readsAnnouncements } from '../../../lib/announcements';
 import { ConductStage, STAGE_SECTION_COLORS, type StagePart } from '../../../components/ConductStage';
 import {
   demoFrame,
@@ -2387,6 +2389,18 @@ export default function ConductScreen({
     );
   }
 
+  // THE ANNOUNCEMENTS, at the step where the chairman reads them (R-01, 24
+  // November 2026): the closing words on a weekday, after the talk at the
+  // weekend. The list asks the server itself and shows nothing to whoever it
+  // is not for (the timekeeper, the stage screen's own account).
+  const annKind = readsAnnouncements(current?.key);
+  // A rehearsal shows the list to read through, and ticks nothing.
+  const announcementsHere = annKind ? (
+    <View style={{ marginTop: 16, marginBottom: 16 }}>
+      <ReadList week={week} kind={annKind} hideWhenEmpty tick={!practice} />
+    </View>
+  ) : null;
+
   // THIS ACCOUNT'S OWN HANGING RUN, OPENED ON ITS OTHER DEVICE (19 October
   // 2026): finished or dropped right here — the taps are taken over without
   // asking first, it is the same brother; before, he had to «Взять ведение»
@@ -2507,6 +2521,7 @@ export default function ConductScreen({
         onTake={watching && canRun && liveData ? () => void takeOver() : null}
         controls={controls}
         check={null}
+        extra={annKind ? <ReadList week={week} kind={annKind} hideWhenEmpty tick={!practice} /> : null}
       />
     );
   }
@@ -2544,10 +2559,17 @@ export default function ConductScreen({
           {changedNote}
           {/* A hanging run: the card says what happened; a red «−176:10» under it would only shout. */}
           {ownHanging ? hangingCard : nowCard}
+          {/* On a phone the list comes before the button: read it, then
+              «Председатель закончил» under it — the order of the evening. */}
+          {wide ? null : announcementsHere}
           {ownHanging ? null : controls}
           {upNext}
         </View>
-        <View style={wide ? styles.colSide : undefined}>{sheet}</View>
+        {/* On a wide screen it takes the side column's top, beside the clock. */}
+        <View style={wide ? styles.colSide : undefined}>
+          {wide ? announcementsHere : null}
+          {sheet}
+        </View>
       </View>
       {mayReplaceSpeaker ? (
         <QuickReplaceSheet

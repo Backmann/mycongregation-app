@@ -33,6 +33,7 @@ import { ConnectionPill, NoConnectionScreen } from '../../components/ConnectionS
 const PARENT_TAB: Record<string, string> = {
   "special-events": "schedule",
   "local-needs": "schedule",
+  announcements: "publishers",
   absences: "publishers",
   tasks: "publishers",
   "pioneer-school": "publishers",
@@ -274,6 +275,7 @@ export default function AppLayout() {
         <Tabs.Screen name="special-events" options={{ href: null }} />
         <Tabs.Screen name="absences" options={{ href: null }} />
         <Tabs.Screen name="local-needs" options={{ href: null }} />
+        <Tabs.Screen name="announcements" options={{ href: null }} />
         <Tabs.Screen name="tasks" options={{ href: null }} />
         <Tabs.Screen name="pioneer-school" options={{ href: null }} />
         <Tabs.Screen name="talk-coordinator" options={{ href: null }} />

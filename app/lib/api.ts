@@ -9276,3 +9276,86 @@ export const recutApi = {
   hold: async (id: string, territoryId: string, hold: boolean): Promise<RecutWaiting[]> =>
     (await api.put<RecutWaiting[]>(`/territory-recut/proposals/${id}/hold`, { territoryId, hold })).data,
 };
+
+// ---- Announcements read at the meetings (24 November 2026) --------------
+// Server: src/announcements. Writers: the coordinator of the body of elders,
+// his assistant, the administrators; the chairman of a meeting reads its list.
+
+export type AnnouncementKind = "midweek" | "weekend";
+
+export interface Announcement {
+  id: string;
+  position: number;
+  text: string;
+  /** A letter pasted whole: shown large, to scroll through. */
+  isLetter: boolean;
+  /** Where it came from — «template», «task», «cleaning»…; null when written. */
+  source: string | null;
+  /** Put there by the guidelines themselves (R-05). */
+  byRule: boolean;
+  read: boolean;
+  /** The day of the meeting it was first meant for, when moved on unread. */
+  carriedFrom: string | null;
+}
+
+export interface AnnouncementMeeting {
+  weekStartDate: string;
+  kind: AnnouncementKind;
+  /** The day it is held (visits and moves counted); null if not held. */
+  date: string | null;
+  time: string | null;
+  /** For the writers: who reads it, and whether his part is published. */
+  chairman: { firstName: string; lastName: string; published: boolean } | null;
+  items: Announcement[];
+}
+
+export interface AnnouncementWeek {
+  weekStartDate: string;
+  /** False in a convention week: nobody meets. */
+  meetingsHeld: boolean;
+  meetings: AnnouncementMeeting[];
+  /** Written for a meeting the week no longer holds. */
+  unplaced: (Announcement & { kind: AnnouncementKind })[];
+}
+
+export interface AnnouncementUnread extends Announcement {
+  weekStartDate: string;
+  kind: AnnouncementKind;
+  date: string;
+}
+
+export const announcementsApi = {
+  rights: async (): Promise<{ write: boolean }> =>
+    (await api.get<{ write: boolean }>("/announcements/rights")).data,
+  weeks: async (
+    from: string,
+    count = 2,
+  ): Promise<{ weeks: AnnouncementWeek[]; unread: AnnouncementUnread[]; today: string }> =>
+    (await api.get("/announcements/weeks", { params: { from, count } })).data,
+  meeting: async (week: string, kind: AnnouncementKind): Promise<AnnouncementMeeting> =>
+    (await api.get<AnnouncementMeeting>("/announcements/meeting", { params: { week, kind } })).data,
+  mine: async (): Promise<AnnouncementMeeting[]> =>
+    (await api.get<AnnouncementMeeting[]>("/announcements/mine")).data,
+  create: async (input: {
+    weekStartDate: string;
+    eventType: AnnouncementKind;
+    text: string;
+    isLetter?: boolean;
+    source?: string;
+    sourceKey?: string;
+  }): Promise<Announcement> => (await api.post<Announcement>("/announcements", input)).data,
+  update: async (id: string, input: { text?: string; isLetter?: boolean }): Promise<Announcement> =>
+    (await api.patch<Announcement>(`/announcements/${id}`, input)).data,
+  order: async (weekStartDate: string, eventType: AnnouncementKind, ids: string[]): Promise<Announcement[]> =>
+    (await api.post<Announcement[]>("/announcements/order", { weekStartDate, eventType, ids })).data,
+  remove: async (id: string): Promise<void> => {
+    await api.delete(`/announcements/${id}`);
+  },
+  mark: async (id: string, read: boolean): Promise<Announcement> =>
+    (await api.post<Announcement>(`/announcements/${id}/read`, { read })).data,
+  carry: async (id: string, weekStartDate: string, eventType: AnnouncementKind): Promise<Announcement> =>
+    (await api.post<Announcement>(`/announcements/${id}/carry`, { weekStartDate, eventType })).data,
+  dismiss: async (id: string): Promise<void> => {
+    await api.post(`/announcements/${id}/dismiss`);
+  },
+};
