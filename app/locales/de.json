@@ -4445,7 +4445,8 @@
       "territory_assignment": "Gebiete: Ausgaben",
       "territory": "Gebiete",
       "territory_no_call": "Gebiete: Nicht besuchen",
-      "meeting_announcement": "Bekanntmachungen"
+      "meeting_announcement": "Bekanntmachungen",
+      "announcement_template": "Bekanntmachungen: Vorlagen"
     },
     "actions": {
       "CREATE": "hat hinzugefügt",
@@ -6592,7 +6593,8 @@
       "CLEANING_GENERAL_IS_EVENT": "Die Grundreinigung wird jetzt als Ereignis unter „Ereignisse“ geplant",
       "EVENT_GENERAL_CLEANING_ONLY": "Die Grundreinigung planen der Reinigungskoordinator, der Koordinator der Ältestenschaft und Administratoren",
       "ANNOUNCEMENT_SUGGESTION_GONE": "Dieser Vorschlag wird nicht mehr angeboten — bitte aktualisieren Sie die Ansicht.",
-      "ANNOUNCEMENT_SUGGESTION_MOVED": "Das Ereignis wurde in eine andere Woche verlegt — löschen Sie diese Bekanntmachung und fügen Sie den Vorschlag dort hinzu."
+      "ANNOUNCEMENT_SUGGESTION_MOVED": "Das Ereignis wurde in eine andere Woche verlegt — löschen Sie diese Bekanntmachung und fügen Sie den Vorschlag dort hinzu.",
+      "ANNOUNCEMENT_TEMPLATE_TOKEN": "Die Worte enthalten einen Platzhalter, den diese Vorlage nicht kennt. Verwenden Sie die aufgeführten Platzhalter."
     }
   },
   "stage": {
@@ -9459,7 +9461,86 @@
       "restore": "Dem Vorsitzenden zurückgeben",
       "removed": "Beim Vorsitzenden entfernt",
       "restored": "Dem Vorsitzenden zurückgegeben",
-      "campaignHint": "Planen Sie den 15-minütigen Programmpunkt vor Beginn der Aktion: was die Versammlung in der Aktion tut, das Kongressprogramm auf den Bildschirmen, das Thema und die Hauptvorträge."
+      "campaignHint": "Planen Sie den 15-minütigen Programmpunkt vor Beginn der Aktion: was die Versammlung in der Aktion tut, das Kongressprogramm auf den Bildschirmen, das Thema und die Hauptvorträge.",
+      "off": "Auf der Seite „Vorlagen“ der Bekanntmachungen ausgeschaltet — die App setzt es nicht selbst. Dort einschalten, falls nötig."
+    },
+    "templates": {
+      "key": {
+        "general_cleaning": "Grundreinigung",
+        "co_visit.ahead": "Besuch des Kreisaufsehers — vorher",
+        "co_visit.next": "Besuch des Kreisaufsehers — Woche davor",
+        "memorial.ahead": "Gedächtnismahl — vorher",
+        "memorial.next": "Gedächtnismahl — Woche davor",
+        "convention.ahead": "Erinnerung an den Kongress",
+        "convention.next": "Programm, Wachtturm, pünktlich kommen",
+        "field_service": "Änderungen bei Zusammenkünften für den Predigtdienst",
+        "accounts_month": "Monatlicher Bericht über die Konten",
+        "accounts_audit": "Prüfung der Konten erfolgt",
+        "assembly_screens": "Programm des Kreiskongresses auf den Bildschirmen",
+        "campaign_part": "15 Minuten vor der Aktion"
+      },
+      "when": {
+        "general_cleaning": "die letzte Zusammenkunft vor der Reinigung",
+        "co_visit.ahead": "beide Zusammenkünfte",
+        "co_visit.next": "Woche vor dem Besuch · beide Zusammenkünfte",
+        "memorial.ahead": "Zusammenkunft unter der Woche",
+        "memorial.next": "Woche vor dem Gedächtnismahl · beide Zusammenkünfte",
+        "convention.ahead": "Zusammenkunft unter der Woche",
+        "convention.next": "letzte Woche vor dem Kongress · beide Zusammenkünfte",
+        "field_service": "abgesagt, verlegt oder mit Hinweis nach der Veröffentlichung · die Zusammenkunft davor",
+        "accounts_month": "jeden Monat ab dem 1. · unter der Woche · den Text des Berichts setzen Sie ein",
+        "accounts_audit": "wenn die Aufgabe der Prüfung erledigt ist · nächste Zusammenkunft unter der Woche",
+        "assembly_screens": "letzte Zusammenkunft unter der Woche · direkt an den Vorsitzenden, 3 Wochen vorher",
+        "campaign_part": "regionaler Kongress · Aufgabe für den Aufseher der Zusammenkunft „Leben und Dienst“ 6 Wochen vorher"
+      },
+      "group": {
+        "events": "Aus „Ereignisse“",
+        "conventions": "Kongresse",
+        "fieldService": "Zusammenkünfte für den Predigtdienst",
+        "accounts": "Konten der Versammlung"
+      },
+      "sample": {
+        "when": "Samstag, 13. März, 9:00",
+        "from": "23.",
+        "to": "28. Februar",
+        "midweek": "Dienstag, 23. Februar, 19:00",
+        "name": "Kreiskongress",
+        "dates": "24. Januar",
+        "month": "November",
+        "report": "[Text des Berichts]",
+        "months": "September – November",
+        "program": "https://…"
+      },
+      "open": "Vorlagen",
+      "screenTitle": "Vorlagen",
+      "title": "Was vorgeschlagen wird",
+      "lead": "Die App nimmt die Daten aus „Ereignisse“, den Zusammenkünften für den Predigtdienst und den Aufgaben der Ältestenschaft. Die Worte jeder Vorlage gehören Ihnen: Tippen Sie auf „Worte“.",
+      "byRule": "nach den Richtlinien · wird selbst gesetzt",
+      "words": "Worte",
+      "ownWords": "Eigene Worte",
+      "weeks": "{{n}} Wochen vorher",
+      "fewer": "Eine Woche weniger",
+      "more": "Eine Woche mehr",
+      "foot": "Eine ausgeschaltete Vorlage wird nicht mehr vorgeschlagen. Bereits hinzugefügte Bekanntmachungen bleiben, wie sie sind.",
+      "wordsLabel": "Worte der Vorlage",
+      "tokensHint": "Die Platzhalter in geschweiften Klammern ersetzt die App durch Daten und Uhrzeiten.",
+      "insert": "{{token}} einfügen",
+      "preview": "So wird es klingen",
+      "reset": "Worte der App wiederherstellen",
+      "save": "Speichern",
+      "saved": "Vorlage gespeichert",
+      "token": {
+        "when": "wann",
+        "from": "von",
+        "to": "bis",
+        "midweek": "Zusammenkunft",
+        "name": "Name",
+        "dates": "Daten",
+        "month": "Monat",
+        "report": "Bericht",
+        "months": "Monate",
+        "program": "Programm"
+      }
     }
   }
 }

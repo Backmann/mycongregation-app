@@ -4445,7 +4445,8 @@
       "territory_assignment": "Territories: assignments",
       "territory": "Territories",
       "territory_no_call": "Territories: do not call",
-      "meeting_announcement": "Announcements"
+      "meeting_announcement": "Announcements",
+      "announcement_template": "Announcements: templates"
     },
     "actions": {
       "CREATE": "added",
@@ -6592,7 +6593,8 @@
       "CLEANING_GENERAL_IS_EVENT": "The general cleaning is now planned as an event under Events",
       "EVENT_GENERAL_CLEANING_ONLY": "The general cleaning is kept by the cleaning coordinator, the body coordinator and administrators",
       "ANNOUNCEMENT_SUGGESTION_GONE": "This suggestion is no longer offered — refresh the screen.",
-      "ANNOUNCEMENT_SUGGESTION_MOVED": "The event moved to another week — delete this announcement and add the suggestion there."
+      "ANNOUNCEMENT_SUGGESTION_MOVED": "The event moved to another week — delete this announcement and add the suggestion there.",
+      "ANNOUNCEMENT_TEMPLATE_TOKEN": "The words use a placeholder this template does not have. Use the placeholders listed."
     }
   },
   "stage": {
@@ -9459,7 +9461,86 @@
       "restore": "Give it back to the chairman",
       "removed": "Taken off the chairman’s list",
       "restored": "Given back to the chairman",
-      "campaignHint": "Plan the 15-minute part before the campaign begins: what the congregation does in the campaign, the convention program on the screens, the theme and the key talks."
+      "campaignHint": "Plan the 15-minute part before the campaign begins: what the congregation does in the campaign, the convention program on the screens, the theme and the key talks.",
+      "off": "Turned off on the announcements’ Templates screen — the app will not put it there itself. Turn it on there if needed."
+    },
+    "templates": {
+      "key": {
+        "general_cleaning": "General cleaning",
+        "co_visit.ahead": "Circuit overseer’s visit — ahead",
+        "co_visit.next": "Circuit overseer’s visit — the week before",
+        "memorial.ahead": "Memorial — ahead",
+        "memorial.next": "Memorial — the week before",
+        "convention.ahead": "Convention reminder",
+        "convention.next": "Program, Watchtower, arrive on time",
+        "field_service": "Changes to meetings for field service",
+        "accounts_month": "Monthly accounts report",
+        "accounts_audit": "Accounts audit done",
+        "assembly_screens": "Circuit assembly program on the screens",
+        "campaign_part": "15 minutes before the campaign"
+      },
+      "when": {
+        "general_cleaning": "the last meeting before the cleaning",
+        "co_visit.ahead": "both meetings",
+        "co_visit.next": "the week before the visit · both meetings",
+        "memorial.ahead": "the midweek meeting",
+        "memorial.next": "the week before the Memorial · both meetings",
+        "convention.ahead": "the midweek meeting",
+        "convention.next": "the last week before the convention · both meetings",
+        "field_service": "canceled, moved or with a note after publishing · the meeting before it",
+        "accounts_month": "every month from the 1st · midweek · you add the report text",
+        "accounts_audit": "when the audit task is marked done · the next midweek meeting",
+        "assembly_screens": "the last midweek meeting · straight to the chairman, 3 weeks ahead",
+        "campaign_part": "regional convention · a task for the Life and Ministry overseer 6 weeks ahead"
+      },
+      "group": {
+        "events": "From Events",
+        "conventions": "Conventions",
+        "fieldService": "Meetings for field service",
+        "accounts": "Congregation accounts"
+      },
+      "sample": {
+        "when": "Saturday, March 13, 9:00",
+        "from": "February 23",
+        "to": "28",
+        "midweek": "Tuesday, February 23, 19:00",
+        "name": "Circuit assembly",
+        "dates": "January 24",
+        "month": "November",
+        "report": "[report text]",
+        "months": "September – November",
+        "program": "https://…"
+      },
+      "open": "Templates",
+      "screenTitle": "Templates",
+      "title": "What to suggest",
+      "lead": "The app takes dates from Events, meetings for field service and the body’s tasks. The words of each template are yours: tap “Words.”",
+      "byRule": "by the guidelines · placed by itself",
+      "words": "Words",
+      "ownWords": "Own words",
+      "weeks": "{{n}} weeks ahead",
+      "fewer": "One week less",
+      "more": "One week more",
+      "foot": "A template turned off is no longer suggested. Announcements already added stay as they are.",
+      "wordsLabel": "Template words",
+      "tokensHint": "The app replaces the placeholders in braces with dates and times.",
+      "insert": "Insert {{token}}",
+      "preview": "How it will sound",
+      "reset": "Back to the app’s words",
+      "save": "Save",
+      "saved": "Template saved",
+      "token": {
+        "when": "when",
+        "from": "from",
+        "to": "to",
+        "midweek": "midweek",
+        "name": "name",
+        "dates": "dates",
+        "month": "month",
+        "report": "report",
+        "months": "months",
+        "program": "program"
+      }
     }
   }
 }

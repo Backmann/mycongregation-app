@@ -141,6 +141,7 @@ export const SCREEN_ACCESS: Record<string, AccessRule> = {
   // is for its chairman too, which only the server knows.
   '/announcements': 'announcements',
   '/announcements/meeting': 'self',
+  '/announcements/templates': 'announcements',
 
   // ── Собрание ─────────────────────────────────────────────────────────
   '/publishers': 'all',
