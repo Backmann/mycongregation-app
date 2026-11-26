@@ -6588,7 +6588,9 @@
       "ANNOUNCEMENT_MEETING_NOT_AHEAD": "Verschieben geht nur auf eine Zusammenkunft, die noch bevorsteht.",
       "ANNOUNCEMENT_WEEK_GONE": "Diese Woche liegt außerhalb der Aufbewahrungszeit.",
       "CLEANING_GENERAL_IS_EVENT": "Die Grundreinigung wird jetzt als Ereignis unter „Ereignisse“ geplant",
-      "EVENT_GENERAL_CLEANING_ONLY": "Die Grundreinigung planen der Reinigungskoordinator, der Koordinator der Ältestenschaft und Administratoren"
+      "EVENT_GENERAL_CLEANING_ONLY": "Die Grundreinigung planen der Reinigungskoordinator, der Koordinator der Ältestenschaft und Administratoren",
+      "ANNOUNCEMENT_SUGGESTION_GONE": "Dieser Vorschlag wird nicht mehr angeboten — bitte aktualisieren Sie die Ansicht.",
+      "ANNOUNCEMENT_SUGGESTION_MOVED": "Das Ereignis wurde in eine andere Woche verlegt — löschen Sie diese Bekanntmachung und fügen Sie den Vorschlag dort hinzu."
     }
   },
   "stage": {
@@ -9379,7 +9381,69 @@
         "weekend": "{{day}} · nach dem Vortrag"
       },
       "letters_one": "{{count}} Brief",
-      "letters_other": "{{count}} Briefe"
+      "letters_other": "{{count}} Briefe",
+      "writerTitle": "Bekanntmachungen",
+      "suggestions": "Vorschläge: {{n}}",
+      "stale": "veraltet: {{n}}"
+    },
+    "suggest": {
+      "title": "Vorschläge der App",
+      "count": "Vorschläge: {{n}} · Sie entscheiden",
+      "noneThisWeek": "Noch nichts — siehe „Demnächst“",
+      "topic": {
+        "general_cleaning": "Grundreinigung",
+        "co_visit": "Besuch des Kreisaufsehers",
+        "memorial": "Gedächtnismahl",
+        "convention": "Kongress",
+        "field_service": "Zusammenkünfte für den Predigtdienst",
+        "accounts_month": "Bericht über die Konten",
+        "accounts_audit": "Prüfung der Konten"
+      },
+      "stage": {
+        "general_cleaning": {
+          "once": "vor der Reinigung"
+        },
+        "co_visit": {
+          "ahead": "einen Monat vorher",
+          "next": "nächste Woche"
+        },
+        "memorial": {
+          "ahead": "5 Wochen vorher",
+          "next": "nächste Woche"
+        },
+        "convention": {
+          "ahead": "2–3 Monate vorher",
+          "next": "letzte Woche vor dem Kongress"
+        },
+        "field_service": {
+          "once": "nach der Veröffentlichung geändert"
+        },
+        "accounts_month": {
+          "once": "jeden Monat"
+        },
+        "accounts_audit": {
+          "once": "nach der Aufgabe der Ältestenschaft"
+        }
+      },
+      "gapTime": "Beim Ereignis fehlt die Uhrzeit. Tragen Sie sie unter „Ereignisse“ ein, dann erscheint sie im Text.",
+      "gapReport": "Setzen Sie den Text des Berichts anstelle von [Text des Berichts] ein.",
+      "addBoth": "Hinzufügen · beide",
+      "addFor": "Hinzufügen · {{day}}",
+      "add": "Hinzufügen",
+      "notNeeded": "Nicht nötig",
+      "letGo": "Vorschlag entfernt",
+      "later": "Demnächst",
+      "fromWeek": "ab {{date}}",
+      "from": "Aus einem Vorschlag: {{topic}}",
+      "yourWords": "Den Text können Sie frei ändern",
+      "wordsHint": "Daten und Uhrzeiten stammen aus „Ereignisse“ und den Regeln der Woche. Ändert sich das Ereignis, zeigt die Bekanntmachung es an.",
+      "onceHint": "Ein hinzugefügter Vorschlag wird nicht mehr angeboten — weder Ihnen noch den anderen, die Bekanntmachungen schreiben.",
+      "refreshed": "Text aktualisiert",
+      "staleChanged": "Das Ereignis wurde nach dem Hinzufügen geändert — der Text ist vielleicht veraltet.",
+      "staleMoved": "Das Ereignis wurde in eine andere Woche verlegt. Löschen Sie diese Bekanntmachung — der Vorschlag erscheint in der neuen Woche.",
+      "staleGone": "Das Ereignis wurde gelöscht — prüfen Sie, ob diese Bekanntmachung noch nötig ist.",
+      "refresh": "Durch den neuen Text ersetzen",
+      "delete": "Löschen"
     }
   }
 }

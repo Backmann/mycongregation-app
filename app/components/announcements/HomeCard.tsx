@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { announcementsApi, meApi } from '../../lib/api';
 import { firstLine } from '../../lib/announcements';
 import { parseISODate } from '../../lib/dates';
+import { useMayOpen } from '../../lib/useMayOpen';
 import { ANN } from './ReadList';
 
 /** Shown from this many days before the meeting. */
@@ -78,6 +79,61 @@ export function AnnouncementsHomeCard() {
     </View>
   );
 }
+
+/**
+ * «Объявления: подсказок 3 · устарело 1» for the writers (announcements R-09):
+ * shown only when there is something to decide this week or next — a
+ * suggestion not yet added or let go, or a taken text whose event changed.
+ * Nothing to decide, no line. Built first in step 2 because the section was
+ * not yet used two days after it went live (26 November 2026).
+ */
+export function AnnouncementsWriterLine() {
+  const { t } = useTranslation();
+  const mayOpen = useMayOpen();
+  const writer = mayOpen('/announcements');
+  const q = useQuery({
+    queryKey: ['announcements', 'suggestions', 'summary'],
+    queryFn: () => announcementsApi.suggestionSummary(),
+    enabled: writer,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  const d = q.data;
+  if (!writer || !d || (!d.suggestions && !d.stale)) return null;
+  const parts = [
+    d.suggestions ? t('announcements.home.suggestions', { n: d.suggestions }) : null,
+    d.stale ? t('announcements.home.stale', { n: d.stale }) : null,
+  ].filter(Boolean);
+  return (
+    <Pressable style={w.card} onPress={() => router.push('/announcements' as never)} accessibilityRole="button">
+      <View style={w.icon}>
+        <Ionicons name="megaphone-outline" size={22} color={ANN.fg} />
+      </View>
+      <View style={{ flex: 1, gap: 3 }}>
+        <Text style={w.title}>{t('announcements.home.writerTitle')}</Text>
+        <Text style={w.sub}>{parts.join(' · ')}</Text>
+      </View>
+      <Ionicons name="chevron-forward" size={20} color="#64748b" />
+    </Pressable>
+  );
+}
+
+const w = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: ANN.bg,
+    marginBottom: 12,
+  },
+  icon: { width: 44, height: 44, borderRadius: 12, backgroundColor: ANN.bg, alignItems: 'center', justifyContent: 'center' },
+  title: { fontFamily: 'Manrope_800ExtraBold', fontSize: 16, color: '#0f172a' },
+  sub: { fontFamily: 'Manrope_600SemiBold', fontSize: 14, color: ANN.fg },
+});
 
 const s = StyleSheet.create({
   card: {
