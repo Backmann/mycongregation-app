@@ -15,7 +15,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const BANNED = {
+  // «Собрание», not «община» (Lionel, 26 November 2026: the hint of the
+  // general cleaning said «вся община»).
+  ru: [[/общин/i, 'собрание']],
   de: [
+    [/\bGemeinde\b/, 'Versammlung'],
     [/\bWochenmitte\b/, 'Unter der Woche / Zusammenkunft unter der Woche'],
     [/Zusammenkunft \(Woche\)/, 'Zusammenkunft unter der Woche'],
     [/\b(Eröffnungsgebet|Eingangsgebet)/, 'Anfangsgebet'],
@@ -29,6 +33,7 @@ const BANNED = {
     [/\b\d* ?(T|Wo)\.(?=\s|$)/, '«Tagen», «Wochen» ausgeschrieben'],
   ],
   en: [
+    [/\b[Cc]ommunity\b/, 'congregation'],
     [/\b[Ll]ed by\b|\bCONDUCTS\b|\bWho conducts\b/, 'Conducted by / Conductor'],
     [/\bhanded in\b/i, 'submitted'],
     [/\bGood night\b/, 'Good evening'],
@@ -65,4 +70,4 @@ for (const [lang, rules] of Object.entries(BANNED)) {
   }
 }
 if (bad) process.exit(1);
-console.log('✓ Словарь терминов (de, en) соблюдён');
+console.log('✓ Словарь терминов (ru, de, en) соблюдён');

@@ -8,7 +8,7 @@ export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer' | 'sources
 export type Block = { h?: string; p?: string; li?: string[] };
 export type Doc = { title: string; tab: string; blocks: Block[] };
 
-export const LEGAL_UPDATED = '14.11.2026';
+export const LEGAL_UPDATED = '26.11.2026';
 
 /**
  * Chrome strings for the legal screen itself (header title + footer notes).
@@ -75,7 +75,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { p: 'Поскольку речь идёт о членах религиозного собрания, данные относятся к религиозным убеждениям (особая категория). Правовое основание — явное согласие субъекта (подписанная форма), ст. 9(2)(a), в рамках законной деятельности религиозной общины в отношении её членов (ст. 9(2)(d)). Поля свободного текста («заметки») предназначены только для организационных пометок; вносить туда чувствительные сведения не следует.' },
         { h: 'Цели и правовые основания' },
         { li: [
-          'Организация встреч, назначений и служения — согласие (ст. 6(1)(a)) и законный интерес общины (ст. 6(1)(f)); для религиозных данных — ст. 9(2)(a)/(d).',
+          'Организация встреч, назначений и служения — согласие (ст. 6(1)(a)) и законный интерес собрания (ст. 6(1)(f)); для религиозных данных — ст. 9(2)(a)/(d).',
           'Учётная запись, вход и безопасность — ст. 6(1)(b)/(f).',
         ] },
         { h: 'Кому передаются данные (субпроцессоры)' },
@@ -193,7 +193,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
         { p: 'Da es sich um Mitglieder einer religiösen Versammlung handelt, betreffen die Daten religiöse Überzeugungen (besondere Kategorie). Rechtsgrundlage ist die ausdrückliche Einwilligung (unterschriebenes Formular), Art. 9(2)(a), im Rahmen der rechtmäßigen Tätigkeit einer religiösen Gemeinschaft gegenüber ihren Mitgliedern (Art. 9(2)(d)). Freitextfelder („Notizen") dienen nur organisatorischen Zwecken; sensible Angaben sollen dort nicht eingetragen werden.' },
         { h: 'Zwecke und Rechtsgrundlagen' },
         { li: [
-          'Organisation von Zusammenkünften, Zuteilungen und Dienst — Einwilligung (Art. 6(1)(a)) und berechtigtes Interesse der Gemeinschaft (Art. 6(1)(f)); für religiöse Daten Art. 9(2)(a)/(d).',
+          'Organisation von Zusammenkünften, Zuteilungen und Dienst — Einwilligung (Art. 6(1)(a)) und berechtigtes Interesse der Versammlung (Art. 6(1)(f)); für religiöse Daten Art. 9(2)(a)/(d).',
           'Konto, Anmeldung und Sicherheit — Art. 6(1)(b)/(f).',
         ] },
         { h: 'Empfänger (Auftragsverarbeiter)' },
