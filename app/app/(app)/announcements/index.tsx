@@ -160,6 +160,7 @@ export default function AnnouncementsScreen() {
                     {a.isLetter ? firstLine(a.text) : a.text}
                   </Text>
                   <View style={s.tags}>
+                    {a.byRule ? <Text style={[s.tag, s.tagRule]}>{t('announcements.tag.byRule')}</Text> : null}
                     {a.isLetter ? <Text style={s.tag}>{t('announcements.tag.letter')}</Text> : null}
                     {a.carriedFrom ? (
                       <Text style={[s.tag, s.tagWarm]}>
@@ -378,6 +379,7 @@ const s = StyleSheet.create({
   tag: { fontFamily: 'Manrope_700Bold', fontSize: 12, color: ANN.fg, backgroundColor: ANN.bg, borderRadius: 12, paddingHorizontal: 9, paddingVertical: 3, overflow: 'hidden' },
   tagWarm: { color: '#9a3412', backgroundColor: '#fff7ed' },
   tagRead: { color: '#166534', backgroundColor: '#e7f6ec' },
+  tagRule: { color: '#78350f', backgroundColor: '#fef3c7' },
   orderBtns: { gap: 4 },
   orderBtn: { width: 44, height: 40, borderRadius: 10, backgroundColor: '#f1f4f8', alignItems: 'center', justifyContent: 'center' },
   orderOff: { opacity: 0.35 },

@@ -7551,6 +7551,10 @@ export interface ElderTask {
     | "admin_not_elder"
     /** «Возможно, одна и та же карточка» (1 November 2026). */
     | "possible_duplicate"
+    /** Before a circuit assembly: the programme on the screens (period: its date). */
+    | "assembly_screens"
+    /** Before a regional convention: the 15 minutes before the campaign (period: its date). */
+    | "campaign_part"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;
@@ -9403,6 +9407,17 @@ export const announcementsApi = {
   }): Promise<Announcement[]> => (await api.post<Announcement[]>("/announcements/suggestions/take", input)).data,
   suggestionNotNeeded: async (key: string): Promise<void> => {
     await api.post("/announcements/suggestions/not-needed", { key });
+  },
+  /** The programme on the screens before an assembly (R-05): its state for the task. */
+  screens: async (
+    date: string,
+  ): Promise<{ state: "placed" | "removed" | "later" | "none"; meetingDate: string | null; read: boolean }> =>
+    (await api.get("/announcements/screens", { params: { date } })).data,
+  screensRemove: async (date: string): Promise<void> => {
+    await api.post("/announcements/screens/remove", { date });
+  },
+  screensRestore: async (date: string): Promise<void> => {
+    await api.post("/announcements/screens/restore", { date });
   },
   refreshSuggestion: async (announcementId: string): Promise<Announcement> =>
     (await api.post<Announcement>("/announcements/suggestions/refresh", { announcementId })).data,

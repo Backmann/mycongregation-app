@@ -1,4 +1,5 @@
 import { KeyboardScroll } from "../../../components/KeyboardScroll";
+import { ScreensLine } from "../../../components/announcements/ScreensLine";
 import { PossibleDuplicateLines } from "../../../components/PossibleDuplicateLines";
 import { AdminNotElderLine } from "../../../components/AdminNotElderLine";
 import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
@@ -209,6 +210,11 @@ export default function TasksScreen() {
         .format("MMMM YYYY");
       return `${name} · ${m}`;
     }
+    // Before a convention: the period is the convention's date.
+    if ((task.kind === "assembly_screens" || task.kind === "campaign_part") && task.kindPeriod) {
+      const d = dayjs(task.kindPeriod).locale(i18n.language).format("D MMMM");
+      return `${name} · ${d}`;
+    }
     // Two audits can stand open at once, and «Проверка счетов» twice over says
     // nothing about which quarter is which. The period is part of the name.
     const quarter = quarterLabel(task.kindPeriod, t);
@@ -278,7 +284,10 @@ export default function TasksScreen() {
           {task.kind &&
           task.kind !== "inactive_holds" &&
           task.kind !== "admin_not_elder" &&
-          task.kind !== "possible_duplicate"
+          task.kind !== "possible_duplicate" &&
+          // One convention, one task: it comes with the event, not the calendar.
+          task.kind !== "assembly_screens" &&
+          task.kind !== "campaign_part"
             ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
@@ -360,6 +369,16 @@ export default function TasksScreen() {
           >
             <Text style={styles.openScreen}>{t("pioneerMeeting.fromTask")}</Text>
           </Pressable>
+        ) : null}
+
+        {/* Before an assembly: the chairman's item — on his list, or taken off. */}
+        {task.kind === "assembly_screens" && task.kindPeriod ? (
+          <ScreensLine date={task.kindPeriod} />
+        ) : null}
+
+        {/* Before a regional convention: what the 15 minutes hold. */}
+        {task.kind === "campaign_part" ? (
+          <Text style={styles.openScreen}>{t("announcements.screens.campaignHint")}</Text>
         ) : null}
 
         {/* «Замена назначений»: whose, and what is still his — read live. */}

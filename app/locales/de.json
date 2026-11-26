@@ -5143,7 +5143,9 @@
       "pioneer_meeting": "Jährliches Treffen mit den Pionieren — wer leitet",
       "inactive_holds": "Aufgaben neu vergeben",
       "admin_not_elder": "Administrator ist kein Ältester",
-      "possible_duplicate": "Möglicherweise dieselbe Karte"
+      "possible_duplicate": "Möglicherweise dieselbe Karte",
+      "assembly_screens": "Programm des Kreiskongresses auf den Bildschirmen",
+      "campaign_part": "15 Minuten vor der Einladungsaktion zum regionalen Kongress"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -9305,7 +9307,8 @@
     "tag": {
       "letter": "Brief",
       "carried": "vom {{date}}",
-      "read": "gelesen"
+      "read": "gelesen",
+      "byRule": "nach den Richtlinien"
     },
     "up": "Nach oben",
     "down": "Nach unten",
@@ -9444,6 +9447,19 @@
       "staleGone": "Das Ereignis wurde gelöscht — prüfen Sie, ob diese Bekanntmachung noch nötig ist.",
       "refresh": "Durch den neuen Text ersetzen",
       "delete": "Löschen"
+    },
+    "screens": {
+      "title": "{{day}}: Der Vorsitzende zeigt das Programm auf den Bildschirmen",
+      "placed": "Steht bereits in seinen Bekanntmachungen, markiert „nach den Richtlinien“.",
+      "read": "Der Vorsitzende hat es als gezeigt markiert.",
+      "later": "Die App setzt es drei Wochen vor der Zusammenkunft in seine Bekanntmachungen.",
+      "isRemoved": "Aus seinen Bekanntmachungen entfernt — es erscheint nicht von selbst wieder.",
+      "yours": "Ihr Teil: das Programm für die Bildschirme — Thema und Hauptvorträge — an den Bruder für Audio und Video geben.",
+      "remove": "Beim Vorsitzenden entfernen",
+      "restore": "Dem Vorsitzenden zurückgeben",
+      "removed": "Beim Vorsitzenden entfernt",
+      "restored": "Dem Vorsitzenden zurückgegeben",
+      "campaignHint": "Planen Sie den 15-minütigen Programmpunkt vor Beginn der Aktion: was die Versammlung in der Aktion tut, das Kongressprogramm auf den Bildschirmen, das Thema und die Hauptvorträge."
     }
   }
 }
