@@ -8,7 +8,7 @@ export type DocKey = 'impressum' | 'privacy' | 'terms' | 'disclaimer' | 'sources
 export type Block = { h?: string; p?: string; li?: string[] };
 export type Doc = { title: string; tab: string; blocks: Block[] };
 
-export const LEGAL_UPDATED = '14.11.2026';
+export const LEGAL_UPDATED = '26.11.2026';
 
 /**
  * Chrome strings for the legal screen itself (header title + footer notes).
@@ -72,10 +72,10 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Технические данные: токены push-уведомлений и web-push-подписки; журнал действий «кто что изменил»; журнал сбоев приложения (экран, платформа, версия сборки, текст ошибки, роль — без имён, адресов, e-mail и телефонов).',
         ] },
         { h: 'Особая категория данных (ст. 9 GDPR)' },
-        { p: 'Поскольку речь идёт о членах религиозного собрания, данные относятся к религиозным убеждениям (особая категория). Правовое основание — явное согласие субъекта (подписанная форма), ст. 9(2)(a), в рамках законной деятельности религиозной общины в отношении её членов (ст. 9(2)(d)). Поля свободного текста («заметки») предназначены только для организационных пометок; вносить туда чувствительные сведения не следует.' },
+        { p: 'Поскольку речь идёт о членах религиозного собрания, данные относятся к религиозным убеждениям (особая категория). Правовое основание — явное согласие субъекта (подписанная форма), ст. 9(2)(a), в рамках законной деятельности религиозного собрания в отношении его членов (ст. 9(2)(d)). Поля свободного текста («заметки») предназначены только для организационных пометок; вносить туда чувствительные сведения не следует.' },
         { h: 'Цели и правовые основания' },
         { li: [
-          'Организация встреч, назначений и служения — согласие (ст. 6(1)(a)) и законный интерес общины (ст. 6(1)(f)); для религиозных данных — ст. 9(2)(a)/(d).',
+          'Организация встреч, назначений и служения — согласие (ст. 6(1)(a)) и законный интерес собрания (ст. 6(1)(f)); для религиозных данных — ст. 9(2)(a)/(d).',
           'Учётная запись, вход и безопасность — ст. 6(1)(b)/(f).',
         ] },
         { h: 'Кому передаются данные (субпроцессоры)' },
@@ -190,10 +190,10 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Technische Daten: Push-/Web-Push-Token; Protokoll „wer hat was geändert"; Fehlerprotokoll der Anwendung (Bildschirm, Plattform, Build-Version, Fehlertext, Rolle — ohne Namen, Adressen, E-Mail und Telefonnummern).',
         ] },
         { h: 'Besondere Datenkategorien (Art. 9 DSGVO)' },
-        { p: 'Da es sich um Mitglieder einer religiösen Versammlung handelt, betreffen die Daten religiöse Überzeugungen (besondere Kategorie). Rechtsgrundlage ist die ausdrückliche Einwilligung (unterschriebenes Formular), Art. 9(2)(a), im Rahmen der rechtmäßigen Tätigkeit einer religiösen Gemeinschaft gegenüber ihren Mitgliedern (Art. 9(2)(d)). Freitextfelder („Notizen") dienen nur organisatorischen Zwecken; sensible Angaben sollen dort nicht eingetragen werden.' },
+        { p: 'Da es sich um Mitglieder einer religiösen Versammlung handelt, betreffen die Daten religiöse Überzeugungen (besondere Kategorie). Rechtsgrundlage ist die ausdrückliche Einwilligung (unterschriebenes Formular), Art. 9(2)(a), im Rahmen der rechtmäßigen Tätigkeit einer religiösen Versammlung gegenüber ihren Mitgliedern (Art. 9(2)(d)). Freitextfelder („Notizen") dienen nur organisatorischen Zwecken; sensible Angaben sollen dort nicht eingetragen werden.' },
         { h: 'Zwecke und Rechtsgrundlagen' },
         { li: [
-          'Organisation von Zusammenkünften, Zuteilungen und Dienst — Einwilligung (Art. 6(1)(a)) und berechtigtes Interesse der Gemeinschaft (Art. 6(1)(f)); für religiöse Daten Art. 9(2)(a)/(d).',
+          'Organisation von Zusammenkünften, Zuteilungen und Dienst — Einwilligung (Art. 6(1)(a)) und berechtigtes Interesse der Versammlung (Art. 6(1)(f)); für religiöse Daten Art. 9(2)(a)/(d).',
           'Konto, Anmeldung und Sicherheit — Art. 6(1)(b)/(f).',
         ] },
         { h: 'Empfänger (Auftragsverarbeiter)' },
@@ -308,7 +308,7 @@ export const LEGAL: Record<Lang, Record<DocKey, Doc>> = {
           'Technical data: push / web-push tokens; an audit log of "who changed what"; an application failure log (screen, platform, build version, error text, role — no names, addresses, e-mail or phone numbers).',
         ] },
         { h: 'Special categories (Art. 9 GDPR)' },
-        { p: 'As the data concern members of a religious congregation, they relate to religious beliefs (a special category). The legal basis is the data subject\u2019s explicit consent (a signed form), Art. 9(2)(a), within the legitimate activities of a religious body regarding its members (Art. 9(2)(d)). Free-text fields ("notes") are for organizational remarks only; sensitive information should not be entered there.' },
+        { p: 'As the data concern members of a religious congregation, they relate to religious beliefs (a special category). The legal basis is the data subject\u2019s explicit consent (a signed form), Art. 9(2)(a), within the legitimate activities of a religious congregation regarding its members (Art. 9(2)(d)). Free-text fields ("notes") are for organizational remarks only; sensitive information should not be entered there.' },
         { h: 'Purposes and legal bases' },
         { li: [
           'Organizing meetings, assignments and ministry — consent (Art. 6(1)(a)) and the legitimate interest of the congregation (Art. 6(1)(f)); for religious data Art. 9(2)(a)/(d).',
