@@ -5143,7 +5143,9 @@
       "pioneer_meeting": "Annual meeting with the pioneers — who conducts it",
       "inactive_holds": "Reassign tasks",
       "admin_not_elder": "Administrator is not an elder",
-      "possible_duplicate": "Possibly the same card"
+      "possible_duplicate": "Possibly the same card",
+      "assembly_screens": "Circuit assembly program on the screens",
+      "campaign_part": "15 minutes before the regional convention campaign"
     },
     "mine": {
       "title": "My tasks",
@@ -9305,7 +9307,8 @@
     "tag": {
       "letter": "branch letter",
       "carried": "from {{date}}",
-      "read": "read"
+      "read": "read",
+      "byRule": "by the guidelines"
     },
     "up": "Move up",
     "down": "Move down",
@@ -9444,6 +9447,19 @@
       "staleGone": "The event was deleted — check whether this announcement is still needed.",
       "refresh": "Replace with the new text",
       "delete": "Delete"
+    },
+    "screens": {
+      "title": "{{day}}: the chairman shows the program on the screens",
+      "placed": "Already on his announcements, marked “by the guidelines.”",
+      "read": "The chairman marked it as shown.",
+      "later": "The app puts it on his announcements three weeks before the meeting.",
+      "isRemoved": "Taken off his announcements — it will not come back by itself.",
+      "yours": "Your part: the program for the screens — the theme and the key talks — for the brother on audio and video.",
+      "remove": "Take it off the chairman’s list",
+      "restore": "Give it back to the chairman",
+      "removed": "Taken off the chairman’s list",
+      "restored": "Given back to the chairman",
+      "campaignHint": "Plan the 15-minute part before the campaign begins: what the congregation does in the campaign, the convention program on the screens, the theme and the key talks."
     }
   }
 }

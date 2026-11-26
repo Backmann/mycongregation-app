@@ -14,7 +14,7 @@ export function dayMonth(iso: string, lang: string): string {
 /** The colours of the announcements, the same as the tasks' area «Объявления». */
 export const ANN = { fg: '#0C447C', bg: '#E6F1FB' };
 const DONE = { fg: '#166534', bg: '#e7f6ec', solid: '#15803d' };
-const RULE = { fg: '#78350f', edge: '#b45309', ground: '#fffaf0' };
+export const RULE = { fg: '#78350f', edge: '#b45309', ground: '#fffaf0' };
 
 /**
  * ONE MEETING'S ANNOUNCEMENTS, as the chairman reads them aloud (R-01).
