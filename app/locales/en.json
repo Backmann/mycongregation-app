@@ -9431,7 +9431,7 @@
           "once": "after the body’s task"
         }
       },
-      "gapTime": "The event has no time. Add it under Events and it will appear in the text.",
+      "gapTime": "The event has no time yet — the text says it will be announced. Add it under Events and it will appear in the text.",
       "gapReport": "Put the report text in place of [report text].",
       "addBoth": "Add · both",
       "addFor": "Add · {{day}}",
@@ -9510,7 +9510,8 @@
         "month": "November",
         "report": "[report text]",
         "months": "September – November",
-        "program": "https://…"
+        "program": "https://…",
+        "place": "Lindenstraße 5, Hamm"
       },
       "open": "Templates",
       "screenTitle": "Templates",
@@ -9524,7 +9525,7 @@
       "more": "One week more",
       "foot": "A template turned off is no longer suggested. Announcements already added stay as they are.",
       "wordsLabel": "Template words",
-      "tokensHint": "The app replaces the placeholders in braces with dates and times.",
+      "tokensHint": "The app replaces the placeholders in braces with the dates, time and address from the event. Whatever is not known yet is left out.",
       "insert": "Insert {{token}}",
       "preview": "How it will sound",
       "reset": "Back to the app’s words",
@@ -9532,6 +9533,7 @@
       "saved": "Template saved",
       "token": {
         "when": "when",
+        "place": "place",
         "from": "from",
         "to": "to",
         "midweek": "midweek",

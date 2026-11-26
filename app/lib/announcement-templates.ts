@@ -8,7 +8,19 @@
  * the other on the way in and out, so the words he sees are in his language
  * and the server never stores a token it does not know.
  */
-export const TOKENS = ['when', 'from', 'to', 'midweek', 'name', 'dates', 'month', 'report', 'months', 'program'] as const;
+export const TOKENS = [
+  'when',
+  'place',
+  'from',
+  'to',
+  'midweek',
+  'name',
+  'dates',
+  'month',
+  'report',
+  'months',
+  'program',
+] as const;
 export type Token = (typeof TOKENS)[number];
 
 /** The reader's name of a token, without braces. */

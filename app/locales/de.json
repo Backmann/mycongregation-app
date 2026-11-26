@@ -9431,7 +9431,7 @@
           "once": "nach der Aufgabe der Ältestenschaft"
         }
       },
-      "gapTime": "Beim Ereignis fehlt die Uhrzeit. Tragen Sie sie unter „Ereignisse“ ein, dann erscheint sie im Text.",
+      "gapTime": "Beim Ereignis fehlt noch die Uhrzeit — im Text steht, dass sie bekannt gegeben wird. Tragen Sie sie unter „Ereignisse“ ein, dann erscheint sie im Text.",
       "gapReport": "Setzen Sie den Text des Berichts anstelle von [Text des Berichts] ein.",
       "addBoth": "Hinzufügen · beide",
       "addFor": "Hinzufügen · {{day}}",
@@ -9510,7 +9510,8 @@
         "month": "November",
         "report": "[Text des Berichts]",
         "months": "September – November",
-        "program": "https://…"
+        "program": "https://…",
+        "place": "Lindenstraße 5, Hamm"
       },
       "open": "Vorlagen",
       "screenTitle": "Vorlagen",
@@ -9524,7 +9525,7 @@
       "more": "Eine Woche mehr",
       "foot": "Eine ausgeschaltete Vorlage wird nicht mehr vorgeschlagen. Bereits hinzugefügte Bekanntmachungen bleiben, wie sie sind.",
       "wordsLabel": "Worte der Vorlage",
-      "tokensHint": "Die Platzhalter in geschweiften Klammern ersetzt die App durch Daten und Uhrzeiten.",
+      "tokensHint": "Die App ersetzt die Platzhalter in geschweiften Klammern durch Datum, Uhrzeit und Adresse aus dem Ereignis. Was noch nicht bekannt ist, entfällt.",
       "insert": "{{token}} einfügen",
       "preview": "So wird es klingen",
       "reset": "Worte der App wiederherstellen",
@@ -9532,6 +9533,7 @@
       "saved": "Vorlage gespeichert",
       "token": {
         "when": "wann",
+        "place": "Ort",
         "from": "von",
         "to": "bis",
         "midweek": "Zusammenkunft",
