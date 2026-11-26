@@ -6594,7 +6594,8 @@
       "EVENT_GENERAL_CLEANING_ONLY": "Die Grundreinigung planen der Reinigungskoordinator, der Koordinator der Ältestenschaft und Administratoren",
       "ANNOUNCEMENT_SUGGESTION_GONE": "Dieser Vorschlag wird nicht mehr angeboten — bitte aktualisieren Sie die Ansicht.",
       "ANNOUNCEMENT_SUGGESTION_MOVED": "Das Ereignis wurde in eine andere Woche verlegt — löschen Sie diese Bekanntmachung und fügen Sie den Vorschlag dort hinzu.",
-      "ANNOUNCEMENT_TEMPLATE_TOKEN": "Die Worte enthalten einen Platzhalter, den diese Vorlage nicht kennt. Verwenden Sie die aufgeführten Platzhalter."
+      "ANNOUNCEMENT_TEMPLATE_TOKEN": "Die Worte enthalten einen Platzhalter, den diese Vorlage nicht kennt. Verwenden Sie die aufgeführten Platzhalter.",
+      "ANNOUNCEMENT_MEETING_NOT_HELD": "Loslassen geht nur bei einer Bekanntmachung einer bereits gehaltenen Zusammenkunft. Eine für eine kommende bitte löschen."
     }
   },
   "stage": {

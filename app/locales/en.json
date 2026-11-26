@@ -6594,7 +6594,8 @@
       "EVENT_GENERAL_CLEANING_ONLY": "The general cleaning is kept by the cleaning coordinator, the body coordinator and administrators",
       "ANNOUNCEMENT_SUGGESTION_GONE": "This suggestion is no longer offered — refresh the screen.",
       "ANNOUNCEMENT_SUGGESTION_MOVED": "The event moved to another week — delete this announcement and add the suggestion there.",
-      "ANNOUNCEMENT_TEMPLATE_TOKEN": "The words use a placeholder this template does not have. Use the placeholders listed."
+      "ANNOUNCEMENT_TEMPLATE_TOKEN": "The words use a placeholder this template does not have. Use the placeholders listed.",
+      "ANNOUNCEMENT_MEETING_NOT_HELD": "Only an announcement of a meeting already held can be let go. Delete one for a meeting still to come."
     }
   },
   "stage": {
