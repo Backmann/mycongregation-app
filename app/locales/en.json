@@ -6588,7 +6588,9 @@
       "ANNOUNCEMENT_MEETING_NOT_AHEAD": "An announcement can only be moved to a meeting still to come.",
       "ANNOUNCEMENT_WEEK_GONE": "That week is past the time announcements are kept.",
       "CLEANING_GENERAL_IS_EVENT": "The general cleaning is now planned as an event under Events",
-      "EVENT_GENERAL_CLEANING_ONLY": "The general cleaning is kept by the cleaning coordinator, the body coordinator and administrators"
+      "EVENT_GENERAL_CLEANING_ONLY": "The general cleaning is kept by the cleaning coordinator, the body coordinator and administrators",
+      "ANNOUNCEMENT_SUGGESTION_GONE": "This suggestion is no longer offered — refresh the screen.",
+      "ANNOUNCEMENT_SUGGESTION_MOVED": "The event moved to another week — delete this announcement and add the suggestion there."
     }
   },
   "stage": {
@@ -9379,7 +9381,69 @@
         "weekend": "{{day}} · after the talk"
       },
       "letters_one": "{{count}} branch letter",
-      "letters_other": "{{count}} branch letters"
+      "letters_other": "{{count}} branch letters",
+      "writerTitle": "Announcements",
+      "suggestions": "suggestions: {{n}}",
+      "stale": "out of date: {{n}}"
+    },
+    "suggest": {
+      "title": "Suggested by the app",
+      "count": "Suggestions: {{n}} · you decide",
+      "noneThisWeek": "Nothing yet — see Coming up",
+      "topic": {
+        "general_cleaning": "General cleaning",
+        "co_visit": "Circuit overseer’s visit",
+        "memorial": "Memorial",
+        "convention": "Convention",
+        "field_service": "Meetings for field service",
+        "accounts_month": "Accounts report",
+        "accounts_audit": "Accounts audit"
+      },
+      "stage": {
+        "general_cleaning": {
+          "once": "before the cleaning"
+        },
+        "co_visit": {
+          "ahead": "a month ahead",
+          "next": "next week"
+        },
+        "memorial": {
+          "ahead": "5 weeks ahead",
+          "next": "next week"
+        },
+        "convention": {
+          "ahead": "2–3 months ahead",
+          "next": "last week before the convention"
+        },
+        "field_service": {
+          "once": "changed after publishing"
+        },
+        "accounts_month": {
+          "once": "every month"
+        },
+        "accounts_audit": {
+          "once": "after the body’s task"
+        }
+      },
+      "gapTime": "The event has no time. Add it under Events and it will appear in the text.",
+      "gapReport": "Put the report text in place of [report text].",
+      "addBoth": "Add · both",
+      "addFor": "Add · {{day}}",
+      "add": "Add",
+      "notNeeded": "Not needed",
+      "letGo": "Suggestion removed",
+      "later": "Coming up",
+      "fromWeek": "from {{date}}",
+      "from": "From a suggestion: {{topic}}",
+      "yourWords": "The text is yours to edit",
+      "wordsHint": "Dates and times come from Events and the week rules. If the event changes, the announcement will show it.",
+      "onceHint": "Once added, the suggestion is not offered again — to you or to the others who write announcements.",
+      "refreshed": "Text updated",
+      "staleChanged": "The event changed after this was added — the text may be out of date.",
+      "staleMoved": "The event moved to another week. Delete this announcement — the suggestion will appear in the new week.",
+      "staleGone": "The event was deleted — check whether this announcement is still needed.",
+      "refresh": "Replace with the new text",
+      "delete": "Delete"
     }
   }
 }

@@ -9324,6 +9324,39 @@ export interface AnnouncementUnread extends Announcement {
   date: string;
 }
 
+/** What the app suggests announcing (announcements R-09). */
+export type SuggestionTopic =
+  | "general_cleaning"
+  | "co_visit"
+  | "memorial"
+  | "convention"
+  | "field_service"
+  | "accounts_month"
+  | "accounts_audit";
+
+export interface AnnouncementSuggestion {
+  key: string;
+  topic: SuggestionTopic;
+  /** «ahead» — weeks in advance; «next» — the week before; «once». */
+  stage: "ahead" | "next" | "once";
+  text: string;
+  /** What the words could not be told: shown as a gap in the text. */
+  gaps: ("time" | "report")[];
+  /** The meetings of the week it may still go to. */
+  meetings: { kind: AnnouncementKind; date: string }[];
+  defaultKinds: AnnouncementKind[];
+  eventId: string | null;
+}
+
+export interface AnnouncementSuggestions {
+  weekStartDate: string;
+  today: string;
+  items: AnnouncementSuggestion[];
+  upcoming: { key: string; topic: SuggestionTopic; stage: string; weekStartDate: string }[];
+  /** Taken from a suggestion whose event has changed since. */
+  stale: { announcementId: string; reason: "changed" | "moved" | "gone" }[];
+}
+
 export const announcementsApi = {
   rights: async (): Promise<{ write: boolean }> =>
     (await api.get<{ write: boolean }>("/announcements/rights")).data,
@@ -9358,4 +9391,19 @@ export const announcementsApi = {
   dismiss: async (id: string): Promise<void> => {
     await api.post(`/announcements/${id}/dismiss`);
   },
+  suggestions: async (week: string): Promise<AnnouncementSuggestions> =>
+    (await api.get<AnnouncementSuggestions>("/announcements/suggestions", { params: { week } })).data,
+  suggestionSummary: async (): Promise<{ weekStartDate: string; suggestions: number; stale: number }> =>
+    (await api.get("/announcements/suggestions/summary")).data,
+  takeSuggestion: async (input: {
+    weekStartDate: string;
+    key: string;
+    kinds: AnnouncementKind[];
+    text: string;
+  }): Promise<Announcement[]> => (await api.post<Announcement[]>("/announcements/suggestions/take", input)).data,
+  suggestionNotNeeded: async (key: string): Promise<void> => {
+    await api.post("/announcements/suggestions/not-needed", { key });
+  },
+  refreshSuggestion: async (announcementId: string): Promise<Announcement> =>
+    (await api.post<Announcement>("/announcements/suggestions/refresh", { announcementId })).data,
 };

@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { Editor } from '../../../components/announcements/Editor';
+import { StaleMark, SuggestionsCard } from '../../../components/announcements/Suggestions';
 import { ANN, dayMonth } from '../../../components/announcements/ReadList';
 import {
   announcementsApi,
@@ -62,6 +63,13 @@ export default function AnnouncementsScreen() {
     queryFn: () => announcementsApi.weeks(thisMonday, 2),
     enabled: offset !== 0,
   });
+  // What the app suggests for this week, and which taken texts went stale (R-09).
+  const sugQ = useQuery({
+    queryKey: ['announcements', 'suggestions', monday],
+    queryFn: () => announcementsApi.suggestions(monday),
+    retry: false,
+  });
+  const stale = new Map((sugQ.data?.stale ?? []).map((x) => [x.announcementId, x.reason]));
   const current = offset === 0 ? q.data : nowQ.data;
   const week = q.data?.weeks[0] ?? null;
   const today = q.data?.today ?? thisMonday;
@@ -141,8 +149,9 @@ export default function AnnouncementsScreen() {
                 <View style={[s.itemNum, a.read && s.itemNumRead]}>
                   <Text style={s.itemNumText}>{i + 1}</Text>
                 </View>
+                <View style={{ flex: 1, gap: 8 }}>
                 <Pressable
-                  style={{ flex: 1, gap: 6 }}
+                  style={{ gap: 6 }}
                   onPress={() => setEditor({ kind: m.kind, editing: { ...a, kind: m.kind } })}
                   accessibilityRole="button"
                   accessibilityHint={t('announcements.editHint')}
@@ -160,6 +169,8 @@ export default function AnnouncementsScreen() {
                     {a.read ? <Text style={[s.tag, s.tagRead]}>{t('announcements.tag.read')}</Text> : null}
                   </View>
                 </Pressable>
+                {stale.has(a.id) ? <StaleMark id={a.id} reason={stale.get(a.id)!} /> : null}
+                </View>
                 {m.items.length > 1 ? (
                   <View style={s.orderBtns}>
                     <Pressable
@@ -269,6 +280,8 @@ export default function AnnouncementsScreen() {
               </View>
             </View>
           ))}
+
+          {week?.meetingsHeld !== false ? <SuggestionsCard data={sugQ.data} /> : null}
 
           {q.isLoading || !week ? (
             <ActivityIndicator size="large" style={{ marginTop: 32 }} />

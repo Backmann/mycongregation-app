@@ -108,7 +108,7 @@ import {
 } from "../../../lib/parts";
 import { isCongressEvent } from "../../../lib/week-rules";
 import { ConductLiveCard } from "../../../components/ConductEntry";
-import { AnnouncementsHomeCard } from "../../../components/announcements/HomeCard";
+import { AnnouncementsHomeCard, AnnouncementsWriterLine } from "../../../components/announcements/HomeCard";
 import { movedDayLabel, withMoveStandIns } from "../../../lib/field-moves";
 import { formatDayList, formatDayRange } from "../../../lib/date-range";
 import { groupInSentence } from "../../../lib/group-name";
@@ -3366,6 +3366,7 @@ export default function HomeScreen() {
                 <ConductLiveCard />
                 <ConductLiveCard kind="weekend" />
                 <AnnouncementsHomeCard />
+                <AnnouncementsWriterLine />
                 {next}
                 {removedBlock}
                 <HoursCard onSaved={logUndo.saved} />
@@ -3385,6 +3386,7 @@ export default function HomeScreen() {
               <ConductLiveCard />
               <ConductLiveCard kind="weekend" />
               <AnnouncementsHomeCard />
+                <AnnouncementsWriterLine />
               {next}
               {removedBlock}
               <HoursCard onSaved={logUndo.saved} />
