@@ -9525,7 +9525,7 @@
       "more": "Eine Woche mehr",
       "foot": "Eine ausgeschaltete Vorlage wird nicht mehr vorgeschlagen. Bereits hinzugefügte Bekanntmachungen bleiben, wie sie sind.",
       "wordsLabel": "Worte der Vorlage",
-      "tokensHint": "Die App ersetzt die Platzhalter in geschweiften Klammern durch Datum, Uhrzeit und Adresse aus dem Ereignis. Was noch nicht bekannt ist, entfällt.",
+      "tokensHint": "Die App ersetzt die Platzhalter in geschweiften Klammern durch Datum, Uhrzeit und Adresse aus dem Ereignis. Was noch nicht bekannt ist, entfällt — formulieren Sie so, dass der Satz auch ohne den Platzhalter stimmt.",
       "insert": "{{token}} einfügen",
       "preview": "So wird es klingen",
       "reset": "Worte der App wiederherstellen",

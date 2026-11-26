@@ -9525,7 +9525,7 @@
       "more": "One week more",
       "foot": "A template turned off is no longer suggested. Announcements already added stay as they are.",
       "wordsLabel": "Template words",
-      "tokensHint": "The app replaces the placeholders in braces with the dates, time and address from the event. Whatever is not known yet is left out.",
+      "tokensHint": "The app replaces the placeholders in braces with the dates, time and address from the event. Whatever is not known yet drops out — write so the sentence reads without it.",
       "insert": "Insert {{token}}",
       "preview": "How it will sound",
       "reset": "Back to the app’s words",
