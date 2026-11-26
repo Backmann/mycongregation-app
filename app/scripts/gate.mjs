@@ -107,6 +107,7 @@ const STEPS = [
   ['Участки: черновик перекройки', 'node', ['scripts/check-recut.mjs']],
   ['Участки: линии разреза считаются как на сервере', 'node', ['scripts/check-recut-lines.mjs']],
   ['Вход: возврат на открытую страницу, только своего сайта', 'node', ['scripts/check-return-path.mjs']],
+  ['Объявления: подстановки шаблонов', 'node', ['scripts/check-template-tokens.mjs']],
   ['Сбои: чужой код (консоль, расширения) в журнал не идёт', 'node', ['scripts/check-foreign-code.mjs']],
   ['Своя страница для неизвестного адреса', 'node', ['scripts/check-not-found.mjs']],
   ['Шаг назад с запасным экраном (без router.back)', 'node', ['scripts/check-no-router-back.mjs']],

@@ -54,7 +54,9 @@ export function ScreensLine({ date }: { date: string }) {
             : t('announcements.screens.placed')
           : s.state === 'later'
             ? t('announcements.screens.later')
-            : t('announcements.screens.isRemoved')}
+            : s.state === 'off'
+              ? t('announcements.screens.off')
+              : t('announcements.screens.isRemoved')}
       </Text>
       <Text style={st.text}>{t('announcements.screens.yours')}</Text>
       {s.state === 'removed' ? (
@@ -66,7 +68,7 @@ export function ScreensLine({ date }: { date: string }) {
         >
           <Text style={st.btnText}>{t('announcements.screens.restore')}</Text>
         </Pressable>
-      ) : !s.read ? (
+      ) : s.state !== 'off' && !s.read ? (
         <Pressable
           style={st.btnOff}
           disabled={remove.isPending}

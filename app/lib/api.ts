@@ -9361,6 +9361,18 @@ export interface AnnouncementSuggestions {
   stale: { announcementId: string; reason: "changed" | "moved" | "gone" }[];
 }
 
+/** One template of the «Templates» screen (announcements R-09 step 4). */
+export interface AnnouncementTemplate {
+  key: string;
+  enabled: boolean;
+  /** The congregation's own words; null — the app's. */
+  words: string | null;
+  defaultWords: string | null;
+  tokens: string[];
+  weeksAhead: number | null;
+  defaultWeeks: number | null;
+}
+
 export const announcementsApi = {
   rights: async (): Promise<{ write: boolean }> =>
     (await api.get<{ write: boolean }>("/announcements/rights")).data,
@@ -9408,10 +9420,17 @@ export const announcementsApi = {
   suggestionNotNeeded: async (key: string): Promise<void> => {
     await api.post("/announcements/suggestions/not-needed", { key });
   },
+  templates: async (): Promise<AnnouncementTemplate[]> =>
+    (await api.get<AnnouncementTemplate[]>("/announcements/templates")).data,
+  updateTemplate: async (
+    key: string,
+    body: { enabled?: boolean; words?: string | null; weeksAhead?: number | null },
+  ): Promise<AnnouncementTemplate> =>
+    (await api.patch<AnnouncementTemplate>(`/announcements/templates/${encodeURIComponent(key)}`, body)).data,
   /** The programme on the screens before an assembly (R-05): its state for the task. */
   screens: async (
     date: string,
-  ): Promise<{ state: "placed" | "removed" | "later" | "none"; meetingDate: string | null; read: boolean }> =>
+  ): Promise<{ state: "placed" | "removed" | "later" | "off" | "none"; meetingDate: string | null; read: boolean }> =>
     (await api.get("/announcements/screens", { params: { date } })).data,
   screensRemove: async (date: string): Promise<void> => {
     await api.post("/announcements/screens/remove", { date });
