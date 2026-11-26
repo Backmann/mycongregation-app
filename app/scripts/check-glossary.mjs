@@ -69,5 +69,14 @@ for (const [lang, rules] of Object.entries(BANNED)) {
     }
   }
 }
+// The legal texts live in code, not in locales; the word for community is
+// kept out of them too (Lionel, 26 November 2026: «везде»).
+const legal = readFileSync(join(ROOT, 'lib', 'legal-content.ts'), 'utf8');
+for (const [re, use] of [[/общин/i, 'собрание'], [/Gemeinde|Gemeinschaft/, 'Versammlung'], [/\b[Cc]ommunity\b|religious body/, 'congregation']]) {
+  if (re.test(legal)) {
+    console.error(`✗ lib/legal-content.ts: ${re} — ${use}`);
+    bad++;
+  }
+}
 if (bad) process.exit(1);
 console.log('✓ Словарь терминов (ru, de, en) соблюдён');
