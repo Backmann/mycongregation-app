@@ -186,6 +186,13 @@ export interface MeetingEntry {
   movedFromTime?: string | null;
   movedToTime?: string | null;
   /**
+   * The Memorial still without its hour, or held elsewhere without its
+   * address (27 November 2026): «время уточняется», «место уточняется» —
+   * never the hall's address in its stead.
+   */
+  timeLater?: boolean;
+  placeLater?: boolean;
+  /**
    * Field service: whose group, and whether the service overseer is coming.
    *
    * The home timeline is the THIRD place a field-service meeting is drawn —
@@ -739,7 +746,11 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
       // another hour or address for that day — and next, a meeting moved for
       // one week will (4 November 2026).
       const time = memorial ? (memorial.time ?? '') : (rules.timeOf(kind) ?? '');
-      const place = memorial ? (memorial.address ?? v.address) : (rules.placeOf(kind) ?? v.address);
+      // Elsewhere with no address yet: no place at all, «место уточняется».
+      const placeLater = !!memorial && !memorial.address?.trim() && !!memorial.elsewhere;
+      const place = memorial
+        ? (memorial.address?.trim() || (placeLater ? null : v.address))
+        : (rules.placeOf(kind) ?? v.address);
       // Moved for this one week: the old day keeps a crossed-out line that
       // says where the meeting went — whoever looks at Wednesday must not
       // read an empty evening as «no meeting» (5 November 2026). Never the
@@ -839,7 +850,9 @@ export function buildTimeline(input: BuildTimelineInput): Timeline {
         time,
         kind,
         address: place,
-        atHall: !place || place.trim() === (v.address ?? '').trim(),
+        atHall: !placeLater && (!place || place.trim() === (v.address ?? '').trim()),
+        timeLater: !!memorial && !memorial.time,
+        placeLater,
         title: about?.title ?? null,
         speaker: about?.speaker ?? null,
         speakerIsMine: !!about?.speakerIsMine,

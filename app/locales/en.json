@@ -2792,7 +2792,6 @@
         "needDate": "Pick the date",
         "needTitle": "Enter a title",
         "needEnd": "Pick the last day",
-        "memorialTime": "The Memorial needs its starting time",
         "timeOrder": "The end is before the start",
         "linkInvalid": "A link must start with https://",
         "changeEmpty": "Describe what changes about the meeting",
@@ -2858,7 +2857,12 @@
       "auxMonths": "Months it touches: {{months}} — a goal already chosen does not change.",
       "auxHint": "Choose the campaign's days — the months it touches will show here.",
       "wifeComes": "His wife comes too",
-      "wifeNameOptional": "Wife's name (optional)"
+      "wifeNameOptional": "Wife's name (optional)",
+      "memorialTimeLater": "The time can be added later: announcements will say it will be announced, and the coordinator of the body of elders gets a task to add it 6 weeks before the Memorial.",
+      "inOurHall": "In our hall",
+      "elsewhere": "Elsewhere",
+      "placeLater": "The address can be added later — until then everywhere says “place to be announced”.",
+      "later": "Later"
     },
     "types": {
       "regional_convention": "Regional convention",
@@ -3395,7 +3399,9 @@
     "event": {
       "route": "directions",
       "atSchool": "You are at the school that day"
-    }
+    },
+    "timeLater": "time to be announced",
+    "placeLater": "place to be announced"
   },
   "halls": {
     "title": "Kingdom Halls",
@@ -4701,7 +4707,8 @@
       "notified": "With a notification",
       "emptySeats": "Empty places",
       "letter": "Letter",
-      "carried": "Moved"
+      "carried": "Moved",
+      "elsewhere": "Elsewhere"
     },
     "noValue": "empty",
     "changedNoValues": "changed (values are not kept)",
@@ -5146,7 +5153,8 @@
       "admin_not_elder": "Administrator is not an elder",
       "possible_duplicate": "Possibly the same card",
       "assembly_screens": "Circuit assembly program on the screens",
-      "campaign_part": "15 minutes before the regional convention campaign"
+      "campaign_part": "15 minutes before the regional convention campaign",
+      "memorial_details": "Add the Memorial’s time and place"
     },
     "mine": {
       "title": "My tasks",
@@ -5174,6 +5182,12 @@
     },
     "adminNotElder": {
       "hint": "The administrator role opens all of the congregation’s data, so only an elder may hold it. Give the role to an elder or take it away — the task closes by itself."
+    },
+    "memorialDetails": {
+      "missingTime": "The Memorial has no time yet.",
+      "missingPlace": "The Memorial is elsewhere — the address is not given yet.",
+      "missingBoth": "The Memorial has neither a time nor an address yet.",
+      "open": "Open the Memorial"
     }
   },
   "pioneerSchool": {

@@ -103,6 +103,8 @@ export interface EventFormValue {
   coMidweekDow: number;
   /** A campaign: auxiliary pioneers may take 15 hours in its months. */
   auxReducedHours: boolean;
+  /** The Memorial somewhere other than the hall (27 November 2026). */
+  elsewhere: boolean;
 }
 
 const CIRCUIT_OVERSEER_VISIT_TYPE_KEY = 'circuit_overseer_visit';
@@ -132,6 +134,7 @@ export function emptyEventForm(): EventFormValue {
     coAccommodationAddress: '',
     coMidweekDow: 2,
     auxReducedHours: false,
+    elsewhere: false,
   };
 }
 
@@ -173,7 +176,7 @@ export function eventFormProblem(
       : p('needDate');
   }
   if (multiDay && !v.endDate.trim()) return p('needEnd');
-  if (v.type === 'memorial' && !v.time.trim()) return p('memorialTime');
+  // The Memorial's hour may come later (27 November 2026).
   if (v.time && v.timeEnd && v.timeEnd <= v.time) return p('timeOrder');
   const bad = (u: string) => !!u.trim() && !/^https?:\/\/\S+$/i.test(u.trim());
   if (bad(v.mapUrl) || bad(v.programUrl)) return p('linkInvalid');
@@ -253,6 +256,7 @@ function asEvent(v: EventFormValue): SpecialEvent {
     coAccommodationPublisherId: null,
     coMidweekDow: v.coMidweekDow,
     auxReducedHours: v.type === 'campaign' && v.auxReducedHours,
+    elsewhere: v.type === 'memorial' && v.elsewhere,
     replacesMeeting: meeting.replacesMeeting,
     meetingMode: meeting.meetingMode,
     meetingNote: meeting.meetingNote,
@@ -979,9 +983,14 @@ export function SpecialEventForm({
           <StartTime
             value={value.time}
             presets={START_PRESETS[kind] ?? TIME_PRESETS}
-            allowNone={!isMemorial}
+            allowNone
+            // The Memorial's hour may come later (27 November 2026).
+            noneLabel={isMemorial ? t('specialEvents.form.later') : undefined}
             onChange={(x) => set({ time: x, timeEnd: '' })}
           />
+          {isMemorial && !value.time ? (
+            <Text style={styles.stayHint}>{t('specialEvents.form.memorialTimeLater')}</Text>
+          ) : null}
         </Section>
       ) : isCampaign ? (
         <Section label={t('specialEvents.form.auxTitle')}>
@@ -1062,8 +1071,32 @@ export function SpecialEventForm({
         <Text style={styles.stayHint}>{t('specialEvents.form.stayInSchedule')}</Text>
       ) : (
         <Section label={t('specialEvents.form.where')}>
+          {/* The Memorial: in the hall, or elsewhere — the address perhaps
+              not known yet; without one the app says «место уточняется»,
+              never the hall's address (27 November 2026). */}
+          {isMemorial ? (
+            <>
+              <View style={styles.chips}>
+                <Chip
+                  label={t('specialEvents.form.inOurHall')}
+                  active={!value.elsewhere}
+                  onPress={() => set({ elsewhere: false, address: '', mapUrl: '' })}
+                />
+                <Chip
+                  label={t('specialEvents.form.elsewhere')}
+                  active={value.elsewhere}
+                  onPress={() => set({ elsewhere: true })}
+                />
+              </View>
+              {value.elsewhere && !value.address.trim() ? (
+                <Text style={styles.stayHint}>{t('specialEvents.form.placeLater')}</Text>
+              ) : null}
+            </>
+          ) : null}
+          {!isMemorial || value.elsewhere ? (
+          <>
           <TextInput
-            style={styles.input}
+            style={[styles.input, isMemorial ? { marginTop: 8 } : null]}
             value={value.address}
             onChangeText={(x) => set({ address: x })}
             placeholder={t('specialEvents.placeholders.address')}
@@ -1102,6 +1135,8 @@ export function SpecialEventForm({
                 })}
               </Text>
             </Pressable>
+          ) : null}
+          </>
           ) : null}
         </Section>
       )}
@@ -1374,11 +1409,14 @@ function StartTime({
   value,
   presets,
   allowNone,
+  noneLabel,
   onChange,
 }: {
   value: string;
   presets: string[];
   allowNone: boolean;
+  /** The word on the «no hour» chip, when not the usual one. */
+  noneLabel?: string;
   onChange: (v: string) => void;
 }) {
   const { t } = useTranslation();
@@ -1391,7 +1429,7 @@ function StartTime({
       <View style={styles.chips}>
         {allowNone ? (
           <Chip
-            label={t('specialEvents.form.noStart')}
+            label={noneLabel ?? t('specialEvents.form.noStart')}
             active={!value && !own}
             onPress={() => {
               setOwn(false);

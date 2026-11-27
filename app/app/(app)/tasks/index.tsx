@@ -2,6 +2,7 @@ import { KeyboardScroll } from "../../../components/KeyboardScroll";
 import { ScreensLine } from "../../../components/announcements/ScreensLine";
 import { PossibleDuplicateLines } from "../../../components/PossibleDuplicateLines";
 import { AdminNotElderLine } from "../../../components/AdminNotElderLine";
+import { MemorialDetailsLine } from "../../../components/MemorialDetailsLine";
 import { InactiveHoldsLines } from "../../../components/InactiveHoldsLines";
 import { useMemo, useState } from "react";
 import {
@@ -211,7 +212,12 @@ export default function TasksScreen() {
       return `${name} · ${m}`;
     }
     // Before a convention: the period is the convention's date.
-    if ((task.kind === "assembly_screens" || task.kind === "campaign_part") && task.kindPeriod) {
+    if (
+      (task.kind === "assembly_screens" ||
+        task.kind === "campaign_part" ||
+        task.kind === "memorial_details") &&
+      task.kindPeriod
+    ) {
       const d = dayjs(task.kindPeriod).locale(i18n.language).format("D MMMM");
       return `${name} · ${d}`;
     }
@@ -287,7 +293,8 @@ export default function TasksScreen() {
           task.kind !== "possible_duplicate" &&
           // One convention, one task: it comes with the event, not the calendar.
           task.kind !== "assembly_screens" &&
-          task.kind !== "campaign_part"
+          task.kind !== "campaign_part" &&
+          task.kind !== "memorial_details"
             ? chip(t("tasks.recurring"), "#f1f5f9", "#475569", "kind")
             : null}
         </View>
@@ -389,6 +396,11 @@ export default function TasksScreen() {
         {/* «Возможно, одна и та же карточка»: the two cards and the answers. */}
         {task.kind === "possible_duplicate" ? (
           <PossibleDuplicateLines taskId={task.id} />
+        ) : null}
+
+        {/* «Указать время и место Вечери»: what is missing, and its page. */}
+        {task.kind === "memorial_details" && task.kindPeriod ? (
+          <MemorialDetailsLine date={task.kindPeriod} />
         ) : null}
 
         {/* «Администратор не старейшина»: whose account. */}

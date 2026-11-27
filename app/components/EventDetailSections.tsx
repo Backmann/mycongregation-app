@@ -67,7 +67,12 @@ export function EventHeader({ event, today }: { event: SpecialEvent; today: stri
     : cap(formatDay(event.date, loc, { weekday: 'long', year: 'always' }));
   // date-span-ok: the weekdays alone, beside the dates said above
   const rangeDays = range ? `${d(event.date, 'dddd')} – ${d(end, 'dddd')}` : null;
-  const time = event.time ? `${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}` : null;
+  const time = event.time
+    ? `${event.time}${event.timeEnd ? `–${event.timeEnd}` : ''}`
+    : // The Memorial's hour may come later (27 November 2026).
+      kind === 'memorial'
+      ? t('home.timeLater')
+      : null;
   return (
     <View style={styles.header}>
       <View style={styles.kindRow}>
