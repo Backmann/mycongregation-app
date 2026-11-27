@@ -321,8 +321,11 @@ export function MemorialMeetingBlock({
       accent="#7c3aed"
       icon="wine-outline"
       title={t('memorial.title')}
-      meta={memorialMeta(event)}
-      metaAddress={event.address ?? undefined}
+      meta={memorialMeta(event, t('home.timeLater'))}
+      metaAddress={
+        event.address?.trim() ||
+        (event.elsewhere ? t('home.placeLater') : undefined)
+      }
       assigned={filled}
       total={programme.length}
       showBadge={programme.length > 0}
@@ -340,14 +343,15 @@ export function MemorialMeetingBlock({
   );
 }
 
-function memorialMeta(event: SpecialEvent): string {
+/** The day and the hour — or that the hour is still to come (27 November 2026). */
+function memorialMeta(event: SpecialEvent, timeLater: string): string {
   const d = new Date(`${event.date}T00:00:00`);
   const day = d.toLocaleDateString(undefined, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
-  return event.time ? `${day} · ${event.time}` : day;
+  return `${day} · ${event.time || timeLater}`;
 }
 
 /** The theme comes from the yearly letter, so it is typed, never compiled in. */

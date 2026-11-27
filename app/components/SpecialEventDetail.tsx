@@ -78,6 +78,7 @@ function toForm(e: SpecialEvent): EventFormValue {
     coAccommodationAddress: e.coAccommodationAddress ?? '',
     coMidweekDow: visitMidweekDowOf(e),
     auxReducedHours: e.auxReducedHours ?? false,
+    elsewhere: e.elsewhere ?? false,
   };
 }
 
@@ -150,6 +151,9 @@ export function SpecialEventDetail({
             : undefined,
         auxReducedHours:
           form!.type.trim() === 'campaign' ? form!.auxReducedHours : undefined,
+        // In the hall or elsewhere: the Memorial only (27 November 2026).
+        elsewhere:
+          form!.type.trim() === 'memorial' ? form!.elsewhere : undefined,
       }),
     onSuccess: () => {
       invalidateAfterEventChange(qc);
@@ -441,6 +445,9 @@ export function SpecialEventDetail({
           mapUrl={event.mapUrl}
           hint={t('home.event.route')}
         />
+      ) : event.elsewhere ? (
+        // Elsewhere, the address not known yet — never the hall's instead.
+        <InfoRow label={t('specialEvents.fields.address')} value={t('home.placeLater')} />
       ) : null}
       {event.note ? (
         <InfoRow

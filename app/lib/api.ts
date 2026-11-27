@@ -3214,6 +3214,8 @@ export interface MemorialSheet {
     date: string;
     time: string | null;
     address: string | null;
+    /** Held elsewhere; with no address yet «место уточняется». */
+    elsewhere?: boolean;
     theme: string | null;
     themeUrl: string | null;
     /** Null while the programme is a draft and nobody has been told. */
@@ -4163,6 +4165,11 @@ export interface SpecialEvent {
   time: string | null;
   timeEnd: string | null;
   address: string | null;
+  /**
+   * Somewhere other than the hall; with no address yet «место уточняется»,
+   * never the hall's address (27 November 2026). Absent from an older server.
+   */
+  elsewhere?: boolean;
   mapUrl: string | null;
   programUrl: string | null;
   /**
@@ -4209,6 +4216,8 @@ export interface SpecialEvent {
 export interface CreateSpecialEventInput {
   /** A campaign only (29 October 2026). */
   auxReducedHours?: boolean;
+  /** The Memorial held elsewhere (27 November 2026). */
+  elsewhere?: boolean;
   title: string;
   type?: string;
   date: string;
@@ -7555,6 +7564,8 @@ export interface ElderTask {
     | "assembly_screens"
     /** Before a regional convention: the 15 minutes before the campaign (period: its date). */
     | "campaign_part"
+    /** A Memorial still without its hour or, elsewhere, its address (period: its date). */
+    | "memorial_details"
     | null;
   /** Which turn of it — «2026-Q3», «2026». Two audits a year need telling apart. */
   kindPeriod: string | null;

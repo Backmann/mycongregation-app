@@ -1372,6 +1372,11 @@ function NextBody({
           ) : null}
           {!entry.atHall && entry.address ? (
             <Text style={s.nextPlace}>{entry.address}</Text>
+          ) : entry.placeLater ? (
+            <Text style={s.nextPlace}>{t("home.placeLater")}</Text>
+          ) : null}
+          {entry.timeLater ? (
+            <Text style={s.nextPlace}>{t("home.timeLater")}</Text>
           ) : null}
           {entry.movedFrom ? (
             <MovedMark mode="from" dateISO={entry.movedFrom} time={entry.movedFromTime} />
@@ -1885,7 +1890,11 @@ function EntryBody({
               <Text style={s.rowOccasion}>{` · ${lower(occasionLine)}`}</Text>
             ) : null}
           </Text>
-          {en.time ? <Text style={s.rowKindTime}>{en.time}</Text> : null}
+          {en.time ? (
+            <Text style={s.rowKindTime}>{en.time}</Text>
+          ) : en.timeLater ? (
+            <Text style={s.rowKindTime}>{t("home.timeLater")}</Text>
+          ) : null}
         </View>
         {title ? (
           <Text style={[s.rowTitle, !compact && en.titleIsMine && s.titleMine]}>
@@ -1915,6 +1924,8 @@ function EntryBody({
         ) : null}
         {!en.atHall && en.address ? (
           <Text style={s.rowSub}>{en.address}</Text>
+        ) : en.placeLater ? (
+          <Text style={s.rowSub}>{t("home.placeLater")}</Text>
         ) : null}
         <AgendaList lines={shownAgenda} />
         {compact && !isNext ? (

@@ -85,6 +85,9 @@ export default function NewSpecialEventScreen() {
             : undefined,
         auxReducedHours:
           form.type.trim() === 'campaign' ? form.auxReducedHours : undefined,
+        // In the hall or elsewhere: the Memorial only (27 November 2026).
+        elsewhere:
+          form.type.trim() === 'memorial' ? form.elsewhere : undefined,
       }),
     // The new event opens — not the list it was made from: that is where
     // the next thing to do with it (the visit schedule, the programme link)

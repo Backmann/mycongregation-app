@@ -2792,7 +2792,6 @@
         "needDate": "Datum wählen",
         "needTitle": "Titel eingeben",
         "needEnd": "Letzten Tag wählen",
-        "memorialTime": "Das Gedächtnismahl braucht eine Anfangszeit",
         "timeOrder": "Das Ende liegt vor dem Beginn",
         "linkInvalid": "Ein Link beginnt mit https://",
         "changeEmpty": "Schreiben Sie, was sich an der Zusammenkunft ändert",
@@ -2858,7 +2857,12 @@
       "auxMonths": "Betroffene Monate: {{months}} — ein bereits gewähltes Ziel ändert sich nicht.",
       "auxHint": "Wählen Sie die Tage der Kampagne – hier erscheinen dann die betroffenen Monate.",
       "wifeComes": "Kommt mit seiner Frau",
-      "wifeNameOptional": "Name der Frau (optional)"
+      "wifeNameOptional": "Name der Frau (optional)",
+      "memorialTimeLater": "Die Uhrzeit kann später eingetragen werden: Bekanntmachungen sagen, dass sie folgt, und der Koordinator der Ältestenschaft erhält 6 Wochen vor dem Gedächtnismahl eine Aufgabe dazu.",
+      "inOurHall": "In unserem Saal",
+      "elsewhere": "An einem anderen Ort",
+      "placeLater": "Die Adresse kann später eingetragen werden — bis dahin steht überall „Ort folgt“.",
+      "later": "Später"
     },
     "types": {
       "regional_convention": "Regionaler Kongress",
@@ -3395,7 +3399,9 @@
     "event": {
       "route": "Route",
       "atSchool": "An diesem Tag sind Sie in der Schule"
-    }
+    },
+    "timeLater": "Uhrzeit folgt",
+    "placeLater": "Ort folgt"
   },
   "halls": {
     "title": "Königreichssäle",
@@ -4701,7 +4707,8 @@
       "notified": "Mit Benachrichtigung",
       "emptySeats": "Leere Plätze",
       "letter": "Brief",
-      "carried": "Verschoben"
+      "carried": "Verschoben",
+      "elsewhere": "An einem anderen Ort"
     },
     "noValue": "leer",
     "changedNoValues": "geändert (Werte werden nicht gespeichert)",
@@ -5146,7 +5153,8 @@
       "admin_not_elder": "Administrator ist kein Ältester",
       "possible_duplicate": "Möglicherweise dieselbe Karte",
       "assembly_screens": "Programm des Kreiskongresses auf den Bildschirmen",
-      "campaign_part": "15 Minuten vor der Einladungsaktion zum regionalen Kongress"
+      "campaign_part": "15 Minuten vor der Einladungsaktion zum regionalen Kongress",
+      "memorial_details": "Uhrzeit und Ort des Gedächtnismahls eintragen"
     },
     "mine": {
       "title": "Meine Aufgaben",
@@ -5174,6 +5182,12 @@
     },
     "adminNotElder": {
       "hint": "Die Administratorrolle öffnet alle Daten der Versammlung, daher darf sie nur ein Ältester haben. Geben Sie die Rolle einem Ältesten oder nehmen Sie sie weg – die Aufgabe schließt sich von selbst."
+    },
+    "memorialDetails": {
+      "missingTime": "Beim Gedächtnismahl fehlt noch die Uhrzeit.",
+      "missingPlace": "Das Gedächtnismahl ist an einem anderen Ort — die Adresse fehlt noch.",
+      "missingBoth": "Beim Gedächtnismahl fehlen noch Uhrzeit und Adresse.",
+      "open": "Gedächtnismahl öffnen"
     }
   },
   "pioneerSchool": {
