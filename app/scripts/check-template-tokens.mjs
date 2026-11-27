@@ -47,6 +47,7 @@ try {
     check(`${lang}: the reader sees his names`, TOKENS.every((k) => local.includes(`{${names[k]}}`)), true);
   }
   check('the preview fills known ones only', sampleFill('{when} {x} { when }', () => 'V'), 'V {x} { when }');
+  check('a value starting a line gets its capital, inside it does not', sampleFill('{when} — a\nb {when}', () => 'v'), 'V — a\nb v');
 } finally {
   rmSync(out, { recursive: true, force: true });
 }

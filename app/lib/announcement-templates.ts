@@ -8,7 +8,19 @@
  * the other on the way in and out, so the words he sees are in his language
  * and the server never stores a token it does not know.
  */
-export const TOKENS = ['when', 'from', 'to', 'midweek', 'name', 'dates', 'month', 'report', 'months', 'program'] as const;
+export const TOKENS = [
+  'when',
+  'place',
+  'from',
+  'to',
+  'midweek',
+  'name',
+  'dates',
+  'month',
+  'report',
+  'months',
+  'program',
+] as const;
 export type Token = (typeof TOKENS)[number];
 
 /** The reader's name of a token, without braces. */
@@ -35,5 +47,10 @@ export function fromLocalTokens(words: string, name: TokenName): string {
 
 /** The preview: each known token with an example value, the rest as written. */
 export function sampleFill(words: string, sample: (token: Token) => string): string {
-  return words.replace(PLACEHOLDER, (all, t: string) => (isToken(t) ? sample(t) : all));
+  return words.replace(PLACEHOLDER, (all, t: string, at: number, text: string) => {
+    if (!isToken(t)) return all;
+    const v = sample(t);
+    // As the server fills: a value that starts a line starts a sentence.
+    return /(^|\n)[ \t]*$/.test(text.slice(0, at)) ? v.charAt(0).toUpperCase() + v.slice(1) : v;
+  });
 }
