@@ -114,6 +114,8 @@ const STEPS = [
   ['Обещание «не null» в обработчиках', 'node', ['scripts/check-nonnull-callbacks.mjs']],
   ['Участки: адреса «не посещать»', 'node', ['scripts/check-no-calls.mjs']],
   ['Главная: темп учёта часов', 'node', ['scripts/check-hours-pace.mjs']],
+  ['Учёт часов: дни записи', 'node', ['scripts/check-hours-days.mjs']],
+  ['Учёт часов: очередь на телефоне', 'node', ['scripts/check-hours-queue.mjs']],
   ['Главная: «изменено»', 'node', ['scripts/check-home-changes.mjs']],
   // The lines under the «Собрание» doors: which are amber, whose absences
   // (27 September).

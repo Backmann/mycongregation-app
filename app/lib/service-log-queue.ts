@@ -35,10 +35,37 @@ interface Stored {
 
 const KEY = 'mycongregation.hours-queue';
 let state: Stored | null = null;
-let flushing = false;
 const listeners = new Set<() => void>();
-/** Refusals to tell the person about, oldest first. */
-let refused: string[] = [];
+
+/**
+ * An entry the server would not keep — told to the person until he closes
+ * it, on whichever screen he is (28 November 2026: a refusal was taken by
+ * the first screen listening, and Home never showed it, so the entry just
+ * vanished). Which entry it was goes with the reason.
+ */
+export interface Refusal {
+  id: string;
+  day: string | null;
+  minutes: number | null;
+  why: string;
+}
+let refused: Refusal[] = [];
+const refusalListeners = new Set<() => void>();
+function notifyRefusals() {
+  for (const l of refusalListeners) l();
+}
+export function subscribeRefusals(l: () => void): () => void {
+  refusalListeners.add(l);
+  return () => refusalListeners.delete(l);
+}
+/** The refusals not yet closed, oldest first — the same array until one changes. */
+export function currentRefusals(): Refusal[] {
+  return refused;
+}
+export function dismissRefusal(id: string): void {
+  refused = refused.filter((r) => r.id !== id);
+  notifyRefusals();
+}
 
 export function newEntryId(): string {
   const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
@@ -98,6 +125,11 @@ export function pendingOps(userId: string | null | undefined): LogOp[] {
   return state && userId && state.userId === userId ? state.ops : NONE;
 }
 
+/** Whether his queue has been read from the phone yet — before that, «none» is not known. */
+export function queueLoaded(userId: string | null | undefined): boolean {
+  return !!state && !!userId && state.userId === userId;
+}
+
 export async function initQueue(userId: string): Promise<void> {
   await load(userId);
   notify();
@@ -113,22 +145,29 @@ export async function enqueue(userId: string, op: LogOp): Promise<void> {
   void flush(userId);
 }
 
-/** Refusals collected since last asked — each told once. */
-export function takeRefusals(): string[] {
-  const out = refused;
-  refused = [];
-  return out;
-}
-
 /**
  * Send what waits, in order. Stops at the first change nothing answered
  * for; drops a change the server refused on its merits.
+ *
+ * One send at a time: a second call waits for the running one and then
+ * looks again, so «nothing left» is answered only after a real attempt
+ * (28 November 2026: a second call used to answer «not sent» at once).
+ * A change leaves the queue by identity, never by position — the queue may
+ * be changed while a change is on its way (an edit, a month handed in), and
+ * removing «the first» then removed somebody else's entry, unsent.
  */
+let running: Promise<boolean> | null = null;
 export async function flush(userId: string): Promise<boolean> {
-  if (flushing) return false;
+  while (running) await running;
+  running = flushOnce(userId).finally(() => {
+    running = null;
+  });
+  return running;
+}
+
+async function flushOnce(userId: string): Promise<boolean> {
   const s = await load(userId);
   if (s.ops.length === 0) return true;
-  flushing = true;
   let changed = false;
   try {
     while (s.ops.length > 0) {
@@ -139,26 +178,52 @@ export async function flush(userId: string): Promise<boolean> {
       } catch (e) {
         const status = e instanceof AxiosError ? e.response?.status : undefined;
         if (status && status >= 400 && status < 500 && status !== 401 && status !== 408 && status !== 429) {
-          refused.push(extractErrorMessage(e));
+          // Withdrawn while on its way (handed in with the report): nothing to tell.
+          if (s.ops.includes(op)) {
+            refused = [
+              ...refused.filter((r) => r.id !== op.id),
+              {
+                id: op.id,
+                day: op.type === 'put' ? op.body.day : null,
+                minutes: op.type === 'put' ? op.body.minutes : null,
+                why: extractErrorMessage(e),
+              },
+            ];
+            notifyRefusals();
+          }
         } else {
           break; // nothing answered, or the server is down: try later
         }
       }
-      s.ops = s.ops.slice(1);
+      s.ops = s.ops.filter((o) => o !== op);
       changed = true;
       await save();
     }
   } finally {
-    flushing = false;
     if (changed) notify();
   }
   return s.ops.length === 0;
+}
+
+/**
+ * Unsent entries he has just handed in with a month's report — he was told
+ * they stay in the report only. Sending them would only bring back a
+ * refusal («the report is in already») for time that is not lost.
+ */
+export async function discardUnsent(userId: string, ids: ReadonlySet<string>): Promise<void> {
+  const s = await load(userId);
+  const left = s.ops.filter((o) => !ids.has(o.id));
+  if (left.length === s.ops.length) return;
+  s.ops = left;
+  await save();
+  notify();
 }
 
 /** Signing out: what is his goes with him. */
 export async function forgetQueue(): Promise<void> {
   state = null;
   refused = [];
+  notifyRefusals();
   try {
     await AsyncStorage.removeItem(KEY);
   } catch {

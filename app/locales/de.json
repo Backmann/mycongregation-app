@@ -7193,7 +7193,9 @@
       "yesterday": "Gestern",
       "otherDay": "Anderer Tag",
       "notePlaceholder": "Notiz (optional) — nur Sie sehen sie",
-      "creditHint": "Zum Beispiel ein Bauprojekt oder ein Kongress. Sie kommen als Zeile in die Notiz des Berichts."
+      "creditHint": "Zum Beispiel ein Bauprojekt oder ein Kongress. Sie kommen als Zeile in die Notiz des Berichts.",
+      "future": "Dieser Tag ist noch nicht gekommen.",
+      "closed": "Für {{month}} kann nichts mehr eingetragen werden: Der Bericht ist abgegeben oder die Abgabe ist geschlossen."
     },
     "month": {
       "prev": "Vorheriger Monat",
@@ -7232,8 +7234,15 @@
       "creditToNote": "Gutschrift — {{dur}} — steht in der Notiz.",
       "creditNote": "Gutschrift: {{dur}}",
       "creditNoteWhat": "Gutschrift: {{dur}} ({{what}})",
-      "submitFor": "Bericht für {{month}} abgeben"
-    }
+      "submitFor": "Bericht für {{month}} abgeben",
+      "unsentCounted_one": "Einschließlich {{count}} Eintrag, der noch nicht vom Telefon gesendet wurde.",
+      "unsentCounted_other": "Einschließlich {{count}} Einträgen, die noch nicht vom Telefon gesendet wurden.",
+      "unsentTitle": "Einträge noch auf dem Telefon",
+      "unsentBody_one": "{{count}} Eintrag für diesen Monat konnte nicht an den Server gesendet werden. Im Bericht ist er schon enthalten, in der Aufzeichnung wird er aber nicht gespeichert. Den Bericht jetzt abgeben oder später noch einmal versuchen?",
+      "unsentBody_other": "{{count}} Einträge für diesen Monat konnten nicht an den Server gesendet werden. Im Bericht sind sie schon enthalten, in der Aufzeichnung werden sie aber nicht gespeichert. Den Bericht jetzt abgeben oder später noch einmal versuchen?",
+      "unsentSubmit": "Jetzt abgeben"
+    },
+    "refusedEntry": "Eintrag {{what}} nicht gespeichert: {{why}}"
   },
   "s21Totals": {
     "title": "Sammelkarten S-21",

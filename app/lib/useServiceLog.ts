@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react';
 import { AppState, Platform } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { TFunction } from 'i18next';
@@ -6,15 +6,19 @@ import { useAuth } from './auth';
 import type { failsScreen } from './screen-failure';
 import { serviceLogApi, type ServiceLogEntryInput } from './api';
 import {
+  currentRefusals,
+  dismissRefusal,
   enqueue,
   flush,
   initQueue,
   newEntryId,
   pendingOps,
+  queueLoaded,
   subscribeQueue,
-  takeRefusals,
+  subscribeRefusals,
   withPending,
   type LogOp,
+  type Refusal,
 } from './service-log-queue';
 
 /** «1 ч 30 мин», «2 ч», «45 мин» — never «1,5 ч» (Lionel, 29 October 2026). */
@@ -31,17 +35,14 @@ export function formatDuration(minutes: number, t: TFunction): string {
  * at once, when the app comes back to the front, when the browser is online
  * again, and every half minute while anything waits.
  */
-export function useLogQueue(): { ops: LogOp[]; refusals: string[] } {
+export function useLogQueue(): { ops: LogOp[]; ready: boolean } {
   const { user } = useAuth();
   const qc = useQueryClient();
   const userId = user?.id ?? null;
-  const [refusals, setRefusals] = useState<string[]>([]);
   useEffect(() => {
     if (!userId) return;
     void initQueue(userId);
     const unsub = subscribeQueue(() => {
-      const r = takeRefusals();
-      if (r.length) setRefusals(r);
       void qc.invalidateQueries({ queryKey: ['service-log'] });
     });
     const kick = () => void flush(userId);
@@ -69,7 +70,33 @@ export function useLogQueue(): { ops: LogOp[]; refusals: string[] } {
     () => pendingOps(userId),
     () => pendingOps(userId),
   );
-  return { ops, refusals };
+  const ready = useSyncExternalStore(
+    subscribeQueue,
+    () => queueLoaded(userId),
+    () => queueLoaded(userId),
+  );
+  return { ops, ready };
+}
+
+/** Try to send what waits now; true when nothing is left. */
+export function flushLog(userId: string): Promise<boolean> {
+  return flush(userId);
+}
+
+/**
+ * Entries the server would not keep, until the person closes each — the
+ * same list on Home and on «Мой учёт часов».
+ */
+export function useLogRefusals(): { refusals: Refusal[]; dismiss: (id: string) => void } {
+  const refusals = useSyncExternalStore(subscribeRefusals, currentRefusals, currentRefusals);
+  return { refusals, dismiss: dismissRefusal };
+}
+
+/** «30 ноября · 1 ч» — which entry a refusal speaks of. */
+export function refusalLabel(r: Refusal, lang: string, t: TFunction): string | null {
+  if (!r.day) return null;
+  const d = new Date(`${r.day}T12:00:00`).toLocaleDateString(lang, { day: 'numeric', month: 'long' });
+  return r.minutes ? `${d} · ${formatDuration(r.minutes, t)}` : d;
 }
 
 export function useLogMonth(
