@@ -7193,7 +7193,9 @@
       "yesterday": "Yesterday",
       "otherDay": "Another day",
       "notePlaceholder": "Note (optional) — only you see it",
-      "creditHint": "For example a construction project or a convention. They go into the report as a line in the note."
+      "creditHint": "For example a construction project or a convention. They go into the report as a line in the note.",
+      "future": "That day has not come yet.",
+      "closed": "Nothing more can be written for {{month}}: the report is in or collection has closed."
     },
     "month": {
       "prev": "Previous month",
@@ -7232,8 +7234,15 @@
       "creditToNote": "Credit — {{dur}} — is written into the note.",
       "creditNote": "Credit hours: {{dur}}",
       "creditNoteWhat": "Credit hours: {{dur}} ({{what}})",
-      "submitFor": "Submit the report for {{month}}"
-    }
+      "submitFor": "Submit the report for {{month}}",
+      "unsentCounted_one": "Including {{count}} entry not yet sent from the phone.",
+      "unsentCounted_other": "Including {{count}} entries not yet sent from the phone.",
+      "unsentTitle": "Entries still on the phone",
+      "unsentBody_one": "{{count}} entry for this month could not be sent — no connection. It is in the report already, but it will not be kept in the log. Hand in the report now, or wait for a connection?",
+      "unsentBody_other": "{{count}} entries for this month could not be sent — no connection. They are in the report already, but they will not be kept in the log. Hand in the report now, or wait for a connection?",
+      "unsentSubmit": "Hand in now"
+    },
+    "refusedEntry": "Entry {{what}} not saved: {{why}}"
   },
   "s21Totals": {
     "title": "S-21 totals cards",

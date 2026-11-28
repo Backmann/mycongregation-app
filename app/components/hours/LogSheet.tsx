@@ -8,6 +8,7 @@ import { DurationWheel } from '../DurationWheel';
 import { formatDuration, useLogActions } from '../../lib/useServiceLog';
 import type { ServiceLogEntry } from '../../lib/api';
 import { WIDE_FROM } from '../../lib/screen-width';
+import { dayProblem, sheetDays } from '../../lib/hours-days';
 
 const INK = '#0f172a';
 const MUTED = '#64748b';
@@ -15,12 +16,6 @@ const BRAND = '#0e7490';
 const LAST_KEY = 'mycongregation.hours-last';
 /** Ready-made lengths — never «1,5 ч» (Lionel, 29 October 2026). */
 const PRESETS = [30, 60, 90, 120];
-
-function shiftDay(day: string, n: number): string {
-  const [y, m, d] = day.split('-').map(Number);
-  const x = new Date(Date.UTC(y, m - 1, d + n));
-  return x.toISOString().slice(0, 10);
-}
 
 /**
  * «ЗАПИСАТЬ ВРЕМЯ» (29 October 2026, mockup screen 2). The ministry or credited
@@ -31,6 +26,8 @@ export function LogSheet({
   visible,
   onClose,
   today,
+  openMonths,
+  forMonth,
   entry,
   onSaved,
   onRemoved,
@@ -39,15 +36,29 @@ export function LogSheet({
   onClose: () => void;
   /** The congregation's today, «YYYY-MM-DD». */
   today: string;
+  /** Months he may still write in, «YYYY-MM» (the server's «open»). */
+  openMonths?: string[];
+  /**
+   * The month the sheet is opened over. A past month's sheet offers that
+   * month's own last days, never «Сегодня» — which would put the entry in
+   * the month after (28 November 2026: written on 1 December from the
+   * November screen, it went into December).
+   */
+  forMonth?: string;
   /** An entry to change; none — a new one. */
   entry?: ServiceLogEntry | null;
   onSaved?: (id: string, isNew: boolean, minutes: number) => void;
   onRemoved?: (entry: ServiceLogEntry) => void;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const { write, remove } = useLogActions();
-  const yesterday = shiftDay(today, -1);
+  // Today and yesterday — or, over a past month, its own last two days.
+  const { past, first, second, secondShown } = sheetDays(today, forMonth, openMonths, entry?.day);
+  const dayName = (d: string) =>
+    new Date(`${d}T12:00:00`).toLocaleDateString(i18n.language, { day: 'numeric', month: 'long' });
+  const firstLabel = past ? dayName(first) : t('hoursLog.sheet.today');
+  const secondLabel = past ? dayName(second) : t('hoursLog.sheet.yesterday');
   const [kind, setKind] = useState<'field' | 'credit'>('field');
   const [day, setDay] = useState(today);
   const [other, setOther] = useState(false);
@@ -59,13 +70,13 @@ export function LogSheet({
     if (entry) {
       setKind(entry.kind);
       setDay(entry.day);
-      setOther(entry.day !== today && entry.day !== yesterday);
+      setOther(entry.day !== first && entry.day !== second);
       setMinutes(entry.minutes);
       setNote(entry.note ?? '');
       return;
     }
     setKind('field');
-    setDay(today);
+    setDay(first);
     setOther(false);
     setNote('');
     void AsyncStorage.getItem(LAST_KEY)
@@ -75,7 +86,10 @@ export function LogSheet({
       })
       .catch(() => setMinutes(60));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [visible, entry?.id]);
+  }, [visible, entry?.id, first]);
+
+  const problem = dayProblem(day, today, openMonths);
+  const blocked = minutes <= 0 || !!problem;
 
   const save = async () => {
     const id = await write(
@@ -109,8 +123,8 @@ export function LogSheet({
       footer={
         <View style={{ gap: 8 }}>
           <Pressable
-            style={[styles.btn, minutes <= 0 && { opacity: 0.45 }]}
-            disabled={minutes <= 0}
+            style={[styles.btn, blocked && { opacity: 0.45 }]}
+            disabled={blocked}
             onPress={() => void save()}
             accessibilityRole="button"
           >
@@ -154,17 +168,31 @@ export function LogSheet({
       {kind === 'credit' ? <Text style={styles.hint}>{t('hoursLog.sheet.creditHint')}</Text> : null}
 
       <View style={styles.days}>
-        {chip(t('hoursLog.sheet.today'), !other && day === today, () => {
+        {chip(firstLabel, !other && day === first, () => {
           setOther(false);
-          setDay(today);
-        }, 'today')}
-        {chip(t('hoursLog.sheet.yesterday'), !other && day === yesterday, () => {
-          setOther(false);
-          setDay(yesterday);
-        }, 'yesterday')}
+          setDay(first);
+        }, 'first')}
+        {secondShown
+          ? chip(secondLabel, !other && day === second, () => {
+              setOther(false);
+              setDay(second);
+            }, 'second')
+          : null}
         {chip(t('hoursLog.sheet.otherDay'), other, () => setOther(true), 'other')}
       </View>
       {other ? <DateField value={day} onChange={(v) => v && setDay(v)} /> : null}
+      {problem ? (
+        <Text style={styles.problem} testID="hours-day-problem">
+          {problem === 'future'
+            ? t('hoursLog.sheet.future')
+            : t('hoursLog.sheet.closed', {
+                month: new Date(`${day.slice(0, 7)}-01T12:00:00`).toLocaleDateString(i18n.language, {
+                  month: 'long',
+                  year: 'numeric',
+                }),
+              })}
+        </Text>
+      ) : null}
 
       <DurationWheel minutes={minutes} onChange={setMinutes} />
       <View style={styles.presets}>
@@ -196,6 +224,7 @@ const styles = StyleSheet.create({
   segText: { fontFamily: 'Manrope_700Bold', fontSize: 14, color: MUTED },
   segTextOn: { color: INK, fontFamily: 'Manrope_800ExtraBold' },
   hint: { fontFamily: 'Manrope_500Medium', fontSize: 12.5, color: '#92400e', marginTop: 8 },
+  problem: { fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#b91c1c', marginTop: 6, lineHeight: 18 },
   days: { flexDirection: 'row', gap: 6, marginTop: 12, marginBottom: 6 },
   presets: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 4 },
   chip: {

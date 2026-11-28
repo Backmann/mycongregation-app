@@ -37,8 +37,36 @@ const KEY = 'mycongregation.hours-queue';
 let state: Stored | null = null;
 let flushing = false;
 const listeners = new Set<() => void>();
-/** Refusals to tell the person about, oldest first. */
-let refused: string[] = [];
+
+/**
+ * An entry the server would not keep — told to the person until he closes
+ * it, on whichever screen he is (28 November 2026: a refusal was taken by
+ * the first screen listening, and Home never showed it, so the entry just
+ * vanished). Which entry it was goes with the reason.
+ */
+export interface Refusal {
+  id: string;
+  day: string | null;
+  minutes: number | null;
+  why: string;
+}
+let refused: Refusal[] = [];
+const refusalListeners = new Set<() => void>();
+function notifyRefusals() {
+  for (const l of refusalListeners) l();
+}
+export function subscribeRefusals(l: () => void): () => void {
+  refusalListeners.add(l);
+  return () => refusalListeners.delete(l);
+}
+/** The refusals not yet closed, oldest first — the same array until one changes. */
+export function currentRefusals(): Refusal[] {
+  return refused;
+}
+export function dismissRefusal(id: string): void {
+  refused = refused.filter((r) => r.id !== id);
+  notifyRefusals();
+}
 
 export function newEntryId(): string {
   const c = (globalThis as { crypto?: { randomUUID?: () => string } }).crypto;
@@ -98,6 +126,11 @@ export function pendingOps(userId: string | null | undefined): LogOp[] {
   return state && userId && state.userId === userId ? state.ops : NONE;
 }
 
+/** Whether his queue has been read from the phone yet — before that, «none» is not known. */
+export function queueLoaded(userId: string | null | undefined): boolean {
+  return !!state && !!userId && state.userId === userId;
+}
+
 export async function initQueue(userId: string): Promise<void> {
   await load(userId);
   notify();
@@ -111,13 +144,6 @@ export async function enqueue(userId: string, op: LogOp): Promise<void> {
   await save();
   notify();
   void flush(userId);
-}
-
-/** Refusals collected since last asked — each told once. */
-export function takeRefusals(): string[] {
-  const out = refused;
-  refused = [];
-  return out;
 }
 
 /**
@@ -139,7 +165,16 @@ export async function flush(userId: string): Promise<boolean> {
       } catch (e) {
         const status = e instanceof AxiosError ? e.response?.status : undefined;
         if (status && status >= 400 && status < 500 && status !== 401 && status !== 408 && status !== 429) {
-          refused.push(extractErrorMessage(e));
+          refused = [
+            ...refused.filter((r) => r.id !== op.id),
+            {
+              id: op.id,
+              day: op.type === 'put' ? op.body.day : null,
+              minutes: op.type === 'put' ? op.body.minutes : null,
+              why: extractErrorMessage(e),
+            },
+          ];
+          notifyRefusals();
         } else {
           break; // nothing answered, or the server is down: try later
         }
@@ -155,10 +190,25 @@ export async function flush(userId: string): Promise<boolean> {
   return s.ops.length === 0;
 }
 
+/**
+ * Unsent entries of a month he has just reported with them counted in — he
+ * was told they stay in the report only. Sending them would only bring back
+ * a refusal («the report is in already») for time that is not lost.
+ */
+export async function discardUnsentOfMonth(userId: string, month: string): Promise<void> {
+  const s = await load(userId);
+  const left = s.ops.filter((o) => !(o.type === 'put' && o.body.day.slice(0, 7) === month));
+  if (left.length === s.ops.length) return;
+  s.ops = left;
+  await save();
+  notify();
+}
+
 /** Signing out: what is his goes with him. */
 export async function forgetQueue(): Promise<void> {
   state = null;
   refused = [];
+  notifyRefusals();
   try {
     await AsyncStorage.removeItem(KEY);
   } catch {

@@ -8,6 +8,7 @@ import { formatDuration, useLogOverview } from '../../lib/useServiceLog';
 import { monthName } from '../../lib/aux-application';
 import type { ServiceLogMonth } from '../../lib/api';
 import { LogSheet } from './LogSheet';
+import { LogRefusals } from './LogRefusals';
 import { paceHours } from '../../lib/hours-pace';
 
 const INTRO_KEY = 'mycongregation.hours-intro-seen';
@@ -74,7 +75,10 @@ export function HoursCard({
         ? t('hoursLog.home.pace', { n: pace })
         : t('hoursLog.home.toReport', { month });
 
+  const openMonths = months.filter((x) => x.open).map((x) => x.month);
+
   return (
+    <View>
     <View style={[styles.card, aux && styles.cardAux]}>
       <Pressable
         style={styles.main}
@@ -143,7 +147,16 @@ export function HoursCard({
           {t('hoursLog.home.reported', { n: m.report.hours ?? 0 })}
         </Text>
       ) : null}
-      <LogSheet visible={open} onClose={() => setOpen(false)} today={m.today} onSaved={onSaved} />
+      <LogSheet
+        visible={open}
+        onClose={() => setOpen(false)}
+        today={m.today}
+        openMonths={openMonths}
+        forMonth={m.month}
+        onSaved={onSaved}
+      />
+    </View>
+    <LogRefusals />
     </View>
   );
 }

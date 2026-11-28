@@ -1,6 +1,6 @@
 import { KeyboardScroll } from '../../../components/KeyboardScroll';
 import { goBack } from '../../../components/NavHistory';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -27,7 +27,9 @@ import { formatMonthLabel } from '../../../lib/i18n';
 import { notify } from '../../../lib/error-bus';
 import { failsScreen } from '../../../lib/screen-failure';
 import { serviceLogApi } from '../../../lib/api';
-import { formatDuration } from '../../../lib/useServiceLog';
+import { flushLog, formatDuration, useLogQueue } from '../../../lib/useServiceLog';
+import { discardUnsentOfMonth, pendingOps, withPending } from '../../../lib/service-log-queue';
+import { unsentInMonth } from '../../../lib/hours-days';
 
 // formatMonth replaced by formatMonthLabel from lib/i18n.ts
 
@@ -263,13 +265,22 @@ export default function NewOrEditServiceReportScreen() {
     enabled: !isEditMode && !isOnBehalf && !!reportMonth,
     retry: false,
   });
+  // Entries written but not yet sent count too (28 November 2026: an hour
+  // still on the phone was left out of the report, and the server then
+  // refused it — the report was in). Filled only once the phone's queue has
+  // been read, so «nothing waiting» is a fact, not a guess.
+  const { ops: logOps, ready: logQueueReady } = useLogQueue();
+  const logMonth = useMemo(
+    () => (logQ.data ? withPending(logQ.data, logOps) : null),
+    [logQ.data, logOps],
+  );
   const fromLog =
-    logQ.data && logQ.data.role !== null && !logQ.data.report && logQ.data.entries.length > 0
-      ? logQ.data
+    logMonth && logMonth.role !== null && !logMonth.report && logMonth.entries.length > 0
+      ? logMonth
       : null;
   const [filledFrom, setFilledFrom] = useState<string | null>(null);
   useEffect(() => {
-    if (!fromLog || filledFrom === fromLog.month) return;
+    if (!logQueueReady || !fromLog || filledFrom === fromLog.month) return;
     setFilledFrom(fromLog.month);
     if (fromLog.fieldMinutes > 0) setHours((h) => (h ? h : String(fromLog.reportHours)));
     if (fromLog.creditMinutes > 0) {
@@ -287,7 +298,7 @@ export default function NewOrEditServiceReportScreen() {
       setNotes((n) => (n ? n : line));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromLog?.month]);
+  }, [fromLog?.month, logQueueReady]);
 
   /** The studies of his latest report — offered while the field is empty. */
   const studiesHint =
@@ -330,6 +341,8 @@ export default function NewOrEditServiceReportScreen() {
     }
   };
 
+  /** The month whose unsent entries he agreed to hand in with the report. */
+  const unsentCounted = useRef<string | null>(null);
   const submitMutation = useMutation({
     // Shown in place by this form — keep it out of the global error strip,
     // which was repeating the very same sentence a second time.
@@ -345,10 +358,16 @@ export default function NewOrEditServiceReportScreen() {
         notes: notes.trim() || undefined,
       }),
     onSuccess: () => {
+      // Only now, with the report in: had it failed, they still had to go.
+      if (unsentCounted.current && user?.id) {
+        void discardUnsentOfMonth(user.id, unsentCounted.current);
+        unsentCounted.current = null;
+      }
       refreshAfterReport();
       setSubmitted(true);
     },
     onError: (err) => {
+      unsentCounted.current = null;
       // 409 means the month is already filed — most often because it was filed
       // somewhere else: another device, another tab, or an elder entering it
       // for this publisher. The screen's list of months was simply older than
@@ -416,7 +435,28 @@ export default function NewOrEditServiceReportScreen() {
     return servedThisMonth !== null;
   }
 
-  function handleSubmit() {
+  /** His entries for this month still on the phone. */
+  function unsentForMonth(): number {
+    if (!user?.id) return 0;
+    return unsentInMonth(pendingOps(user.id), reportMonth.slice(0, 7));
+  }
+
+  async function handleSubmit() {
+    if (canSubmit() && fromLog && user?.id && unsentForMonth() > 0) {
+      // Send them first: once the report is in, the month is closed to them.
+      await flushLog(user.id);
+      const left = unsentForMonth();
+      if (left > 0) {
+        const ok = await confirm({
+          title: t('hoursLog.report.unsentTitle'),
+          body: t('hoursLog.report.unsentBody', { count: left }),
+          confirmLabel: t('hoursLog.report.unsentSubmit'),
+        });
+        if (!ok) return;
+        // Counted in the report: once it is in, they are the report's.
+        unsentCounted.current = reportMonth.slice(0, 7);
+      }
+    }
     if (!canSubmit()) {
       if (isDuplicateMonth()) {
         notify(
@@ -673,6 +713,11 @@ export default function NewOrEditServiceReportScreen() {
                   .filter(Boolean)
                   .join(' ')}
               </Text>
+              {fromLog.pendingIds.length > 0 ? (
+                <Text style={styles.fromLogSub} testID="report-log-unsent">
+                  {t('hoursLog.report.unsentCounted', { count: fromLog.pendingIds.length })}
+                </Text>
+              ) : null}
             </View>
           </View>
         ) : null}

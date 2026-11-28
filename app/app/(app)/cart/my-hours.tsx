@@ -4,10 +4,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
-import { formatDuration, useLogMonth, useLogQueue } from '../../../lib/useServiceLog';
+import { formatDuration, useLogMonth, useLogOverview } from '../../../lib/useServiceLog';
 import { addMonths, capitalize, monthName } from '../../../lib/aux-application';
 import type { ServiceLogEntry } from '../../../lib/api';
 import { LogSheet } from '../../../components/hours/LogSheet';
+import { LogRefusals } from '../../../components/hours/LogRefusals';
 import { useLogUndo } from '../../../components/hours/useLogUndo';
 import { daysLeft } from '../../../components/hours/HoursCard';
 import { LoadFailure } from '../../../components/LoadFailure';
@@ -33,7 +34,9 @@ export default function MyHoursScreen() {
     typeof params.month === 'string' && /^\d{4}-\d{2}$/.test(params.month) ? params.month : undefined,
   );
   const q = useLogMonth(month, { throwOnError: failsScreen });
-  const { refusals } = useLogQueue();
+  // Which months may still be written — for the sheet's days.
+  const { months: openNow } = useLogOverview();
+  const openMonths = openNow?.filter((x) => x.open).map((x) => x.month);
   const { undoBar, saved, removed } = useLogUndo();
   const [sheet, setSheet] = useState<{ entry: ServiceLogEntry | null } | null>(null);
   const [hint, setHint] = useState(false);
@@ -166,12 +169,7 @@ export default function MyHoursScreen() {
           </View>
         ) : null}
 
-        {refusals.map((r, i) => (
-          <View key={i} style={styles.refused}>
-            <Ionicons name="alert-circle-outline" size={16} color="#b91c1c" />
-            <Text style={styles.refusedText}>{t('hoursLog.refused', { why: r })}</Text>
-          </View>
-        ))}
+        <LogRefusals />
 
         {[...byDay.entries()].map(([d, list]) => (
           <View key={d}>
@@ -206,11 +204,13 @@ export default function MyHoursScreen() {
         ) : null}
       </ScrollView>
 
-      {m.open ? (
+      {m.open || (m.role !== null && !m.report && m.month < current) ? (
         <View style={styles.footer}>
           {m.month < current ? (
-            // The month is over: its report is the thing now; a late entry
-            // is still possible below it until the report goes in.
+            // The month is over: its report is the thing now — after the
+            // 20th too, when the entries are no longer open (28 November
+            // 2026: the button went with them). A late entry is possible
+            // below it while the month is open.
             <>
               <Pressable
                 style={styles.btn}
@@ -223,9 +223,11 @@ export default function MyHoursScreen() {
                   {t('hoursLog.report.submitFor', { month: monthName(m.month, lang, false) })}
                 </Text>
               </Pressable>
-              <Pressable onPress={() => setSheet({ entry: null })} accessibilityRole="button" hitSlop={6}>
-                <Text style={styles.lateLink}>{t('hoursLog.sheet.title')}</Text>
-              </Pressable>
+              {m.open ? (
+                <Pressable onPress={() => setSheet({ entry: null })} accessibilityRole="button" hitSlop={6}>
+                  <Text style={styles.lateLink}>{t('hoursLog.sheet.title')}</Text>
+                </Pressable>
+              ) : null}
             </>
           ) : (
             <Pressable
@@ -245,6 +247,8 @@ export default function MyHoursScreen() {
         visible={!!sheet}
         onClose={() => setSheet(null)}
         today={m.today}
+        openMonths={openMonths}
+        forMonth={m.month}
         entry={sheet?.entry ?? null}
         onSaved={saved}
         onRemoved={removed}
@@ -332,16 +336,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   quietBoxText: { fontFamily: 'Manrope_500Medium', fontSize: 13, color: '#475569', lineHeight: 19 },
-  refused: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'flex-start',
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 8,
-  },
-  refusedText: { flex: 1, fontFamily: 'Manrope_600SemiBold', fontSize: 12.5, color: '#991b1b' },
   day: {
     fontFamily: 'Manrope_800ExtraBold',
     fontSize: 11.5,
