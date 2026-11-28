@@ -35,7 +35,6 @@ interface Stored {
 
 const KEY = 'mycongregation.hours-queue';
 let state: Stored | null = null;
-let flushing = false;
 const listeners = new Set<() => void>();
 
 /**
@@ -149,12 +148,26 @@ export async function enqueue(userId: string, op: LogOp): Promise<void> {
 /**
  * Send what waits, in order. Stops at the first change nothing answered
  * for; drops a change the server refused on its merits.
+ *
+ * One send at a time: a second call waits for the running one and then
+ * looks again, so «nothing left» is answered only after a real attempt
+ * (28 November 2026: a second call used to answer «not sent» at once).
+ * A change leaves the queue by identity, never by position — the queue may
+ * be changed while a change is on its way (an edit, a month handed in), and
+ * removing «the first» then removed somebody else's entry, unsent.
  */
+let running: Promise<boolean> | null = null;
 export async function flush(userId: string): Promise<boolean> {
-  if (flushing) return false;
+  while (running) await running;
+  running = flushOnce(userId).finally(() => {
+    running = null;
+  });
+  return running;
+}
+
+async function flushOnce(userId: string): Promise<boolean> {
   const s = await load(userId);
   if (s.ops.length === 0) return true;
-  flushing = true;
   let changed = false;
   try {
     while (s.ops.length > 0) {
@@ -165,39 +178,41 @@ export async function flush(userId: string): Promise<boolean> {
       } catch (e) {
         const status = e instanceof AxiosError ? e.response?.status : undefined;
         if (status && status >= 400 && status < 500 && status !== 401 && status !== 408 && status !== 429) {
-          refused = [
-            ...refused.filter((r) => r.id !== op.id),
-            {
-              id: op.id,
-              day: op.type === 'put' ? op.body.day : null,
-              minutes: op.type === 'put' ? op.body.minutes : null,
-              why: extractErrorMessage(e),
-            },
-          ];
-          notifyRefusals();
+          // Withdrawn while on its way (handed in with the report): nothing to tell.
+          if (s.ops.includes(op)) {
+            refused = [
+              ...refused.filter((r) => r.id !== op.id),
+              {
+                id: op.id,
+                day: op.type === 'put' ? op.body.day : null,
+                minutes: op.type === 'put' ? op.body.minutes : null,
+                why: extractErrorMessage(e),
+              },
+            ];
+            notifyRefusals();
+          }
         } else {
           break; // nothing answered, or the server is down: try later
         }
       }
-      s.ops = s.ops.slice(1);
+      s.ops = s.ops.filter((o) => o !== op);
       changed = true;
       await save();
     }
   } finally {
-    flushing = false;
     if (changed) notify();
   }
   return s.ops.length === 0;
 }
 
 /**
- * Unsent entries of a month he has just reported with them counted in — he
- * was told they stay in the report only. Sending them would only bring back
- * a refusal («the report is in already») for time that is not lost.
+ * Unsent entries he has just handed in with a month's report — he was told
+ * they stay in the report only. Sending them would only bring back a
+ * refusal («the report is in already») for time that is not lost.
  */
-export async function discardUnsentOfMonth(userId: string, month: string): Promise<void> {
+export async function discardUnsent(userId: string, ids: ReadonlySet<string>): Promise<void> {
   const s = await load(userId);
-  const left = s.ops.filter((o) => !(o.type === 'put' && o.body.day.slice(0, 7) === month));
+  const left = s.ops.filter((o) => !ids.has(o.id));
   if (left.length === s.ops.length) return;
   s.ops = left;
   await save();

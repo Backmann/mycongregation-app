@@ -18,7 +18,7 @@ const js = ts.transpileModule(src, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
 }).outputText;
 writeFileSync(join(out, 'hours-days.mjs'), js);
-const { sheetDays, dayProblem, unsentInMonth } = await import(
+const { sheetDays, dayProblem, reportCounted } = await import(
   pathToFileURL(join(out, 'hours-days.mjs')).href
 );
 
@@ -60,17 +60,18 @@ same(dayProblem('2026-12-28', '2026-12-21', ['2026-12']), 'future', 'будущ�
 same(dayProblem('2026-11-30', '2026-12-21', ['2026-12']), 'closed', 'закрытый месяц');
 same(dayProblem('2026-12-21', '2026-12-21', ['2026-12']), null, 'сегодня можно');
 same(dayProblem('2026-11-30', '2026-12-01', undefined), null, 'открытые месяцы неизвестны — решает сервер');
+// What a November report may count of the unsent changes.
+const ops = [
+  { type: 'put', id: 'new-nov', body: { day: '2026-11-30' } },
+  { type: 'put', id: 'own-nov', body: { day: '2026-11-12' } },
+  { type: 'put', id: 'from-dec', body: { day: '2026-11-29' } },
+  { type: 'put', id: 'to-dec', body: { day: '2026-12-01' } },
+  { type: 'delete', id: 'gone-nov' },
+];
 same(
-  unsentInMonth(
-    [
-      { type: 'put', body: { day: '2026-11-30' } },
-      { type: 'put', body: { day: '2026-12-01' } },
-      { type: 'delete' },
-    ],
-    '2026-11',
-  ),
-  1,
-  'неотправленные записи месяца для отчёта',
+  reportCounted(ops, '2026-11', new Set(['from-dec'])).map((o) => o.id),
+  ['new-nov', 'own-nov'],
+  'в ноябрьский отчёт идут новые и правленные внутри ноября; перенос из декабря и удаление — нет',
 );
 
 if (bad) {

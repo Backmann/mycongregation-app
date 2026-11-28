@@ -57,10 +57,26 @@ export function sheetDays(
   return { past, first, second, secondShown };
 }
 
-/** His unsent entries for a month, «YYYY-MM» — they are counted into its report. */
-export function unsentInMonth(
-  ops: ReadonlyArray<{ type: 'put' | 'delete'; body?: { day: string } }>,
+type Op = { type: 'put' | 'delete'; id: string; body?: { day: string } };
+
+/**
+ * His unsent changes that a month's report may count (28 November 2026,
+ * independent review): a new entry of the month, or an entry of the month
+ * changed within it. Those are laid over the server's sums and, once the
+ * report is in, leave the phone. Anything else — removing one of the
+ * month's entries, moving one out of it or into it from another month — is
+ * not counted and not dropped: the report keeps the server's figure, and
+ * the change is sent and, the month being reported, refused in words. That
+ * way no hour is counted twice, in this report and in another month's log.
+ *
+ * @param elsewhereIds the ids the server holds in other months
+ */
+export function reportCounted<T extends Op>(
+  ops: ReadonlyArray<T>,
   month: string,
-): number {
-  return ops.filter((o) => o.type === 'put' && o.body?.day.slice(0, 7) === month).length;
+  elsewhereIds: ReadonlySet<string>,
+): T[] {
+  return ops.filter(
+    (o) => o.type === 'put' && o.body?.day.slice(0, 7) === month && !elsewhereIds.has(o.id),
+  );
 }

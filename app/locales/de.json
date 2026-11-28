@@ -7236,10 +7236,10 @@
       "creditNoteWhat": "Gutschrift: {{dur}} ({{what}})",
       "submitFor": "Bericht für {{month}} abgeben",
       "unsentCounted_one": "Einschließlich {{count}} Eintrag, der noch nicht vom Telefon gesendet wurde.",
-      "unsentCounted_other": "Einschließlich {{count}} Einträge, die noch nicht vom Telefon gesendet wurden.",
+      "unsentCounted_other": "Einschließlich {{count}} Einträgen, die noch nicht vom Telefon gesendet wurden.",
       "unsentTitle": "Einträge noch auf dem Telefon",
-      "unsentBody_one": "{{count}} Eintrag für diesen Monat konnte nicht gesendet werden – keine Verbindung. Im Bericht ist er schon enthalten, in der Aufzeichnung wird er aber nicht gespeichert. Den Bericht jetzt abgeben oder auf die Verbindung warten?",
-      "unsentBody_other": "{{count}} Einträge für diesen Monat konnten nicht gesendet werden – keine Verbindung. Im Bericht sind sie schon enthalten, in der Aufzeichnung werden sie aber nicht gespeichert. Den Bericht jetzt abgeben oder auf die Verbindung warten?",
+      "unsentBody_one": "{{count}} Eintrag für diesen Monat konnte nicht an den Server gesendet werden. Im Bericht ist er schon enthalten, in der Aufzeichnung wird er aber nicht gespeichert. Den Bericht jetzt abgeben oder später noch einmal versuchen?",
+      "unsentBody_other": "{{count}} Einträge für diesen Monat konnten nicht an den Server gesendet werden. Im Bericht sind sie schon enthalten, in der Aufzeichnung werden sie aber nicht gespeichert. Den Bericht jetzt abgeben oder später noch einmal versuchen?",
       "unsentSubmit": "Jetzt abgeben"
     },
     "refusedEntry": "Eintrag {{what}} nicht gespeichert: {{why}}"

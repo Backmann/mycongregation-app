@@ -204,7 +204,7 @@ export default function MyHoursScreen() {
         ) : null}
       </ScrollView>
 
-      {m.open || (m.role !== null && !m.report && m.month < current) ? (
+      {m.open || (m.role !== null && !m.report && m.month === addMonths(current, -1)) ? (
         <View style={styles.footer}>
           {m.month < current ? (
             // The month is over: its report is the thing now — after the

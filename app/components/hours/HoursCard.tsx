@@ -54,7 +54,9 @@ export function HoursCard({
     setIntro(false);
     void AsyncStorage.setItem(INTRO_KEY, '1').catch(() => undefined);
   };
-  if (!months || months.length === 0) return null;
+  // A refusal is told even when no month is his to log any more (an
+  // auxiliary month that has ended).
+  if (!months || months.length === 0) return <LogRefusals />;
   // This month first; the previous one only while it is still his to finish.
   const m: ServiceLogMonth & { pendingIds: string[] } =
     months.find((x) => x.month === x.today.slice(0, 7)) ?? months[0];

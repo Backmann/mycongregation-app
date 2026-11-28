@@ -7238,8 +7238,8 @@
       "unsentCounted_one": "Including {{count}} entry not yet sent from the phone.",
       "unsentCounted_other": "Including {{count}} entries not yet sent from the phone.",
       "unsentTitle": "Entries still on the phone",
-      "unsentBody_one": "{{count}} entry for this month could not be sent — no connection. It is in the report already, but it will not be kept in the log. Hand in the report now, or wait for a connection?",
-      "unsentBody_other": "{{count}} entries for this month could not be sent — no connection. They are in the report already, but they will not be kept in the log. Hand in the report now, or wait for a connection?",
+      "unsentBody_one": "{{count}} entry for this month could not be sent to the server. It is in the report already, but it will not be kept in the log. Hand in the report now, or try again later?",
+      "unsentBody_other": "{{count}} entries for this month could not be sent to the server. They are in the report already, but they will not be kept in the log. Hand in the report now, or try again later?",
       "unsentSubmit": "Hand in now"
     },
     "refusedEntry": "Entry {{what}} not saved: {{why}}"
